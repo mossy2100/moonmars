@@ -1,4 +1,0 @@
-name = moonmars.com Stream
-description = Support for activity streams on moonmars.com.
-core = 7.x
-package = moonmars.com

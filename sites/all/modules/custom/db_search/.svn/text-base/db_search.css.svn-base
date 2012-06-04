@@ -1,0 +1,12 @@
+#edit-search-options .form-type-checkbox {
+  margin-left: 1em;
+}
+
+#edit-search-options .form-item-search-options-1 {
+  margin-left: 0;
+}
+
+.db-search-warning {
+  background-color: yellow;
+  font-weight: bold;
+}

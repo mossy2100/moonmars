@@ -200,3 +200,26 @@ function moonmars_users_avatar_tooltip($user) {
     </div>
   ";
 }
+
+/**
+ * Generate HTML for a user avatar with link and tooltip.
+ *
+ * @param int|stdClass $user
+ * @return string
+ */
+function moonmars_user_avatar_tooltip($user) {
+  if (!is_object($user)) {
+    $user = user_load($user);
+  }
+
+  // HTML for the tooltip:
+  $avatar = moonmars_users_avatar_link($user->uid);
+  $tooltip = moonmars_users_tooltip($user->uid);
+
+  return "
+    <div class='avatar-tooltip'>
+      $avatar
+      $tooltip
+    </div>
+  ";
+}

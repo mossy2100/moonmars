@@ -1,0 +1,448 @@
+<?php
+
+//define('db_search_EVERYTHING', 1);
+//define('db_search_NODES', 2);
+//define('db_search_USERS', 3);
+//define('db_search_TAXONOMY', 4);
+//define('db_search_COMMENTS', 5);
+//define('db_search_FILES', 6);
+//define('db_search_REVISIONS', 7);
+//define('db_search_OTHER', 8);
+
+/**
+ * Implements hook_menu().
+ */
+function db_search_menu() {
+  $items = array();
+  $items['admin/config/development/db-search'] = array(
+    'title'            => 'Database Search',
+    'description'      => 'Search in database text fields.',
+    'page callback'    => 'drupal_get_form',
+    'page arguments'   => array('db_search_form'),
+    'access arguments' => array('access administration pages'),
+  );
+  $items['admin/config/development/db-search/results'] = array(
+    'title'            => 'Database Search Results',
+    'description'      => 'Results for database search.',
+    'page callback'    => 'db_search_results',
+    'access arguments' => array('access administration pages'),
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function db_search_theme() {
+  $themes = array(
+    'db_search_results_form' => array(
+      'arguments'      => array('form' => NULL),
+      'render element' => 'form',
+    ),
+    'db_search_button'       => array(
+      'variables' => array(
+        'label'   => '',
+        'classes' => array(),
+        'id'      => ''
+      ),
+    ),
+  );
+  return $themes;
+}
+
+/**
+ * Convert a search string to a PCRE (Perl-Compatible Regular Expression).
+ *
+ * @param string $pattern
+ * @param bool $case_sensitive
+ * @return string
+ */
+function db_search_string_to_regex($str, $case_sensitive = TRUE) {
+  // Convert the pattern to a regular expression:
+  $pattern = '/' . str_replace('/', '\/', quotemeta($str)) . '/';
+  if (!$case_sensitive) {
+    $pattern .= 'i';
+  }
+  return $pattern;
+}
+
+///**
+// * Convert a MySQL simple string matching pattern to a PCRE (Perl-Compatible Regular Expression).
+// *
+// * @param string $pattern
+// * @param bool $case_sensitive
+// * @return string
+// */
+//function db_search_mysql_to_regex($pattern, $case_sensitive = TRUE) {
+//  // Convert the pattern to a regular expression:
+//  $pattern = db_search_string_to_regex($pattern, $case_sensitive);
+//
+//  // Replace the '%' wildcard with '.*'
+//  $pattern = str_replace('\%', 'db_search_PERCENT', $pattern);
+//  $pattern = str_replace('%', '.*', $pattern);
+//  $pattern = str_replace('db_search_PERCENT', '%', $pattern);
+//
+//  // Replace the '_' wildcard with '.'
+//  $pattern = str_replace('\_', 'db_search_UNDERSCORE', $pattern);
+//  $pattern = str_replace('_', '.', $pattern);
+//  $pattern = str_replace('db_search_UNDERSCORE', '_', $pattern);
+//
+//  return $pattern;
+//}
+
+/**
+ * Construct the DB Find and Replace form.
+ *
+ * @return array
+ */
+function db_search_form() {
+  $module_path = drupal_get_path('module', 'db_search');
+  drupal_add_js("$module_path/db_search.js");
+  drupal_add_css("$module_path/db_search.css");
+  $form = array();
+  $form['instructions'] = array(
+    '#type'   => 'markup',
+    '#markup' => '<p>' . t("This is a development tool for searching text fields in the database.") . '</p>',
+  );
+  $form['search_text'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Find text'),
+    '#description'   => t('The text or html you want to find.'),
+    '#required'      => TRUE,
+    '#default_value' => $_SESSION['db_search']['form']['search_text'],
+  );
+//  $form['regex'] = array(
+//    '#type' => 'checkbox',
+//    '#title' => t('Regular expression'),
+//    '#description' => t('Check this box if the above value is a regular expression.'),
+//    '#default_value' => $_SESSION['db_search']['form']['regex'],
+//  );
+  $form['match_case'] = array(
+    '#type'          => 'checkbox',
+    '#title'         => t('Match case'),
+    '#description'   => t('Check this box if you want case-sensitive matching.'),
+    '#default_value' => $_SESSION['db_search']['form']['match_case'],
+  );
+//  $form['find_options'] = array(
+//    '#type' => 'checkboxes',
+//    '#title' => t('What do you want to search?'),
+//    '#description' => t('Tables that are never searched include access log, cache tables, search tables, sessions and watchdog.'),
+//    '#options' => array(
+//      db_search_EVERYTHING  => t('Everything'),
+//      db_search_NODES       => t('Nodes'),
+//      db_search_USERS       => t('Users'),
+//      db_search_TAXONOMY    => t('Taxonomy'),
+//      db_search_COMMENTS    => t('Comments'),
+//      db_search_FILES       => t('Files'),
+//      db_search_REVISIONS   => t('Revisions'),
+//      db_search_OTHER       => t('Other stuff'),
+//    ),
+//    '#default_value' => $_SESSION['db_search']['form']['find_options'],
+//  );
+  $form['submit'] = array(
+    '#type'  => 'submit',
+    '#value' => t('Go'),
+  );
+  return $form;
+}
+
+/**
+ * Submit handler for db_search_form.
+ * Do the actual search.
+ *
+ * @param array $form
+ * @param array $form_state
+ */
+function db_search_form_submit($form, &$form_state) {
+  //dpm($form_state['values']);
+
+  // Remember the form fields:
+  $_SESSION['db_search']['form'] = $form_state['values'];
+
+  // Get the database structure:
+  $db_structure = db_search_get_db_structure();
+
+  $matches = array();
+
+  // Set the operator and find string based on whether we're searching by regular expression or not.
+  // (Note - regex feature is not fully implemented yet - add in next version.)
+  if ($form_state['values']['regex']) {
+    $op = 'REGEXP';
+    $find = $form_state['values']['search_text'];
+  }
+  else {
+    $op = 'LIKE';
+    $find = '%' . $form_state['values']['search_text'] . '%';
+  }
+  $binary = $form_state['values']['match_case'] ? 'BINARY' : '';
+
+//  dpm("$op $binary $find");
+
+  // Search every text column:
+  foreach ($db_structure as $table => $columns) {
+
+    // Skip tables without text columns:
+    if (!is_array($columns['text_columns'])) {
+      continue;
+    }
+
+    // Primary key columns:
+    $primary_keys = is_array($columns['primary_keys']) ? implode(', ', $columns['primary_keys']) . ',' : '';
+
+    // Search text columns:
+    foreach ($columns['text_columns'] as $column) {
+      $rs = db_query("SELECT $primary_keys $column AS data FROM $table WHERE $column $op $binary :find", array(':find' => $find));
+      foreach ($rs as $rec) {
+        $match = array(
+          'table'  => $table,
+          'column' => $column,
+          'data'   => $rec->data,
+        );
+        if (is_array($columns['primary_keys'])) {
+          foreach ($columns['primary_keys'] as $primary_key) {
+            $match['primary_keys'][$primary_key] = $rec->{$primary_key};
+          }
+        }
+        $matches[] = $match;
+      }
+    }
+  }
+
+  usort($matches, 'db_search_sort_matches');
+//  dpm($matches);
+
+  // Remember the matches:
+  $_SESSION['db_search']['results'] = $matches;
+
+  // Go to the results page:
+  drupal_goto('admin/config/development/db-search/results');
+}
+
+/**
+ * Page for displaying search results.
+ *
+ * @return string
+ */
+function db_search_results() {
+
+  $html = '';
+  $results_found = isset($_SESSION['db_search']['results']) && !empty($_SESSION['db_search']['results']);
+
+  if (!$results_found) {
+    $html .= "<p>No results found.</p>";
+  }
+  else {
+    // Add the JS and CSS:
+    $module_path = drupal_get_path('module', 'db_search');
+    drupal_add_css("$module_path/db_search_results.css");
+    drupal_add_js("sites/all/libraries/star/strings.js");
+    drupal_add_js("sites/all/libraries/star/arrays.js");
+    drupal_add_js("sites/all/libraries/star/debug.js");
+    $settings = array(
+      'search_text'      => $_SESSION['db_search']['form']['search_text'],
+      'case_sensitive'   => $_SESSION['db_search']['form']['case_sensitive'],
+      'do_replace'       => $_SESSION['db_search']['form']['do_replace'],
+      'replace_text'     => $_SESSION['db_search']['form']['replace_text'],
+    );
+    drupal_add_js(array('db_search' => $settings), 'setting');
+
+    // Display number of results:
+    $n = count($_SESSION['db_search']['results']);
+    $html .= "<p>" . ($n == 1 ? '1 match' : "$n matches") . " found.</p>\n";
+
+    // Create table:
+    $table = array();
+    $rows = array();
+    $table['header'] = array(
+      t('Table'),
+      t('Primary key(s)'),
+      t('Column'),
+      t('Data')
+    );
+
+    foreach ($_SESSION['db_search']['results'] as $i => &$result) {
+
+      // Get primary keys:
+      $primary_keys = array();
+      if (is_array($result['primary_keys'])) {
+        foreach ($result['primary_keys'] as $key => $value) {
+          $primary_keys[] = "$key=$value";
+        }
+      }
+
+      // Convert data to display format:
+      $data_html = htmlspecialchars($result['data']);
+      $data_html = preg_replace('/' . $settings['search_text'] . '/' . ($settings['case_sensitive'] ? '' : 'i'), "<span class='db-search-find'>$0</span>", $data_html);
+
+      // Create a mini-form within each result table cell:
+      $miniform = "<div id='db-search-result-$i' class='db-search-result'>";
+      $miniform .= "<div id='db-search-html-$i' class='db-search-html'>$data_html</div>";
+      $miniform .= drupal_render($form["original-$i"]);
+      $miniform .= "</div>";
+
+      // Construct row:
+      $row = array(
+        $result['table'],
+        implode(', ', $primary_keys),
+        $result['column'],
+        $miniform,
+      );
+      // If the row has just been updated, highlight it:
+      if ($result['updated']) {
+        $row = array(
+          'data'  => $row,
+          'class' => array('db-search-updated'),
+        );
+        // We don't want to show it highlighted again:
+        unset($result['updated']);
+      }
+      // Add row to the table:
+      $rows[] = $row;
+    }
+    $table['rows'] = $rows;
+    $table['attributes'] = array('id' => 'db-search-results');
+    $html .= theme('table', $table);
+  }
+
+  // Buttons:
+  if ($results_found) {
+    $html .= drupal_render($form['submit']);
+  }
+  $html .= drupal_render($form['cancel']);
+
+  // Render the rest of the form and return.
+  $html .= drupal_render_children($form);
+  return $html;
+}
+
+/**
+ * Scan the database and find the text columns.
+ * Stores this info in cache to save time.
+ *
+ * @return array
+ */
+function db_search_get_db_structure() {
+//  // Check if we have this info in the cache:
+//  $text_columns = cache_get('db_search_db_text_columns');
+//  if ($text_columns) {
+//    return $text_columns;
+//  }
+
+  $columns = array();
+
+  // Get the tables to skip:
+  require_once drupal_get_path('module', 'backup_migrate') . "/includes/destinations.db.inc";
+  $bm = new backup_migrate_destination_db();
+  $backup_settings = $bm->backup_settings_default();
+  $skip_tables = $backup_settings['nodata_tables'];
+
+  // Get all the tables in the database:
+  $rs = db_query("SHOW FULL TABLES WHERE Table_type = 'BASE TABLE'");
+  foreach ($rs as $rec) {
+    $rec = array_values((array) $rec);
+    $table = $rec[0];
+    if (in_array($table, $skip_tables)) {
+      continue;
+    }
+    $columns[$table] = array();
+
+    // Get the text columns and primary keys from this table:
+    $rs2 = db_query("DESCRIBE $table");
+    foreach ($rs2 as $column) {
+      // Collect text columns:
+      if (preg_match('/char|text|blob/', $column->type)) {
+        $columns[$table]['text_columns'][] = $column->field;
+      }
+      // Collect primary keys:
+      if ($column->key == 'PRI') {
+        $columns[$table]['primary_keys'][] = $column->field;
+      }
+    }
+  }
+
+//  dpm($columns);
+
+//  // Store this info in the cache:
+//  cache_set('db_search_db_text_columns', $columns, 'cache', CACHE_TEMPORARY);
+
+  return $columns;
+}
+
+/**
+ * Callback for usort, for ordering matches.
+ *
+ * @param array $a
+ * @param array $b
+ * @return int
+ */
+function db_search_sort_matches($a, $b) {
+  // Compare table names:
+  if ($a['table'] < $b['table']) {
+    return -1;
+  }
+  elseif ($a['table'] > $b['table']) {
+    return 1;
+  }
+
+  // Compare primary keys:
+  $primary_keys = array_keys($a['primary_keys']);
+  foreach ($primary_keys as $primary_key) {
+    if ($a['primary_keys'][$primary_key] < $b['primary_keys'][$primary_key]) {
+      return -1;
+    }
+    elseif ($a['primary_keys'][$primary_key] > $b['primary_keys'][$primary_key]) {
+      return 1;
+    }
+  }
+
+  // Compare column names:
+  if ($a['column'] < $b['column']) {
+    return -1;
+  }
+  elseif ($a['column'] > $b['column']) {
+    return 1;
+  }
+
+  return 0;
+}
+
+/*
+ * 
+  // Node tables:
+  if ($form_state['values']['find_options'][db_search_NODES]) {
+    // Search node table:
+    $tables[] = 'node';
+    // Include the corresponding revision table if requested:
+    if ($form_state['values']['find_options'][db_search_NODES]) {
+      $tables[] = 'node_revisions';
+    }
+    // Get all the fields associated with nodes:
+    $sql = "SELECT DISTINCT field_name FROM {field_config_instance} WHERE entity_type = 'node' ORDER BY field_name";
+    $rs = db_query($sql);
+    foreach ($rs as $field) {
+      $tables[] = 'field_data_' . $field->field_name;
+      // Include the corresponding revision table if requested:
+      if ($form_state['values']['find_options'][db_search_NODES]) {
+        $tables[] = 'field_revision_' . $field->field_name;
+      }
+    }
+  }
+  
+  // User tables:
+  if ($form_state['values']['find_options'][db_search_USERS]) {
+    // Search user table:
+    $tables[] = 'users';
+    // Get all the fields associated with users:
+    $sql = "SELECT DISTINCT field_name FROM {field_config_instance} WHERE entity_type = 'user' ORDER BY field_name";
+    $rs = db_query($sql);
+    foreach ($rs as $field) {
+      $tables[] = 'field_data_' . $field->field_name;
+      // Include the corresponding revision table if requested:
+      if ($form_state['values']['find_options'][db_search_NODES]) {
+        $tables[] = 'field_revision_' . $field->field_name;
+      }
+    }
+  }
+  
+    
+ */

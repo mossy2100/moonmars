@@ -1,10 +1,10 @@
 <?php
 
 
-function moonmars_stream_menu() {
+function moonmars_channel_menu() {
 //  $items['stream'] = array(
 //    'title' => 'moonmars.com Activity Stream',
-//    'page callback' => 'moonmars_stream_site',
+//    'page callback' => 'moonmars_channel_site',
 //    'access callback' => TRUE,
 //  );
 }
@@ -12,7 +12,7 @@ function moonmars_stream_menu() {
 /**
  * Render the site stream.
  */
-function moonmars_stream_site_stream() {
+function moonmars_channel_site_stream() {
   // Get the most recent 100 comments.
 
 //  $q = db_select('')

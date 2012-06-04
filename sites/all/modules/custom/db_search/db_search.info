@@ -1,0 +1,5 @@
+name = Database Search
+description = Search database text fields.
+core = 7.x
+package = Development
+dependencies[] = backup_migrate

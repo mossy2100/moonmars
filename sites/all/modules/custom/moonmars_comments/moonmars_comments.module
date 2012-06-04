@@ -4,8 +4,8 @@
  * Implementation of hook_form_alter().
  */
 function moonmars_comments_form_alter(&$form, &$form_state, $form_id) {
-dbg($form_id);
-  if ($form_id == 'comment_form') {
+//dbg($form_id);
+  if ($form_id == 'comment_node_post_form') {
 
   }
 }

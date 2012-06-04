@@ -1,0 +1,21 @@
+
+.db-search-html, .db-search-result textarea.form-textarea {
+  font-family: "Lucida Grande", "Lucida Sans Unicode", sans-serif;
+  font-size: 1em;
+  line-height: 1.5em;
+  padding: 3px;
+  margin: 0;
+  border: solid 1px #BEBFB9;
+  box-sizing: content-box;
+  -moz-box-sizing: content-box;
+  -webkit-box-sizing: content-box;
+  display: block;
+  white-space: pre-wrap;
+  max-height: 250px;
+  overflow: auto;
+  position: relative;
+}
+
+.db-search-find {
+  background-color: yellow;
+}
