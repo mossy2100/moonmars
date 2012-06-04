@@ -4,7 +4,7 @@
 drupal_add_js(drupal_get_path('theme', 'astro') . '/js/comments.js');
 
 // Theme the user picture:
-$vars['picture'] = moonmars_users_avatar_tooltip($vars['elements']['#comment']->uid);
+$vars['picture'] = moonmars_members_avatar_tooltip($vars['elements']['#comment']->uid);
 
 // Format the username as a link:
 $username = $vars['elements']['#comment']->name;

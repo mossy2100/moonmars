@@ -8,7 +8,7 @@
  * @return int
  *   The number of users in the group, or FALSE if $gid is invalid.
  */
-function moonmars_groups_user_count($gid) {
+function moonmars_groups_member_count($gid) {
   return FALSE;
 }
 

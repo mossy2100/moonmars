@@ -3,7 +3,7 @@
 if ($vars['node']->type == 'post') {
 
   // Theme the user picture:
-  $vars['picture'] = moonmars_users_avatar_tooltip($vars['uid']);
+  $vars['picture'] = moonmars_members_avatar_tooltip($vars['uid']);
 
   // Format the post datetime:
   $vars['created_datetime'] = astro_created_datetime($vars['created']);

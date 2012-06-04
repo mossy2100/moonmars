@@ -1,0 +1,4 @@
+name = moonmars.com Members
+description = Support for members on moonmars.com.
+core = 7.x
+package = moonmars.com

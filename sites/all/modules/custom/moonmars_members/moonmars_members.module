@@ -6,7 +6,7 @@
  * @param int|stdClass $user
  * @return string
  */
-function moonmars_users_full_name($user) {
+function moonmars_members_full_name($user) {
   if (!is_object($user)) {
     $user = user_load($user);
   }
@@ -22,12 +22,12 @@ function moonmars_users_full_name($user) {
  * @param int|stdClass $user
  * @return string
  */
-function moonmars_users_name_plus_full_name($user) {
+function moonmars_members_name_plus_full_name($user) {
   if (!is_object($user)) {
     $user = user_load($user);
   }
 
-  $full_name = moonmars_users_full_name($user->uid);
+  $full_name = moonmars_members_full_name($user->uid);
   return $user->name . ($full_name ? " ($full_name)" : '');
 }
 
@@ -37,7 +37,7 @@ function moonmars_users_name_plus_full_name($user) {
  * @param int|stdClass $user
  * @return string
  */
-function moonmars_users_location($user) {
+function moonmars_members_location($user) {
   if (!is_object($user)) {
     $user = user_load($user);
   }
@@ -61,7 +61,7 @@ function moonmars_users_location($user) {
  * @param int|stdClass $user
  * @return int|null
  */
-function moonmars_users_age($user) {
+function moonmars_members_age($user) {
   if (!is_object($user)) {
     $user = user_load($user);
   }
@@ -85,7 +85,7 @@ function moonmars_users_age($user) {
  * @param int|stdClass $user
  * @return string
  */
-function moonmars_users_gender($user) {
+function moonmars_members_gender($user) {
   if (!is_object($user)) {
     $user = user_load($user);
   }
@@ -99,14 +99,14 @@ function moonmars_users_gender($user) {
  * @param int|stdClass $user
  * @return string
  */
-function moonmars_users_tooltip($user) {
+function moonmars_members_tooltip($user) {
   if (!is_object($user)) {
     $user = user_load($user);
   }
 
   // HTML for the tooltip:
   $user_name = "<strong>$user->name</strong>";
-  $full_name = moonmars_users_full_name($user->uid);
+  $full_name = moonmars_members_full_name($user->uid);
 
   // Cater for names that are too long - we don't want the tooltip too big.
   if (strlen($full_name) > 50) {
@@ -114,13 +114,13 @@ function moonmars_users_tooltip($user) {
   }
 
   $age_gender = implode('/', array_filter(array(
-    moonmars_users_gender($user->uid),
-    moonmars_users_age($user->uid),
+    moonmars_members_gender($user->uid),
+    moonmars_members_age($user->uid),
   )));
-  $location = moonmars_users_location($user->uid);
+  $location = moonmars_members_location($user->uid);
   return
     "<div class='user-tooltip' title='Visit $user->name&apos;s profile'>" .
-      moonmars_users_avatar($user) .
+      moonmars_members_avatar($user) .
       "<div class='user-tooltip-text'>" .
         implode('<br>', array_filter(array(
           $user_name,
@@ -138,7 +138,7 @@ function moonmars_users_tooltip($user) {
  * @param int|stdClass $user
  * @return string
  */
-function moonmars_users_avatar($user) {
+function moonmars_members_avatar($user) {
   if (!is_object($user)) {
     $user = user_load($user);
   }
@@ -170,12 +170,12 @@ function moonmars_users_avatar($user) {
  * @param int|stdClass $user
  * @return string
  */
-function moonmars_users_avatar_link($user) {
+function moonmars_members_avatar_link($user) {
   if (!is_object($user)) {
     $user = user_load($user);
   }
 
-  return "<a class='avatar-link' href='/users/$user->name'>" . moonmars_users_avatar($user->uid) . "</a>";
+  return "<a class='avatar-link' href='/users/$user->name'>" . moonmars_members_avatar($user->uid) . "</a>";
 }
 
 /**
@@ -184,14 +184,14 @@ function moonmars_users_avatar_link($user) {
  * @param int|stdClass $user
  * @return string
  */
-function moonmars_users_avatar_tooltip($user) {
+function moonmars_members_avatar_tooltip($user) {
   if (!is_object($user)) {
     $user = user_load($user);
   }
 
   // HTML for the tooltip:
-  $avatar = moonmars_users_avatar_link($user->uid);
-  $tooltip = moonmars_users_tooltip($user->uid);
+  $avatar = moonmars_members_avatar_link($user->uid);
+  $tooltip = moonmars_members_tooltip($user->uid);
 
   return "
     <div class='avatar-tooltip'>
