@@ -43,9 +43,10 @@
         Score: <span class='post-score'><?php echo $score; ?></span>
       </div>
 
-      <?php if (!empty($content['links'])): ?>
-        <nav class="links post-links clearfix"><?php print render($content['links']); ?></nav>
-      <?php endif; ?>
+<!--      --><?php //if (!empty($content['links'])): ?>
+<!--        <nav class="links post-links clearfix">--><?php //print render($content['links']); ?><!--</nav>-->
+<!--      --><?php //endif; ?>
+
     </div> <!-- /post-controls -->
   </div>
 

@@ -10,3 +10,14 @@ function moonmars_items_auto_nodetitle(stdClass $node) {
   $text = $node->field_item_text[LANGUAGE_NONE][0]['value'];
   return (strlen($text) <= 100) ? $text : (substr($text, 0, 97) . '...');
 }
+
+/**
+ * Check if a user is directly or indirectly subscribed to an item.
+ *
+ * @param $nid
+ * @param $uid
+ */
+//function moonmars_items_member_subscribed($nid, $uid) {
+//
+//}
+

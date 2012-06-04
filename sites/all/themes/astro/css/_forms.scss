@@ -39,16 +39,21 @@ form {
     color: #777;
   }
 
-  input.form-text,
-  select {
-    height: 22px;
-    line-height: 16px;
-    padding: 2px 8px;
-    border: solid 1px $blue3;
-    @include border-radius(px);
-  }
+	input.form-text,
+	select,
+	textarea {
+		line-height: 16px;
+		padding: 2px 8px;
+		border: solid 1px $blue3;
+		@include border-radius(3px);
+	}
 
-  .field-name-field-event-price {
+	input.form-text,
+	select {
+		height: 22px;
+	}
+
+	.field-name-field-event-price {
     float: left;
   }
 

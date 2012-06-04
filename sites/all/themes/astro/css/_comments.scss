@@ -4,7 +4,7 @@ $postContentWrapperHeight = $postLineHeight * 3;
 
 
 #comments, .indented {
-	margin: 0 0 0 10px;
+	margin: 0;
 }
 
 .view-channel .article-body,
@@ -13,7 +13,7 @@ $postContentWrapperHeight = $postLineHeight * 3;
 	padding: 5px;
 	margin: 1px 0;
 	@include border-radius(3px);
-	background-color: #f7f7f7;
+	background-color: #eef;
 	font-size: $postFontSize;
 	line-height: $postLineHeight;
 
@@ -42,7 +42,7 @@ $postContentWrapperHeight = $postLineHeight * 3;
 	.score-more-wrapper,
 	.post-controls {
 		height: 18px;
-		border-top: solid 1px #ddd;
+		border-top: solid 1px #ccc;
 		margin-left: 45px;
 		margin-top: 2px;
 	}
@@ -56,7 +56,7 @@ $postContentWrapperHeight = $postLineHeight * 3;
 			li {
 				height: $postLineHeight;
 				padding: 0 5px;
-				border-right: solid 1px #ddd;
+				border-right: solid 1px #ccc;
 				margin: 0;
 
 				a {
@@ -69,7 +69,7 @@ $postContentWrapperHeight = $postLineHeight * 3;
 	.score-more-wrapper {
 		.more-link-wrapper {
 			float: right;
-			border-left: solid 1px #ddd;
+			border-left: solid 1px #ccc;
 			padding-left: 5px;
 			margin-left: 5px;
 			line-height: $postLineHeight;
@@ -92,9 +92,34 @@ $postContentWrapperHeight = $postLineHeight * 3;
 }
 
 .view-channel .article-body {
-	background-color: #eee;
+	background-color: white;
 
-	.field-name-field-post-text {
-		font-size: 12px;
+	.field-name-field-item-text {
+		font-size: 13px;
+	}
+}
+
+#comments article.comment-form {
+
+	.post-content-wrapper {
+		height: auto;
+	}
+
+	form.new-comment-form {
+		.new-comment-textarea {
+			font-size: $postFontSize;
+			padding: 2px;
+			height: 2 * $postLineHeight;
+			resize: none;
+		}
+	}
+
+	.new-comment-controls {
+		margin-top: 5px;
+		text-align: right;
+
+		input {
+			padding: 1px 4px;
+		}
 	}
 }
