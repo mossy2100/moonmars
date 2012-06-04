@@ -1,6 +1,6 @@
 <?php
 
-if ($vars['node']->type == 'post') {
+if ($vars['node']->type == 'item') {
 
   // Theme the user picture:
   $vars['picture'] = moonmars_members_avatar_tooltip($vars['uid']);

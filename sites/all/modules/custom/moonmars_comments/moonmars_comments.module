@@ -5,7 +5,11 @@
  */
 function moonmars_comments_form_alter(&$form, &$form_state, $form_id) {
 //dbg($form_id);
-  if ($form_id == 'comment_node_post_form') {
-
+  if ($form_id == 'comment_node_item_form') {
+//    unset($form['author']);
+//    unset($form['field_score']);
+//    $form['comment_body'][LANGUAGE_NONE][0]['value']['#resizable'] = FALSE;
+//    dbg($form['comment_body']);
+//    dbg($form['comment_body']);
   }
 }

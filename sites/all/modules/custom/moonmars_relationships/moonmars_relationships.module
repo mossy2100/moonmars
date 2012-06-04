@@ -1,0 +1,19 @@
+<?php
+
+/**
+ * Get a member's followers.
+ *
+ * @param int|stdClass $user
+ */
+function moonmars_relationships_get_followers($user) {
+
+}
+
+/**
+ * Get a member's followees (i.e. other members that the member follows).
+ *
+ * @param int|stdClass $user
+ */
+function moonmars_relationships_get_followees($user) {
+
+}

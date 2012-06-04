@@ -198,7 +198,7 @@ function db_search_form_submit($form, &$form_state) {
           'column' => $column,
           'data'   => $rec->data,
         );
-        if (is_array($columns['primary_keys'])) {
+        if (isset($columns['primary_keys']) && is_array($columns['primary_keys'])) {
           foreach ($columns['primary_keys'] as $primary_key) {
             $match['primary_keys'][$primary_key] = $rec->{$primary_key};
           }
@@ -264,7 +264,7 @@ function db_search_results() {
 
       // Get primary keys:
       $primary_keys = array();
-      if (is_array($result['primary_keys'])) {
+      if (isset($result['primary_keys']) && is_array($result['primary_keys'])) {
         foreach ($result['primary_keys'] as $key => $value) {
           $primary_keys[] = "$key=$value";
         }
@@ -389,13 +389,15 @@ function db_search_sort_matches($a, $b) {
   }
 
   // Compare primary keys:
-  $primary_keys = array_keys($a['primary_keys']);
-  foreach ($primary_keys as $primary_key) {
-    if ($a['primary_keys'][$primary_key] < $b['primary_keys'][$primary_key]) {
-      return -1;
-    }
-    elseif ($a['primary_keys'][$primary_key] > $b['primary_keys'][$primary_key]) {
-      return 1;
+  if (isset($a['primary_keys']) && isset($b['primary_keys'])) {
+    $primary_keys = array_keys($a['primary_keys']);
+    foreach ($primary_keys as $primary_key) {
+      if ($a['primary_keys'][$primary_key] < $b['primary_keys'][$primary_key]) {
+        return -1;
+      }
+      elseif ($a['primary_keys'][$primary_key] > $b['primary_keys'][$primary_key]) {
+        return 1;
+      }
     }
   }
 
