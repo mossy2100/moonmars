@@ -1,0 +1,34 @@
+
+///////////////////////////////////////////////////////////////////////////////
+// Header
+
+.region-branding {
+	height: 64px;
+
+	.branding-data {
+		float: right;
+	}
+
+	.block-2 {
+		float: left;
+	}
+}
+
+#page > header {
+  background-image: url('../images/stars-coloured-1000x675.jpg');
+  padding: 10px 0 0;
+}
+
+.logo-img {
+  float: none;
+  text-align: right;
+  margin: 0;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Main
+
+#section-content {
+  padding-top: 10px;
+}

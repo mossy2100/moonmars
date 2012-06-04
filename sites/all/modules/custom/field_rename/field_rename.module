@@ -1,0 +1,78 @@
+<?php
+
+/**
+ * Implements hook_form_alter().
+ *
+ * @param array $form
+ * @param array $form_state
+ * @param $form_id
+ */
+function field_rename_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'field_ui_field_edit_form') {
+
+    // Add a text field for the field name:
+    $form['field']['new_field_name']['#title'] = t('Field name');
+    $form['field']['new_field_name']['#type'] = 'textfield';
+    $form['field']['new_field_name']['#default_value'] = $form['#field']['field_name'];
+    $form['field']['new_field_name']['#required'] = TRUE;
+    $form['field']['new_field_name']['#weight'] = -1000;
+
+    // Custom submit handler:
+    $form['#submit'][] = 'field_rename_form_submit';
+  }
+}
+
+/**
+ * Submit handler for field edit form.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function field_rename_form_submit($form, &$form_state) {
+
+  $old_field_name = $form['#field']['field_name'];
+  $new_field_name = $form_state['values']['field']['new_field_name'];
+
+  // If the name has not changed, do nothing.
+  if ($old_field_name == $new_field_name) {
+    return;
+  }
+
+  // Check if there's already a field with this name:
+  $rs = db_query("SELECT * FROM {field_config} WHERE field_name = :field_name", array(':field_name' => $new_field_name));
+  $rec = $rs->fetchObject();
+  if ($rec) {
+    form_set_error('new_field_name', t("There is already a field named %field_name.", array('%field_name' => $new_field_name)));
+    return;
+  }
+
+  // Update the field_config table:
+  db_update('field_config')
+    ->fields(array('field_name' => $new_field_name))
+    ->condition('field_name', $old_field_name, '=')
+    ->execute();
+
+  // Update the field_config_instance table:
+  db_update('field_config_instance')
+    ->fields(array('field_name' => $new_field_name))
+    ->condition('field_name', $old_field_name, '=')
+    ->execute();
+
+  foreach (array('data', 'revision') as $key) {
+    // Update columns in the relevant field_data and field_revision tables:
+    $old_table_name = "field_{$key}_{$old_field_name}";
+    $new_table_name = "field_{$key}_{$new_field_name}";
+
+    $rs = db_query("DESCRIBE $old_table_name");
+    foreach ($rs as $rec) {
+      if (substr($rec->Field, 0, strlen($old_field_name)) == $old_field_name) {
+        $new_col_name = $new_field_name . substr($rec->Field, strlen($old_field_name));
+        $sql = "ALTER TABLE $old_table_name CHANGE $rec->Field $new_col_name $rec->Type";
+        db_query($sql);
+      }
+    }
+
+    // Rename the relevant field_data and field_revision tables:
+    db_rename_table($old_table_name, $new_table_name);
+  }
+}

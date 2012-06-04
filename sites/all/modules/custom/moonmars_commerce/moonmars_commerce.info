@@ -1,0 +1,5 @@
+name = moonmars.com Commerce
+description = Support for commerce on moonmars.com.
+core = 7.x
+package = moonmars.com
+dependencies[] = currency_api

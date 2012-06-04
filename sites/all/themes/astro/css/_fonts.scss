@@ -1,0 +1,30 @@
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Font sizes
+
+$fontSizeNormal = 12px;
+$fontSizeH1 = 25px;
+$fontSizeH2 = 20px;
+$fontSizeH3 = 15px;
+
+body {
+	font: $fontSizeNormal "lucida grande", tahoma, verdana, arial, sans-serif;
+}
+
+h1 {
+  font-size: $fontSizeH1;
+}
+
+h2 {
+  font-size: $fontSizeH2;
+}
+
+h3 {
+  font-size: $fontSizeH3;
+}
+
+h1, h2, h3 {
+	font-family: "lucida grande", tahoma, verdana, arial, sans-serif;
+	letter-spacing: 0;
+}

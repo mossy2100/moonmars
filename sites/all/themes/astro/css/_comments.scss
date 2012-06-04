@@ -1,0 +1,88 @@
+$commentFontSize = 11px;
+$commentLineHeight = $commentFontSize * 1.5;
+$commentContentWrapperHeight = $commentLineHeight * 3;
+
+#comments {
+
+	article {
+		padding: 5px;
+		margin: 1px 0;
+		@include border-radius(3px);
+		background-color: #f7f7f7;
+		font-size: $commentFontSize;
+		line-height: $commentLineHeight;
+
+		.comment-content-wrapper {
+			height: $commentContentWrapperHeight;
+			overflow: hidden;
+			margin-left: 45px;
+
+			.comment-content {
+				a.username {
+					font-weight: bold;
+				}
+
+				time {
+					float: right;
+					color: #999;
+				}
+			}
+		}
+
+	}
+
+	.user-picture {
+		float: left;
+	}
+
+	.score-more-wrapper,
+	.comment-controls {
+		height: 18px;
+		border-top: solid 1px #ddd;
+		margin-left: 45px;
+		margin-top: 2px;
+	}
+
+	.comment-controls {
+		nav.links {
+			display: block;
+			float: right;
+			height: $commentLineHeight;
+
+			li {
+				height: $commentLineHeight;
+				padding: 0 5px;
+				border-right: solid 1px #ddd;
+				margin: 0;
+
+				a {
+					line-height: $commentLineHeight;
+				}
+			}
+		}
+	}
+
+	.score-more-wrapper {
+		.more-link-wrapper {
+			float: right;
+			border-left: solid 1px #ddd;
+			padding-left: 5px;
+			margin-left: 5px;
+			line-height: $commentLineHeight;
+
+			a.more-link {
+				span.expand-icon {
+					font-size: 7px;
+				}
+			}
+		}
+	}
+
+	.comment-score-wrapper {
+		display: block;
+		float: right;
+		margin: 0 0 0 5px;
+		line-height: $commentLineHeight;
+	}
+
+}

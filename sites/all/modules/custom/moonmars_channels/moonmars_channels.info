@@ -1,0 +1,4 @@
+name = moonmars.com Channels
+description = Support for channels on moonmars.com.
+core = 7.x
+package = moonmars.com

@@ -1,0 +1,17 @@
+<?php
+
+/**
+ * Get the number of users in a group.
+ *
+ * @param int $gid
+ *   The group nid.
+ * @return int
+ *   The number of users in the group, or FALSE if $gid is invalid.
+ */
+function moonmars_group_user_count($gid) {
+  return FALSE;
+}
+
+function mm_groups_user_count($gid) {
+  return 1;
+}

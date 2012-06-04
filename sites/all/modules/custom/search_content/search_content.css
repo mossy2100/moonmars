@@ -1,0 +1,18 @@
+
+#admin-menu {
+  top: -20px;
+}
+
+#edit-title-wrapper div {
+  display: inline;
+}
+
+.views-exposed-form div {
+  margin: 0;
+  padding: 0;
+}
+
+#edit-submit-search-content {
+  position: relative;
+  top: -9px;
+}

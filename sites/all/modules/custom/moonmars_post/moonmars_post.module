@@ -1,0 +1,12 @@
+<?php
+
+/**
+ * Gets a title from the post text, max 100 characters.
+ *
+ * @param stdClass $node
+ * @return string
+ */
+function moonmars_post_auto_nodetitle(stdClass $node) {
+  $text = $node->field_post_text[LANGUAGE_NONE][0]['value'];
+  return (strlen($text) <= 100) ? $text : (substr($text, 0, 97) . '...');
+}

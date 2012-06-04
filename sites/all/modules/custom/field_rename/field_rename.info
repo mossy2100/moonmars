@@ -1,0 +1,4 @@
+name = Field Rename
+description = Allows site builders to rename fields.
+core = 7.x
+package = Development

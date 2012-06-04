@@ -1,0 +1,4 @@
+name = Virtual Reality Demo
+description = Provides a demo of the virtual reality feature - testing WebGL and &lt;canvas&gt;.
+core = 7.x
+package = Astro Multimedia

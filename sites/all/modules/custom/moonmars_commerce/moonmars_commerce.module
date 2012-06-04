@@ -1,0 +1,15 @@
+<?php
+
+/**
+ * Gets all currencies as an array of options for a select list.
+ *
+ * @return array
+ */
+function moonmars_commerce_currency_options() {
+  $currencies = currency_api_get_currencies();
+  $options = array();
+  foreach ($currencies as $code => $currency_info) {
+    $options[$code] = $currency_info['name'];
+  }
+  return $options;
+}

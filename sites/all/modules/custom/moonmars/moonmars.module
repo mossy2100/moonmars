@@ -1,0 +1,19 @@
+<?php
+
+/**
+ * Implements hook_init().
+ */
+function moonmars_init() {
+  require_once DRUPAL_ROOT . '/sites/all/libraries/star/strings.php';
+  require_once DRUPAL_ROOT . '/sites/all/libraries/star/drupal.php';
+  require_once DRUPAL_ROOT . '/sites/all/classes/XDateTime.class.php';
+  dbg_on();
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function moonmars_form_alter(&$form, &$form_state, $form_id) {
+  // Load the selectbox
+  drupal_add_js('/sites/all/libraries/jquery/selectBox/jquery.selectBox.js');
+}

@@ -1,0 +1,29 @@
+/* This file will hold styles for the mobile version of your website (mobile first). */
+/* This also can include ANY global CSS that applies site-wide. Unless overwritten by a more specific style rule,
+CSS declarations in global.css will apply site-wide. */
+
+@import "compass/css3";
+
+// Compass's box-shadow seems to be broken, so let's make one:
+@mixin box-shadow2($hor_offset, $vert_offset, $blur_dist, $spread, $color) {
+	-moz-box-shadow: $hor_offset $vert_offset $blur_dist $spread $color;
+	-webkit-box-shadow: $hor_offset $vert_offset $blur_dist $spread $color;
+	box-shadow: $hor_offset $vert_offset $blur_dist $spread $color;
+}
+
+@import "colours";
+@import "fonts";
+@import "forms";
+@import "buttons";
+@import "selectBox";
+@import "pages";
+@import "links";
+@import "nav";
+@import "blocks";
+@import "views";
+@import "events";
+@import "forums";
+@import "channels";
+@import "comments";
+@import "rating";
+@import "tooltip";

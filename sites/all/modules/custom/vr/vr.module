@@ -1,0 +1,55 @@
+<?php
+
+/**
+ * Implements hook_init().
+ */
+function vr_init() {
+  dbg_on();
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function vr_menu() {
+  $items['vr/demo'] = array(
+    'title' => 'VR Demo',
+    'access arguments' => array('view pages'),
+    'page callback' => 'vr_demo',
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function vr_theme() {
+  return array(
+    'vr_canvas' => array(
+      'variables' => array(),
+      'template' => 'vr_canvas',
+    ),
+  );
+}
+
+/**
+ * Callback to display page with a 3D canvas, which provides a windo into the
+ * virtual world.
+ * 
+ * @return string
+ */
+function vr_demo() {
+  // Get paths to include folders:
+  $lib_path = "sites/all/libraries";
+  $module_path = drupal_get_path('module', 'vr');
+  
+  // Add some CSS:
+  drupal_add_css("$module_path/vr.css");
+  
+  // Add some JS:
+  drupal_add_js("$lib_path/sylvester/sylvester.src.js");
+  drupal_add_js("$lib_path/gl/glUtils.js");
+  drupal_add_js("$module_path/vr.js");
+  
+  // Render the canvas:
+  return theme('vr_canvas');
+}

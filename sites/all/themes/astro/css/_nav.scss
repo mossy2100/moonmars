@@ -1,0 +1,70 @@
+
+@import "compass/css3";
+@import "vars";
+
+nav.navigation {
+  margin: 10px 0 5px;
+
+  h2 {
+    margin-bottom: 0;
+  }
+
+  ul {
+    margin-bottom: 0;
+    display: block;
+
+    li {
+      padding: 0;
+      margin-right: 5px;
+
+      a {
+        padding: 3px 10px;
+        @include border-radius(3px);
+        background-color: $blue1;
+        color: white;
+        font-weight: bold;
+        text-decoration: none;
+
+        &:hover {
+          background-color: $red1;
+        }
+      }
+    }
+  }
+
+  ul#secondary-menu {
+    float: right;
+  }
+
+}
+
+.block-menu {
+  ul.menu {
+    list-style-type: none;
+    border-bottom: solid 1px #ddd;
+
+
+    li {
+      list-style-type: none;
+      list-style-image: none;
+      margin: 0;
+      padding: 0;
+
+      a {
+        background-color: #eee;
+        @include border-radius(0);
+        width: 162px;
+        display: block;
+        text-align: center;
+        border-top: solid 1px #ddd;
+        color: $blue1;
+      }
+
+      &:hover {
+        background-color: $red1;
+
+      }
+    }
+
+  }
+}

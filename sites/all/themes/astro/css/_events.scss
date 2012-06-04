@@ -1,0 +1,124 @@
+@import "vars";
+
+#edit-field-event-venue-und {
+	width: 580px;
+}
+
+.form-item-field-event-price-und-0-value,
+.form-item-field-currency-und {
+	margin: 0 1em 1em 0;
+}
+
+.view-calendar {
+	.date-nav-wrapper {
+		ul.pager {
+			background: none;
+			border: none;
+			margin-bottom: 5px;
+
+			li {
+				border: none;
+				position: static;
+				background: none;
+				color: white;
+				height: 40px;
+				line-height: 40px;
+				vertical-align: middle;
+				padding: 0;
+				margin-top: 10px;
+				border: none;
+
+				&.date-prev {
+					float: left;
+				}
+
+				&.date-next {
+					float: right;
+				}
+
+				a {
+					margin: 0;
+				}
+			}
+		}
+
+		.date-nav {
+			padding-bottom: 0;
+
+			#calendar-selectors {
+				text-align: center;
+				margin: 10px 160px 15px;
+
+				a.selectBox span,
+				select {
+					font-size: $fontSizeH2;
+				}
+			}
+
+			.calendar-year {
+				width: 100px;
+				margin-right: 5px;
+			}
+
+			.calendar-month {
+				width: 160px;
+				margin-right: 5px;
+			}
+
+			.calendar-day {
+				width: 70px;
+			}
+		}
+	}
+
+	& > .view-header > .date-nav-wrapper > .date-nav > .date-heading {
+		display: none;
+	}
+
+	.view-filters {
+		border-top: solid 1px #eee;
+		border-bottom: solid 1px #eee;
+		padding: 10px 0 15px;
+
+		h3 {
+			margin: 0;
+		}
+
+		.views-exposed-widgets {
+			margin: 0;
+		}
+	}
+}
+
+.calendar-calendar {
+	.month-view .full td.multi-day div.monthview,
+	.week-view .full td.multi-day div.weekview,
+	.day-view .full td.multi-day div.dayview,
+	.month-view .full td.multi-day .inner .monthview .continues,
+	.month-view .full td.multi-day .inner .monthview .cutoff,
+	.week-view .full td.multi-day .inner .weekview .continues,
+	.week-view .full td.multi-day .inner .weekview .cutoff {
+		background-color: $red1;
+
+		a {
+			color: white;
+		}
+	}
+	td.empty {
+		color: #aaa;
+	}
+
+	.month-view .full td .inner div.day a {
+		background-color: $blue1;
+		color: white;
+		@include border-radius(3px);
+		padding: 1px 3px;
+
+		&:hover {
+			background-color: $red1;
+		}
+	}
+
+}
+
+

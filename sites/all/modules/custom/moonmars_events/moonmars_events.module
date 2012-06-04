@@ -1,0 +1,101 @@
+<?php
+
+/**
+ * Implements hook_form_alter().
+ */
+function moonmars_events_form_alter(&$form, &$form_state, $form_id) {
+  switch ($form_id) {
+    case 'event_node_form':
+      // Add some jQuery:
+      drupal_add_js(drupal_get_path('module', 'moonmars') . '/js/moonmars_geo_detect.js');
+      drupal_add_js(drupal_get_path('module', 'moonmars_events') . '/js/moonmars_event_form.js');
+
+      // Set the currency options:
+      $form['field_currency']['und']['#options'] = moonmars_commerce_currency_options();
+      break;
+
+  }
+}
+
+/**
+ * Implements hook_views_pre_execute().
+ */
+function moonmars_events_views_pre_execute($view) {
+  switch ($view->name) {
+    case 'calendar':
+
+      // Get the view arguments:
+      $arg1 = alias_arg(1);
+      $template = (isset($arg1) && in_array($arg1, array(
+        'day',
+        'week',
+        'year'
+      ))) ? $arg1 : 'month';
+
+      $min_year = 2012;
+      $max_year = 2050;
+
+      switch ($template) {
+        case 'year':
+          $date = new XDateTime($view->args[0] . '-01-01');
+          $date->clampYear($min_year, $max_year);
+          // Create labels for the previous and next buttons:
+          $prev_date = $date->subYears(1);
+          $prev_label = '<< ' . $prev_date->format('Y');
+          $next_date = $date->addYears(1);
+          $next_label = $next_date->format('Y') . ' >>';
+          break;
+
+        case 'month':
+          $date = new XDateTime($view->args[0] . '-01');
+          $date->clampYear($min_year, $max_year);
+          // Create labels for the previous and next buttons:
+          $prev_date = $date->subMonths(1);
+          $prev_label = '<< ' . $prev_date->format('Y F');
+          $next_date = $date->addMonths(1);
+          $next_label = $next_date->format('Y F') . ' >>';
+          break;
+
+//        case 'week':
+//          $date = new XDateTime('Monday, ' . $view->args[0]);
+//          // Create labels for the previous and next buttons:
+//          $prev_label = '<< ' . $date->subWeeks(1)->format('Y \WW');
+//          $next_label = $date->addWeeks(1)->format('Y \WW') . ' >>';
+//          break;
+
+        case 'day':
+          $date = new XDateTime($view->args[0]);
+          $date->clampYear($min_year, $max_year);
+          // Create labels for the previous and next buttons:
+          $prev_date = $date->subDays(1);
+          $prev_label = '<< ' . $prev_date->format('Y F j');
+          $next_date = $date->addDays(1);
+          $next_label = $next_date->format('Y F j') . ' >>';
+          break;
+      }
+
+      // Check the prev and next dates are with range.
+      if ($prev_date->year() < $min_year) {
+        $prev_label = NULL;
+      }
+      if ($next_date->year() > $max_year) {
+        $next_label = NULL;
+      }
+
+      // Some JS variables:
+      $settings = array(
+        'calendar' => array(
+          'template'     => $template,
+          'selectedDate' => $date->format('Y-m-d'),
+          'prevLabel'    => $prev_label,
+          'nextLabel'    => $next_label,
+          'minYear'      => $min_year,
+          'maxYear'      => $max_year,
+        ),
+      );
+      drupal_add_js($settings, 'setting');
+      drupal_add_js(drupal_get_path('module', 'moonmars_event') . '/js/moonmars_calendar.js');
+      break;
+
+  }
+}

@@ -1,0 +1,25 @@
+<?php
+/**
+ * @file
+ * Code for the Search Content feature.
+ */
+
+include_once 'search_content.features.inc';
+
+/**
+ * Implements hook_form_alter().
+ */
+function search_content_form_alter(&$form, &$form_state, $form_id) {
+  $uri = explode('?', request_uri());
+  if ($form_id == 'views_exposed_form' && $uri[0] == '/admin/content/search') {
+    drupal_add_css(drupal_get_path('module', 'search_content') . '/search_content.css');
+    $form['submit']['#value'] = t('Search');
+
+//    // HACK - delete all nodes with no user.
+//    $rs = db_query("SELECT * FROM node WHERE uid = 0 OR uid IS NULL");
+//    foreach ($rs as $rec) {
+//      node_delete($rec->nid);
+//    }
+
+  }
+}

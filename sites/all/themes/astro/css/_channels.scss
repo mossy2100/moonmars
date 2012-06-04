@@ -1,0 +1,15 @@
+
+.view-channel {
+
+	.views-row {
+		border-bottom: solid 1px red;
+
+		header {
+			display: none;
+		}
+	}
+
+	.view-comments .views-row {
+		border: none;
+	}
+}

@@ -1,0 +1,104 @@
+
+form {
+
+  #edit-title {
+  }
+
+  div.form-item label,
+  span.fieldset-legend {
+    font-weight: bold;
+  }
+
+  .date-no-float {
+  }
+
+  fieldset {
+    @include border-radius(3px);
+    background-color: $blue2;
+    margin-top: 20px;
+
+    legend {
+    	color: $red1;
+      @include border-radius(3px 3px 0 0);
+      font-size: $fontSizeH3;
+      position: relative;
+      top: -12px;
+    }
+
+    div.fieldset-wrapper {
+      padding: 10px;
+
+      .date-padding {
+        padding: 0;
+      }
+    }
+  }
+
+  .fieldset-description {
+    font-style: italic;
+    color: #777;
+  }
+
+  input.form-text,
+  select {
+    height: 22px;
+    line-height: 16px;
+    padding: 2px 8px;
+    border: solid 1px $blue3;
+    @include border-radius(px);
+  }
+
+  .field-name-field-event-price {
+    float: left;
+  }
+
+  .container-inline-date > .form-item {
+    margin: 1em 0;
+  }
+
+  .location .form-item label {
+    float: none;
+  }
+
+  .form-item {
+    .description {
+      font-size: 11px;
+      padding: 5px 0;
+      color: #aaa;
+    }
+
+    div.link-field-column {
+      width: 285px;
+
+      .link-field-title,
+      .link-field-url {
+        input.form-text {
+          width: 285px;
+        }
+      }
+
+      .link-field-title {
+        margin-right: 10px;
+      }
+    }
+
+  }
+
+  div.form-radios {
+    div.form-type-radio {
+      height: 25px;
+      line-height: 25px;
+      vertical-align: middle;
+
+      input {
+        margin: 0 10px;
+      }
+
+      label {
+        font-weight: normal;
+        line-height: 25px;
+        vertical-align: middle;
+      }
+    }
+  }
+}

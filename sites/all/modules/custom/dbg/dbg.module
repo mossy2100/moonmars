@@ -1,0 +1,115 @@
+<?php
+/**
+ * Debugging functions.
+ *
+ * Requires strings.php.
+ */
+
+/**
+ * The current debug mode.
+ */
+$_dbg_mode = FALSE;
+
+/**
+ * Get the debug mode.
+ *
+ * @param bool $mode
+ */
+function dbg_get_mode() {
+  global $_dbg_mode;
+  return $_dbg_mode;
+}
+
+/**
+ * Set the debug mode.
+ *
+ * @param bool $mode
+ */
+function dbg_set_mode($mode) {
+  global $_dbg_mode;
+  $_dbg_mode = (bool) $mode;
+}
+
+/**
+ * Switch the debug mode on.
+ */
+function dbg_on() {
+  dbg_set_mode(TRUE);
+}
+
+/**
+ * Switch the debug mode off.
+ */
+function dbg_off() {
+  dbg_set_mode(FALSE);
+}
+
+/**
+ * Begin printing a debug message.
+ */
+function dbg_begin_print() {
+  print "<pre class='debug'>\n";
+}
+
+/**
+ * End printing a debug message.
+ */
+function dbg_end_print() {
+  print "</pre>\n";
+}
+
+/**
+ * Debug all defined variables.
+ *
+ * @global bool $_dbg_mode
+ */
+function dbg_all() {
+  global $_dbg_mode;
+  if ($_dbg_mode) {
+    dbg_begin_print();
+
+    $vars = get_defined_vars();
+    foreach ($vars as $var) {
+      dbg($var);
+    }
+
+    dbg_end_print();
+  }
+}
+
+/**
+ * Exit with a debug message.
+ *
+ * @global bool $_dbg_mode
+ * @param string $str
+ */
+function dbg_exit($str = '') {
+  global $_dbg_mode;
+  if ($_dbg_mode) {
+    exit($str);
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Main debugging functions.
+
+/**
+ * Print the contents of a variable as a string, wrapped in <pre> tags.
+ * THIS IS THE PRIMARY DEBUG FUNCTION.
+ *
+ * @param mixed $value
+ * @param string $func_name
+ */
+function dbg($value, $func_name = '') {
+  global $_dbg_mode;
+  if ($_dbg_mode) {
+    dbg_begin_print();
+    if ($func_name != '') {
+      print "<b>$func_name:</b> ";
+    }
+    // Requires strings.php:
+    print var_to_string($value);
+    dbg_end_print();
+  }
+}
