@@ -1,34 +1,38 @@
-$commentFontSize = 11px;
-$commentLineHeight = $commentFontSize * 1.5;
-$commentContentWrapperHeight = $commentLineHeight * 3;
+$postFontSize = 11px;
+$postLineHeight = $postFontSize * 1.5;
+$postContentWrapperHeight = $postLineHeight * 3;
+
 
 #comments {
+	margin: 0 0 0 10px;
+}
 
-	article {
-		padding: 5px;
-		margin: 1px 0;
-		@include border-radius(3px);
-		background-color: #f7f7f7;
-		font-size: $commentFontSize;
-		line-height: $commentLineHeight;
+.view-channel .article-body,
+#comments article {
 
-		.comment-content-wrapper {
-			height: $commentContentWrapperHeight;
-			overflow: hidden;
-			margin-left: 45px;
+	padding: 5px;
+	margin: 1px 0;
+	@include border-radius(3px);
+	background-color: #f7f7f7;
+	font-size: $postFontSize;
+	line-height: $postLineHeight;
 
-			.comment-content {
-				a.username {
-					font-weight: bold;
-				}
+	.post-content-wrapper {
+		height: $postContentWrapperHeight;
+		overflow: hidden;
+		margin-left: 45px;
 
-				time {
-					float: right;
-					color: #999;
-				}
+		.post-content,
+		.post-content {
+			a.username {
+				font-weight: bold;
+			}
+
+			time {
+				float: right;
+				color: #999;
 			}
 		}
-
 	}
 
 	.user-picture {
@@ -36,27 +40,27 @@ $commentContentWrapperHeight = $commentLineHeight * 3;
 	}
 
 	.score-more-wrapper,
-	.comment-controls {
+	.post-controls {
 		height: 18px;
 		border-top: solid 1px #ddd;
 		margin-left: 45px;
 		margin-top: 2px;
 	}
 
-	.comment-controls {
+	.post-controls {
 		nav.links {
 			display: block;
 			float: right;
-			height: $commentLineHeight;
+			height: $postLineHeight;
 
 			li {
-				height: $commentLineHeight;
+				height: $postLineHeight;
 				padding: 0 5px;
 				border-right: solid 1px #ddd;
 				margin: 0;
 
 				a {
-					line-height: $commentLineHeight;
+					line-height: $postLineHeight;
 				}
 			}
 		}
@@ -68,7 +72,7 @@ $commentContentWrapperHeight = $commentLineHeight * 3;
 			border-left: solid 1px #ddd;
 			padding-left: 5px;
 			margin-left: 5px;
-			line-height: $commentLineHeight;
+			line-height: $postLineHeight;
 
 			a.more-link {
 				span.expand-icon {
@@ -78,11 +82,19 @@ $commentContentWrapperHeight = $commentLineHeight * 3;
 		}
 	}
 
-	.comment-score-wrapper {
+	.post-score-wrapper {
 		display: block;
 		float: right;
 		margin: 0 0 0 5px;
-		line-height: $commentLineHeight;
+		line-height: $postLineHeight;
 	}
 
+}
+
+.view-channel .article-body {
+	background-color: #eee;
+
+	.field-name-field-post-text {
+		font-size: 12px;
+	}
 }

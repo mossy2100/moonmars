@@ -28,7 +28,7 @@
       </div>
     </div> <!-- /score-more-wrapper -->
 
-    <div class='user-content-controls'>
+    <div class='post-controls'>
       <?php if (user_is_logged_in()) { ?>
       <div class='rating-buttons'>
         <a class='rating-button rating-button-warning' href='javascript:ratePost("report")' title='Report (-2 points)'></a>
@@ -39,7 +39,7 @@
       </div>
       <?php } ?>
 
-      <div class='user-content-score-wrapper'>
+      <div class='post-score-wrapper'>
         Score: <span class='post-score'><?php echo $score; ?></span>
       </div>
 
