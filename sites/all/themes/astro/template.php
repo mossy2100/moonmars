@@ -14,6 +14,7 @@
 function astro_created_datetime($created) {
   $created_datetime = new XDateTime($created);
   $time_ago = $created_datetime->aboutHowLongAgo();
-  $time_ago = $time_ago == 'now' ? 'now' : "about $time_ago ago";
-  return "<time datetime='" . $created_datetime->format('Y-m-d\TH:i:s\Z') . "'>$time_ago</time>";
+  $time_ago = $time_ago == 'now' ? 'just now' : "about $time_ago ago";
+  $dt_format = $created_datetime->format('Y-m-d\TH:i:s\Z');
+  return "<time datetime='$dt_format'>$time_ago</time>";
 }

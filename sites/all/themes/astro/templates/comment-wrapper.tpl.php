@@ -57,7 +57,7 @@
           <textarea class='new-comment-textarea'></textarea>
         </form>
         <div class='new-comment-controls'>
-          <input id='new-comment-button-<?php echo $node->nid; ?>' class='new-comment-button' type='button' value='Post'>
+          <input data-nid='<?php echo $node->nid; ?>' class='new-comment-button' type='button' value='Post'>
         </div>
       </div>
     </div>

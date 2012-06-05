@@ -1,6 +1,19 @@
 <?php
 
 /**
+ * Implements hook_menu().
+ */
+function moonmars_comments_menu() {
+  $items = array();
+  $items['ajax/post/comment'] = array(
+    'page callback' => 'moonmars_comments_ajax_post',
+    'access callback' => 'user_is_logged_in',
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+/**
  * Implementation of hook_form_alter().
  */
 function moonmars_comments_form_alter(&$form, &$form_state, $form_id) {
@@ -12,4 +25,42 @@ function moonmars_comments_form_alter(&$form, &$form_state, $form_id) {
 //    dbg($form['comment_body']);
 //    dbg($form['comment_body']);
   }
+}
+
+function moonmars_comments_ajax_post() {
+  $nid = (int) $_REQUEST['nid'];
+  $comment_text = trim($_REQUEST['text']);
+  global $user;
+
+  if (!$nid || !$comment_text || !$user || !$user->uid) {
+    echo 0;
+    return;
+  }
+
+  // Create a new comment:
+  $comment = entity_create('comment', array('type' => 'comment'));
+  $comment->pid = 0;
+  $comment->uid = $user->uid;
+  $comment->name = $user->name;
+  $comment->mail = $user->mail;
+  $comment->nid = $nid;
+  $comment->comment_body[LANGUAGE_NONE][0]['value'] = $comment_text;
+  $comment->status = 1;
+  $comment->created = time();
+  comment_save($comment);
+
+  // Build the comment content:
+  $node = node_load($nid);
+  comment_build_content($comment, $node);
+
+  // Theme the comment:
+  echo theme('comment',
+    array(
+      'elements' => array(
+        '#comment' => $comment,
+        '#node' => $node,
+      ),
+      'content' => $comment->content
+    )
+  );
 }

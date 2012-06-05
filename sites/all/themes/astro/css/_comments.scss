@@ -111,6 +111,12 @@ $postContentWrapperHeight = $postLineHeight * 3;
 			padding: 2px;
 			height: 2 * $postLineHeight;
 			resize: none;
+			overflow: hidden;
+
+			&.uploading {
+				background: white url('../images/loading29.gif') no-repeat center center;
+			}
+
 		}
 	}
 

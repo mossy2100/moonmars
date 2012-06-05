@@ -20,11 +20,10 @@ function admin_menu_fix_init() {
 }
 
 /**
- * Implements hook_menu()
- *
- * @return array
+ * Implements hook_menu().
  */
 function admin_menu_fix_menu() {
+  $items = array();
   $items['admin/content/find'] = array(
     'title' => 'Find content',
     'description' => 'Find and manage content, filtered by type.',
