@@ -2,13 +2,11 @@ $postFontSize = 11px;
 $postLineHeight = $postFontSize * 1.5;
 $postContentWrapperHeight = $postLineHeight * 3;
 
-
 #comments, .indented {
 	margin: 0;
 }
 
-.view-channel .article-body,
-#comments article {
+.post-article-body {
 
 	padding: 5px;
 	margin: 1px 0;
@@ -89,6 +87,17 @@ $postContentWrapperHeight = $postLineHeight * 3;
 		line-height: $postLineHeight;
 	}
 
+	textarea {
+		font-size: $postFontSize;
+		padding: 2px;
+		height: 2 * $postLineHeight;
+		resize: none;
+		overflow: hidden;
+
+		&.uploading {
+			background: white url('../images/loading29.gif') no-repeat center center;
+		}
+	}
 }
 
 .view-channel .article-body {
@@ -99,33 +108,29 @@ $postContentWrapperHeight = $postLineHeight * 3;
 	}
 }
 
-#comments article.comment-form {
-
-	.post-content-wrapper {
-		height: auto;
-	}
-
-	form.new-comment-form {
-		.new-comment-textarea {
-			font-size: $postFontSize;
-			padding: 2px;
-			height: 2 * $postLineHeight;
-			resize: none;
-			overflow: hidden;
-
-			&.uploading {
-				background: white url('../images/loading29.gif') no-repeat center center;
-			}
-
+#comments {
+	article.new-comment-form-article {
+		.post-content-wrapper {
+			height: auto;
 		}
 	}
 
 	.new-comment-controls {
-		margin-top: 5px;
+		margin-top: 2px;
 		text-align: right;
 
 		input {
 			padding: 1px 4px;
+		}
+	}
+
+	.edit-comment-form {
+		display: none;
+	}
+
+	.field-name-comment-body {
+		.field-item {
+			white-space: pre-wrap;
 		}
 	}
 }

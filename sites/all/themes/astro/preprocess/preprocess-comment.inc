@@ -2,10 +2,6 @@
 
 function astro_alpha_preprocess_comment(&$vars) {
 
-  // Make sure we have the comments JS:
-  drupal_add_js(drupal_get_path('module', 'moonmars_comments') . '/js/moonmars_comments.js');
-  drupal_add_js('sites/all/libraries/jquery/jquery.autogrow-textarea.js');
-
   // Theme the user picture:
   $vars['picture'] = moonmars_members_avatar_tooltip($vars['elements']['#comment']->uid);
 
@@ -22,21 +18,34 @@ function astro_alpha_preprocess_comment(&$vars) {
     $vars['score'] = mt_rand(-20, 9999);
   }
 
-  // Remove the "reply" link.
+  // Remove the "reply" link. For now, people can only comment on the node, not on other comments.
   unset($vars['content']['links']['comment']['#links']['comment-reply']);
-  //if (!$x) {
-  //  dbg($vars['content']['links']);
-  //  $x = 1;
-  //}
 
   if (!user_is_logged_in()) {
     $login_to_comment = &$vars['content']['links']['comment']['#links']['comment_forbidden']['title'];
     $login_to_comment = str_replace('post comments', 'post or rate comments', $login_to_comment);
   }
 
+  // Set some attributes that we can use with JS:
+  $cid = $vars['elements']['#comment']->cid;
+  $nid = $vars['elements']['#node']->nid;
 
-  if (!$x) {
-    dbg($vars['links']);
-    $x = 1;
+  $vars['attributes_array']['data-cid'] = $cid;
+  $vars['attributes_array']['data-nid'] = $nid;
+  $vars['attributes_array']['id'] = "comment-article-$cid";
+
+  // If we have an edit link, add a form for editing the comment.
+  if (isset($vars['content']['links']['comment']['#links']['comment-edit'])) {
+//    dbg($vars['content']['comment_body'][0]['#markup']);
+    $vars['edit_comment_form'] = "
+      <form class='comment-form edit-comment-form'>
+        <textarea id='edit-comment-$cid'>{$vars['content']['comment_body'][0]['#markup']}</textarea>
+        <div class='new-comment-controls'>
+          <input data-nid='$nid' class='new-comment-button' type='button' value='Update'>
+        </div>
+      </form>
+    ";
   }
+
+
 }

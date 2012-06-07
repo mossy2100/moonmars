@@ -1,6 +1,6 @@
 <article<?php print $attributes; ?>>
 
-  <div class='article-body'>
+  <div class='post-article-body'>
     <div class='user-picture'>
       <?php print $picture; ?>
     </div>

@@ -6,9 +6,13 @@
 function moonmars_comments_menu() {
   $items = array();
   $items['ajax/post/comment'] = array(
-    'page callback' => 'moonmars_comments_ajax_post',
-    'access callback' => 'user_is_logged_in',
-    'type' => MENU_CALLBACK,
+    'page callback'    => 'moonmars_comments_ajax_post',
+    'access callback'  => 'comment_access',
+    'access arguments' => array(
+      'edit',
+      1
+    ),
+    'type'             => MENU_CALLBACK,
   );
   return $items;
 }
@@ -28,25 +32,51 @@ function moonmars_comments_form_alter(&$form, &$form_state, $form_id) {
 }
 
 function moonmars_comments_ajax_post() {
+  // Get the request parameters. Support either GET or POST here, so we can use POST from the form but test using the query string.
+  $cid = (int) $_REQUEST['cid'];
   $nid = (int) $_REQUEST['nid'];
-  $comment_text = trim($_REQUEST['text']);
+  $text = trim($_REQUEST['text']);
   global $user;
 
-  if (!$nid || !$comment_text || !$user || !$user->uid) {
-    echo 0;
+  // Check we have all the necessary params:
+  if (!$nid || !$text || !$user || !$user->uid) {
+
+    // Create the data array:
+    $data = array(
+      'result' => FALSE,
+      'cid'    => $cid,
+      'nid'    => $nid,
+      'text'   => $text,
+    );
+
+    // Encode and send:
+    echo json_encode($data);
     return;
   }
 
-  // Create a new comment:
-  $comment = entity_create('comment', array('type' => 'comment'));
-  $comment->pid = 0;
-  $comment->uid = $user->uid;
-  $comment->name = $user->name;
-  $comment->mail = $user->mail;
-  $comment->nid = $nid;
-  $comment->comment_body[LANGUAGE_NONE][0]['value'] = $comment_text;
-  $comment->status = 1;
-  $comment->created = time();
+  if ($cid) {
+    // Load the comment:
+    $mode = 'edit';
+    $comment = comment_load($cid);
+  }
+  else {
+    // Create a new comment:
+    $mode = 'create';
+    $comment = entity_create('comment', array('type' => 'comment'));
+    $comment->pid = 0;
+    $comment->uid = $user->uid;
+    $comment->name = $user->name;
+    $comment->mail = $user->mail;
+    $comment->is_anonymous = FALSE;
+    $comment->nid = $nid;
+    $comment->status = 1;
+  }
+
+  // Update the comment text:
+  $comment->comment_body[LANGUAGE_NONE][0]['value'] = $text;
+
+  // Save the comment:
+  comment_submit($comment);
   comment_save($comment);
 
   // Build the comment content:
@@ -54,13 +84,26 @@ function moonmars_comments_ajax_post() {
   comment_build_content($comment, $node);
 
   // Theme the comment:
-  echo theme('comment',
+  $html = theme('comment',
     array(
-      'elements' => array(
-        '#comment' => $comment,
-        '#node' => $node,
-      ),
-      'content' => $comment->content
+         'elements' => array(
+           '#comment' => $comment,
+           '#node'    => $node,
+         ),
+         'content'  => $comment->content
     )
   );
+
+  // Create the data array:
+  $data = array(
+    'result' => TRUE,
+    'cid'    => $comment->cid,
+    'nid'    => $nid,
+    'mode'   => $mode,
+    'text'   => $text,
+    'html'   => $html,
+  );
+
+  // Encode and send:
+  echo json_encode($data);
 }
