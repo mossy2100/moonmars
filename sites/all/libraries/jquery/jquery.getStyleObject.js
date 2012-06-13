@@ -8,11 +8,13 @@
         return b.toUpperCase();
       }
       style = window.getComputedStyle(dom, null);
-      for (var i = 0; i < style.length; i++) {
-        var prop = style[i];
-        var camel = prop.replace(/\-([a-z])/g, camelize);
-        var val = style.getPropertyValue(prop);
-        returns[camel] = val;
+      if (style) {
+        for (var i = 0; i < style.length; i++) {
+          var prop = style[i];
+          var camel = prop.replace(/\-([a-z])/g, camelize);
+          var val = style.getPropertyValue(prop);
+          returns[camel] = val;
+        }
       }
       return returns;
     }

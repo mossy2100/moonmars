@@ -1,4 +1,4 @@
-<article<?php print $attributes; ?>>
+<article<?php print $attributes; ?> data-nid='<?php echo $node->nid; ?>'>
 
   <div class='post-article-body'>
     <div class='user-picture'>

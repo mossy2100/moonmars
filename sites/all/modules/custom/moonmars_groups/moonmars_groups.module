@@ -12,6 +12,15 @@ function moonmars_groups_member_count($gid) {
   return FALSE;
 }
 
-function mm_groups_user_count($gid) {
-  return 1;
+/**
+ * Implements hook_menu().
+ */
+function moonmars_groups_menu() {
+//  $items['group/%'] = array(
+//    'page callback'    => 'moonmars_groups_channel',
+//    'page arguments'   => array(1),
+//    'access callback'  => TRUE, // 'moonmars_groups_can_view',
+//    'type'             => MENU_CALLBACK,
+//  );
+  return $items;
 }

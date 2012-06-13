@@ -18,11 +18,10 @@
         textarea.attr('data-autoresize-div-id', autoresizeDivId);
         textarea.after(autoresizeDiv);
 
-        // Copy the style of the textarea to the div.
-        // @todo Make this leaner, it adds a fuckload of inline CSS to the download.
+        // Override the div style to match the textarea:
         var textareaStyle = textarea.getStyleObject();
         var divStyle = autoresizeDiv.getStyleObject();
-        var textareaValue, divValue, propertyLower, styleObject = {};
+        var propertyLower, styleObject = {};
         for (var property in textareaStyle) {
           // Ignore some irrelevant properties:
           propertyLower = property.toLowerCase();
@@ -31,10 +30,8 @@
             continue;
           }
           // Compare properties and look for differences to apply to the div:
-          textareaValue = textareaStyle[property];
-          divValue = divStyle[property];
-          if (textareaValue != divValue) {
-            styleObject[property] = textareaValue;
+          if (textareaStyle[property] != divStyle[property]) {
+            styleObject[property] = textareaStyle[property];
           }
         }
 
@@ -47,7 +44,7 @@
         autoresizeDiv.outerWidth(textarea.outerWidth());
 
         // Capture keyup events:
-        textarea.bind('keyup', function() {
+        textarea.bind('keyup change', function() {
           var text = $(this).val();
           autoresizeDivId = textarea.attr('data-autoresize-div-id');
           autoresizeDiv = $('#' + autoresizeDivId);

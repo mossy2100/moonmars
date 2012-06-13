@@ -58,11 +58,11 @@
           var padding = $(this).padding();
           if (boxSizing == 'border-box') {
             var border = $(this).border();
-            width += padding.top + padding.bottom + border.top + border.bottom;
+            width += padding.left + padding.right + border.left + border.right;
           }
           else {
             // padding-box:
-            width += padding.top + padding.bottom;
+            width += padding.left + padding.right;
           }
         }
         $(this).width(width);
@@ -100,7 +100,7 @@
         // Get the outer width:
         var padding = $(this).padding();
         var border = $(this).border();
-        return $(this).width() + padding.top + padding.bottom + border.top + border.bottom;
+        return $(this).width() + padding.left + padding.right + border.left + border.right;
       }
       else {
         // Set the outer width:
@@ -110,11 +110,11 @@
           var border = $(this).border();
           if (boxSizing == 'content-box') {
             var padding = $(this).padding();
-            width -= (padding.top + padding.bottom + border.top + border.bottom);
+            width -= (padding.left + padding.right + border.left + border.right);
           }
           else {
             // padding-box:
-            width -= (border.top + border.bottom);
+            width -= (border.left + border.right);
           }
         }
         $(this).width(width);

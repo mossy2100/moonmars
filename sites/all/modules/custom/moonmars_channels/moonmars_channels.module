@@ -7,6 +7,7 @@ function moonmars_channel_menu() {
 //    'page callback' => 'moonmars_channel_site',
 //    'access callback' => TRUE,
 //  );
+//  return $items;
 }
 
 /**

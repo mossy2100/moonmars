@@ -4,14 +4,18 @@
  * Implements hook_menu().
  */
 function moonmars_comments_menu() {
-  $items = array();
-  $items['ajax/post/comment'] = array(
-    'page callback'    => 'moonmars_comments_ajax_post',
+  $items['ajax/comment/update'] = array(
+    'page callback'    => 'moonmars_comments_ajax_update',
     'access callback'  => 'comment_access',
-    'access arguments' => array(
-      'edit',
-      1
-    ),
+    'access arguments' => array('edit', 1),
+    'type'             => MENU_CALLBACK,
+  );
+
+  // @todo For deleting comments we need to use the same permissions as for edit - this is different from the usual
+  // delete comment permissions, which is only available to users with the 'administer comments' permission.
+  $items['ajax/comment/delete'] = array(
+    'page callback'    => 'moonmars_comments_ajax_delete',
+    'access arguments' => array('administer comments'),
     'type'             => MENU_CALLBACK,
   );
   return $items;
@@ -31,12 +35,17 @@ function moonmars_comments_form_alter(&$form, &$form_state, $form_id) {
   }
 }
 
-function moonmars_comments_ajax_post() {
+/**
+ * Update or create new comment via AJAX.
+ */
+function moonmars_comments_ajax_update() {
   // Get the request parameters. Support either GET or POST here, so we can use POST from the form but test using the query string.
   $cid = (int) $_REQUEST['cid'];
   $nid = (int) $_REQUEST['nid'];
   $text = trim($_REQUEST['text']);
   global $user;
+
+  $mode = $cid ? 'edit' : 'create';
 
   // Check we have all the necessary params:
   if (!$nid || !$text || !$user || !$user->uid) {
@@ -47,6 +56,7 @@ function moonmars_comments_ajax_post() {
       'cid'    => $cid,
       'nid'    => $nid,
       'text'   => $text,
+      'mode'   => $mode,
     );
 
     // Encode and send:
@@ -56,12 +66,10 @@ function moonmars_comments_ajax_post() {
 
   if ($cid) {
     // Load the comment:
-    $mode = 'edit';
     $comment = comment_load($cid);
   }
   else {
     // Create a new comment:
-    $mode = 'create';
     $comment = entity_create('comment', array('type' => 'comment'));
     $comment->pid = 0;
     $comment->uid = $user->uid;
@@ -86,11 +94,11 @@ function moonmars_comments_ajax_post() {
   // Theme the comment:
   $html = theme('comment',
     array(
-         'elements' => array(
-           '#comment' => $comment,
-           '#node'    => $node,
-         ),
-         'content'  => $comment->content
+      'elements' => array(
+        '#comment' => $comment,
+        '#node'    => $node,
+      ),
+      'content'  => $comment->content
     )
   );
 
@@ -103,6 +111,31 @@ function moonmars_comments_ajax_post() {
     'text'   => $text,
     'html'   => $html,
   );
+
+  // Encode and send:
+  echo json_encode($data);
+}
+
+/**
+ * Delete comment via AJAX.
+ */
+function moonmars_comments_ajax_delete() {
+  // Get the request parameters. Support either GET or POST here, so we can use POST from the form but test using the query string.
+  $cid = (int) $_REQUEST['cid'];
+
+  // Check we have all the necessary params:
+  if (!$cid) {
+    $data = array(
+      'result' => FALSE,
+    );
+  }
+  else {
+    // Delete the comment:
+    comment_delete($cid);
+    $data = array(
+      'result' => TRUE,
+    );
+  }
 
   // Encode and send:
   echo json_encode($data);

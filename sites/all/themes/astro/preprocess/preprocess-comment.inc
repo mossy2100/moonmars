@@ -41,6 +41,7 @@ function astro_alpha_preprocess_comment(&$vars) {
       <form class='comment-form edit-comment-form'>
         <textarea id='edit-comment-$cid'>{$vars['content']['comment_body'][0]['#markup']}</textarea>
         <div class='new-comment-controls'>
+          <input data-nid='$nid' class='cancel-comment-button' type='button' value='Cancel'>
           <input data-nid='$nid' class='new-comment-button' type='button' value='Update'>
         </div>
       </form>

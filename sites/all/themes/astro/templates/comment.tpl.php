@@ -34,13 +34,13 @@
 
     <div class='post-controls'>
       <?php if (user_is_logged_in()) { ?>
-      <div class='rating-buttons'>
-        <a class='rating-button rating-button-warning' href='javascript:rateComment("report")' title='Report (-2 points)'></a>
-        <a class='rating-button rating-button-dislike' href='javascript:rateComment("dislike")' title='Dislike (-1 point)'></a>
-        <a class='rating-button rating-button-meh' href='javascript:rateComment("meh")' title='Meh (0 points)'></a>
-        <a class='rating-button rating-button-like' href='javascript:rateComment("like")' title='Like (1 point)'></a>
-        <a class='rating-button rating-button-love' href='javascript:rateComment("favourite")' title='Favourite (2 points)'></a>
-      </div>
+        <div class='rating-buttons'>
+          <a class='rating-button rating-button-warning' href='javascript:rateComment("warning")' title='Warning (-2 points)'></a>
+          <a class='rating-button rating-button-dislike' href='javascript:rateComment("dislike")' title='Dislike (-1 point)'></a>
+          <a class='rating-button rating-button-meh' href='javascript:rateComment("meh")' title='Meh (0 points)'></a>
+          <a class='rating-button rating-button-like' href='javascript:rateComment("like")' title='Like (1 point)'></a>
+          <a class='rating-button rating-button-love' href='javascript:rateComment("favourite")' title='Favourite (2 points)'></a>
+        </div>
       <?php } ?>
 
       <div class='post-score-wrapper'>

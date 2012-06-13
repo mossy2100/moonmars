@@ -1,5 +1,23 @@
 <?php
 
+function moonmars_items_menu() {
+  $items['ajax/item/update'] = array(
+    'page callback'    => 'moonmars_items_ajax_update',
+    'access callback'  => 'item_access',
+    'access arguments' => array('edit', 1),
+    'type'             => MENU_CALLBACK,
+  );
+
+  // @todo For deleting items we need to use the same permissions as for edit - this is different from the usual
+  // delete item permissions, which is only available to users with the 'administer items' permission.
+  $items['ajax/item/delete'] = array(
+    'page callback'    => 'moonmars_items_ajax_delete',
+    'access arguments' => array('administer items'),
+    'type'             => MENU_CALLBACK,
+  );
+  return $items;
+}
+
 /**
  * Gets a title from the item text, max 100 characters.
  *
@@ -21,3 +39,128 @@ function moonmars_items_auto_nodetitle(stdClass $node) {
 //
 //}
 
+/**
+ * Create the form for posting new items in group channels.
+ * @todo Make this more generic so it can be used for user and event channels as well.
+ *
+ * @return array
+ */
+//function moonmars_items_form() {
+//  $group_nid = arg(1);
+//
+//
+//
+////  $form = drupal_get_form('node_form_item');
+//  $form['new-item'] = array(
+//    '#type' => 'textarea',
+//    '#title' => t('Share something:'),
+//    '#resizable' => FALSE,
+//    '#value' => '',
+//    '#rows' => 2,
+//  );
+//  $form['new-item-link'] = array(
+//    '#type' => 'textfield',
+//    '#title' => t('Link:'),
+//    '#value' => '',
+//  );
+//  $form['new-item-image'] = array(
+//    '#type' => 'file',
+//    '#title' => t('File:'),
+//    '#value' => '',
+//  );
+//  $form['group-nid'] = array(
+//    '#type' => 'hidden',
+//    '#default_value' => $group_nid,
+//  );
+//  $form['post-button'] = array(
+//    '#markup' => "<button id='post-button'>Post</button>",
+//  );
+//  return $form;
+//}
+
+function moonmars_items_form_item_node_form_alter(&$form, &$form_state) {
+  unset($form['title']);
+  unset($form['field_score']);
+  unset($form['additional_settings']);
+  unset($form['revision_information']);
+  unset($form['author']);
+  unset($form['comment_settings']);
+  unset($form['options']);
+  $form['actions']['submit']['#value'] = t('Post');
+  $form['field_item_text'][LANGUAGE_NONE][0]['value']['#resizable'] = FALSE;
+//  dbg($form);
+}
+
+/**
+ * Create or update an item via AJAX.
+ *
+ * @return string
+ */
+function moonmars_items_ajax_update() {
+  // Get the request parameters. Support either GET or POST here, so we can use POST from the form but test using the query string.
+  $item_nid = (int) $_REQUEST['item_nid'];
+  $group_nid = (int) $_REQUEST['group_nid'];
+  $text = trim($_REQUEST['text']);
+  global $user;
+
+  $mode = $item_nid ? 'edit' : 'create';
+
+  // Check we have all the necessary params:
+  if (!$group_nid || !$text || !$user || !$user->uid) {
+
+    // Create the data array:
+    $data = array(
+      'result'    => FALSE,
+      'item_nid'  => $item_nid,
+      'group_nid' => $group_nid,
+      'text'      => $text,
+      'mode'      => $mode,
+    );
+
+    // Encode and send:
+    echo json_encode($data);
+    return;
+  }
+
+  if ($item_nid) {
+    // Load the item:
+    $item = node_load($item_nid);
+  }
+  else {
+    // Create a new item:
+    $item = entity_create('node', array('type' => 'item'));
+    $item->uid = $user->uid;
+    $item->status = 1;
+  }
+
+  // Update the item text:
+  $item->field_item_text[LANGUAGE_NONE][0]['value'] = $text;
+
+  // Save the item:
+  entity_save('node', $item);
+
+//  $render_array = node_view($item);
+
+  // Theme the item:
+  $html = theme('node',
+    array(
+      'elements' => array(
+        '#node'    => $item,
+      ),
+//      'content'  => $item->content
+    )
+  );
+
+  // Create the data array:
+  $data = array(
+    'result' => TRUE,
+    'item_nid'  => $item->nid,
+    'group_nid' => $group_nid,
+    'mode'      => $mode,
+    'text'      => $text,
+    'html'      => $html,
+  );
+
+  // Encode and send:
+  echo json_encode($data);
+}
