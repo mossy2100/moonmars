@@ -1,0 +1,16 @@
+<?php
+
+/**
+ * Implement hook_install().
+ */
+function moonmars_install() {
+  // Create a more convenient view for querying relationships:
+  db_query("
+    create view view_relationship as
+      select r.rid, r.relation_type, r.vid, r.uid, r.created, r.changed, r.arity,
+        fde0.deleted as deleted0, fde0.language AS language0, fde0.delta as delta0, fde0.endpoints_entity_type as entity_type0, fde0.endpoints_entity_id as entity_id0, fde0.endpoints_r_index as r_index0,
+        fde1.deleted as deleted1, fde1.language AS language1, fde1.delta as delta1, fde1.endpoints_entity_type as entity_type1, fde1.endpoints_entity_id as entity_id1, fde1.endpoints_r_index as r_index1
+      from relation r
+        left join field_data_endpoints fde0 ON (r.rid = fde0.entity_id AND fde0.endpoints_r_index = 0)
+        left join field_data_endpoints fde1 ON (r.rid = fde1.entity_id AND fde1.endpoints_r_index = 1)");
+}

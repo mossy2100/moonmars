@@ -4,9 +4,11 @@
  * Implements hook_init().
  */
 function moonmars_init() {
-  require_once DRUPAL_ROOT . '/sites/all/libraries/star/strings.php';
-  require_once DRUPAL_ROOT . '/sites/all/libraries/star/drupal.php';
-  require_once DRUPAL_ROOT . '/sites/all/classes/XDateTime.class.php';
+  require_once DRUPAL_ROOT . '/sites/all/libraries/star/php/strings.php';
+  require_once DRUPAL_ROOT . '/sites/all/libraries/star/php/numbers.php';
+  require_once DRUPAL_ROOT . '/sites/all/libraries/star/php/arrays.php';
+  require_once DRUPAL_ROOT . '/sites/all/libraries/star/php/drupal.php';
+  require_once DRUPAL_ROOT . '/sites/all/libraries/star/php/classes/StarDateTime.class.php';
   dbg_on();
 }
 

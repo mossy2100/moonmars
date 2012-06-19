@@ -1,14 +1,14 @@
 <?php
 
 /**
- * This class is designed to be an improvement over PHP's built-in class DateTime.
+ * This class is part of the Star Library, and is designed to extend and improve PHP's built-in DateTime class.
  */
-class XDateTime extends DateTime {
+class StarDateTime extends DateTime {
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Constants
 
-  // These values relate to the Gregorian calendar, based on average calendar month and year lengths.
+  // These values are based on average Gregorian calendar month and year lengths.
 
   const SECONDS_PER_MINUTE  = 60;
   const SECONDS_PER_HOUR    = 3600;
@@ -37,27 +37,30 @@ class XDateTime extends DateTime {
   
   const MONTHS_PER_YEAR     = 12;
 
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Static methods
 
   /**
-   * The current datetime as an XDateTime object.
+   * The current datetime as an StarDateTime object.
    *
-   * @return XDateTime
+   * @return StarDateTime
    */
   public static function now() {
-    return new XDateTime();
+    // This will call the parent constructor, which defaults to 'now'.
+    return new StarDateTime();
   }
 
   /**
-   * Today's date as an XDateTime object.
+   * Today's date as an StarDateTime object.
    *
-   * @return XDateTime
+   * @return StarDateTime
    */
   public static function today() {
     $now = self::now();
     return $now->date();
   }
+
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Constructor
@@ -65,15 +68,17 @@ class XDateTime extends DateTime {
   /**
    * Constructor for making dates and datetimes.
    * Time zones may be provided as DateTimeZone objects, or as timezone strings.
+   * All arguments are optional.
    *
    * Usage examples:
-   *    $dt = new XDateTime($unix_timestamp);
-   *    $dt = new XDateTime($datetime_string);
-   *    $dt = new XDateTime($datetime_string, $timezone);
-   *    $dt = new XDateTime($year, $month, $day);
-   *    $dt = new XDateTime($year, $month, $day, $timezone);
-   *    $dt = new XDateTime($year, $month, $day, $hour, $minute, $second);
-   *    $dt = new XDateTime($year, $month, $day, $hour, $minute, $second, $timezone);
+   *    $dt = new StarDateTime();
+   *    $dt = new StarDateTime($unix_timestamp);
+   *    $dt = new StarDateTime($datetime_string);
+   *    $dt = new StarDateTime($datetime_string, $timezone);
+   *    $dt = new StarDateTime($year, $month, $day);
+   *    $dt = new StarDateTime($year, $month, $day, $timezone);
+   *    $dt = new StarDateTime($year, $month, $day, $hour, $minute, $second);
+   *    $dt = new StarDateTime($year, $month, $day, $hour, $minute, $second, $timezone);
    *
    * @param string|int                    $year, $unix_timestamp or $datetime_string
    * @param null|DateTimeZone|string|int  $month or $timezone
@@ -84,8 +89,10 @@ class XDateTime extends DateTime {
    * @param null|DateTimeZone|string      $timezone
    */
   public function __construct() {
-    $args = func_get_args();
+    // All arguments are optional and several serve multiple roles, so it's simpler not to include parameters in the
+    // function signature, and instead just grab them as follows:
     $n_args = func_num_args();
+    $args = func_get_args();
 
     // Default timezone:
     $timezone = NULL;
@@ -118,11 +125,18 @@ class XDateTime extends DateTime {
       $timezone = isset($args[6]) ? $args[6] : NULL;
     }
     else {
-      trigger_error(E_USER_WARNING, "Invalid number of arguments to XDateTime constructor.");
+      trigger_error(E_USER_WARNING, "Invalid number of arguments to StarDateTime constructor.");
     }
 
-    // Add support for string timezones:
-    $timezone = is_string($timezone) ? new DateTimeZone($timezone) : $timezone;
+    // Support string timezones:
+    if (is_string($timezone)) {
+      $timezone = new DateTimeZone($timezone);
+    }
+
+    // Check we have a valid timezone:
+    if ($timezone !== NULL && !($timezone instanceof DateTimeZone)) {
+      trigger_error(E_USER_WARNING, "Invalid timezone provided to StarDateTime constructor.");
+    }
 
     // Call parent constructor:
     parent::__construct($datetime, $timezone);
@@ -157,12 +171,12 @@ class XDateTime extends DateTime {
    * @param int $year
    * @param int $month
    * @param int $day
-   * @return XDateTime
+   * @return StarDateTime
    */
   public function date($year = 1, $month = 1, $day = 1) {
     if (func_num_args() == 0) {
       // Get the date:
-      return new XDateTime($this->format('Y-m-d'));
+      return new StarDateTime($this->format('Y-m-d'));
     }
     else {
       // Set the date:
@@ -196,7 +210,7 @@ class XDateTime extends DateTime {
    * Get or set the year.
    *
    * @param int $year
-   * @return int|XDateTime
+   * @return int|StarDateTime
    */
   public function year($year = 1) {
     if (func_num_args() == 0) {
@@ -213,7 +227,7 @@ class XDateTime extends DateTime {
    * Get or set the month.
    *
    * @param int $month
-   * @return int|XDateTime
+   * @return int|StarDateTime
    */
   public function month($month = 1) {
     if (func_num_args() == 0) {
@@ -230,7 +244,7 @@ class XDateTime extends DateTime {
    * Get or set the day of the month.
    *
    * @param int $day
-   * @return int|XDateTime
+   * @return int|StarDateTime
    */
   public function day($day = 1) {
     if (func_num_args() == 0) {
@@ -247,7 +261,7 @@ class XDateTime extends DateTime {
    * Get or set the hour.
    *
    * @param int $hour
-   * @return int|XDateTime
+   * @return int|StarDateTime
    */
   public function hour($hour = 0) {
     if (func_num_args() == 0) {
@@ -264,7 +278,7 @@ class XDateTime extends DateTime {
    * Get or set the minute.
    *
    * @param int $minute
-   * @return int|XDateTime
+   * @return int|StarDateTime
    */
   public function minute($minute = 0) {
     if (func_num_args() == 0) {
@@ -281,7 +295,7 @@ class XDateTime extends DateTime {
    * Get or set the second.
    *
    * @param int $second
-   * @return int|XDateTime
+   * @return int|StarDateTime
    */
   public function second($second = 0) {
     if (func_num_args() == 0) {
@@ -335,13 +349,13 @@ class XDateTime extends DateTime {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Add periods. These methods return a new XDateTime object; they don't modify the calling object.
+  // Add periods. These methods return a new StarDateTime object; they don't modify the calling object.
 
   /**
    * Add years.
    *
    * @param int $n
-   * @return XDateTime
+   * @return StarDateTime
    */
   public function addYears($n) {
     $dt = clone $this;
@@ -352,7 +366,7 @@ class XDateTime extends DateTime {
    * Add months.
    *
    * @param int $n
-   * @return XDateTime
+   * @return StarDateTime
    */
   public function addMonths($n) {
     $dt = clone $this;
@@ -363,7 +377,7 @@ class XDateTime extends DateTime {
    * Add weeks.
    *
    * @param int $n
-   * @return XDateTime
+   * @return StarDateTime
    */
   public function addWeeks($n) {
     return $this->addDays($n * 7);
@@ -373,7 +387,7 @@ class XDateTime extends DateTime {
    * Add days.
    *
    * @param int $n
-   * @return XDateTime
+   * @return StarDateTime
    */
   public function addDays($n) {
     $dt = clone $this;
@@ -384,7 +398,7 @@ class XDateTime extends DateTime {
    * Add hours.
    *
    * @param int $n
-   * @return XDateTime
+   * @return StarDateTime
    */
   public function addHours($n) {
     $dt = clone $this;
@@ -395,7 +409,7 @@ class XDateTime extends DateTime {
    * Add minutes.
    *
    * @param int $n
-   * @return XDateTime
+   * @return StarDateTime
    */
   public function addMinutes($n) {
     $dt = clone $this;
@@ -406,7 +420,7 @@ class XDateTime extends DateTime {
    * Add seconds.
    *
    * @param int $n
-   * @return XDateTime
+   * @return StarDateTime
    */
   public function addSeconds($n) {
     $dt = clone $this;
@@ -414,13 +428,13 @@ class XDateTime extends DateTime {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Subtract periods. These methods return a new XDateTime object; they don't modify the calling object.
+  // Subtract periods. These methods return a new StarDateTime object; they don't modify the calling object.
 
   /**
    * Subtract years.
    *
    * @param int $n
-   * @return XDateTime
+   * @return StarDateTime
    */
   public function subYears($n) {
     return $this->addYears(-$n);
@@ -430,7 +444,7 @@ class XDateTime extends DateTime {
    * Subtract months.
    *
    * @param int $n
-   * @return XDateTime
+   * @return StarDateTime
    */
   public function subMonths($n) {
     return $this->addMonths(-$n);
@@ -440,7 +454,7 @@ class XDateTime extends DateTime {
    * Subtract weeks.
    *
    * @param int $n
-   * @return XDateTime
+   * @return StarDateTime
    */
   public function subWeeks($n) {
     return $this->addWeeks(-$n);
@@ -450,7 +464,7 @@ class XDateTime extends DateTime {
    * Subtract days.
    *
    * @param int $n
-   * @return XDateTime
+   * @return StarDateTime
    */
   public function subDays($n) {
     return $this->addDays(-$n);
@@ -460,7 +474,7 @@ class XDateTime extends DateTime {
    * Subtract hours.
    *
    * @param int $n
-   * @return XDateTime
+   * @return StarDateTime
    */
   public function subHours($n) {
     return $this->addHours(-$n);
@@ -470,7 +484,7 @@ class XDateTime extends DateTime {
    * Subtract minutes.
    *
    * @param int $n
-   * @return XDateTime
+   * @return StarDateTime
    */
   public function subMinutes($n) {
     return $this->addMinutes(-$n);
@@ -480,7 +494,7 @@ class XDateTime extends DateTime {
    * Subtract seconds.
    *
    * @param int $n
-   * @return XDateTime
+   * @return StarDateTime
    */
   public function subSeconds($n) {
     return $this->addSeconds(-$n);
@@ -521,7 +535,7 @@ class XDateTime extends DateTime {
 
     // Check time is in the past:
     if ($seconds < 0) {
-      trigger_error("XDateTime::aboutHowLongAgo() only works with datetimes in the past.", E_USER_WARNING);
+      trigger_error("StarDateTime::aboutHowLongAgo() only works with datetimes in the past.", E_USER_WARNING);
       return FALSE;
     }
 

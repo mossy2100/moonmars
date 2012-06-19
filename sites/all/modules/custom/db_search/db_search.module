@@ -235,9 +235,9 @@ function db_search_results() {
     // Add the JS and CSS:
     $module_path = drupal_get_path('module', 'db_search');
     drupal_add_css("$module_path/db_search_results.css");
-    drupal_add_js("sites/all/libraries/star/strings.js");
-    drupal_add_js("sites/all/libraries/star/arrays.js");
-    drupal_add_js("sites/all/libraries/star/debug.js");
+    drupal_add_js("sites/all/libraries/star/js/strings.js");
+    drupal_add_js("sites/all/libraries/star/js/arrays.js");
+    drupal_add_js("sites/all/libraries/star/js/debug.js");
     $settings = array(
       'search_text'      => isset($_SESSION['db_search']['form']['search_text']) ? $_SESSION['db_search']['form']['search_text'] : '',
       'case_sensitive'   => isset($_SESSION['db_search']['form']['case_sensitive']) ? $_SESSION['db_search']['form']['case_sensitive'] : '',

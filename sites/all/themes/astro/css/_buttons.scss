@@ -7,8 +7,8 @@ button,
 input.form-submit,
 .view-calendar .pager a,
 .block-menu ul.menu li a {
-  background: none;
-  border: none;
+	background-image: none;
+  background-color: $blue3;
   text-shadow: none;
   color: white;
   font-weight: bold;
@@ -16,12 +16,12 @@ input.form-submit,
   line-height: 19px;
   height: 19px;
   padding: 3px 9px;
-  background-color: $blue1;
-  @include border-radius(3px);
+	border: none;
+	@include border-radius(3px);
   text-decoration: none;
 
   &:hover {
-    background-color: $red1;
+    background-color: $red3;
     color: white;
     text-decoration: none;
   }

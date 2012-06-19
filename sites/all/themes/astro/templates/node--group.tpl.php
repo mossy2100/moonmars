@@ -19,11 +19,27 @@ if ($page) {
     <div<?php print $content_attributes; ?>>
 
       <div class='post-form-wrapper'>
-        <?php echo render(node_add('item')); ?>
+        <h2>Share something</h2>
+
+        <div class='post-article-body'>
+          <div class='user-picture'>
+            <?php print $new_item_picture; ?>
+          </div>
+
+          <div class='post-content-wrapper' <?php print $content_attributes; ?>>
+            <div class='post-content'>
+              <?php
+              echo $new_item_username;
+              echo $new_item_created_datetime;
+              echo render(node_add('item'));
+              ?>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class='group-channel'>
-        <?php echo views_embed_view('channel', 'page_1', $node->nid); ?>
+        <?php echo views_embed_view('channel', 'page_1', array('node', $node->nid)); ?>
       </div>
 
     </div>

@@ -17,10 +17,10 @@
 	white-space: nowrap;
 	float: left;
 	z-index: 10;
-	@include box-shadow2(1px, 1px, 2px, 1px, #999);
+	@include box-shadow2(1px, 1px, 2px, 1px, $grey4);
 	font-size: 11px;
 	line-height: 11px * 1.5;
-	border: solid 2px $red1;
+	border: solid 2px $red3;
 	top: -7px;
 	left: -7px;
 

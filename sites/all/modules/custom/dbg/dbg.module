@@ -113,3 +113,74 @@ function dbg($value, $func_name = '') {
     dbg_end_print();
   }
 }
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Query debugging functions.
+
+/**
+ * Get the SQL for a query.
+ *
+ * @param Query $query
+ */
+function dbg_sql($query, $target = 'default') {
+  // Get the query as a string:
+  $query_string = (string) $query;
+  $statement_type = strtolower(substr($query_string, 0, strpos($query_string, ' ')));
+
+  // Prefix tables:
+  $connection = Database::getConnection($target);
+  $query_string = trim($connection->prefixTables($query_string));
+
+  // Convert query object to an array so we can access readonly properties:
+  $query_array = object_to_array($query, TRUE);
+
+  // Replace field placeholders:
+  if ($statement_type != 'select') {
+    $fields = $query_array['fields'];
+    $placeholder = ":db_{$statement_type}_placeholder_";
+    $n = 0;
+    foreach ($fields as $key => $value) {
+      dpm($value);
+      $replacement = is_numeric($value) ? $value : $connection->quote($value);
+      $query_string = str_replace($placeholder . $n, $replacement, $query_string);
+      $n++;
+    }
+  }
+
+  // Replace condition placeholders:
+  if ($statement_type == 'select') {
+    $conditions = $query_array['where']['conditions'];
+  }
+  else {
+    $conditions = $query_array['condition']['conditions'];
+  }
+  foreach ($conditions as $n => $info) {
+    if (!is_int($n)) {
+      continue;
+    }
+    $value = $info['value'];
+    $replacement = is_numeric($value) ? $value : $connection->quote($value);
+    $query_string = str_replace(':db_condition_placeholder_' . $n, $replacement, $query_string);
+  }
+
+  return $query_string;
+}
+
+/**
+ * Debug an SQL query.
+ *
+ * @param Query $query
+ */
+function dbg_query($query, $target = 'default') {
+  dbg(dbg_sql($query, $target));
+}
+
+/**
+ * Devel-debug an SQL query.
+ *
+ * @param Query $query
+ */
+function dpm_query($query, $target = 'default') {
+  dpm(dbg_sql($query, $target));
+}

@@ -68,8 +68,8 @@ function moonmars_members_age($user) {
 
   $date_of_birth = $user->field_date_of_birth ? $user->field_date_of_birth[LANGUAGE_NONE][0]['value'] : NULL;
   if ($date_of_birth) {
-    $date_of_birth = new XDateTime($date_of_birth);
-    $today = XDateTime::today();
+    $date_of_birth = new StarDateTime($date_of_birth);
+    $today = StarDateTime::today();
     $birth_year = $date_of_birth->year();
     $current_year = $today->year();
     $birthday_this_year = $date_of_birth;

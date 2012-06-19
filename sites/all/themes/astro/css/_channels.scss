@@ -1,225 +1,315 @@
 $postFontSize = 11px;
 $postLineHeight = $postFontSize * 1.5;
-$postContentWrapperHeight = $postLineHeight * 3;
-
+$ratingButtonHeight = 20px;
 
 .view-channel {
 
-	.views-row {
-		padding: 20px 0;
-		border-bottom: solid 1px black;
+  .views-row {
+    padding: 20px 10px;
+    margin: 10px 0;
+    border-top: solid 1px black;
 
-		header {
-			display: none;
-		}
-	}
+    header {
+      display: none;
+    }
 
-	.view-comments .views-row {
-		border: none;
-	}
+    .post-content {
+      .field {
+        margin: 16px 0;
+        font-size: 12px;
+        line-height: 16px;
+      }
+    }
+  }
+
+  .view-comments .views-row {
+    border: none;
+  }
 }
 
 #comments, .indented {
-	margin: 0;
+  margin: 0;
+}
+
+#comments,
+article.node-item {
+  .post-content-wrapper {
+    overflow: hidden;
+  }
 }
 
 .post-article-body {
+  padding: 5px;
+  margin: 1px 0;
+  font-size: $postFontSize;
+  line-height: $postLineHeight;
 
-	padding: 5px;
-	margin: 1px 0;
-	@include border-radius(3px);
-	font-size: $postFontSize;
-	line-height: $postLineHeight;
+  .post-content-wrapper {
+    margin-left: 45px;
 
-	.post-content-wrapper {
-		height: $postContentWrapperHeight;
-		overflow: hidden;
-		margin-left: 45px;
+    .post-content {
+      a.username {
+        font-weight: bold;
+      }
 
-		.post-content,
-		.post-content {
-			a.username {
-				font-weight: bold;
-			}
+      time {
+        float: right;
+        color: $grey3;
+      }
+    }
+  }
 
-			time {
-				float: right;
-				color: #999;
-			}
-		}
+  .user-picture {
+    float: left;
+  }
 
-		&.auto-height {
-			height: auto;
-		}
-	}
+  .score-more-wrapper,
+  .post-controls {
+    height: $ratingButtonHeight;
+    margin-left: 45px;
+    margin-top: 2px;
+  }
 
-	.user-picture {
-		float: left;
-	}
+  .post-controls {
+    padding-top: 1px;
+    border-top: solid 1px $grey4;
 
-	.score-more-wrapper,
-	.post-controls {
-		height: 18px;
-		border-top: solid 1px #ccc;
-		margin-left: 45px;
-		margin-top: 2px;
-	}
+    nav.links {
+      display: block;
+      float: right;
+      height: $ratingButtonHeight;
 
-	.post-controls {
-		padding-top: 1px;
+      li {
+        padding: 0 5px;
+        border-right: solid 1px $grey4;
+        margin: 0;
+        float: right;
+        display: block;
+        height: $ratingButtonHeight;
 
-		nav.links {
-			display: block;
-			float: right;
-			height: $postLineHeight;
+        a {
+          line-height: $ratingButtonHeight;
+        }
+      }
+    }
+  }
 
-			li {
-				height: $postLineHeight;
-				padding: 0 5px;
-				border-right: solid 1px #ccc;
-				margin: 0;
+  .score-more-wrapper {
+    border-top: dashed 1px $grey4;
 
-				a {
-					line-height: $postLineHeight;
-				}
-			}
-		}
-	}
+    .more-link-wrapper {
+      float: right;
+      border-left: solid 1px $grey4;
+      padding-left: 5px;
+      margin-left: 5px;
+      line-height: $ratingButtonHeight;
 
-	.score-more-wrapper {
-		.more-link-wrapper {
-			float: right;
-			border-left: solid 1px #ccc;
-			padding-left: 5px;
-			margin-left: 5px;
-			line-height: $postLineHeight;
+      a.more-link {
+        span.expand-icon {
+          font-size: 7px;
+        }
+      }
+    }
+  }
 
-			a.more-link {
-				span.expand-icon {
-					font-size: 7px;
-				}
-			}
-		}
-	}
+  .post-score-wrapper {
+    display: block;
+    float: right;
+    margin: 0 0 0 5px;
+    line-height: $ratingButtonHeight;
+  }
 
-	.post-score-wrapper {
-		display: block;
-		float: right;
-		margin: 0 0 0 5px;
-		line-height: $postLineHeight;
-	}
+  textarea {
+    font-size: $postFontSize;
+    padding: 2px;
+    height: 2 * $postLineHeight;
+    resize: none;
+    overflow: hidden;
 
-	textarea {
-		font-size: $postFontSize;
-		padding: 2px;
-		height: 2 * $postLineHeight;
-		resize: none;
-		overflow: hidden;
+    &.uploading {
+      background: white url('../images/loading29.gif') no-repeat center center;
+    }
+  }
 
-		&.uploading {
-			background: white url('../images/loading29.gif') no-repeat center center;
-		}
-	}
+  .comment-instruction {
+    padding: 0;
+    font-size: 11px;
+    color: $grey2;
+  }
+}
+
+.post-form-wrapper {
+  margin: 20px 10px;
+
+  h2 {
+    margin-bottom: 10px;
+  }
+
+  input.form-text,
+  select,
+  textarea {
+    border-color: $grey4;
+  }
+
+  .post-article-body {
+    background-color: $grey5;
+    @include border-radius(3px);
+  }
+
+  //.form-submit {
+  //	background-color: $red2;
+  //
+  //	&:hover {
+  //		background-color: $red3;
+  //	}
+  //}
 }
 
 .view-channel {
-	article.node {
-		background-color: white;
+  article.node {
+    background-color: white;
 
-		.field-name-field-item-text {
-			font-size: 13px;
-		}
-	}
+    .field-name-field-item-text {
+      font-size: 13px;
+    }
+  }
 
-	article.comment {
-		background-color: #eef;
-	}
+  article.comment {
+    background-color: $blue5;
+    @include border-radius(3px);
+  }
 }
 
-#comments {
-	article.new-comment-form-article {
-		.post-content-wrapper {
-			height: auto;
-		}
-	}
+article.new-comment-form-article {
+  .post-content-wrapper {
+    height: auto;
+  }
+}
 
-	.new-comment-controls {
-		margin-top: 2px;
-		text-align: right;
+.new-comment-controls {
+  .new-comment-button,
+  .cancel-comment-button {
+    margin-top: 2px;
+    padding: 3px 9px;
+    float: right;
+  }
+}
 
-		input {
-			padding: 1px 4px;
-		}
-	}
-
-	.field-name-comment-body {
-		.field-item {
-			white-space: pre-wrap;
-		}
-	}
+.field-name-comment-body {
+  .field-item {
+    white-space: pre-wrap;
+  }
 }
 
 .rating-buttons {
-	float: right;
-	width: 85px;
-	height: 16px;
-	margin: 0 0 0 5px;
+  float: right;
+  width: 105px;
+  height: $ratingButtonHeight;
+  margin: 0 0 0 5px;
 }
 
 a.rating-button {
-	display: block;
-	float: left;
-	background-image: url('../images/rating-icons.png');
-	background-color: $blue1;
-	width: 16px;
-	height: 16px;
-	padding: 0;
-	@include border-radius(3px);
-	margin: 0 0 0 1px;
+  display: block;
+  float: left;
+  background: url('../images/rating-icons2.png') top left;
+  width: $ratingButtonHeight;
+  height: $ratingButtonHeight;
+  padding: 0;
+  @include border-radius(3px);
+  margin: 0 0 0 1px;
 
-	&:hover {
-		background-color: $red1;
-	}
+  &.rating-button-warning {
+    background-position: left top;
+    &:hover {
+      background-position: left bottom;
+    }
+  }
 
-	&.rating-button-love {
-		background-position: -64px top;
-	}
+  &.rating-button-dislike {
+    background-position: -20px top;
+    &:hover {
+      background-position: -20px bottom;
+    }
+  }
 
-	&.rating-button-like {
-		background-position: -48px top;
-	}
+  &.rating-button-meh {
+    background-position: -40px top;
+    &:hover {
+      background-position: -40px bottom;
+    }
+  }
 
-	&.rating-button-meh {
-		background-position: -32px top;
-	}
+  &.rating-button-like {
+    background-position: -60px top;
+    &:hover {
+      background-position: -60px bottom;
+    }
+  }
 
-	&.rating-button-dislike {
-		background-position: -16px top;
-	}
-
-	&.rating-button-warning {
-		background-position: left top;
-	}
+  &.rating-button-love {
+    background-position: -80px top;
+    &:hover {
+      background-position: -80px bottom;
+    }
+  }
 }
 
 .node-item-form {
-	#edit-field-item-type-und {
-		.form-type-radio {
-			display: inline;
+  #edit-field-item-type-und {
+    .form-type-radio {
+      display: inline;
+      margin: 0 10px 0 0;
 
-			input {
-				margin-right: 3px;
-			}
-		}
-	}
+      input {
+        margin: 0 3px;
+      }
+    }
+  }
 
-	#field-item-link-add-more-wrapper {
-		.form-type-textfield {
-			margin: 0;
+  #field-item-link-add-more-wrapper {
+    .form-type-textfield {
+      margin: 0;
 
-			input {
-				width: 100%;
-			}
-		}
-	}
+      input {
+        width: 100%;
+      }
+    }
+  }
+
+  #edit-submit--3 {
+    float: right;
+    margin-right: 0;
+  }
+
+  .form-item .description {
+    padding: 0;
+  }
+
+  .form-actions {
+    margin: 0;
+  }
+
+  #field-item-text-add-more-wrapper {
+    .form-item {
+      margin-bottom: 2px;
+
+      .description {
+        float: left;
+      }
+    }
+  }
+}
+
+
+article.node-item {
+  & > .post-article-body {
+    background-color: $grey5;
+    @include border-radius(3px);
+  }
+
+  .field-name-field-item-text {
+    .field-item {
+      white-space: pre-wrap;
+    }
+  }
 }

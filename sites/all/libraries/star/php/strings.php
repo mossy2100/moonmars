@@ -240,13 +240,15 @@ function containsDigits($str) {
 /**
  * Splits $name into:
  *     - social title
- *    - first name
+ *     - first name
  *     - middle name(s)
  *     - last name (including nobiliary particles)
  * Note, this function is designed for western-style names,
  * i.e. it is not suited for names that begin with the family name, e.g. Chinese
  *
  * @todo Add support for middle name.
+ * @todo Add support for Jr./Sr.
+ * @todo Add support for roman numerals following name (i.e. Charles Emerson Winchester III)
  *
  * @param string $name
  * @param string $title
@@ -323,7 +325,6 @@ function splitName($name) {
 
 /**
  * Convert a string to a boolean.
- * Supports 1, t/true, y/yes, or on (as returned from a checkbox).
  * Case-insensitive.
  *
  * @param string $str
@@ -335,7 +336,7 @@ function str2bool($str) {
 
 
 /**
- * Converts a boolean value to a string, either 'true' or 'false'.
+ * Converts a boolean value to a string, either 'TRUE' or 'FALSE'.
  * Useful for outputting bools in JavaScript.
  *
  * @param bool $bool
@@ -343,12 +344,12 @@ function str2bool($str) {
  */
 function bool2str($bool)
 {
-  return $bool ? 'true' : 'false';
+  return $bool ? 'TRUE' : 'FALSE';
 }
 
 
 /**
- * Converts a boolean value to either 'Yes' or 'No'.
+ * Converts a boolean value to either 'YES' or 'NO'.
  * Useful for display boolean values in a web page.
  *
  * @param bool $bool
@@ -356,7 +357,7 @@ function bool2str($bool)
  */
 function bool2yn($bool)
 {
-  return $bool ? 'Yes' : 'No';
+  return $bool ? 'YES' : 'NO';
 }
 
 
@@ -771,7 +772,7 @@ function array_to_string($array, $indent = 0, $objects = array()) {
 function object_to_string($object, $indent = 0, $objects = array()) {
   $spaces = str_repeat(' ', $indent);
   $lines = array();
-  $lines[] = get_class($object) . '{';
+  $lines[] = get_class($object) . " {";
   
   // Get the object's property values:
   if (method_exists($object, 'toArray')) {
@@ -789,6 +790,7 @@ function object_to_string($object, $indent = 0, $objects = array()) {
   $lines[] = "$spaces}";
   return implode("\n", $lines);
 }
+
 
 /**
  * Indents a flat JSON string to make it more human-readable.

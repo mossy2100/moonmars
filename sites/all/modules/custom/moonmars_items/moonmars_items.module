@@ -4,7 +4,10 @@ function moonmars_items_menu() {
   $items['ajax/item/update'] = array(
     'page callback'    => 'moonmars_items_ajax_update',
     'access callback'  => 'item_access',
-    'access arguments' => array('edit', 1),
+    'access arguments' => array(
+      'edit',
+      1
+    ),
     'type'             => MENU_CALLBACK,
   );
 
@@ -41,6 +44,7 @@ function moonmars_items_auto_nodetitle(stdClass $node) {
 
 /**
  * Create the form for posting new items in group channels.
+ *
  * @todo Make this more generic so it can be used for user and event channels as well.
  *
  * @return array
@@ -78,17 +82,110 @@ function moonmars_items_auto_nodetitle(stdClass $node) {
 //  return $form;
 //}
 
-function moonmars_items_form_item_node_form_alter(&$form, &$form_state) {
-  unset($form['title']);
-  unset($form['field_score']);
-  unset($form['additional_settings']);
-  unset($form['revision_information']);
-  unset($form['author']);
-  unset($form['comment_settings']);
-  unset($form['options']);
-  $form['actions']['submit']['#value'] = t('Post');
-  $form['field_item_text'][LANGUAGE_NONE][0]['value']['#resizable'] = FALSE;
-//  dbg($form);
+function moonmars_items_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'item_node_form' && moonmars_groups_is_group_page()) {
+    // Hide a bunch of shit we don't want to see:
+    unset($form['title']);
+    unset($form['field_score']);
+    unset($form['additional_settings']);
+    unset($form['revision_information']);
+    unset($form['author']);
+    unset($form['comment_settings']);
+    unset($form['options']);
+    unset($form['field_item_type'][LANGUAGE_NONE]['#title']);
+    unset($form['field_item_text'][LANGUAGE_NONE][0]['value']['#title']);
+    unset($form['field_item_link'][LANGUAGE_NONE][0]['#title']);
+    unset($form['field_item_file'][LANGUAGE_NONE][0]['#title']);
+
+//    dbg($form['field_item_type']);
+
+    // Change the button label:
+    $form['actions']['submit']['#value'] = t('Post');
+
+    // Make the textarea non-resizable and only 2 rows high. We will use the autoresize() plugin on the client.
+    $form['field_item_text'][LANGUAGE_NONE][0]['value']['#resizable'] = FALSE;
+    $form['field_item_text'][LANGUAGE_NONE][0]['value']['#rows'] = 2;
+
+    // If this is a group channel, put the group nid in a hidden field so we can access it in the submit handler.
+    if (alias_arg(0) == 'group') {
+      $group_nid = (int) arg(1);
+      if ($group_nid) {
+        $form['group_nid'] = array(
+          '#type'          => 'hidden',
+          '#default_value' => $group_nid,
+        );
+      }
+    }
+
+    // Add an afterbuild handler so we can remove the submit buttons added in file_managed_file_process().
+    $form['#after_build'][] = 'moonmars_items_form_after_build';
+
+    // Add a submit handler.
+    $form['#submit'][] = 'moonmars_items_form_submit';
+  }
+}
+
+/**
+ * After build handler for add new item form on group channel.
+ *
+ * @param array $form
+ * @return array
+ */
+function moonmars_items_form_after_build($form) {
+//  dpm($form);
+
+  // Remove the file field's submit buttons from the form:
+  unset($form['field_item_file'][LANGUAGE_NONE][0]['upload_button']);
+  unset($form['field_item_file'][LANGUAGE_NONE][0]['remove_button']);
+
+  return $form;
+}
+
+function moonmars_items_node_insert($node) {
+  if ($node->type == 'item') {
+    $item = $node;
+
+    // Gather all the endpoint entities into one array
+    if (arg(0) == 'node' && is_uint(arg(1))) {
+      $group_nid = arg(1);
+      $group = node_load($group_nid);
+      if ($group && $group->type == 'group') {
+        $end_points = array(
+          array(
+            'entity_label' => $item->title,
+            'entity_type'  => 'node',
+            'entity_id'    => $item->nid
+          ),
+          array(
+            'entity_label' => $group->title,
+            'entity_type'  => 'node',
+            'entity_id'    => $group_nid,
+          ),
+        );
+
+        $type = 'is_post_for';
+        $relation = relation_create($type, $end_points);
+//        entity_form_submit_build_entity('relation', $relation, $form['relation_options'], $form_state);
+        relation_save($relation);
+
+        // Reload the group page:
+        drupal_goto(drupal_get_path_alias('node/' . $group_nid));
+      }
+    }
+  }
+}
+
+/**
+ * Submit handler for add new item form.
+ *
+ * @param array $form
+ * @param array $form_state
+ */
+function moonmars_items_form_submit($form, &$form_state) {
+  // If the item is a file, copy the entered text to the file description:
+  if ($form_state['values']['field_item_file'][LANGUAGE_NONE][0]['fid']) {
+    $form_state['values']['field_item_file'][LANGUAGE_NONE][0]['description'] = $form_state['values']['field_item_file'][LANGUAGE_NONE][0]['value'];
+  }
 }
 
 /**
@@ -144,16 +241,16 @@ function moonmars_items_ajax_update() {
   // Theme the item:
   $html = theme('node',
     array(
-      'elements' => array(
-        '#node'    => $item,
-      ),
-//      'content'  => $item->content
+         'elements' => array(
+           '#node'    => $item,
+         ),
+         //      'content'  => $item->content
     )
   );
 
   // Create the data array:
   $data = array(
-    'result' => TRUE,
+    'result'    => TRUE,
     'item_nid'  => $item->nid,
     'group_nid' => $group_nid,
     'mode'      => $mode,
@@ -163,4 +260,45 @@ function moonmars_items_ajax_update() {
 
   // Encode and send:
   echo json_encode($data);
+}
+
+/**
+ * Checks if an item is a post for a channel node (e.g. group, event, project).
+ *
+ * @param int $item_nid
+ * @param int $channel_nid
+ */
+function moonmars_items_is_post_for($item_nid, $channel_nid) {
+  // Get all is_post_for relations starting at $item_nid:
+  $q = db_select('field_data_endpoints', 'fde')
+    ->fields('fde', array('entity_id'))
+    ->condition('bundle', 'is_post_for')
+    ->condition('endpoints_entity_type', 'node')
+    ->condition('endpoints_entity_id', $item_nid)
+    ->condition('endpoints_r_index', 0);
+
+//  dpm_query($q);
+
+  $rs = $q->execute();
+  foreach ($rs as $rec) {
+//    dpm($rec);
+
+    // See if there's a row with the same relation entity_id and endpoint at the channel node:
+    $q2 = db_select('field_data_endpoints', 'fde')
+      ->fields('fde', array('entity_id'))
+      ->condition('bundle', 'is_post_for')
+      ->condition('entity_id', $rec->entity_id)
+      ->condition('endpoints_entity_type', 'node')
+      ->condition('endpoints_entity_id', $channel_nid)
+      ->condition('endpoints_r_index', 1);
+    $rs2 = $q2->execute();
+    foreach ($rs2 as $rec2) {
+//      dpm($rec2);
+    }
+
+    if ($rs2->rowCount()) {
+      return TRUE;
+    }
+  }
+  return FALSE;
 }

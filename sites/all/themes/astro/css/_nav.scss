@@ -20,13 +20,13 @@ nav.navigation {
       a {
         padding: 3px 10px;
         @include border-radius(3px);
-        background-color: $blue1;
+        background-color: $blue3;
         color: white;
         font-weight: bold;
         text-decoration: none;
 
         &:hover {
-          background-color: $red1;
+          background-color: $red3;
         }
       }
     }
@@ -41,7 +41,7 @@ nav.navigation {
 .block-menu {
   ul.menu {
     list-style-type: none;
-    border-bottom: solid 1px #ddd;
+    border-bottom: solid 1px $grey4;
 
 
     li {
@@ -51,18 +51,17 @@ nav.navigation {
       padding: 0;
 
       a {
-        background-color: #eee;
+        background-color: $grey5;
         @include border-radius(0);
         width: 162px;
         display: block;
         text-align: center;
-        border-top: solid 1px #ddd;
-        color: $blue1;
+        border-top: solid 1px $grey4;
+        color: $blue3;
       }
 
       &:hover {
-        background-color: $red1;
-
+        background-color: $red3;
       }
     }
 

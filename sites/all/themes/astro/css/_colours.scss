@@ -2,8 +2,20 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Colours
 
-$blue1: #4169E1;
-$blue2: #F0F8FF;
-$blue3: $blue1 / 2 + $blue2 / 2;
+$blue1: #213470; // Very dark blue.
+$blue2: #314fa9; // Dark blue, use for headings.
+$blue3: #4169e1; // Royal blue colour from logo. Use for links.
+$blue4: #96b1ff; // Light blue, use for borders.
+$blue5: #e4ebff; // Pale blue, use for form backgrounds.
 
-$red1:  #ff0000;
+$red1: #550000; // Very dark red.
+$red2: #aa0000; // Dark red, use for headings.
+$red3: #ff0000; // Red colour from logo.
+$red4: #ff7f7f; // Light red, use for borders.
+$red5: #ffeeee; // Pale red, use for form backgrounds.
+
+$grey1: #303030;
+$grey2: #616161;
+$grey3: #919191;
+$grey4: #c2c2c2;
+$grey5: #f2f2f2; // Pale grey, use for form backgrounds.
