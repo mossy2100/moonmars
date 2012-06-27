@@ -17,3 +17,28 @@ function moonmars_relationships_get_followers($user) {
 function moonmars_relationships_get_followees($user) {
 
 }
+
+/**
+ * Lookup a relationship between two entities.
+ * If a match cannot be found, return FALSE.
+ *
+ * @param $relationship_type
+ * @param $entity_type0
+ * @param $entity_id0
+ * @param $entity_type1
+ * @param $entity_id1
+ * @return object|bool
+ */
+function moonmars_relationships_get_relationship($relationship_type, $entity_type0, $entity_id0, $entity_type1, $entity_id1) {
+  // Look for a relationship record:
+  $q = db_select('view_relationship', 'vr')
+    ->fields('vr', array('rid'))
+    ->condition('relation_type', $relationship_type)
+    ->condition('entity_type0', $entity_type0)
+    ->condition('entity_id0', $entity_id0)
+    ->condition('entity_type1', $entity_type1)
+    ->condition('entity_id1', $entity_id1);
+  $rs = $q->execute();
+  $rec = $rs->fetch(PDO::FETCH_OBJ);
+  return $rec ? relation_load($rec->rid) : FALSE;
+}

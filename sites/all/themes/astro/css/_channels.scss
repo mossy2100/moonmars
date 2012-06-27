@@ -5,9 +5,9 @@ $ratingButtonHeight = 20px;
 .view-channel {
 
   .views-row {
-    padding: 20px 10px;
-    margin: 10px 0;
-    border-top: solid 1px black;
+    padding: 30px 10px;
+    margin: 0;
+    border-bottom: solid 1px black;
 
     header {
       display: none;
@@ -123,7 +123,7 @@ article.node-item {
     font-size: $postFontSize;
     padding: 2px;
     height: 2 * $postLineHeight;
-    resize: none;
+    //resize: none;
     overflow: hidden;
 
     &.uploading {
@@ -131,7 +131,7 @@ article.node-item {
     }
   }
 
-  .comment-instruction {
+  .comment-description {
     padding: 0;
     font-size: 11px;
     color: $grey2;
@@ -139,7 +139,8 @@ article.node-item {
 }
 
 .post-form-wrapper {
-  margin: 20px 10px;
+  border-bottom: solid 1px black;
+  padding: 0 10px 30px;
 
   h2 {
     margin-bottom: 10px;
@@ -208,7 +209,7 @@ article.new-comment-form-article {
   margin: 0 0 0 5px;
 }
 
-a.rating-button {
+input.rating-button {
   display: block;
   float: left;
   background: url('../images/rating-icons2.png') top left;
@@ -220,41 +221,52 @@ a.rating-button {
 
   &.rating-button-warning {
     background-position: left top;
-    &:hover {
+
+    &:hover,
+    &.selected {
       background-position: left bottom;
     }
   }
 
   &.rating-button-dislike {
     background-position: -20px top;
-    &:hover {
+
+    &:hover,
+    &.selected {
       background-position: -20px bottom;
     }
   }
 
-  &.rating-button-meh {
+  &.rating-button-indifferent {
     background-position: -40px top;
-    &:hover {
+
+    &:hover,
+    &.selected {
       background-position: -40px bottom;
     }
   }
 
   &.rating-button-like {
     background-position: -60px top;
-    &:hover {
+
+    &:hover,
+    &.selected {
       background-position: -60px bottom;
     }
   }
 
-  &.rating-button-love {
+  &.rating-button-favourite {
     background-position: -80px top;
-    &:hover {
+
+    &:hover,
+    &.selected {
       background-position: -80px bottom;
     }
   }
 }
 
 .node-item-form {
+
   #edit-field-item-type-und {
     .form-type-radio {
       display: inline;
@@ -276,17 +288,17 @@ a.rating-button {
     }
   }
 
-  #edit-submit--3 {
-    float: right;
-    margin-right: 0;
-  }
-
   .form-item .description {
     padding: 0;
   }
 
   .form-actions {
     margin: 0;
+
+    .form-submit {
+      float: right;
+      margin-right: 0;
+    }
   }
 
   #field-item-text-add-more-wrapper {
@@ -311,5 +323,11 @@ article.node-item {
     .field-item {
       white-space: pre-wrap;
     }
+  }
+
+  p.comment-instruction {
+    margin: 0;
+    font-size: 11px;
+    color: $grey3;
   }
 }

@@ -1,0 +1,144 @@
+<?php
+class ClassesTest extends DrupalWebTestCase {
+
+  /**
+   * A subfolder where some test class files can live.
+   *
+   * @var string
+   */
+  protected static $test_classes_dir;
+
+  /**
+   * Custom setUp() method.
+   *
+   * @see DrupalWebTestCase::setUp()
+   */
+  protected function setUp() {
+    debugOff();
+
+    // Enable any modules required for the test:
+    parent::setUp('content', 'text', 'number', 'optionwidgets', 'date', 'node',
+      'nodereference', 'userreference', 'content_profile', 'taxonomy', 'link',
+      'content_taxonomy', 'content_taxonomy_autocomplete', 'classes', 'user',
+      'simpletest', 'filefield', 'imagefield', 'install_profile_api',
+      'location', 'location_cck', 'fieldgroup');
+
+    // Create and log in our privileged user.
+    $this->privileged_user = $this->drupalCreateUser(array(
+    	'administer content types',
+    	'administer nodes',
+    	'administer classes',
+      'administer users',
+      'administer taxonomy',
+      'administer files',
+    ));
+    $this->drupalLogin($this->privileged_user);
+
+    // Include the files needed to create content types, add fields, etc.
+    $install_profile_api_dir = drupal_get_path('module', 'install_profile_api');
+    require_once "$install_profile_api_dir/core/node.inc";
+    require_once "$install_profile_api_dir/contrib/content.inc";
+
+    $classes_module_dir = drupal_get_path('module', 'classes');
+    require_once "$classes_module_dir/classes_generate.inc";
+
+    // Create a content type for testing purposes.
+    // NB: There is an assumption here that the application does not curently
+    // use a class called SimpleTest1, because the class will be generated in
+    // the same folder as the application classes. This might change later.
+    self::createContentType('simple_test_1');
+  }
+
+  /**
+   * Clean up after testing.
+   */
+  protected function tearDown() {
+    // Remove the classes we generated:
+//    classes_delete_class(classes_type_class_name('simple_test_1'), TRUE);
+  }
+
+  /**
+   * Output variable contents to the test results.
+   *
+   * @param string $label
+   *   This parameter can be ommited.
+   * @param mixed $var
+   */
+  protected function debug($label, $var = NULL) {
+    if (is_null($var)) {
+      $var = $label;
+      $this->assert(TRUE, var_export($var, TRUE));
+    }
+    else {
+      $this->assert(TRUE, $label . ': ' . var_export($var, TRUE));
+    }
+  }
+
+  /**
+   * Output message.
+   *
+   * @param mixed $var
+   */
+  protected function msg($msg) {
+    $this->assert(TRUE, $msg);
+  }
+
+  /**
+   * Create a new content type for testing purposes.
+   *
+   * @param string $type
+   */
+  protected static function createContentType($type) {
+    $class = classes_type_class_name($type);
+    install_create_content_type($type, $class);
+    // NOTE: it might be better to use $this->drupalCreateContentType()
+    // Review later.
+
+    // Output the class file.
+    classes_generate_type_classes($type);
+
+    // Rescan the classes directories so that autoload will work:
+    classes_paths(TRUE);
+  }
+
+  /**
+   * Useful static method for adding a field to a content type.
+   *
+   * The parameter list is more user-friendly than the install_create_field()
+   * function that it wraps.
+   *
+   * @param string $type_name
+   * @param string $field_name
+   * @param string $label
+   * @param string $field_type
+   * @param string $widget_module
+   * @param string $widget_type
+   * @param array $options
+   */
+  protected static function addField($type_name, $field_name, $label,
+      $field_type, $widget_module, $widget_type, $multiple = FALSE,
+      $options = array()) {
+
+    // Ensure $options is an array:
+    if (!is_array($options)) {
+      $options = array();
+    }
+
+    // Add the field type and module to the options array:
+    $options['type'] = $field_type;
+    $options['module'] = $widget_module;
+    $options['multiple'] = $multiple;
+
+    // Ensure the field name begins with field_:
+    if (substr($field_name, 0, 6) != 'field_') {
+      $field_name = 'field_' . $field_name;
+    }
+
+    // Call the function in the install_profile_api module:
+    install_create_field($type_name, $field_name, $widget_type, $label, $options);
+
+    // Reload the CCK fields for this type:
+    classes_get_cck_fields($type_name, TRUE);
+  }
+
+}

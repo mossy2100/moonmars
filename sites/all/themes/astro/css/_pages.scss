@@ -1,17 +1,16 @@
-
 ///////////////////////////////////////////////////////////////////////////////
 // Header
 
 .region-branding {
-	height: 64px;
+  height: 64px;
 
-	.branding-data {
-		float: right;
-	}
+  .branding-data {
+    float: right;
+  }
 
-	.block-2 {
-		float: left;
-	}
+  .block-2 {
+    float: left;
+  }
 }
 
 #page > header {
@@ -25,10 +24,31 @@
   margin: 0;
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // Main
 
 #section-content {
   padding-top: 10px;
 }
+
+.front {
+  .region-content {
+    .pane-block-3 {
+      padding: 0 10px;
+    }
+
+    .panel-separator {
+      padding-top: 20px;
+      margin-top: 20px;
+      border-top: solid 1px black;
+    }
+
+    .pane-channel {
+      h2 {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+}
+

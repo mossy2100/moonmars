@@ -1,0 +1,147 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Test file reference node properties.
+ */
+
+class ClassesTestFileCreate extends ClassesTest {
+
+  /**
+   * Implement getInfo().
+   *
+   * @return array
+   */
+  public function getInfo() {
+    return array(
+      'name' => t('Test creation of XFile objects'),
+      'group' => t('Classes'),
+    );
+  }
+
+  /**
+   * Custom setUp() method.
+   *
+   * @see DrupalWebTestCase::setUp()
+   */
+  public function setUp() {
+    // Enable any modules required for the test:
+    parent::setUp();
+
+    // Use a couple of files for testing:
+    $dir = DRUPAL_ROOT . '/' . drupal_get_path('module', 'classes') . "/tests/files";
+    $this->path = "$dir/test.txt";
+    $this->path2 = "$dir/test2.txt";
+  }
+
+  /**
+   * Run tests.
+   */
+  public function test() {
+    $this->_testCreateFile();
+  }
+
+  /**
+   * Test creation of a new XFile.
+   */
+  public function _testCreateFile() {
+
+    // To test:
+    // XFile::create();
+    // XFile::create($path);
+    // XFile::create($file);
+    // XFile::create($xfile);
+    // XFile::create($rec);
+
+    debugOn();
+
+    // Create a XFile without specifying anything:
+    $file1 = XFile::create();
+    $this->assertNull($file1->fid);
+    $this->assertNull($file1->name);
+    $this->assertNull($file1->path);
+    $this->assertNull($file1->size);
+    $this->assertNull($file2->mime);
+
+    $file1->path = $this->path;
+
+    $this->assertEqual($file1->path, $this->path);
+
+    $file1->save();
+
+    $this->assertTrue($file1->fid > 0);
+    $this->assertEqual($file1->name, basename($this->path));
+    $this->assertEqual($file1->path, $this->path);
+    $this->assertEqual($file1->size, filesize($this->path));
+    $this->assertEqual($file1->mime, classes_get_mime_type($this->path));
+    $this->debug($file1);
+
+    $fid = $file1->fid;
+
+    // Clear cache:
+    XFile::clearCache();
+
+    // Create a XFile with a specified path:
+    $file2 = XFile::create($this->path2);
+    $this->assertNull($file2->fid);
+    $this->assertEqual($file2->name, basename($this->path2));
+    $this->assertEqual($file2->path, $this->path2);
+    $this->assertEqual($file2->size, filesize($this->path2));
+    $this->assertEqual($file2->mime, classes_get_mime_type($this->path2));
+
+    $file2->save();
+    $this->assertTrue($file2->fid > 0);
+    $this->debug($file2);
+
+    // Clear cache:
+    XFile::clearCache();
+
+    // Create a XFile using a $fid:
+    $file3 = XFile::create($fid);
+
+    $this->assertTrue($file3->fid > 0);
+    $this->assertFalse($file3->new);
+    $this->assertFalse($file3->loaded);
+    $this->debug($file3);
+
+    $this->assertEqual($file3->name, basename($this->path));
+    $this->assertTrue($file3->loaded);
+
+    $this->assertEqual($file3->path, $this->path);
+    $this->assertEqual($file3->size, filesize($this->path));
+    $this->assertEqual($file3->mime, classes_get_mime_type($this->path));
+
+    $this->debug($file3);
+
+    // Clear cache:
+    XFile::clearCache();
+
+    // Create a XFile from a file record:
+    $rec = db_fetch_array(db_query("SELECT * FROM {files} WHERE fid = %d", $fid));
+    $file4 = XFile::create($rec);
+
+    $this->assertTrue($file4->loaded);
+    $this->assertTrue($file4->fid > 0);
+
+    $this->assertEqual($file4->name, basename($this->path));
+    $this->assertEqual($file4->path, $this->path);
+    $this->assertEqual($file4->size, filesize($this->path));
+    $this->assertEqual($file4->mime, classes_get_mime_type($this->path));
+
+    $this->debug($file4);
+
+    // Clear cache:
+    XFile::clearCache();
+
+    // Create a XFile object from another XFile object:
+    $file5 = XFile::create($file4);
+    $this->assertTrue($file5->loaded);
+    $this->assertTrue($file5->fid > 0);
+
+    $this->assertEqual($file5->name, basename($this->path));
+    $this->assertEqual($file5->path, $this->path);
+    $this->assertEqual($file5->size, filesize($this->path));
+    $this->assertEqual($file5->mime, classes_get_mime_type($this->path));
+  }
+}

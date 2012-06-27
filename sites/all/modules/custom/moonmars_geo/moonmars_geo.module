@@ -1,0 +1,174 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function moonmars_geo_menu() {
+  $items = array();
+  $items['ajax/geo/country'] = array(
+    'page callback'    => 'moonmars_geo_ajax_lookup_country',
+    'access callback'  => TRUE,
+    'type'             => MENU_CALLBACK,
+  );
+  $items['ajax/geo/capital'] = array(
+    'page callback'    => 'moonmars_geo_ajax_lookup_capital',
+    'access callback'  => TRUE,
+    'type'             => MENU_CALLBACK,
+  );
+  $items['ajax/geo/timezone'] = array(
+    'page callback'    => 'moonmars_geo_ajax_lookup_timezone',
+    'access callback'  => TRUE,
+    'type'             => MENU_CALLBACK,
+  );
+  $items['ajax/geo/country-timezone'] = array(
+    'page callback'    => 'moonmars_geo_ajax_lookup_country_timezone',
+    'access callback'  => TRUE,
+    'type'             => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+/**
+ * Get country info from geonames.
+ *
+ * @todo cache results
+ *
+ * @param string $country_code
+ * @return string|bool
+ */
+function moonmars_geo_lookup_country($country_code) {
+  require_once DRUPAL_ROOT . "/sites/all/libraries/star/php/curl.php";
+  $url = "http://api.geonames.org/countryInfoJSON?" . http_build_query(array(
+    'username' => 'moonmars',
+    'country' => $country_code,
+  ));
+  $result = get_web_page($url);
+  if ($result && !$result['errno'] && $result['content']) {
+    $data = json_decode($result['content']);
+    if (isset($data->geonames[0])) {
+      return $data->geonames[0];
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * Get geonames info for a given country.
+ *
+ * @return string
+ */
+function moonmars_geo_ajax_lookup_country() {
+  $country_code = $_REQUEST['countryCode'];
+  if (!$country_code) {
+    echo '';
+    return;
+  }
+  echo json_encode(moonmars_geo_lookup_country($country_code));
+}
+
+/**
+ * Get capital city info from geonames.
+ *
+ * @todo cache results
+ *
+ * @param string $capital_name
+ * @return string|bool
+ */
+function moonmars_geo_lookup_capital($country_code) {
+  // Get the capital city name:
+  $country = moonmars_geo_lookup_country($country_code);
+
+  // Look up the capital city:
+  require_once DRUPAL_ROOT . "/sites/all/libraries/star/php/curl.php";
+  $url = "http://api.geonames.org/searchJSON?" . http_build_query(array(
+    'username' => 'moonmars',
+    'name' => $country->capital,
+    'country' => $country_code,
+    'featureClass' => 'P',
+    'featureCode' => 'PPLC',
+  ));
+  $result = get_web_page($url);
+  if ($result && !$result['errno'] && $result['content']) {
+    $data = json_decode($result['content']);
+    if (isset($data->geonames[0])) {
+      return $data->geonames[0];
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * Get geonames info for a given capital city.
+ *
+ * @return string
+ */
+function moonmars_geo_ajax_lookup_capital() {
+  $country_code = $_REQUEST['country_code'];
+  if (!$country_code) {
+    echo '';
+    return;
+  }
+  echo json_encode(moonmars_geo_lookup_capital($country_code));
+}
+
+/**
+ * Lookup timezone for a given latitude and longitude.
+ *
+ * @todo cache results
+ *
+ * @return array|mixed|string
+ */
+function moonmars_geo_lookup_timezone($lat, $lng) {
+  require_once DRUPAL_ROOT . "/sites/all/libraries/star/php/curl.php";
+  $url = "http://api.geonames.org/timezoneJSON?" . http_build_query(array(
+    'username' => 'moonmars',
+    'lat' => $lat,
+    'lng' => $lng,
+  ));
+  $result = get_web_page($url);
+  if ($result && !$result['errno'] && $result['content']) {
+    $data = json_decode($result['content']);
+    return $data;
+  }
+  return FALSE;
+}
+
+/**
+ * Lookup timezone for a given latitude and longitude.
+ *
+ * @return array|mixed|string
+ */
+function moonmars_geo_ajax_lookup_timezone() {
+  $lat = $_REQUEST['lat'];
+  $lng = $_REQUEST['lng'];
+  if (!$lat || !$lng) {
+    echo '';
+    return;
+  }
+  echo json_encode(moonmars_geo_lookup_timezone($lat, $lng));
+}
+
+/**
+ * Lookup default timezone for a given country.
+ * Uses the lat/lng of the capital city.
+ *
+ * @return array|mixed|string
+ */
+function moonmars_geo_lookup_country_timezone($country_code) {
+  $capital = moonmars_geo_lookup_capital($country_code);
+  return $capital ? moonmars_geo_lookup_timezone($capital->lat, $capital->lng) : FALSE;
+}
+
+/**
+ * Lookup timezone for a given country.
+ *
+ * @return array|mixed|string
+ */
+function moonmars_geo_ajax_lookup_country_timezone() {
+  $country_code = $_REQUEST['country_code'];
+  if (!$country_code) {
+    echo '';
+    return;
+  }
+  echo json_encode(moonmars_geo_lookup_country_timezone($country_code));
+}

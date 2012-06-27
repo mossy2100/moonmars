@@ -34,6 +34,10 @@ nav.navigation {
 
   ul#secondary-menu {
     float: right;
+
+    li:last-child {
+      margin-right: 0;
+    }
   }
 
 }

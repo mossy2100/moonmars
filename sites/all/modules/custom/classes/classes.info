@@ -1,0 +1,10 @@
+name = Classes
+description = Generates class files for Drupal entities and content types.
+package = Classes
+core = 6.x
+dependencies[] = content
+dependencies[] = number
+dependencies[] = text
+dependencies[] = nodereference
+dependencies[] = userreference
+dependencies[] = optionwidgets

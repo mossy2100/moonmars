@@ -1,12 +1,25 @@
 <?php
 
+function moonmars_members_get_user_object($user) {
+  if (is_null($user)) {
+    global $user;
+  }
+  elseif (is_uint($user)) {
+    $user = user_load($user);
+  }
+  if (is_object($user)) {
+    return $user;
+  }
+  return FALSE;
+}
+
 /**
  * Get the user's full name.
  *
  * @param int|stdClass $user
  * @return string
  */
-function moonmars_members_full_name($user) {
+function moonmars_members_get_full_name($user) {
   if (!is_object($user)) {
     $user = user_load($user);
   }
@@ -22,12 +35,12 @@ function moonmars_members_full_name($user) {
  * @param int|stdClass $user
  * @return string
  */
-function moonmars_members_name_plus_full_name($user) {
+function moonmars_members_get_name_plus_full_name($user) {
   if (!is_object($user)) {
     $user = user_load($user);
   }
 
-  $full_name = moonmars_members_full_name($user->uid);
+  $full_name = moonmars_members_get_full_name($user->uid);
   return $user->name . ($full_name ? " ($full_name)" : '');
 }
 
@@ -37,7 +50,7 @@ function moonmars_members_name_plus_full_name($user) {
  * @param int|stdClass $user
  * @return string
  */
-function moonmars_members_location($user) {
+function moonmars_members_get_location($user) {
   if (!is_object($user)) {
     $user = user_load($user);
   }
@@ -61,7 +74,7 @@ function moonmars_members_location($user) {
  * @param int|stdClass $user
  * @return int|null
  */
-function moonmars_members_age($user) {
+function moonmars_members_get_age($user) {
   if (!is_object($user)) {
     $user = user_load($user);
   }
@@ -85,7 +98,7 @@ function moonmars_members_age($user) {
  * @param int|stdClass $user
  * @return string
  */
-function moonmars_members_gender($user) {
+function moonmars_members_get_gender($user) {
   if (!is_object($user)) {
     $user = user_load($user);
   }
@@ -99,14 +112,14 @@ function moonmars_members_gender($user) {
  * @param int|stdClass $user
  * @return string
  */
-function moonmars_members_tooltip($user) {
+function moonmars_members_get_tooltip($user) {
   if (!is_object($user)) {
     $user = user_load($user);
   }
 
   // HTML for the tooltip:
   $user_name = "<strong>$user->name</strong>";
-  $full_name = moonmars_members_full_name($user->uid);
+  $full_name = moonmars_members_get_full_name($user->uid);
 
   // Cater for names that are too long - we don't want the tooltip too big.
   if (strlen($full_name) > 50) {
@@ -114,13 +127,13 @@ function moonmars_members_tooltip($user) {
   }
 
   $age_gender = implode('/', array_filter(array(
-    moonmars_members_gender($user->uid),
-    moonmars_members_age($user->uid),
+    moonmars_members_get_gender($user->uid),
+    moonmars_members_get_age($user->uid),
   )));
-  $location = moonmars_members_location($user->uid);
+  $location = moonmars_members_get_location($user->uid);
   return
     "<div class='user-tooltip' title='Visit $user->name&apos;s profile'>" .
-      moonmars_members_avatar($user) .
+      moonmars_members_get_avatar($user) .
       "<div class='user-tooltip-text'>" .
         implode('<br>', array_filter(array(
           $user_name,
@@ -138,7 +151,7 @@ function moonmars_members_tooltip($user) {
  * @param int|stdClass $user
  * @return string
  */
-function moonmars_members_avatar($user) {
+function moonmars_members_get_avatar($user) {
   if (!is_object($user)) {
     $user = user_load($user);
   }
@@ -170,12 +183,12 @@ function moonmars_members_avatar($user) {
  * @param int|stdClass $user
  * @return string
  */
-function moonmars_members_avatar_link($user) {
+function moonmars_members_get_avatar_link($user) {
   if (!is_object($user)) {
     $user = user_load($user);
   }
 
-  return "<a class='avatar-link' href='/users/$user->name'>" . moonmars_members_avatar($user->uid) . "</a>";
+  return "<a class='avatar-link' href='/users/$user->name'>" . moonmars_members_get_avatar($user->uid) . "</a>";
 }
 
 /**
@@ -184,14 +197,14 @@ function moonmars_members_avatar_link($user) {
  * @param int|stdClass $user
  * @return string
  */
-function moonmars_members_avatar_tooltip($user) {
+function moonmars_members_get_avatar_tooltip($user) {
   if (!is_object($user)) {
     $user = user_load($user);
   }
 
   // HTML for the tooltip:
-  $avatar = moonmars_members_avatar_link($user->uid);
-  $tooltip = moonmars_members_tooltip($user->uid);
+  $avatar = moonmars_members_get_avatar_link($user->uid);
+  $tooltip = moonmars_members_get_tooltip($user->uid);
 
   return "
     <div class='avatar-tooltip'>
@@ -199,4 +212,190 @@ function moonmars_members_avatar_tooltip($user) {
       $tooltip
     </div>
   ";
+}
+
+/**
+ * Get the level roles, with the level number (which equals the multiplier) as keys.
+ *
+ * @return array
+ */
+function moonmars_members_levels() {
+  return array(
+    1 => 'iron',
+    2 => 'copper',
+    3 => 'silver',
+    4 => 'gold',
+    5 => 'platinum'
+  );
+}
+
+/**
+ * Get a member's level.
+ *
+ * @param object|int|null $user
+ * @return string|bool
+ */
+function moonmars_members_get_level($user = NULL) {
+  if (!$user) {
+    global $user;
+  }
+  elseif (!is_object($user)) {
+    $user = user_load($user);
+  }
+  if (!$user || !$user->uid) {
+    return FALSE;
+  }
+
+  $levels = array_reverse(moonmars_members_levels());
+  $user_level = FALSE;
+
+  foreach ($levels as $level) {
+    if (in_array($level, $user->roles)) {
+      if (!$user_level) {
+        $user_level = $level;
+      }
+      else {
+        // The user level has already been found, so remove this level role:
+        $user->roles = array_diff($user->roles, array($level));
+        $save_user = TRUE;
+      }
+    }
+  }
+
+  // If no user level found, default to iron:
+  if (!$user_level) {
+    $user_level = 'iron';
+    // Add the role:
+    $role = user_role_load_by_name('iron');
+    $user->roles[$role->rid] = 'iron';
+    $save_user = TRUE;
+  }
+
+  if ($save_user) {
+    user_save($user);
+  }
+
+  return $user_level;
+}
+
+/**
+ * Get the user's member level number.
+ *
+ * @param object|int|null $user
+ * @return int
+ */
+function moonmars_members_get_level_num($user = NULL) {
+  return array_search(moonmars_members_get_level($user), moonmars_members_levels());
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
+
+  switch ($form_id) {
+
+    case 'user_register_form':
+
+      // Add JS for the Moon or Mars field:
+      $form['#attached']['js'] = array(
+        drupal_get_path('module', 'moonmars_members') . '/js/moon-or-mars.js',
+      );
+
+      // Add rules fields:
+      $weight = $form['field_moon_or_mars']['#weight'];
+      $form['rules'] = array(
+        '#markup' => "
+  <h3>moonmars.com Rules</h3>
+  <p>This is not legal stuff, i.e. it's actually worth reading. If you don't
+  follow the rules, you'll be kicked out. Please review them and make sure you agree before proceeding.</p>
+  <ul id='user-register-rules'>
+    <li>Be nice to everyone, regardless of age, religion, race, gender, intelligence level, or political or planetary affiliation.</li>
+    <li>Be humble and willing to learn from others, regardless of how brilliant and qualified you think you are.</li>
+    <li>Be patient, helpful and willing to teach. Space will probably be settled by people younger than you. Teach them.</li>
+    <li>Swearing/cursing is ok but only for the purpose of humour or to make a point, never to abuse.</li>
+    <li>No lying, cheating or bullying. Treat others how you like to be treated.</li>
+    <li>Be creative and productive. This is not a social network or a water cooler. We're here to get shit done.</li>
+    <li>No complaining. Participate creatively and contribute your ideas and suggestions for how the site can be improved.</li>
+    <li>No porn or other offensive content. In fact, don't share anything that isn't related to space, tech or science.</li>
+    <li>Sincerely believe in and commit wholeheartedly to our goal of building settlements on the Moon and Mars.</li>
+    <li>Communicate clearly. Say what you mean, and take the time to use proper punctuation, spelling and grammar.</li>
+    <li>Use English. It may not be perfect, but it's become the <i>lingua franca</i> of Earth and of space.</li>
+    <li>If you aren't great at English, learn more and practice. It will definitely be worthwhile to you and the community.</li>
+    <li>No using the site naked. This is a family show.</li>
+  </ul>
+  ",
+        '#weight' => ++$weight,
+      );
+      $form['rules-cb'] = array(
+        '#type' => 'checkbox',
+        '#title' => "I agree to the Rules and understand that if I don't follow them I will be kicked out.",
+        '#required' => TRUE,
+        '#weight' => ++$weight,
+      );
+      break;
+
+    case 'user_profile_form':
+
+      // Add JS for the Moon or Mars field:
+      $module_path = drupal_get_path('module', 'moonmars_members');
+      $form['#attached']['js'] = array(
+        "$module_path/js/moon-or-mars.js",
+        "$module_path/js/profile-form.js",
+      );
+
+      // Order the fields:
+      $weight = 0;
+      $form['account']['#weight'] = ++$weight;
+      $form['account']['name']['#weight'] = ++$weight;
+      $form['account']['mail']['#weight'] = ++$weight;
+      $form['account']['current_pass']['#weight'] = ++$weight;
+      $form['account']['pass']['#weight'] = ++$weight;
+      $form['field_first_name']['#weight'] = ++$weight;
+      $form['field_last_name']['#weight'] = ++$weight;
+      $form['picture']['#weight'] = ++$weight;
+      $form['field_moon_or_mars']['#weight'] = ++$weight;
+      $form['field_date_of_birth']['#weight'] = ++$weight;
+      $form['field_gender']['#weight'] = ++$weight;
+      $form['field_user_location']['#weight'] = ++$weight;
+      $form['field_mobile_phone']['#weight'] = ++$weight;
+      $form['field_bio']['#weight'] = ++$weight;
+      $form['signature']['#weight'] = ++$weight;
+      $form['contact']['#weight'] = ++$weight;
+
+      // Remove the grippie from the bio textarea:
+      $form['field_bio'][LANGUAGE_NONE][0]['value']['#resizable'] = FALSE;
+
+      // Add an after_build handler:
+      $form['#after_build'][] = 'moonmars_members_user_profile_form_after_build';
+
+//      dbg($form['field_date_of_birth']);
+
+      break;
+  }
+}
+
+/**
+ * After_build handler for the user account/profile form.
+ *
+ * @param array $form
+ * @return array
+ */
+function moonmars_members_user_profile_form_after_build($form) {
+
+  // Reformat the timezone options:
+  $rx = "/([^\:]+)\:([^\+]+)([\+\-]\d{2})(\d{2})/";
+  foreach ($form['timezone']['timezone']['#options'] as $tz => &$option) {
+    $n = preg_match($rx, $option, $matches);
+    if ($n) {
+      $option = $matches[1] . ' ' . $matches[3] . ':' . $matches[4];
+    }
+  }
+
+  // Add some descriptions to the location fields:
+  $form['field_user_location'][LANGUAGE_NONE][0]['country']['#description'] = "Select your country";
+  $form['field_user_location'][LANGUAGE_NONE][0]['province']['#description'] = "Select your state or province";
+  $form['field_user_location'][LANGUAGE_NONE][0]['city']['#description'] = "Enter your city";
+
+  return $form;
 }

@@ -17,8 +17,13 @@ function initChannel() {
   });
 
   // Setup comment behaviours:
-  $('#comments article, article.new-comment-form-article').each(function () {
+  $('#comments article').each(function () {
     setupCommentBehaviour(this);
+  });
+
+  // Setup update/post button behaviour:
+  $('#comments article, article.new-comment-form-article').each(function () {
+    setupPostButton(this);
   });
 
   // Setup item behaviours:
@@ -30,7 +35,7 @@ function initChannel() {
   itemTypeSelected();
   $('#edit-field-item-type-und input:radio').click(itemTypeSelected);
   $('#edit-path').remove();
-  $('#field-item-text-add-more-wrapper textarea').autoresize();
+//  $('#field-item-text-add-more-wrapper textarea').autoresize();
   $('#item-node-form span.form-required').remove();
 
   // Setup client-side validation for Post button:
@@ -43,10 +48,13 @@ function initChannel() {
   });
 
   // CSS
-  $('#edit-actions--3').addClass('clearfix');
+  $('#item-node-form .form-actions').addClass('clearfix');
 
   // Hack - remove pagers from beneath comments in channels:
   $('article.node-item #comments .item-list').remove();
+
+  // Setup rating button behaviours:
+  setupRatings();
 }
 
 /**
@@ -90,7 +98,7 @@ function collapsePost(postArticle, autoCollapse) {
   }
 
   // Add autogrow for textareas. This needs to be done before hiding anything, otherwise the sizing doesn't work right:
-  postArticle.find('textarea').eq(0).autoresize();
+//  postArticle.find('textarea').eq(0).autoresize();
 
   // Have to hide the textarea after calling autoresize.
   postArticle.find('.edit-comment-form').eq(0).hide();
@@ -138,7 +146,7 @@ function collapsePost(postArticle, autoCollapse) {
  * @param bool autoCollapse
  */
 function setupCommentBehaviour(commentArticle, autoCollapse) {
-
+  // Make sure commentArticle is a jQuery object:
   commentArticle = $(commentArticle);
 
   collapsePost(commentArticle, autoCollapse);
@@ -154,33 +162,6 @@ function setupCommentBehaviour(commentArticle, autoCollapse) {
       commentArticle.find('.edit-comment-form').show();
       commentArticle.find('.post-content-wrapper').css('height', 'auto');
       return false;
-    }
-  );
-
-  // Setup handler for Post/Update button:
-  commentArticle.find('.new-comment-button').click(
-    function () {
-      var commentArticle = $(this).closest('article');
-      var commentTextarea = commentArticle.find('textarea');
-      var commentText = commentTextarea.val();
-      //      alert(commentText);
-      if (commentText == '') {
-        alert("Please enter a comment before clicking Post.");
-      }
-      else {
-        commentTextarea.attr('disabled', 'disabled').addClass('uploading');
-        var cid = commentArticle.attr('data-cid');
-        var nid = commentArticle.attr('data-nid');
-        $.post("/ajax/comment/update",
-          {
-            cid: cid,
-            nid: nid,
-            text: commentText
-          },
-          updateCommentReturn,
-          'json'
-        );
-      }
     }
   );
 
@@ -218,6 +199,41 @@ function setupCommentBehaviour(commentArticle, autoCollapse) {
 }
 
 /**
+ * Setup handler for Post/Update button.
+ * @param commentArticle
+ */
+function setupPostButton(commentArticle) {
+  // Make sure commentArticle is a jQuery object:
+  commentArticle = $(commentArticle);
+
+  commentArticle.find('.new-comment-button').click(
+    function () {
+      var commentArticle = $(this).closest('article');
+      var commentTextarea = commentArticle.find('textarea');
+      var commentText = commentTextarea.val();
+      //      alert(commentText);
+      if (commentText == '') {
+        alert("Please enter a comment before clicking Post.");
+      }
+      else {
+        commentTextarea.attr('disabled', 'disabled').addClass('uploading');
+        var cid = commentArticle.attr('data-cid');
+        var nid = commentArticle.attr('data-nid');
+        $.post("/ajax/comment/update",
+          {
+            cid: cid,
+            nid: nid,
+            text: commentText
+          },
+          updateCommentReturn,
+          'json'
+        );
+      }
+    }
+  );
+}
+
+/**
  * Handler from when we get back from updating or creating a comment via AJAX.
  */
 function updateCommentReturn(data, textStatus, jqXHR) {
@@ -229,7 +245,7 @@ function updateCommentReturn(data, textStatus, jqXHR) {
     if (data.mode == 'edit') {
       // Edited comment:
       var commentArticle = $('#comment-article-' + data.cid);
-      commentArticle.find('textarea').removeAttr('disabled').removeClass('uploading').val(data.text).autoresize();
+      commentArticle.find('textarea').removeAttr('disabled').removeClass('uploading').val(data.text); //.autoresize();
       commentArticle.find('.field-name-comment-body').show();
       commentArticle.find('.field-name-comment-body .field-item').text(data.text);
     }
@@ -238,7 +254,7 @@ function updateCommentReturn(data, textStatus, jqXHR) {
       var commentArticle = $(data.html);
       var newCommentFormArticle = $('#node-item-' + data.nid + ' .new-comment-form-article');
       newCommentFormArticle.before(commentArticle);
-      newCommentFormArticle.find('textarea').removeAttr('disabled').removeClass('uploading').val('').autoresize();
+      newCommentFormArticle.find('textarea').removeAttr('disabled').removeClass('uploading').val(''); //.autoresize();
     }
     setupCommentBehaviour(commentArticle, false);
     setupTooltipBehaviour(commentArticle.find('.tooltip'));
@@ -293,4 +309,17 @@ function itemTypeSelected() {
       $('#field-item-text-add-more-wrapper .description').text('Enter a description of the file.');
       break;
   }
+}
+
+function setupRatings() {
+  $('.rating-button').click(function() {
+    var item_nid = $(this).closest('article').attr('data-nid');
+    var rating = $(this).attr('data-rating');
+    $.post("/ajax/rate/item", {item_nid: item_nid, rating: rating}, rateItemReturn);
+  });
+
+}
+
+function rateItemReturn(data, textStatus, jqXHR) {
+  debug(data);
 }

@@ -1,0 +1,301 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Contains hook implementations and core functions for the classes module.
+ */
+
+/**
+ * Implementation of hook_init().
+ */
+function classes_init() {
+
+  // Include helper files:
+  require_once "classes_constants.inc";
+  require_once "classes_find.inc";
+  require_once "classes_helper.inc";
+  require_once "classes_forms.inc";
+
+  // Include forms alterations:
+  require_once "classes_node_type_form.inc";
+  require_once "classes_content_field_forms.inc";
+
+  // Get the directory where the class templates live:
+  $GLOBALS['_classes_tpl_dir'] = DRUPAL_ROOT . '/' . drupal_get_path('module', 'classes') . "/templates";
+
+  // Get the directory where the classes live:
+  $GLOBALS['_classes_dir'] = DRUPAL_ROOT . '/' . variable_get('classes_dir', CLASSES_DEFAULT_DIR);
+
+  // Register the class autoload function:
+  spl_autoload_register('classes_autoload');
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function classes_menu() {
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Local tasks for classes settings.
+
+  // Settings page:
+  $items['admin/settings/classes'] = array(
+    'title' => t('Classes'),
+    'description' => t("Update settings, set class names and generate classes."),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('classes_settings_form'),
+    'access arguments' => array('administer classes'),
+    'file' => 'classes_settings_form.inc',
+  );
+  $items['admin/settings/classes/settings'] = array(
+    'title' => t('Settings'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => 10,
+  );
+
+  // Form to set all class names for content types:
+  $items['admin/settings/classes/names'] = array(
+    'title' => t('Class names'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('classes_class_names_form'),
+    'access arguments' => array('administer classes'),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'classes_class_names_form.inc',
+    'weight' => 20,
+  );
+
+  // Form to generate classes:
+  $items['admin/settings/classes/generate'] = array(
+    'title' => t('Generate classes'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('classes_generate_form'),
+    'access arguments' => array('administer classes'),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'classes_generate_form.inc',
+    'weight' => 30,
+  );
+
+  // Form to import and export class and property names:
+  $items['admin/settings/classes/import-export'] = array(
+    'title' => t('Import/export'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('classes_import_export_form'),
+    'access arguments' => array('administer classes'),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'classes_import_export_form.inc',
+    'weight' => 40,
+  );
+
+  // Forms to set property names for content types:
+  $types = array_keys(node_get_types());
+  foreach ($types as $type) {
+    $url_type = str_replace('_', '-', $type);
+    $items["admin/content/node-type/$url_type/properties"] = array(
+      'title' => t('Property names'),
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('classes_property_names_form', $type),
+      'access arguments' => array('administer classes'),
+      'type' => MENU_LOCAL_TASK,
+      'file' => 'classes_property_names_form.inc',
+      'weight' => 100,
+    );
+  }
+
+  // Utility for checking that class and property names in the classes match
+  // those in the database.
+  $items['admin/settings/classes/check'] = array(
+    'title' => t('Consistency check'),
+    'page callback' => 'classes_consistency_check',
+    'access arguments' => array('administer classes'),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'classes_utilities.inc',
+    'weight' => 50,
+  );
+
+  // Find the differences between the data models (content types and CCK fields)
+  // on the local and remote databases.
+  $items['admin/settings/classes/diff'] = array(
+    'title' => t('Compare databases'),
+    'page callback' => 'classes_diff',
+    'access arguments' => array('administer classes'),
+    'type' => MENU_CALLBACK,
+    'file' => 'classes_utilities.inc',
+    'weight' => 60,
+  );
+
+  return $items;
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function classes_perm() {
+  return array('administer classes');
+}
+
+/**
+ * Get an array of the entities supported by the classes module, and the tables
+ * that contain their fields, and any extra fields added by CCK.
+ *
+ * @return array
+ */
+function classes_entities() {
+  return array(
+    'entity' => array(
+      'abstract' => TRUE,
+    ),
+    'node' => array(
+      'tables' => array('node', 'node_revisions'),
+    ),
+    'user' => array(
+      'tables' => array('users'),
+    ),
+    'term' => array(
+      'tables' => array('term_data'),
+    ),
+    'file' => array(
+      'tables' => array('files'),
+      'cck' => array(
+        'list' => 'int',
+        'data' => 'array',
+        'view' => 'string',
+      ),
+      'custom' => array(
+        'set' => array('path'),
+      ),
+    ),
+    'location' => array(
+      'tables' => array('location'),
+    ),
+    'image' => NULL,
+    'vocabulary' => NULL,
+    'role' => NULL,
+    'comment' => NULL,
+    'menu' => NULL,
+    'module' => NULL,
+    'theme' => NULL,
+  );
+}
+
+/**
+ * Custom autoload function.
+ * Scans the top-level classes directory and all subdirectories looking for the
+ * class file.
+ *
+ * @todo Update this function to use the autoload module.
+ *
+ * @param string $class
+ */
+function classes_autoload($class) {
+
+  //if ($class == 'Trip') {
+  //  return FALSE;
+  //}
+
+  // Get the paths to all the class files:
+  $class_paths = classes_paths();
+
+  // If we have the class file, include it:
+  if (isset($class_paths[$class])) {
+    require_once $class_paths[$class];
+  }
+}
+
+/**
+ * Load a class if not already loaded.
+ *
+ * @param string $class
+ */
+function classes_load($class) {
+  if (!class_exists($class)) {
+    classes_autoload($class);
+  }
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function classes_theme($existing, $type, $theme, $path) {
+  return array(
+    'classes_class_names_form' => array(
+      'arguments' => array('form' => NULL),
+      'file' => 'classes_class_names_form.inc',
+    ),
+    'classes_property_names_form' => array(
+      'arguments' => array('form' => NULL),
+      'file' => 'classes_property_names_form.inc',
+    ),
+    'classes_generate_form' => array(
+      'arguments' => array('form' => NULL),
+      'file' => 'classes_generate_form.inc',
+    ),
+  );
+}
+
+/**
+ * If the base class has already been created for this content type, update the
+ * base class (so it's up-to-date) and also create the class stub for the
+ * derived class if not present.
+ *
+ * @param string $type
+ */
+function classes_update_type_classes($type) {
+  global $_classes_dir;
+
+  // Check if the base class already exists:
+  $class = classes_type_class_name($type);
+  $path = "$_classes_dir/types/base/{$class}Base.class.php";
+
+  // If it exists, overwrite:
+  if (file_exists($path)) {
+    require_once drupal_get_path('module', 'classes') . "/classes_generate.inc";
+    $classes = classes_generate_type_classes($type);
+
+    // Tell the user:
+    classes_generated_message($classes);
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Functions to generate class files.
+
+/**
+ * Make sure the central classes directory and entity classes are setup.
+ */
+function classes_setup() {
+  // Make sure the classes directories exist:
+  classes_check_directories();
+
+  // Copy helper classes:
+  $helper_classes = array('XDateTime', 'XDateTimeRange', 'XLink');
+  $classes = array();
+  foreach ($helper_classes as $class) {
+    $classes = array_merge($classes, classes_generate_helper_class($class));
+  }
+
+  // Return array of generated classes with paths:
+  return $classes;
+}
+
+/**
+ * Check that the class directories used by the module/application exist.
+ *
+ * @return array
+ *   The directories that are created.
+ */
+function classes_check_directories() {
+  // If the classes directories don't exist, create them now:
+  global $_classes_dir;
+  $subdirs = array('', '/entities', '/entities/base', '/types', '/types/base', '/helper');
+  $created_dirs = array();
+  foreach ($subdirs as $subdir) {
+    $dir = $_classes_dir . $subdir;
+    if (!file_exists($dir)) {
+      mkdir($dir, 0755);
+      $created_dirs[] = $dir;
+    }
+  }
+  return $created_dirs;
+}

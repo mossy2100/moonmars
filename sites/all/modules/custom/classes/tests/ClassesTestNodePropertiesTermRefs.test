@@ -1,0 +1,238 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Test term reference node properties.
+ */
+
+class ClassesTestNodePropertiesTermRefs extends ClassesTest {
+
+  /**
+   * Implement getInfo().
+   *
+   * @return array
+   */
+  public function getInfo() {
+    return array(
+      'name' => t('Test node properties - term references'),
+      'group' => t('Classes'),
+    );
+  }
+
+  /**
+   * Custom setUp() method.
+   *
+   * @see DrupalWebTestCase::setUp()
+   */
+  public function setUp() {
+    debugOff();
+    
+    // Enable any modules required for the test:
+    parent::setUp();
+
+    // Create a single-value term reference field:
+    self::addField('simple_test_1', 'category', 'Category',
+      'content_taxonomy', 'content_taxonomy', 'content_taxonomy_autocomplete');
+
+    // Create a multiple-value term reference field:
+    self::addField('simple_test_1', 'tags', 'Tags',
+      'content_taxonomy', 'content_taxonomy', 'content_taxonomy_autocomplete',
+      TRUE);
+    
+    // Regenerate the class file:
+    classes_generate_type_classes('simple_test_1');
+    
+    // Create a vocabulary:
+    db_query("INSERT INTO {vocabulary} (name) VALUES ('Continents')");
+    $this->vid = db_last_insert_id('vocabulary', 'vid');
+  }
+
+  /**
+   * Run tests.
+   */
+  public function test() {
+    $this->_testSingleTermRef();
+    $this->_testMultipleTermRef();
+  }
+
+  
+  //////////////////////////////////////////////////////////////////////////////
+  // Test term reference CCK properties.
+
+  /**
+   * Test single-value term reference property.
+   */
+  public function _testSingleTermRef() {
+    // Create a node:
+    $st = SimpleTest1::create();
+    
+    // Create a term:
+    $category = XTerm::create();
+    $category->name = 'Asia';
+    $category->vid = $this->vid;
+    $category->save();
+    $tid = $category->tid;
+    $this->debug('new tid', $tid);
+
+    // Set the property value:
+    $st->category = $category;
+
+    // Check property values:
+    $this->assertEqual($st->category->name, 'Asia');
+    $this->assertEqual($st->category->tid, $tid);
+    $this->assertEqual($st->category->vid, $this->vid);
+    // Check type:
+    $this->assertTrue($st->category instanceof XTerm);
+
+    // Save the node:
+    $st->save();
+    $nid = $st->nid;
+
+    // Load the node fresh:
+    $node = node_load($nid, NULL, TRUE);
+
+    // Check the value was stored properly:
+    $this->debug('CCK field', $node->field_category[0]);
+    $this->assertEqual($node->field_category[0]['value'], $tid);
+    
+    // Test resetting the property:
+    $st->category = NULL;
+    $this->assertNull($st->category);
+    
+    // Create another one:
+    $category2 = XTerm::create();
+    $category2->name = 'Africa';
+    $category2->vid = $this->vid;
+    $category2->save();
+    $tid2 = $category2->tid;
+    
+    // Test setting the property using only a tid:
+    $st->category = $tid2;
+    // Check property values:
+    $this->assertEqual($st->category->name, 'Africa');
+    $this->assertEqual($st->category->tid, $tid2);
+    $this->assertEqual($st->category->vid, $this->vid);
+    // Check type:
+    $this->assertTrue($st->category instanceof XTerm);
+    
+    // Reset the property again:
+    $st->category = NULL;
+    
+    // Create another category node:
+    $category3 = XTerm::create();
+    $category3->name = 'Europe';
+    $category3->vid = $this->vid;
+    $category3->save();
+    $tid3 = $category3->tid;
+    
+    // Load the term fresh:
+    $term = taxonomy_get_term($tid3);
+    
+    // Try setting the property using a term object:
+    $st->category = $term;
+    // Get the property value:
+    $this->assertEqual($st->category->name, 'Europe');
+    $this->assertEqual($st->category->tid, $tid3);
+    $this->assertEqual($st->category->vid, $this->vid);
+    // Check type:
+    $this->assertTrue($st->category instanceof XTerm);
+    
+    // Try setting the property using a XTerm object:
+    $st->category = $category;
+    // Get the property value:
+    $this->assertEqual($st->category->name, 'Asia');
+    $this->assertEqual($st->category->tid, $tid);
+    $this->assertEqual($st->category->vid, $this->vid);
+    // Check type:
+    $this->assertTrue($st->category instanceof XTerm);
+  }
+
+  /**
+   * Test multiple-value term reference property.
+   */
+  public function _testMultipleTermRef() {
+    // Create a node:
+    $st = SimpleTest1::create();
+    
+    // Create some terms:
+    $tags = array();
+    $tids = array();
+    
+    $tags[0] = XTerm::create('Adam', $this->vid);
+    $tags[0]->save();
+    $tids[0] = $tags[0]->tid;
+    
+    $tags[1] = XTerm::create('Bob', $this->vid);
+    $tags[1]->save();
+    $tids[1] = $tags[1]->tid;
+    
+    $tags[2] = XTerm::create('Charlie', $this->vid);
+    $tags[2]->save();
+    $tids[2] = $tags[2]->tid;
+    
+    $this->debug('tids', $tids);
+
+    // Set the property value as an array:
+    $st->tags = $tags;
+
+    // Check the property values:
+    foreach ($tags as $n => $tag) {
+      $this->assertEqual($st->tags[$n]->name, $tag->name);
+      $this->assertEqual($st->tags[$n]->tid, $tids[$n]);
+      $this->assertEqual($st->tags[$n]->vid, $tag->vid);
+      // Check type:
+      $this->assertTrue($st->tags[$n] instanceof XTerm);
+    }
+
+    // Save the node:
+    $st->save();
+
+    // Get the new nid:
+    $nid = $st->nid;
+
+    // Load the node fresh:
+    $node = node_load($nid, NULL, TRUE);
+    $this->debug('CCK field', $node->field_tags);
+
+    // Check the value was stored properly:
+    foreach ($tids as $n => $tid) {
+      $this->assertEqual($node->field_tags[$n]['value'], $tid);
+    }
+    
+    // Test resetting the property:
+    $st->tags = NULL;
+    $this->assertEqual($st->tags, array());
+    
+    // Test setting the property using tids:
+    $st->tags = $tids;
+    $this->debug('count(tags)', count($st->tags));
+    // Get the property value:
+    foreach ($tags as $n => $tag) {
+      $this->assertEqual($st->tags[$n]->name, $tag->name);
+      $this->assertEqual($st->tags[$n]->vid, $this->vid);
+      $this->assertEqual($st->tags[$n]->tid, $tids[$n]);
+      // Check type:
+      $this->assertTrue($st->tags[$n] instanceof XTerm);
+    }
+    
+    // Reset the property again:
+    $st->tags = NULL;
+
+    // Try setting the property using term objects:
+    foreach ($tids as $n => $tid) {
+      $st->tags[$n] = taxonomy_get_term($tid);
+    }
+    
+    // Get the property value:
+    foreach ($tags as $n => $tag) {
+      $this->assertEqual($st->tags[$n]->name, $tag->name);
+      $this->assertEqual($st->tags[$n]->vid, $this->vid);
+      $this->assertEqual($st->tags[$n]->tid, $tids[$n]);
+      // Check type:
+      $this->assertTrue($st->tags[$n] instanceof XTerm);
+      $this->debug(get_class($st->tags[$n]));
+    }
+  }
+  
+}

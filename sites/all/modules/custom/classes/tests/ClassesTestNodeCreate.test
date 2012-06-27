@@ -1,0 +1,176 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Test node creation.
+ */
+
+class ClassesTestNodeCreate extends ClassesTest {
+
+  /**
+   * Implement getInfo() method as required by SimpleTest module.
+   *
+   * @return array
+   */
+  public function getInfo() {
+    return array(
+      'name' => t('Test creation of XNode objects'),
+      'group' => t('Classes'),
+    );
+  }
+
+  /**
+   * Custom setUp() method.
+   *
+   * @see DrupalWebTestCase::setUp()
+   */
+  public function setUp() {
+    // Enable any modules required for the test:
+    parent::setUp();
+  }
+
+  /**
+   * Run tests.
+   * These are bundled into one method because for whatever reason the version
+   * of simpletest I have only finds the first one.
+   */
+  public function test() {
+    debugOn();
+    $this->_testCreateNewNode();
+    $this->_testCreateExistingNode();
+    $this->_testCreateInvalidNode();
+  }
+
+  /**
+   * Test creation of a new node.
+   */
+  public function _testCreateNewNode() {
+
+    // Create new node object:
+    $st = SimpleTest1::create();
+
+    // Check the class:
+    $this->assertTrue($st instanceof SimpleTest1);
+    $this->assertTrue($st instanceof SimpleTest1Base);
+    $this->assertTrue($st instanceof XNode);
+    $this->assertTrue($st instanceof XNodeBase);
+    $this->assertTrue($st instanceof XEntity);
+    $this->assertTrue($st instanceof XEntityBase);
+
+    // Check the type:
+    $this->assertEqual($st->type, 'simple_test_1');
+    
+    // nid should be NULL:
+    $this->assertNull($st->nid);
+
+    // title should be NULL:
+    $this->assertNull($st->title);
+    
+    // uid should not be NULL:
+    $this->assertNotNull($st->uid);
+    $this->debug('XUser', $st->uid);
+
+    // created should not be NULL:
+    $this->assertNotNull($st->created);
+    $this->debug('Created', $st->created->isoFull);
+
+    // changed should not be NULL:
+    $this->assertNotNull($st->changed);
+    $this->debug('Changed', $st->changed->isoFull);
+
+    // status should be 1:
+    $this->assertEqual($st->status, 1);
+
+    // loaded flags should all be false:
+    $this->assertFalse($st->coreLoaded);
+    $this->assertFalse($st->revisionLoaded);
+    $this->assertFalse($st->loaded);
+
+    // Save the node so we can use it:
+    $st->save();
+
+    // Check we have a nid now:
+    $this->assertNotNull($st->nid);
+    $this->debug('nid', $st->nid);
+  }
+
+  /**
+   * Test creation of a XNode object from an existing node.
+   */
+  public function _testCreateExistingNode() {
+    // Create new node object:
+    $st = SimpleTest1::create();
+    $st->title = "Hello World";
+    $st->save();
+    $nid = $st->nid;
+    debug($nid);
+    
+    SimpleTest1::clearCache();
+    
+    // Test using a valid nid.
+    $st = SimpleTest1::create($nid);
+    $this->assertEqual($st->nid, $nid);
+    $this->assertEqual($st->type, 'simple_test_1');
+    $this->assertFalse($st->coreLoaded);
+    $this->assertFalse($st->revisionLoaded);
+    $this->assertFalse($st->loaded);
+    
+    // Clear the node cache:
+    SimpleTest1::clearCache();
+
+    // Create a dummy CCK nodereference field and create a node from that:
+    $cck = array('nid' => $nid);
+    $st = SimpleTest1::create($cck);
+    $this->assertEqual($st->nid, $nid);
+    $this->assertEqual($st->type, 'simple_test_1');
+    $this->assertFalse($st->coreLoaded);
+    $this->assertFalse($st->revisionLoaded);
+    $this->assertFalse($st->loaded);
+    
+    // Clear the node cache:
+    SimpleTest1::clearCache();
+
+    // Load a node from the database:
+    $node = node_load($nid);
+
+    // Create a new SimpleTest1 object from a node:
+    $st = SimpleTest1::create($node);
+    $this->assertEqual($st->nid, $nid);
+    $this->debug($st->type);
+    $this->assertEqual($st->type, 'simple_test_1');
+    $this->assertTrue($st->coreLoaded);
+    $this->assertTrue($st->revisionLoaded);
+    $this->assertTrue($st->loaded);
+
+    // Clear the node cache:
+    SimpleTest1::clearCache();
+
+    // Create a XNode from a node record:
+    $rec = db_fetch_array(db_query("SELECT * FROM {node} WHERE nid = %d", $nid));
+    $st = SimpleTest1::create($rec);
+    $this->assertEqual($st->nid, $nid);
+    $this->assertEqual($st->type, 'simple_test_1');
+    $this->assertTrue($st->coreLoaded);
+    $this->assertFalse($st->revisionLoaded);
+    $this->assertFalse($st->loaded);
+  }
+
+  /**
+   * Test creation of a node with invalid input.
+   */
+  public function _testCreateInvalidNode() {
+    $st = SimpleTest1::create(-1);
+    $this->assertFalse($st);
+
+    $st = SimpleTest1::create('foo');
+    $this->assertFalse($st);
+
+    $st = SimpleTest1::create(FALSE);
+    $this->assertFalse($st);
+
+    $st = SimpleTest1::create(TRUE);
+    $this->assertFalse($st);
+  }
+
+}

@@ -1,0 +1,247 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Test location node properties.
+ */
+
+class ClassesTestNodePropertiesLocations extends ClassesTest {
+
+  /**
+   * Implement getInfo().
+   *
+   * @return array
+   */
+  public function getInfo() {
+    return array(
+      'name' => t('Test node properties - locations'),
+      'group' => t('Classes'),
+    );
+  }
+
+  /**
+   * Custom setUp() method.
+   *
+   * @see DrupalWebTestCase::setUp()
+   */
+  public function setUp() {
+    // Enable any modules required for the test:
+    parent::setUp();
+
+    // Create a single-value location field:
+    self::addField('simple_test_1', 'home', 'Home', 'location', 'location_cck', 'location');
+
+    // Create a multiple-value location field:
+    self::addField('simple_test_1', 'addresses', 'Addresses', 'location', 'location_cck', 'location', TRUE);
+    
+    // Regenerate the class file:
+    classes_generate_type_classes('simple_test_1');
+  }
+
+  /**
+   * Run tests.
+   */
+  public function test() {
+    $this->_testSingleLocation();
+    $this->_testMultipleLocation();
+  }
+
+  
+  //////////////////////////////////////////////////////////////////////////////
+  // Test location CCK properties.
+
+  /**
+   * Test single-value location property.
+   */
+  public function _testSingleLocation() {
+    // Create a node:
+    $st = SimpleTest1::create();
+    
+    // Create a location:
+    $home = XLocation::create();
+    $home->name = 'Home';
+    $home->street = '81 Alfred Cres';
+    $home->additional = 'Fitzroy North';
+    $home->city = 'Melbourne';
+    $home->state = 'VIC';
+    $home->country = 'Australia';
+    $home->save();
+    $lid = $home->lid;
+    $this->debug('new lid', $lid);
+
+    // Set the property value:
+    $st->home = $home;
+
+    // Check property values:
+    $this->assertEqual($st->home->name, 'Home');
+    $this->assertEqual($st->home->lid, $lid);
+    $this->assertEqual($st->home->city, 'Melbourne');
+    $this->assertEqual($st->home->state, 'VIC');
+    $this->assertEqual($st->home->country, 'au');
+    // Check type:
+    $this->assertTrue($st->home instanceof XLocation);
+
+    // Save the node:
+    $st->save();
+    $nid = $st->nid;
+
+    // Load the node fresh:
+    $node = node_load($nid, NULL, TRUE);
+
+    // Check the value was stored properly:
+    $this->debug('CCK field', $node->field_home[0]);
+    $this->assertEqual($node->field_home[0]['lid'], $lid);
+    
+    // Test resetting the property:
+    $st->home = NULL;
+    $this->assertNull($st->home);
+    
+    // Create another one:
+    $home2 = XLocation::create();
+    $home2->name = 'Work';
+    $home2->street = '380 Lonsdale St';
+    $home2->city = 'Melbourne';
+    $home2->state = 'VIC';
+    $home2->country = 'AUSTRALIA';
+    $home2->save();
+    $lid2 = $home2->lid;
+    
+    // Test setting the property using only a lid:
+    $st->home = $lid2;
+    
+    // Check property values:
+    $this->assertEqual($st->home->name, 'Work');
+    $this->assertEqual($st->home->lid, $lid2);
+    $this->assertEqual($st->home->city, 'Melbourne');
+    $this->assertEqual($st->home->state, 'VIC');
+    $this->assertEqual($st->home->country, 'au');
+    // Check type:
+    $this->assertTrue($st->home instanceof XLocation);
+    
+    // Reset the property again:
+    $st->home = NULL;
+    
+    // Create another home node:
+    $home3 = XLocation::create();
+    $home3->name = 'Friend';
+    $home3->street = '54 Fleming St';
+    $home3->city = 'Yandina';
+    $home3->state = 'QLD';
+    $home3->country = 'AU';
+    $home3->save();
+    $lid3 = $home3->lid;
+    
+    // Load the location fresh:
+    $location = location_load_location($lid3);
+    
+    // Try setting the property using a location object:
+    $st->home = $location;
+    // Get the property value:
+    $this->assertEqual($st->home->name, 'Friend');
+    $this->assertEqual($st->home->lid, $lid3);
+    $this->assertEqual($st->home->city, 'Yandina');
+    $this->assertEqual($st->home->state, 'QLD');
+    $this->assertEqual($st->home->country, 'au');
+    // Check type:
+    $this->assertTrue($st->home instanceof XLocation);
+    
+    // Try setting the property using a XLocation object:
+    $st->home = $home;
+    // Get the property value:
+    $this->assertEqual($st->home->name, 'Home');
+    $this->assertEqual($st->home->lid, $lid);
+    $this->assertEqual($st->home->additional, 'Fitzroy North');
+    $this->assertEqual($st->home->city, 'Melbourne');
+    $this->assertEqual($st->home->state, 'VIC');
+    $this->assertEqual($st->home->country, 'au');
+    // Check type:
+    $this->assertTrue($st->home instanceof XLocation);
+  }
+
+  /**
+   * Test multiple-value location property.
+   */
+  public function _testMultipleLocation() {
+    // Create a node:
+    $st = SimpleTest1::create();
+    
+    // Create some locations:
+    $addresses = array();
+    $lids = array();
+    
+    $addresses[0] = XLocation::create('Adam');
+    $addresses[0]->save();
+    $lids[0] = $addresses[0]->lid;
+    
+    $addresses[1] = XLocation::create('Bob');
+    $addresses[1]->save();
+    $lids[1] = $addresses[1]->lid;
+    
+    $addresses[2] = XLocation::create('Charlie');
+    $addresses[2]->save();
+    $lids[2] = $addresses[2]->lid;
+    
+    $this->debug('lids', $lids);
+
+    // Set the property value as an array:
+    $st->addresses = $addresses;
+
+    // Check the property values:
+    foreach ($addresses as $n => $address) {
+      $this->assertEqual($st->addresses[$n]->name, $address->name);
+      $this->assertEqual($st->addresses[$n]->lid, $lids[$n]);
+      // Check type:
+      $this->assertTrue($st->addresses[$n] instanceof XLocation);
+    }
+
+    // Save the node:
+    $st->save();
+
+    // Get the new nid:
+    $nid = $st->nid;
+
+    // Load the node fresh:
+    $node = node_load($nid, NULL, TRUE);
+    $this->debug('CCK field', $node->field_addresses);
+
+    // Check the value was stored properly:
+    foreach ($lids as $n => $lid) {
+      $this->assertEqual($node->field_addresses[$n]['lid'], $lid);
+    }
+    
+    // Test resetting the property:
+    $st->addresses = NULL;
+    $this->assertEqual($st->addresses, array());
+    
+    // Test setting the property using lids:
+    $st->addresses = $lids;
+    $this->debug('count(addresses)', count($st->addresses));
+    // Get the property value:
+    foreach ($addresses as $n => $address) {
+      $this->assertEqual($st->addresses[$n]->name, $address->name);
+      $this->assertEqual($st->addresses[$n]->lid, $lids[$n]);
+      // Check type:
+      $this->assertTrue($st->addresses[$n] instanceof XLocation);
+    }
+    
+    // Reset the property again:
+    $st->addresses = NULL;
+
+    // Try setting the property using location arrays:
+    foreach ($lids as $n => $lid) {
+      $st->addresses[$n] = location_load_location($lid);
+    }
+    
+    // Get the property value:
+    foreach ($addresses as $n => $address) {
+      $this->assertEqual($st->addresses[$n]->name, $address->name);
+      $this->assertEqual($st->addresses[$n]->lid, $lids[$n]);
+      
+      // Check type:
+      $this->assertTrue($st->addresses[$n] instanceof XLocation);
+      $this->debug(get_class($st->addresses[$n]));
+    }
+  }
+  
+}

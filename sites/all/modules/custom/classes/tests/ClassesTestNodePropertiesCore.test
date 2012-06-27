@@ -1,0 +1,97 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Test core node properties.
+ */
+
+class ClassesTestNodePropertiesCore extends ClassesTest {
+
+  /**
+   * Implement getInfo() method as required by SimpleTest module.
+   *
+   * @return array
+   */
+  public function getInfo() {
+    return array(
+      'name' => t('Test node properties - core'),
+      'group' => t('Classes'),
+    );
+  }
+
+  /**
+   * Custom setUp() method.
+   *
+   * @see DrupalWebTestCase::setUp()
+   */
+  public function setUp() {
+    // Enable any modules required for the test:
+    parent::setUp();
+  }
+  
+  /**
+   * Test getting and setting of core and revision node properties.
+   */
+  public function testCoreProperties() {
+    $st = SimpleTest1::create();
+
+    $title = "Hello World";
+    $body = "This is an example";
+    $teaser = "Example";
+    
+    $st->title = $title;
+    $st->body = $body;
+    $st->teaser = $teaser;
+    $st->save();
+    
+    $nid = $st->nid;
+
+    // Clear the node cache:
+    XNode::clearCache();
+
+    // Reload the node from the database and let's see if it saved the
+    // properties ok:
+    $node = node_load($nid);
+
+    // Check the values of the properties:
+    $this->assertEqual($node->title, $title);
+    $this->assertEqual($node->body, $body);
+    $this->assertEqual($node->teaser, $teaser);
+    
+    // See if the timestamp properties are XDateTime objects as they should be:
+    $this->debug($st->created);
+    $this->assertTrue($st->created instanceof XDateTime);
+    $this->debug("Created", $st->created->isoFull);
+    
+    $this->debug($st->changed);
+    $this->assertTrue($st->changed instanceof XDateTime);
+    $this->debug("Changed", $st->changed->isoFull);
+    
+    // Check the user id:
+    $this->assertEqual($st->uid, 1);
+    
+    // Check the status:
+    $this->assertEqual($st->status, 1);
+    $st->status = 0;
+    $this->assertEqual($st->status, 0);
+    $st->save();
+    
+    // Clear the node cache:
+    XNode::clearCache();
+    
+    // Load the node, bypassing cache:
+    $node = node_load($nid, $st->vid);
+    
+    // Check values:
+    $this->assertEqual($node->title, $title);
+    $this->assertEqual($node->body, $body);
+    $this->assertEqual($node->teaser, $teaser);
+    $this->assertEqual($node->status, 0);
+    $this->assertEqual($node->uid, 1);
+    $this->assertEqual($node->created, $st->created->timestamp);
+    $this->assertEqual($node->changed, $st->changed->timestamp);
+    $this->assertEqual($node->type, 'simple_test_1');
+  }
+  
+}

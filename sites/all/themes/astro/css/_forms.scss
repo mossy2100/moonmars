@@ -1,8 +1,5 @@
 form {
 
-  #edit-title {
-  }
-
   div.form-item label,
   span.fieldset-legend {
     font-weight: bold;
@@ -12,9 +9,6 @@ form {
   }
 
   fieldset {
-    @include border-radius(3px);
-    background-color: $blue5;
-    margin-top: 20px;
 
     legend {
       color: $red1;
@@ -45,12 +39,12 @@ form {
     padding: 2px;
     border: solid 1px $blue4;
     @include border-radius(3px);
-    resize: none;
+    //resize: none;
   }
 
   input.form-text,
-  select {
-    height: 22px;
+  .form-textarea-wrapper textarea {
+    width: 300px;
   }
 
   .field-name-field-event-price {
@@ -116,5 +110,198 @@ form {
         }
       }
     }
+  }
+}
+
+
+////////////////////////////////////
+// User registration form
+
+#user-register-form {
+  #user-register-rules {
+    margin-left: 20px;
+  }
+}
+
+
+////////////////////////////////////
+// User login form in page
+
+#user-login {
+}
+
+
+////////////////////////////////////
+// User login form in page
+
+#user-pass {
+}
+
+
+////////////////////////////////////
+// User profile form
+
+#user-profile-form {
+
+  #edit-current-pass,
+  #edit-pass-pass1,
+  #edit-pass-pass2 {
+    width: 130px;
+    margin-bottom: 0;
+  }
+
+  .form-item-pass-pass2 {
+    margin-bottom: 3px;
+  }
+
+  .form-type-password-confirm {
+    .form-type-password {
+      width: 300px;
+    }
+  }
+
+  .password-strength,
+  .password-confirm {
+    width: 160px;
+  }
+
+  .password-suggestions {
+    width: 290px;
+    padding: 4px;
+    margin-bottom: 0;
+
+    ul {
+      margin-left: 20px;
+    }
+  }
+
+  fieldset {
+    padding: 0;
+    margin: 0;
+    border: none;
+
+    legend,
+    .fieldset-description {
+      display: none;
+    }
+
+    .fieldset-wrapper {
+      padding: 0;
+    }
+  }
+
+  .description {
+    margin-left: 0;
+  }
+
+  .field-type-datetime {
+    .form-type-date-popup {
+      margin: 0;
+    }
+
+    .form-item-field-date-of-birth-und-0-value-date {
+      .description {
+        padding-bottom: 0;
+      }
+    }
+  }
+
+  .location .form-item input,
+  #edit-field-user-location-und-0-country,
+  #edit-field-user-location-und-0-province-selector,
+  #edit-timezone--2 {
+    width: 300px;
+  }
+
+  #edit-field-user-location {
+    .location .form-item input {
+      margin-bottom: 0;
+    }
+
+    .form-item-field-user-location-und-0-country {
+      margin-top: 0;
+    }
+
+    .form-item-field-user-location-und-0-city {
+      margin-bottom: 0;
+    }
+  }
+
+  #edit-field-mobile-phone-und-0-value {
+    width: 150px;
+  }
+
+}
+
+
+////////////////////////////////////////////////////////////////////////
+// Moon or Mars field (register form and profile form)
+
+#edit-field-moon-or-mars-und {
+
+  height: 120px;
+  margin: 0;
+
+  div.form-item {
+    float: left;
+    width: 92px;
+    margin: 0 12px 0 0;
+
+    &:last-child {
+      margin-right: 0;
+    }
+
+    label {
+      display: block;
+      width: 80px;
+      height: 15px;
+      padding: 85px 5px 5px;
+      margin: 5px 0 0 0;
+      background-repeat: no-repeat;
+      background-position: 5px 5px;
+      text-align: center;
+      @include border-radius(3px);
+      border: solid 1px $grey4;
+
+      &:hover {
+        background-color: $red4;
+        border-color: $red3;
+      }
+
+      &.selected {
+        background-color: $blue4;
+        border-color: $blue3;
+      }
+    }
+
+    input {
+      display: none;
+    }
+  }
+
+}
+
+////////////////////////////////////
+// Search form in right sidebar
+
+#search-block-form {
+  #edit-search-block-form--2 {
+    width: 100%;
+  }
+
+  .form-submit {
+    float:right;
+    margin-top: 3px;
+    margin-right: 0;
+  }
+}
+
+
+////////////////////////////////////
+// User login form in sidebar
+
+#user-login-form {
+  input.form-text {
+    width: 100%;
   }
 }

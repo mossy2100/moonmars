@@ -1,0 +1,231 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Test node reference node properties.
+ */
+
+class ClassesTestNodePropertiesNodeRefs extends ClassesTest {
+
+  /**
+   * Implement getInfo() method as required by SimpleTest module.
+   *
+   * @return array
+   */
+  public function getInfo() {
+    return array(
+      'name' => t('Test node properties - node references'),
+      'group' => t('Classes'),
+    );
+  }
+
+  /**
+   * Custom setUp() method.
+   *
+   * @see DrupalWebTestCase::setUp()
+   */
+  public function setUp() {
+    // Enable any modules required for the test:
+    parent::setUp();
+
+    // Add another content type:
+    parent::createContentType('simple_test_2');
+
+    // Create a single-value nodereference field:
+    self::addField('simple_test_1', 'child', 'Child',
+      'nodereference', 'nodereference', 'nodereference_autocomplete',
+      FALSE, array('referenceable_types' => array('simple_test_2')));
+
+    // Create a multiple-value nodereference field:
+    // (I'm not specifying the content type here, but it still works - just
+    // slightly less efficient.)
+    self::addField('simple_test_1', 'children', 'Children',
+      'nodereference', 'nodereference', 'nodereference_autocomplete',
+      TRUE);
+    
+    // Regenerate the class file:
+    classes_generate_type_classes('simple_test_1');
+  }
+
+  /**
+   * Clean up after testing.
+   */
+  public function tearDown() {
+    parent::tearDown();
+    
+    // Remove the extra classes we generated:
+    classes_delete_class("SimpleTest2");
+    classes_delete_class("SimpleTest2Base");
+  }
+
+  /**
+   * Run tests.
+   * These are bundled into one method because for whatever reason the version
+   * of simpletest I have only finds the first one.
+   */
+  public function test() {
+    debugOn();
+    $this->_testSingleNodeRef();
+    $this->_testMultipleNodeRef();
+  }
+
+  
+  //////////////////////////////////////////////////////////////////////////////
+  // Test nodereference CCK properties.
+
+  /**
+   * Test single-value nodereference property.
+   */
+  public function _testSingleNodeRef() {
+    // Create a node:
+    $st = SimpleTest1::create();
+    
+    // Create a child node:
+    $child = SimpleTest2::create();
+    $child->title = 'Adam';
+    $child->save();
+    $child_nid = $child->nid;
+
+    // Set the property value:
+    $st->child = $child;
+
+    // Get the property value:
+    $this->assertEqual($st->child->title, 'Adam');
+    // Check type:
+    $this->assertTrue($st->child instanceof SimpleTest2);
+
+    // Save the node:
+    $st->save();
+
+    // Get the new nid:
+    $nid = $st->nid;
+
+    // Load the node fresh:
+    $node = node_load($nid, NULL, TRUE);
+
+    // Check the value was stored properly:
+    $this->debug('CCK field', $node->field_child[0]);
+    $this->assertEqual($node->field_child[0]['nid'], $child_nid);
+    
+    // Test resetting the property:
+    $st->child = NULL;
+    $this->assertNull($st->child);
+    
+    // Create another one:
+    $child2 = SimpleTest2::create();
+    $child2->title = 'Eve';
+    $child2->save();
+    $child2_nid = $child2->nid;
+    
+    // Test setting the property using only a nid:
+    $st->child = $child2_nid;
+    // Get the property value:
+    $this->assertEqual($st->child->title, 'Eve');
+    // Check type:
+    $this->assertTrue($st->child instanceof SimpleTest2);
+    
+    // Reset the property again:
+    $st->child = NULL;
+    
+    // Create another child node:
+    $child3 = SimpleTest2::create();
+    $child3->title = 'Bob';
+    $child3->save();
+    $child3_nid = $child3->nid;
+    
+    // Load the node fresh:
+    $node = node_load($child3_nid, NULL, TRUE);
+    
+    // Try setting the property using a node:
+    $st->child = $node;
+    // Get the property value:
+    $this->assertEqual($st->child->title, 'Bob');
+    // Check type:
+    $this->assertTrue($st->child instanceof SimpleTest2);
+  }
+
+  /**
+   * Test multiple-value nodereference property.
+   */
+  public function _testMultipleNodeRef() {
+    // Create a node:
+    $st = SimpleTest1::create();
+    
+    // Create some child nodes:
+    $children = array();
+    $cnids = array();
+    
+    $children[0] = SimpleTest2::create();
+    $children[0]->title = 'Adam';
+    $children[0]->save();
+    $cnids[0] = $children[0]->nid;
+    
+    $children[1] = SimpleTest2::create();
+    $children[1]->title = 'Bob';
+    $children[1]->save();
+    $cnids[1] = $children[1]->nid;
+    
+    $children[2] = SimpleTest2::create();
+    $children[2]->title = 'Charlie';
+    $children[2]->save();
+    $cnids[2] = $children[2]->nid;
+    
+    $this->debug('Child nids', $cnids);
+
+    // Set the property value:
+    $st->children = $children;
+
+    // Get the property value:
+    foreach ($children as $n => $child) {
+      $this->assertEqual($st->children[$n]->title, $children[$n]->title);
+      // Check type:
+      $this->assertTrue($st->children[$n] instanceof SimpleTest2);
+    }
+
+    // Save the node:
+    $st->save();
+
+    // Get the new nid:
+    $nid = $st->nid;
+
+    // Load the node fresh:
+    $node = node_load($nid, NULL, TRUE);
+    $this->debug('CCK field', $node->field_children);
+
+    // Check the value was stored properly:
+    foreach ($cnids as $n => $cnid) {
+      $this->assertEqual($node->field_children[$n]['nid'], $cnid);
+    }
+    
+    // Test resetting the property:
+    $st->children = NULL;
+    $this->assertEqual($st->children, array());
+    
+    // Test setting the property using nids:
+    $st->children = $cnids;
+    $this->debug('#children', count($st->children));
+    // Get the property value:
+    foreach ($children as $n => $child) {
+      $this->debug('Title', $st->children[$n]->title);
+      $this->assertEqual($st->children[$n]->title, $child->title);
+      // Check type:
+      $this->assertTrue($st->children[$n] instanceof SimpleTest2);
+    }
+    
+    // Reset the property again:
+    $st->children = NULL;
+    
+    // Try setting the property using nodes:
+    foreach ($cnids as $n => $cnid) {
+      $st->children[$n] = node_load($cnid);
+    }
+    // Get the property value:
+    foreach ($children as $n => $child) {
+      $this->assertEqual($st->children[$n]->title, $children[$n]->title);
+      // Check type:
+      $this->assertTrue($st->children[$n] instanceof SimpleTest2);
+    }
+  }
+  
+}

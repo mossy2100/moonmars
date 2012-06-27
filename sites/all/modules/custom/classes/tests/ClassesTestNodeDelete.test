@@ -1,0 +1,72 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Test node deletion.
+ */
+
+class ClassesTestNodeDelete extends ClassesTest {
+
+  /**
+   * Implement getInfo() method as required by SimpleTest module.
+   *
+   * @return array
+   */
+  public function getInfo() {
+    return array(
+      'name' => t('Test deletion of XNode objects'),
+      'group' => t('Classes'),
+    );
+  }
+
+  /**
+   * Custom setUp() method.
+   *
+   * @see DrupalWebTestCase::setUp()
+   */
+  public function setUp() {
+    // Enable any modules required for the test:
+    parent::setUp();
+  }
+
+  /**
+   * Test deltion of a new node.
+   */
+  public function testDeleteNode() {
+
+    // Create new node object:
+    $st = SimpleTest1::create();
+    $st->title = "Hello World";
+    $st->save();
+
+    // Get the nid of the new node:
+    $nid = $st->nid;
+    debug($nid);
+    $this->debug($nid);
+    $this->debug(gettype($nid));
+
+    // Check the cache:
+    $cache = XNode::getCache();
+    $count1 = count($cache);
+    $this->debug('XNode cache count: ' . $count1);
+
+    // Check the nid is valid:
+    $this->assertTrue(is_int($nid) && $nid > 0);
+
+    // Delete the node:
+    SimpleTest1::destroy($nid);
+
+    // Attempt to load the node:
+    $node = node_load($nid, NULL, TRUE);
+    $this->debug($node);
+    $this->assertFalse($node);
+
+    // Check the cache:
+    $cache = XNode::getCache();
+    $count2 = count($cache);
+    $this->debug('XNode cache count: ' . $count2);
+    $this->assertTrue($count1 - $count2 == 1);
+  }
+
+}

@@ -3,9 +3,9 @@
 function moonmars_items_menu() {
   $items['ajax/item/update'] = array(
     'page callback'    => 'moonmars_items_ajax_update',
-    'access callback'  => 'item_access',
+    'access callback'  => 'node_access',
     'access arguments' => array(
-      'edit',
+      'update',
       1
     ),
     'type'             => MENU_CALLBACK,
@@ -18,6 +18,17 @@ function moonmars_items_menu() {
     'access arguments' => array('administer items'),
     'type'             => MENU_CALLBACK,
   );
+
+  $items['ajax/item/rate'] = array(
+    'page callback'    => 'moonmars_items_ajax_rate',
+    'access callback'  => 'node_access',
+    'access arguments' => array(
+      'update',
+      1
+    ),
+    'type'             => MENU_CALLBACK,
+  );
+
   return $items;
 }
 
@@ -141,12 +152,15 @@ function moonmars_items_form_after_build($form) {
   return $form;
 }
 
+/**
+ * Implement hook_node_insert().
+ */
 function moonmars_items_node_insert($node) {
   if ($node->type == 'item') {
     $item = $node;
 
     // Gather all the endpoint entities into one array
-    if (arg(0) == 'node' && is_uint(arg(1))) {
+    if (moonmars_groups_is_group_page()) {
       $group_nid = arg(1);
       $group = node_load($group_nid);
       if ($group && $group->type == 'group') {
@@ -204,7 +218,6 @@ function moonmars_items_ajax_update() {
 
   // Check we have all the necessary params:
   if (!$group_nid || !$text || !$user || !$user->uid) {
-
     // Create the data array:
     $data = array(
       'result'    => FALSE,
@@ -213,7 +226,6 @@ function moonmars_items_ajax_update() {
       'text'      => $text,
       'mode'      => $mode,
     );
-
     // Encode and send:
     echo json_encode($data);
     return;
@@ -301,4 +313,83 @@ function moonmars_items_is_post_for($item_nid, $channel_nid) {
     }
   }
   return FALSE;
+}
+
+/**
+ * AJAX callback for rating items.
+ */
+function moonmars_items_ajax_rate() {
+  $item_nid = (int) $_REQUEST['item_nid'];
+  $rating = $_REQUEST['warning'];
+  global $user;
+
+  // Load the item:
+  $item = node_load($item_nid);
+
+  $rating_scores = moonmars_ratings_scores();
+
+  // Check we have all the necessary params:
+  if (!$item || !array_key_exists($rating, $rating_scores) || !$user || !$user->uid) {
+    // Create the data array:
+    $data = array(
+      'result'    => FALSE,
+      'item_nid'  => $item_nid,
+      'rating'    => $rating,
+    );
+    // Encode and send:
+    echo json_encode($data);
+    return;
+  }
+
+  // Get the current score for the item:
+  $score = (int) $item->field_score[LANGUAGE_NONE][0]['value'];
+
+  // Check if the user already rated this:
+  $rel_type = 'rated';
+  $rel = moonmars_relationships_get_relationship($rel_type, 'user', $user->uid, 'node', $item_nid);
+  if ($rel) {
+    dbg($rel);
+
+    // Subtract the points for the previous rating:
+    $old_rating_score = $rel->field_rating[LANGUAGE_NONE][0]['value'] * $rel->field_multiplier[LANGUAGE_NONE][0]['value'];
+    $score -= $old_rating_score;
+
+    // Remove the old rating relationship:
+    relation_delete($rel->rid);
+  }
+
+  // Create the rating:
+  $end_points = array(
+    array(
+      'entity_label' => $user->name,
+      'entity_type'  => 'user',
+      'entity_id'    => $user->uid
+    ),
+    array(
+      'entity_label' => $item->title,
+      'entity_type'  => 'node',
+      'entity_id'    => $item_nid,
+    ),
+  );
+  $relation = relation_create($rel_type, $end_points);
+  relation_save($relation);
+
+  // Add the points for the new rating:
+  $new_rating_score = $rating_scores[$rating] * moonmars_members_get_level_num($user);
+  $score += $new_rating_score;
+
+  // Update the item's score:
+  $item->field_score[LANGUAGE_NONE][0]['value'] = $score;
+  node_save($item);
+
+  // Create the data array:
+  $data = array(
+    'result'    => TRUE,
+    'item_nid'  => $item_nid,
+    'rating'    => $rating,
+    'score'     => $score,
+  );
+  // Encode and send:
+  echo json_encode($data);
+  return;
 }

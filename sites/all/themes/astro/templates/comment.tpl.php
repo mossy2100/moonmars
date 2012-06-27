@@ -35,11 +35,11 @@
     <div class='post-controls'>
       <?php if (user_is_logged_in()) { ?>
         <div class='rating-buttons'>
-          <a class='rating-button rating-button-warning' href='javascript:rateComment("warning")' title='Warning (-2 points)'></a>
-          <a class='rating-button rating-button-dislike' href='javascript:rateComment("dislike")' title='Dislike (-1 point)'></a>
-          <a class='rating-button rating-button-meh' href='javascript:rateComment("meh")' title='Meh (0 points)'></a>
-          <a class='rating-button rating-button-like' href='javascript:rateComment("like")' title='Like (1 point)'></a>
-          <a class='rating-button rating-button-love' href='javascript:rateComment("favourite")' title='Favourite (2 points)'></a>
+          <input type='button' class='rating-button rating-button-warning' data-rating='warning' title='Warning (-2 points)'>
+          <input type='button' class='rating-button rating-button-dislike' data-rating='dislike' title='Dislike (-1 point)'>
+          <input type='button' class='rating-button rating-button-indifferent' data-rating='indifferent' title='Meh (0 points)'>
+          <input type='button' class='rating-button rating-button-like' data-rating='like' title='Like (1 point)'>
+          <input type='button' class='rating-button rating-button-favourite' data-rating='favourite' title='Favourite (2 points)'>
         </div>
       <?php } ?>
 
@@ -47,7 +47,7 @@
         Score: <span class='post-score'><?php echo $score; ?></span>
       </div>
 
-      <?php if (!empty($content['links'])): ?>
+      <?php if ($user && $user->uid && !empty($content['links'])): ?>
         <nav class="links post-links clearfix"><?php print render($content['links']); ?></nav>
       <?php endif; ?>
     </div> <!-- /post-controls -->

@@ -1,24 +1,40 @@
 (function ($) {
 
   $.extend($.fn, {
-    boxSizing: function () {
-      // Try CSS3:
-      var boxSizing = $(this).css('box-sizing');
-      if (!boxSizing) {
+    boxSizing: function(newBoxSizing) {
+      if (newBoxSizing === undefined) {
+        // Get the box sizing:
+        var boxSizing = $(this).css('box-sizing');
+        // If we didn't get it, try the browser-specific property:
+        if (!boxSizing) {
+          if ($.browser.mozilla) {
+            boxSizing = $(this).css('-moz-box-sizing');
+          }
+          else if ($.browser.webkit) {
+            boxSizing = $(this).css('-webkit-box-sizing');
+          }
+          else if ($.browser.msie) {
+            boxSizing = $(this).css('-ms-box-sizing');
+          }
+        }
+        return boxSizing;
+      }
+      else {
+        // Set the box sizing:
+        $(this).css('box-sizing', newBoxSizing);
+        // Also set the browser-specific property:
         if ($.browser.mozilla) {
-          // Try Mozilla:
-          boxSizing = $(this).css('-moz-box-sizing');
+          $(this).css('-moz-box-sizing', newBoxSizing);
         }
         else if ($.browser.webkit) {
-          // Try Webkit:
-          boxSizing = $(this).css('-webkit-box-sizing');
+          $(this).css('-webkit-box-sizing', newBoxSizing);
         }
         else if ($.browser.msie) {
-          // Try MSIE:
-          boxSizing = $(this).css('-ms-box-sizing');
+          $(this).css('-ms-box-sizing', newBoxSizing);
         }
+        // Return a jQuery object so we can chain stuff:
+        return $(this);
       }
-      return boxSizing;
     },
 
     innerHeight: function(newInnerHeight) {

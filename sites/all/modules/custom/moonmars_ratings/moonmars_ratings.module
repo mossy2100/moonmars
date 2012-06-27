@@ -1,0 +1,16 @@
+<?php
+
+/**
+ * Return the base scores for different ratings.
+ *
+ * @return array
+ */
+function moonmars_ratings_scores() {
+  return array(
+    'warning'     => -2,
+    'dislike'     => -1,
+    'indifferent' => 0,
+    'like'        => 1,
+    'favourite'   => 2,
+  );
+}

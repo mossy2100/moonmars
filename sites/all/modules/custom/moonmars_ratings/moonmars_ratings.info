@@ -1,0 +1,4 @@
+name = moonmars.com Ratings
+description = Support for ratings on moonmars.com.
+core = 7.x
+package = moonmars.com

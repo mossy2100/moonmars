@@ -1,0 +1,52 @@
+@CHARSET "UTF-8";
+
+#classes-generate-table td.section-heading {
+  font-size: 13px;
+  font-weight: bold;
+}
+
+#classes-generate-table td.type-name {
+  padding-left: 15px;
+}
+
+#classes-generate-buttons {
+  margin: 5px 0 10px;
+}
+
+#classes-generate-buttons input.form-button {
+  margin: 0 5px 0 0;
+}
+
+.classes-names-form p {
+  padding-bottom: 5px;
+}
+
+.classes-names-form input {
+  font-size: 11px;
+}
+
+#classes-consistency-check tr {
+  background-color: #ECF8F4;
+}
+
+#classes-consistency-check tr.warning {
+  background-color: #FFF4C0;
+}
+
+#classes-consistency-check tr.error {
+  background-color: #FFE4E0;
+}
+
+#classes-consistency-check td {
+  background-color: transparent;
+}
+
+#classes-consistency-check tr.type {
+  font-weight: bold;
+  font-style: italic;
+  font-size: 1.1em;
+}
+
+#classes-consistency-check tr.field td {
+  padding-left: 20px;
+}

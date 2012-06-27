@@ -1,0 +1,125 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Test the XLocation class.
+ */
+
+class ClassesTestLocationCreate extends ClassesTest {
+
+  /**
+   * Implement getInfo().
+   *
+   * @return array
+   */
+  public function getInfo() {
+    return array(
+      'name' => t('Test creation of XLocation objects'),
+      'group' => t('Classes'),
+    );
+  }
+
+  /**
+   * Custom setUp() method.
+   *
+   * @see DrupalWebTestCase::setUp()
+   */
+  public function setUp() {
+    // Enable any modules required for the test:
+    parent::setUp();
+  }
+
+  /**
+   * Run tests.
+   */
+  public function test() {
+    $this->_testCreateLocation();
+  }
+
+  /**
+   * Test creation of a XLocation object.
+   */
+  public function _testCreateLocation() {
+    
+    // To test:
+    // XLocation::create();
+    // XLocation::create($lid);
+    // XLocation::create($location);
+    // XLocation::create($xlocation);
+
+    // Create a XLocation without specifying vocab:
+    $Location1 = XLocation::create();
+    $this->assertNull($Location1->lid);
+    $this->assertNull($Location1->name);
+    $this->assertNull($Location1->city);
+    $this->assertNull($Location1->country);
+    
+    // Test set and get a property:
+    $Location1->name = 'Home';
+    $this->assertEqual($Location1->name, 'Home');
+
+    // Test saving and getting a new lid:
+    $Location1->save();
+    
+    $this->debug($Location1->location);
+    $this->assertTrue($Location1->lid > 0);
+    $this->debug($Location1);
+    $lid = $Location1->lid;
+    
+    // Clear cache:
+    XLocation::clearCache();
+    
+    // Create a XLocation using a lid:
+    $Location2 = XLocation::create($lid);
+    $this->assertEqual($Location2->lid, $lid);
+    
+    // Check it's not loaded anything yet:
+    $this->assertFalse($Location2->loaded);
+    
+    // Access a property, triggering lazy load:
+    $this->assertEqual($Location2->name, 'Home');
+    $this->debug($Location2->name);
+    $this->assertTrue($Location2->loaded);
+    
+    // Update name:
+    $Location2->name = 'Work';
+    $Location2->save();
+    
+    // Check:
+    $this->assertEqual($Location2->lid, $lid);
+    $this->assertEqual($Location2->name, 'Work');
+    $this->debug($Location2);
+    
+    // Clear cache:
+    XLocation::clearCache();
+    
+    // Load a location record:
+    $loc = db_fetch_array(db_query("SELECT * FROM {location} WHERE lid = %d", $lid));
+    
+    // Create a new XLocation from a location record:
+    $Location3 = XLocation::create($loc);
+    $this->assertEqual($Location3->lid, $lid);
+    $this->assertEqual($Location3->name, 'Work');
+    
+    // Set some more properties:
+    $Location3->name = 'Home';
+    $Location3->city = 'Byron Bay';
+    $Location3->street = '123 Happy St';
+    $Location3->province = 'New South Wales';
+    $Location3->country = 'AU';
+    $Location3->save();
+    
+    // Clear cache:
+    XLocation::clearCache();
+    
+    // Create a XLocation with vocab specified by vid:
+    $Location4 = XLocation::create($Location3);
+    $this->assertEqual($Location4->lid, $lid);
+    $this->assertEqual($Location4->name, 'Home');
+    $this->assertEqual($Location4->city, 'Byron Bay');
+    $this->assertEqual($Location4->country, 'au');
+    $this->debug($Location4);
+  }
+  
+}

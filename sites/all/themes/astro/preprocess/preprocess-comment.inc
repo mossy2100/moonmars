@@ -3,7 +3,7 @@
 function astro_alpha_preprocess_comment(&$vars) {
 
   // Theme the user picture:
-  $vars['picture'] = moonmars_members_avatar_tooltip($vars['elements']['#comment']->uid);
+  $vars['picture'] = moonmars_members_get_avatar_tooltip($vars['elements']['#comment']->uid);
 
   // Format the username as a link:
   $username = $vars['elements']['#comment']->name;

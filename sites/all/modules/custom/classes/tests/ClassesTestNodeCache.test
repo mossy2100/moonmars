@@ -1,0 +1,111 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Test the node cache.
+ */
+
+class ClassesTestNodeCache extends ClassesTest {
+
+  /**
+   * Implement getInfo() method as required by SimpleTest module.
+   *
+   * @return array
+   */
+  public function getInfo() {
+    return array(
+      'name' => t('Test node cache'),
+      'group' => t('Classes'),
+    );
+  }
+
+  /**
+   * Custom setUp() method.
+   *
+   * @see DrupalWebTestCase::setUp()
+   */
+  public function setUp() {
+    // Enable any modules required for the test:
+    parent::setUp();
+  }
+  
+  /**
+   * Run tests.
+   * These are bundled into one method because for whatever reason the version
+   * of simpletest I have only finds the first one.
+   */
+  public function test() {
+    $this->_testNodeCache();
+  }
+
+  /**
+   * Test the node cache.
+   */
+  public function _testNodeCache() {
+    // Create a node:
+    $st = SimpleTest1::create();
+    $st->title = "Hello";
+    
+    // Check that the node cache is empty, as we haven't saved the new node yet:
+    $cache = XNode::getCache();
+    $this->debug('XNode cache', array_keys($cache));
+    $this->assertEqual(count($cache), 0);
+    
+    $st->save();
+    
+    // Check that the node cache has 1 item in it:
+    $cache = XNode::getCache();
+    $this->debug('XNode cache', array_keys($cache));
+    $this->assertEqual(count($cache), 1);
+    
+    // Create another node:
+    $st2 = SimpleTest1::create();
+    $st2->title = "World";
+    $st2->save();
+    
+    // Check that the node cache has 2 items in it:
+    $cache = XNode::getCache();
+    $this->debug('XNode cache', array_keys($cache));
+    $this->assertEqual(count($cache), 2);
+    
+    // Delete one node:
+    $this->msg('Delete a node');
+    $st->delete(TRUE);
+
+    // Check that the node cache has 1 item in it:
+    $cache = XNode::getCache();
+    $this->debug('XNode cache', array_keys($cache));
+    $this->assertEqual(count($cache), 1);
+    
+    // Create a new node with the same nid:
+    $st3 = SimpleTest1::create($st2->nid);
+    
+    // Check that the node cache still only has 1 item in it:
+    $cache = XNode::getCache();
+    $this->debug('XNode cache', array_keys($cache));
+    $this->assertEqual(count($cache), 1);
+    
+    // Update the database directly:
+    db_query("UPDATE {node} SET title = 'Earth' WHERE nid = %d", $st2->nid);
+    db_query("UPDATE {node_revisions} SET title = 'Earth' WHERE vid = %d", $st2->vid);
+    
+    // Create a new node with the same nid:
+    $st4 = SimpleTest1::create($st2->nid);
+    // The title should not have changed:
+    $this->assertEqual($st4->title, 'World');
+    // Now reload the node, bypassing the cache:
+    $st4->load(TRUE);
+    // The title should have changed:
+    $this->assertEqual($st4->title, 'Earth');
+    
+    // Clear the cache:
+    XNode::clearCache();
+    
+    // Check that the node cache has 0 items in it:
+    $cache = XNode::getCache();
+    $this->debug('XNode cache', array_keys($cache));
+    $this->assertEqual(count($cache), 0);
+  }
+  
+}

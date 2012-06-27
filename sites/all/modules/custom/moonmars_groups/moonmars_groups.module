@@ -1,6 +1,26 @@
 <?php
 
 /**
+ * Implements hook_menu().
+ */
+function moonmars_groups_menu() {
+  $items = array();
+  $items['node/%/join'] = array(
+    'page callback'    => 'moonmars_groups_join',
+    'page arguments'   => array(1),
+    'access callback'  => TRUE, // 'moonmars_groups_can_join',
+    'type'             => MENU_CALLBACK,
+  );
+  $items['node/%/leave'] = array(
+    'page callback'    => 'moonmars_groups_leave',
+    'page arguments'   => array(1),
+    'access callback'  => TRUE,
+    'type'             => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+/**
  * Get the number of users in a group.
  *
  * @param int $gid
@@ -18,20 +38,6 @@ function moonmars_groups_member_count($group_nid) {
 }
 
 /**
- * Implements hook_menu().
- */
-function moonmars_groups_menu() {
-  $items = array();
-//  $items['group/%'] = array(
-//    'page callback'    => 'moonmars_groups_channel',
-//    'page arguments'   => array(1),
-//    'access callback'  => TRUE, // 'moonmars_groups_can_view',
-//    'type'             => MENU_CALLBACK,
-//  );
-  return $items;
-}
-
-/**
  * Checks if this is a group page.
  * This function can probably be improved by using native Drupal/context variables.
  *
@@ -43,4 +49,176 @@ function moonmars_groups_is_group_page() {
     return $node->type == 'group';
   }
   return FALSE;
+}
+
+/**
+ * If this is a group page, return the current group.
+ *
+ * @return object|bool
+ */
+function moonmars_groups_get_current_group() {
+  if (arg(0) == 'node' && is_uint(arg(1)) && arg(2) != 'edit') {
+    return node_load(arg(1));
+  }
+  return FALSE;
+}
+
+/**
+ * Get the relationship for a user being a member of a group.
+ *
+ * @param int|object $group
+ * @param int|object $user
+ * @return object|bool
+ */
+function moonmars_groups_get_member_relationship($group, $user) {
+  // Get the group nid:
+  if (is_uint($group)) {
+    $group_nid = $group;
+  }
+  elseif (is_object($group) && isset($group->nid)) {
+    $group_nid = $group->nid;
+  }
+  else {
+    return FALSE;
+  }
+
+  // Get the user id:
+  if (is_uint($user)) {
+    $uid = $user;
+  }
+  elseif (is_object($user) && isset($user->uid)) {
+    $uid = $user->uid;
+  }
+  else {
+    return FALSE;
+  }
+
+  // Look for a relationship record:
+  return moonmars_relationships_get_relationship('is_member_of', 'user', $uid, 'node', $group_nid);
+}
+
+/**
+ * Check if a user is a member of a group.
+ *
+ * @param int|object $group
+ * @param int|object $user
+ * @return bool
+ */
+function moonmars_groups_is_member($group, $user) {
+  return (bool) moonmars_groups_get_member_relationship($group, $user);
+}
+
+/**
+ * Generate a user menu for the current group and current user.
+ */
+function moonmars_groups_user_menu() {
+  if (!moonmars_groups_is_group_page()) {
+    // This is not a group page:
+    return 'x';
+  }
+
+  global $user;
+  if (!$user) {
+    return "<p>To join this group, first <a href='user/register'>register an account</a>.</p>";
+  }
+
+  // Show different options if the member is in the group or not:
+  $html = "<ul id='group-user-menu'>";
+  $group_nid = (int) arg(1);
+  if (moonmars_groups_is_member($group_nid, $user)) {
+    $html .= "<li><a href='/" . drupal_get_path_alias("node/$group_nid") . "/leave'>Leave group</a></li>";
+//    if (moonmars_groups_receive_emails($group_nid, $user)) {
+//      $html .= "<li>Stop email notifications</li>";
+//    }
+//    else {
+//      $html .= "<li>Start email notifications</li>";
+//    }
+  }
+  else {
+    // @todo Update to support "ask permission to join group"
+    $html .= "<li><a href='/" . drupal_get_path_alias("node/$group_nid") . "/join'>Join group</a></li>";
+  }
+  $html .= "</ul>";
+  return $html;
+}
+
+/**
+ * Add a user to a group.
+ *
+ * @param int $group_nid
+ */
+function moonmars_groups_join($group_nid) {
+  // Get the group:
+  $group = node_load($group_nid);
+  if (!$group || $group->type != 'group') {
+    drupal_set_message('Group not found.');
+    return;
+  }
+  $group_page = drupal_get_path_alias("node/$group_nid");
+
+  // Get the user:
+  global $user;
+  if (!$user || !$user->uid) {
+    drupal_set_message("You need to <a href='/user'>login</a> or <a href='/user/register'>register</a> before joining a group.");
+    drupal_goto('/user', array('query' => array('destination' => "$group_page/join")));
+    return;
+  }
+
+  // Create the relationship:
+  $end_points = array(
+    array(
+      'entity_label' => $user->name,
+      'entity_type'  => 'user',
+      'entity_id'    => $user->uid
+    ),
+    array(
+      'entity_label' => $group->title,
+      'entity_type'  => 'node',
+      'entity_id'    => $group_nid,
+    ),
+  );
+
+  $type = 'is_member_of';
+  $relation = relation_create($type, $end_points);
+  relation_save($relation);
+
+  // Reload the group page:
+  drupal_set_message("You have been added to the group $group->title.");
+  drupal_goto($group_page);
+}
+
+/**
+ * Remove a user from a group.
+ *
+ * @param int $group_nid
+ */
+function moonmars_groups_leave($group_nid) {
+  // Get the group:
+  $group = node_load($group_nid);
+  if (!$group || $group->type != 'group') {
+    drupal_set_message('Group not found.');
+    return;
+  }
+  $group_page = drupal_get_path_alias("node/$group_nid");
+
+  // Get the user:
+  global $user;
+  if (!$user || !$user->uid) {
+    drupal_set_message("You need to <a href='/user'>login</a> before leaving a group.");
+    drupal_goto('/user', array('query' => array('destination' => "$group_page/join")));
+    return;
+  }
+
+  // Get the relationship:
+  $rel = moonmars_groups_get_member_relationship($group_nid, $user);
+  if (!$rel) {
+    drupal_set_message("You are not a member of this group.");
+  }
+
+  // Delete the relationship:
+  relation_delete($rel->rid);
+
+  // Reload the group page:
+  drupal_set_message("You have been removed from the group $group->title.");
+  drupal_goto($group_page);
 }
