@@ -13,11 +13,15 @@ class Set {
 
   /**
    * Constructor.
+   * Creates a new set containing the unique values of the provided array. Keys are discarded.
    */
   public function __construct(array $arr = array()) {
-    // Creates a new set containing the values of the parameters:
     $this->items = array_values(array_unique($arr));
   }
+
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Standard set operations. Instance methods.
 
   /**
    * Return the number of items in the set.
@@ -62,34 +66,41 @@ class Set {
     return $this;
   }
 
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Standard set operations. Class methods.
+
   /**
    * Union of two sets.
    *
+   * @param Set $set1
    * @param Set $set2
    * @return Set
    */
-  public function union(Set $set2) {
-    return new Set(array_merge($this->items, $set2->toArray()));
+  public static function union(Set $set1, Set $set2) {
+    return new Set(array_merge($set1->items, $set2->items));
   }
 
   /**
    * Difference between two sets.
    *
+   * @param Set $set1
    * @param Set $set2
    * @return Set
    */
-  public function diff(Set $set2) {
-    return new Set(array_diff($this->items, $set2->toArray()));
+  public static function diff(Set $set1, Set $set2) {
+    return new Set(array_diff($set1->items, $set2->items));
   }
 
   /**
    * Intersection between two sets.
    *
+   * @param Set $set1
    * @param Set $set2
    * @return Set
    */
-  public function intersect(Set $set2) {
-    return new Set(array_intersect($this->items, $set2->toArray()));
+  public static function intersect(Set $set1, Set $set2) {
+    return new Set(array_intersect($set1->items, $set2->items));
   }
 
   /**
@@ -101,6 +112,10 @@ class Set {
   public function equal(Set $set2) {
     return ($this->count() == $set2->count()) && $this->subset($set2);
   }
+
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Standard set comparisons. Instance methods.
 
   /**
    * Checks if a set is a subset of another set.
@@ -146,6 +161,10 @@ class Set {
   public function properSuperset(Set $set2) {
     return $set2->properSubset($this);
   }
+
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Conversion methods.
 
   /**
    * Convert set to a string.

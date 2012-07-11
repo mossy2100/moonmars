@@ -3,241 +3,11 @@
  * Encapsulates a moonmars.com member.
  */
 
-class Member {
+class Member extends User {
 
-  private static $cache;
-
-  private $user;
-  private $loaded;
   private $age;
   private $avatar;
   private $tooltip;
-
-  /**
-   * Constructor.
-   */
-  private function __construct($uid = NULL) {
-    // Create a user object:
-    $this->user = new stdClass;
-  }
-
-  /**
-   * Create a new Member object. Check the cache
-   * @static
-   * @param null $uid
-   */
-  public static function create($uid = NULL) {
-    if (is_null($uid)) {
-      // Create new member:
-      $member = new Member();
-      // Assume active:
-      $member->user->status = 1;
-      return $member;
-    }
-    elseif (is_uint($uid)) {
-      // Only create the new member if not already in the cache:
-      if (!isset(self::$cache[$uid])) {
-        // Create new member:
-        $member = new Member();
-        // Set the uid:
-        $member->user->uid = $uid;
-        // Put the new member in the cache:
-        self::$cache[$uid] = $member;
-      }
-      return self::$cache[$uid];
-    }
-    else {
-      trigger_error("Invalid parameter to Member::create()", E_USER_ERROR);
-    }
-  }
-
-  /**
-   * Get user properties.
-   *
-   * @param string $property
-   * @return mixed
-   */
-  public function __get($property) {
-    switch ($property) {
-      case 'uid':
-        return $this->uid();
-
-      case 'name':
-        return $this->name();
-
-      default:
-        return $this->user->$property;
-    }
-  }
-
-  /**
-   * Set user properties.
-   *
-   * @param string $property
-   * @param mixed $value
-   * @return Member
-   */
-  public function __set($property, $value) {
-    switch ($property) {
-      case 'uid':
-        return $this->uid($value);
-
-      case 'name':
-        return $this->name($value);
-
-      default:
-        $this->user->$property = $value;
-        return $this;
-    }
-  }
-
-  /**
-   * Get/set the uid.
-   *
-   * @param int $uid
-   * @return int|Member
-   */
-  public function uid($uid = NULL) {
-    if (func_num_args() == 0) {
-      // Get the uid:
-      return $this->user->uid;
-    }
-    else {
-      // Set the uid:
-      $this->user->uid = $uid;
-      // Add the user object to the cache if not already:
-      self::$cache[$uid] = $this;
-      return $this;
-    }
-  }
-
-  /**
-   * Get/set the member's name.
-   *
-   * @param string $name
-   * @return string|Member
-   */
-  public function name($name = NULL) {
-    if (func_num_args() == 0) {
-      // Get the member's name:
-      if (!$this->user->name) {
-        // If we don't have the name yet, just load the name:
-        $this->user->name = db_select('users', 'u')
-          ->fields('u', array('name'))
-          ->condition('uid', $this->user->uid)
-          ->execute()
-          ->fetch()
-          ->name;
-      }
-      return $this->user->name;
-    }
-    else {
-      // Set the member's name:
-      $this->user->name = $name;
-      return $this;
-    }
-  }
-
-  /**
-   * Get the user object.
-   *
-   * @return stdClass
-   */
-  public function user() {
-    return $this->user;
-  }
-
-  /**
-   * Load the user object.
-   *
-   * @return Member
-   */
-  public function load() {
-    // Avoid reloading:
-    if ($this->loaded) {
-      return $this;
-    }
-
-    // Default result:
-    $user = FALSE;
-
-    // Try to load the user:
-    if (isset($this->user->uid) && $this->user->uid > 0) {
-      // Load by uid. Drupal caching will prevent reloading of the same user.
-      $user = user_load($this->user->uid);
-    }
-    elseif (isset($this->user->name) && $this->user->name != '') {
-      // Load by name:
-      $user = user_load_by_name($this->user->name);
-    }
-    elseif (isset($this->user->mail) && $this->user->mail != '') {
-      // Load by mail:
-      $user = user_load_by_mail($this->user->mail);
-    }
-
-    if ($user) {
-      // Success. Update properties:
-      $this->user = $user;
-      $this->loaded = TRUE;
-      return $this;
-    }
-    else {
-      trigger_error("Can't load user without a valid identifier.", E_USER_ERROR);
-    }
-  }
-
-  /**
-   * Save the user object.
-   *
-   * @return Member
-   */
-  public function save() {
-    $this->user = user_save($this->user);
-    return $this;
-  }
-
-  /**
-   * Get/set a field's value.
-   *
-   * @param string $field_name
-   * @param string $lang
-   * @param int $delta
-   * @param string $key
-   * @param mixed $value
-   */
-  public function field($field_name, $lang = LANGUAGE_NONE, $delta = 0, $key = 'value', $value = NULL) {
-    if ($value === NULL) {
-      // Get the field's value.
-      $this->load();
-      return isset($this->user->{$field_name}[$lang][$delta][$key]) ? $this->user->{$field_name}[$lang][$delta][$key] : NULL;
-    }
-    else {
-      // Set the field's value.
-      $this->user->$field_name[$lang][$delta][$key] = $value;
-      return $this;
-    }
-  }
-
-  /**
-   * Get the path to the member's profile.
-   */
-  public function path() {
-    return "user/$this->user->uid";
-  }
-
-  /**
-   * Get the path alias to the member's profile.
-   */
-  public function alias() {
-    return drupal_get_path_alias("user/$this->user->uid");
-  }
-
-  /**
-   * Get a link to the member's profile.
-   */
-  public function link() {
-    return l($this->name(), "user/$this->user->uid");
-  }
 
   /**
    * Get the member's full name.
@@ -369,12 +139,12 @@ class Member {
   public function avatar() {
     if (!$this->avatar) {
       // If the user has a picture, use it:
-      if (isset($this->user->picture)) {
+      if (isset($this->entity->picture)) {
         // If we just have the fid, load the file:
-        if (is_uint($this->user->picture)) {
-          $this->user->picture = file_load($this->user->picture);
+        if (is_uint($this->entity->picture)) {
+          $this->entity->picture = file_load($this->entity->picture);
         }
-        $icon_path = $this->user->picture->uri;
+        $icon_path = $this->entity->picture->uri;
       }
       else {
         // If the user doesn't have a picture, use a default icon:
@@ -388,7 +158,7 @@ class Member {
       $image = array(
         'style_name' => 'icon-40x40',
         'path'       => $icon_path,
-        'alt'        => $this->user->name,
+        'alt'        => $this->entity->name,
         'attributes' => array('class' => array('avatar-icon')),
       );
       $this->avatar = theme('image_style', $image);
@@ -402,7 +172,7 @@ class Member {
    * @return string
    */
   public function avatarLink() {
-    return l($this->avatar(), 'user/' . $this->user->uid, array('html' => TRUE, 'attributes' => array('class' => array('avatar-link'))));
+    return l($this->avatar(), 'user/' . $this->entity->uid, array('html' => TRUE, 'attributes' => array('class' => array('avatar-link'))));
   }
 
   /**
@@ -472,13 +242,13 @@ class Member {
       $user_level = FALSE;
 
       foreach ($levels as $level) {
-        if (in_array($level, $this->user->roles)) {
+        if (in_array($level, $this->entity->roles)) {
           if (!$user_level) {
             $user_level = $level;
           }
           else {
             // The user level has already been found, so remove this level role:
-            $this->user->roles = array_diff($this->user->roles, array($level));
+            $this->entity->roles = array_diff($this->entity->roles, array($level));
             $save_user = TRUE;
           }
         }
@@ -490,12 +260,12 @@ class Member {
 
         // Add the role:
         $role = user_role_load_by_name('iron');
-        $this->user->roles[$role->rid] = 'iron';
+        $this->entity->roles[$role->rid] = 'iron';
         $save_user = TRUE;
       }
 
       if ($save_user) {
-        user_save($this->user);
+        user_save($this->entity);
       }
 
       return $user_level;
@@ -505,14 +275,14 @@ class Member {
 
       // Remove any other levels:
       foreach ($levels as $level) {
-        if (in_array($level, $this->user->roles)) {
-          $this->user->roles = array_diff($this->user->roles, array($level));
+        if (in_array($level, $this->entity->roles)) {
+          $this->entity->roles = array_diff($this->entity->roles, array($level));
         }
       }
 
       // Add the role for the new level:
       $role = user_role_load_by_name($level);
-      $this->user->roles[$role->rid] = $level;
+      $this->entity->roles[$role->rid] = $level;
 
       // Save the user and return the updated account:
       return $this->save();
@@ -534,7 +304,7 @@ class Member {
    * @return array
    */
   public function followers() {
-    return moonmars_relationships_get_entity_ids('follows', 'user', NULL, 'user', $this->user->uid);
+    return moonmars_relationships_get_entity_ids('follows', 'user', NULL, 'user', $this->entity->uid);
   }
 
   /**
@@ -543,7 +313,7 @@ class Member {
    * @return array
    */
   public function followees() {
-    return moonmars_relationships_get_entity_ids('follows', 'user', $this->user->uid, 'user', NULL);
+    return moonmars_relationships_get_entity_ids('follows', 'user', $this->entity->uid, 'user', NULL);
   }
 
   /**
@@ -552,7 +322,7 @@ class Member {
    * @param int $uid
    */
   public function follows($uid) {
-    $rels = moonmars_relationships_get_relationships('has_follower', 'user', $uid, 'user', $this->user->uid);
+    $rels = moonmars_relationships_get_relationships('has_follower', 'user', $uid, 'user', $this->entity->uid);
     return !empty($rels);
   }
 
@@ -563,7 +333,7 @@ class Member {
    * @return int
    */
   public function channel($create = TRUE) {
-    return moonmars_channels_get_channel('user', $this->user->uid, $create);
+    return moonmars_channels_get_channel('user', $this->entity->uid, $create);
   }
 
   /**
@@ -577,7 +347,7 @@ class Member {
     // Get the group's members in reverse order of that in which they joined.
     $q = db_select('view_group_has_member', 'v')
       ->fields('v', array('group_nid'))
-      ->condition('member_uid', $this->user->uid)
+      ->condition('member_uid', $this->entity->uid)
       ->orderBy('created', 'DESC');
 
     // Set a limit if specified:

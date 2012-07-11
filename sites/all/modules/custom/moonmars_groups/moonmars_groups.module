@@ -21,22 +21,6 @@ function moonmars_groups_menu() {
 }
 
 /**
- * Get the number of users in a group.
- *
- * @param int $gid
- *   The group nid.
- * @return int
- *   The number of users in the group, or FALSE if $gid is invalid.
- */
-function moonmars_groups_member_count($group_nid) {
-  $q = db_select('view_group_has_member', 'v')
-    ->fields('v', array('rid'))
-    ->condition('group_nid', $group_nid);
-  $rs = $q->execute();
-  return $rs->rowCount();
-}
-
-/**
  * Checks if this is a group page.
  * This function can probably be improved by using native Drupal/context variables.
  *
@@ -60,59 +44,6 @@ function moonmars_groups_get_current_group() {
     return node_load(arg(1));
   }
   return FALSE;
-}
-
-/**
- * Get the relationship for a user being a member of a group.
- *
- * @param int $group_nid
- * @param int $uid
- * @return object|bool
- */
-function moonmars_groups_get_member_relationship($group_nid, $uid) {
-  // Look for a relationship record:
-  $rels = moonmars_relationships_get_relationships('has_member', 'node', $group_nid, 'user', $uid);
-  return $rels ? $rels[0] : FALSE;
-}
-
-/**
- * Check if a user is a member of a group.
- *
- * @param int $group_nid
- * @param int $uid
- * @return bool
- */
-function moonmars_groups_is_member($group_nid, $uid) {
-  return (bool) moonmars_groups_get_member_relationship($group_nid, $uid);
-}
-
-/**
- * Get the members of a group.
- *
- * @param int $group_nid
- * @param int $offset
- * @param int $limit
- * @return array
- */
-function moonmars_groups_get_members($group_nid, $offset = NULL, $limit = NULL) {
-  // Get the group's members in reverse order of that in which they joined.
-  $q = db_select('view_group_has_member', 'v')
-    ->fields('v', array('member_uid'))
-    ->condition('group_nid', $group_nid)
-    ->orderBy('created', 'DESC');
-
-  // Set a limit if specified:
-  if ($offset !== NULL && $limit !== NULL) {
-    $q->range($offset, $limit);
-  }
-
-  $rs = $q->execute();
-  $member_uids = array();
-  foreach ($rs as $rec) {
-    $member_uids[] = $rec->member_uid;
-  }
-
-  return $member_uids;
 }
 
 /**
@@ -156,24 +87,25 @@ function moonmars_groups_join($group_nid) {
  */
 function moonmars_groups_leave($group_nid) {
   // Get the group:
-  $group = node_load($group_nid);
-  if (!$group || $group->type != 'group') {
+  $group = Group::create($group_nid);
+
+  if ($group->type != 'group') {
     drupal_set_message('Group not found.');
     return;
   }
-  $group_page = drupal_get_path_alias("node/$group_nid");
+  $group_alias = $group->alias();
 
   // Get the user:
   global $user;
   if (!$user || !$user->uid) {
     drupal_set_message("You need to <a href='/user'>login</a> before leaving a group.");
-    drupal_goto('/user', array('query' => array('destination' => "$group_page/join")));
+    drupal_goto('/user', array('query' => array('destination' => "$group_alias/join")));
     return;
   }
 
   // Remove the user from the group.
   // Get the relationship:
-  $rel = moonmars_groups_get_member_relationship($group_nid, $user->uid);
+  $rel = $group->memberRelationship($user->uid);
   if (!$rel) {
     drupal_set_message("You are not a member of this group.");
   }
@@ -186,7 +118,7 @@ function moonmars_groups_leave($group_nid) {
 
   // Reload the group page:
   drupal_set_message("You have been removed from the group $group->title.");
-  drupal_goto($group_page);
+  drupal_goto($group_alias);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -268,10 +200,11 @@ function moonmars_groups_menu_block() {
 function moonmars_groups_members_block() {
   // Get the group nid from the URL:
   $group_nid = (int) arg(1);
+  $group = Group::create($group_nid);
 
   // Get the latest 12 group members:
-  $member_uids = moonmars_groups_get_members($group_nid, 0, 12);
-  $n_members = moonmars_groups_member_count($group_nid);
+  $member_uids = $group->members(0, 12);
+  $n_members = $group->memberCount();
 
   // Generate HTML:
 

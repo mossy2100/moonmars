@@ -385,54 +385,6 @@ function moonmars_channels_get_link($channel_nid) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Posting and updating items in channels.
 
-/**
- * Add an item to a channel.
- *
- * @param int $item_nid
- *   The item being posted.
- * @param int $channel_nid
- *   The channel where the item is being posted.
- * @return int
- */
-function moonmars_channels_add_item($item_nid, $channel_nid) {
-  dpm("Posting item $item_nid in channel $channel_nid");
-
-  // Check if the item is already in the specified channel:
-  $rels = moonmars_relationships_get_relationships('has_item', 'node', $channel_nid, 'node', $item_nid);
-
-  if ($rels) {
-    // Just load the relationship; saving it will update the changed field.
-    $rel = relation_load($rels[0]->rid);
-  }
-  else {
-    // Create a new relationship:
-    $rel = moonmars_relationships_create_relationship('has_item', 'node', $channel_nid, 'node', $item_nid, FALSE);
-
-    // Get the item's original channel:
-    $original_channel_nid = moonmars_items_get_original_channel_nid($item_nid);
-
-    // Set the copied flag:
-    $rel->field_copied[LANGUAGE_NONE][0]['value'] = (int) ($original_channel_nid && $channel_nid != $original_channel_nid);
-  }
-
-  // Save the relationship (which will update the changed field) and return the rid:
-  return relation_save($rel);
-}
-
-/**
- * Add all the subcribers to a channel to a set of member uids.
- *
- * @param Set $member_uids
- * @param int $channel_nid
- */
-function moonmars_channels_add_subscribers(Set &$member_uids, $channel_nid) {
-  $subscribers = moonmars_channels_get_subscribers($channel_nid);
-  foreach ($subscribers as $subscriber_uid) {
-    // Add the item to the subscriber's feed:
-    $member_uids->add($subscriber_uid);
-  }
-}
-
 /*
 Things that can happen to an item:
 
@@ -473,6 +425,51 @@ Things that can happen to an item:
 */
 
 /**
+ * Add an item to a channel.
+ *
+ * @param int $item_nid
+ *   The item being posted.
+ * @param int $channel_nid
+ *   The channel where the item is being posted.
+ * @return int
+ */
+function moonmars_channels_add_item($item_nid, $channel_nid) {
+  dpm("Posting item $item_nid in channel $channel_nid");
+
+  // Check if the item is already in the specified channel:
+  $rels = moonmars_relationships_get_relationships('has_item', 'node', $channel_nid, 'node', $item_nid);
+
+  if ($rels) {
+    // Just load the relationship; saving it will update the changed field.
+    $rel = relation_load($rels[0]->rid);
+  }
+  else {
+    // Create a new relationship:
+    $rel = moonmars_relationships_create_relationship('has_item', 'node', $channel_nid, 'node', $item_nid, FALSE);
+
+    // Get the item's original channel:
+    $original_channel_nid = moonmars_items_get_original_channel_nid($item_nid);
+
+    // Set the copied flag:
+    $rel->field_copied[LANGUAGE_NONE][0]['value'] = (int) ($original_channel_nid && $channel_nid != $original_channel_nid);
+  }
+
+  // Save the relationship (which will update the changed field) and return the rid:
+  return relation_save($rel);
+}
+
+/**
+ * Add all the subcribers to a channel to a set of member uids.
+ *
+ * @param Set $subscriber_uids
+ * @param int $channel_nid
+ */
+function moonmars_channels_add_subscribers(Set &$subscriber_uids, $channel_nid) {
+  $subscriber_uids2 = moonmars_channels_get_subscribers($channel_nid);
+  $subscriber_uids = Set::union($subscriber_uids, new Set($subscriber_uids2));
+}
+
+/**
  * Post or edit an item or comment.
  * Copy the update to all relevant channels and send notifications.
  *
@@ -484,6 +481,8 @@ Things that can happen to an item:
  *   TRUE if the post is a comment, FALSE if an item.
  */
 function moonmars_channels_post_item($item_nid, $is_new, $is_comment) {
+  dpm("Posting item $item_nid. New: " . bool2yn($is_new) . ", Comment: " . bool2yn($is_comment));
+
   // Current channel:
   $current_channel_nid = $_SESSION['current_channel_nid'];
 
