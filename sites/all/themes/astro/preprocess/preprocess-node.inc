@@ -3,45 +3,104 @@
 function astro_alpha_preprocess_node(&$vars) {
   global $user;
 
-  if ($vars['node']->type == 'item') {
-    // Theme the user picture:
-    $vars['picture'] = moonmars_members_get_avatar_tooltip($vars['uid']);
+  switch ($vars['node']->type) {
 
-    // Format the post datetime:
-    $vars['created_datetime'] = astro_created_datetime($vars['node']->created);
+    case 'item':
+      // Theme the user picture of the member who originally posted the item:
+      $original_poster = Member::create($vars['uid']);
+      $vars['picture'] = $original_poster->avatarTooltip();
 
-    // Format the avatar tooltip for the current user:
-    $vars['new_comment_picture'] = moonmars_members_get_avatar_tooltip($user->uid);
+      // Add the channel title if set:
+      if ($vars['node']->copied) {
+        $entity = moonmars_channels_get_entity($vars['node']->original_channel->channel_nid);
+        $vars['channel_posted'] = 'in ' . l($vars['node']->original_channel->channel_title, $entity['alias']);
+      }
+      else {
+        $vars['channel_posted'] = '';
+      }
 
-    // Format the username of the current user:
-    $new_comment_username = ($user && $user->uid) ? $user->name : '';
-    $vars['new_comment_username'] = "<a class='username' href='/users/$new_comment_username' title='Visit $new_comment_username&apos;s profile.'>$new_comment_username</a>";
+      // Format the post datetime:
+      $vars['created_datetime'] = astro_format_about_how_long_ago($vars['node']->created);
 
-    // Format the post datetime:
-    $vars['new_comment_created_datetime'] = "<time>now</time>";
+      // Format the avatar tooltip for the current user:
+      $current_member = Member::create($user->uid);
+      $vars['new_comment_picture'] = $current_member->avatarTooltip();
 
-    // Calculate the score for the item:
-    $vars['score'] = mt_rand(-20, 9999);
+      // Format the username of the current user:
+      $new_comment_username = ($user && $user->uid) ? $user->name : '';
+      $vars['new_comment_username'] = "<a class='username' href='/users/$new_comment_username' title='Visit $new_comment_username&apos;s profile.'>$new_comment_username</a>";
 
-    // If this is a group page, get the group:
-    if (moonmars_groups_is_group_page()) {
-      $vars['group'] = moonmars_groups_get_current_group();
-    }
+      // Format the post datetime:
+//      $vars['new_comment_created_datetime'] = "<time>now</time>";
+
+      // Calculate the score for the item:
+      $vars['score'] = mt_rand(-20, 9999);
+
+      // If this is a group page, get the group:
+      if (moonmars_groups_is_group_page()) {
+        $vars['group'] = moonmars_groups_get_current_group();
+      }
+
+      // Render the comments for the item:
+      $vars['comments'] = render($vars['content']['comments']);
+      // Make sure we still have a comment wrapper even if there are no comments:
+      if ($vars['comments'] == '') {
+        $vars['comments'] = "<div id='comments' class='comment-wrapper'></div>";
+      }
+
+      break;
+
+    case 'group':
+      $vars['head_title'] = "moonmars.com - Group - " . $vars['node']->title;
+      drupal_set_title("moonmars.com - Group - " . $vars['node']->title);
+      break;
+
+    case 'channel':
+      drupal_add_js(drupal_get_path('module', 'moonmars_channels') . '/js/moonmars-channels.js');
+
+      // Theme the user picture:
+      $current_member = Member::create($user->uid);
+      $vars['new_item_picture'] = $current_member->avatarTooltip();
+
+      // Format the username of the current user:
+      if ($user) {
+        $new_item_username = $user->name;
+        $vars['new_item_username'] = "<a class='username' href='/users/$new_item_username' title='Visit $new_item_username&apos;s profile.'>$new_item_username</a>";
+      }
+
+      // Format the post datetime:
+      $vars['new_item_created_datetime'] = "<time>now</time>";
+
+      if (arg(0) == 'user') {
+        // Hide the channel title if we're looking at a user profile:
+        $vars['title'] = '';
+        // If the member is viewing their own profile, include stuff they're following (unless they have the 'Show only my stuff' filter on).
+        $viewing_own_profile = $user->uid == arg(1);
+        $filter_on = $viewing_own_profile && (isset($_SESSION['user']['profile_filter']) ? $_SESSION['user']['profile_filter'] : FALSE);
+        $include_copied_items = $viewing_own_profile && !$filter_on;
+      }
+      elseif (arg(0) == 'node' && is_uint(arg(1))) {
+        $entity = node_load(arg(1));
+        // Hide the channel title if we aren't looking at a channel node page:
+        if ($entity->type != 'channel') {
+          $vars['title'] = '';
+        }
+        $include_copied_items = TRUE;
+      }
+
+      // Render the items:
+      $vars['items'] = moonmars_channels_render_channel($vars['node']->nid, $include_copied_items);
+
+      // Remember the current channel:
+      $_SESSION['current_channel_nid'] = $vars['node']->nid;
+
+      break;
   }
-  elseif ($vars['node']->type == 'group') {
-    // Theme the user picture:
-    $vars['new_item_picture'] = moonmars_members_get_avatar_tooltip($user->uid);
 
-    // Format the username of the current user:
-    if ($user) {
-      $new_item_username = $user->name;
-      $vars['new_item_username'] = "<a class='username' href='/users/$new_item_username' title='Visit $new_item_username&apos;s profile.'>$new_item_username</a>";
-    }
-
-    // Format the post datetime:
-    $vars['new_item_created_datetime'] = "<time>now</time>";
-
-    $vars['head_title'] = "moonmars.com - Group - " . $vars['node']->title;
+  // Get the channel if applicable:
+  if (in_array($vars['node']->type, moonmars_channels_node_types())) {
+    $vars['channel_nid'] = moonmars_channels_get_channel('node', $vars['node']->nid);
+    $vars['channel'] = node_load($vars['channel_nid']);
   }
 
 }

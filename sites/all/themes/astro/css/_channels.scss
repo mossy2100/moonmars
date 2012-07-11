@@ -2,12 +2,15 @@ $postFontSize = 11px;
 $postLineHeight = $postFontSize * 1.5;
 $ratingButtonHeight = 20px;
 
-.view-channel {
+@mixin channel-page-section {
+  padding: 0 10px 30px;
+  margin-bottom: 30px;
+  border-bottom: solid 1px $grey2;
+}
 
-  .views-row {
-    padding: 30px 10px;
-    margin: 0;
-    border-bottom: solid 1px black;
+#channel-items {
+  .node-item {
+    @include channel-page-section;
 
     header {
       display: none;
@@ -15,15 +18,11 @@ $ratingButtonHeight = 20px;
 
     .post-content {
       .field {
-        margin: 16px 0;
+        margin: 8px 0;
         font-size: 12px;
         line-height: 16px;
       }
     }
-  }
-
-  .view-comments .views-row {
-    border: none;
   }
 }
 
@@ -38,11 +37,18 @@ article.node-item {
   }
 }
 
+.who_where_when_posted {
+  color: $grey3;
+}
+
 .post-article-body {
-  padding: 5px;
   margin: 1px 0;
   font-size: $postFontSize;
   line-height: $postLineHeight;
+  padding: 5px;
+  background-color: $grey5;
+  border: solid 1px $grey4;
+  @include border-radius(3px);
 
   .post-content-wrapper {
     margin-left: 45px;
@@ -50,11 +56,6 @@ article.node-item {
     .post-content {
       a.username {
         font-weight: bold;
-      }
-
-      time {
-        float: right;
-        color: $grey3;
       }
     }
   }
@@ -125,6 +126,7 @@ article.node-item {
     height: 2 * $postLineHeight;
     //resize: none;
     overflow: hidden;
+    margin-top: 8px;
 
     &.uploading {
       background: white url('../images/loading29.gif') no-repeat center center;
@@ -134,13 +136,12 @@ article.node-item {
   .comment-description {
     padding: 0;
     font-size: 11px;
-    color: $grey2;
+    color: $grey3;
   }
 }
 
 .post-form-wrapper {
-  border-bottom: solid 1px black;
-  padding: 0 10px 30px;
+  @include channel-page-section;
 
   h2 {
     margin-bottom: 10px;
@@ -148,13 +149,9 @@ article.node-item {
 
   input.form-text,
   select,
-  textarea {
+  .form-textarea-wrapper textarea {
     border-color: $grey4;
-  }
-
-  .post-article-body {
-    background-color: $grey5;
-    @include border-radius(3px);
+    width: 100%;
   }
 
   //.form-submit {
@@ -166,21 +163,6 @@ article.node-item {
   //}
 }
 
-.view-channel {
-  article.node {
-    background-color: white;
-
-    .field-name-field-item-text {
-      font-size: 13px;
-    }
-  }
-
-  article.comment {
-    background-color: $blue5;
-    @include border-radius(3px);
-  }
-}
-
 article.new-comment-form-article {
   .post-content-wrapper {
     height: auto;
@@ -188,11 +170,11 @@ article.new-comment-form-article {
 }
 
 .new-comment-controls {
-  .new-comment-button,
-  .cancel-comment-button {
-    margin-top: 2px;
-    padding: 3px 9px;
+  input {
+    margin: 2px 0 0 2px;
+    padding: 1px 5px;
     float: right;
+    font-size: 10px;
   }
 }
 
@@ -265,7 +247,16 @@ input.rating-button {
   }
 }
 
-.node-item-form {
+#moonmars-members-filter-channel-form,
+article.node-channel form {
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: none;
+}
+
+
+form.node-item-form {
 
   #edit-field-item-type-und {
     .form-type-radio {
@@ -314,11 +305,6 @@ input.rating-button {
 
 
 article.node-item {
-  & > .post-article-body {
-    background-color: $grey5;
-    @include border-radius(3px);
-  }
-
   .field-name-field-item-text {
     .field-item {
       white-space: pre-wrap;
@@ -329,5 +315,14 @@ article.node-item {
     margin: 0;
     font-size: 11px;
     color: $grey3;
+  }
+}
+
+article.comment {
+  margin-top: 5px;
+
+  .post-article-body {
+    background-color: $blue5;
+    border-color: $blue4;
   }
 }

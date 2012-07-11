@@ -11,12 +11,12 @@
  * for more information on this topic.
  */
 
-function astro_created_datetime($created) {
-  $created_datetime = new StarDateTime($created);
-  $time_ago = $created_datetime->aboutHowLongAgo();
+function astro_format_about_how_long_ago($datetime) {
+  $datetime = new StarDateTime($datetime);
+  $time_ago = $datetime->aboutHowLongAgo();
   $time_ago = $time_ago == 'now' ? 'just now' : "about $time_ago ago";
-  $dt_format = $created_datetime->format('Y-m-d\TH:i:s\Z');
-  return "<time datetime='$dt_format'>$time_ago</time>";
+  $iso = $datetime->format('Y-m-d\TH:i:s\Z');
+  return "<time datetime='$iso'>$time_ago</time>";
 }
 
 /**

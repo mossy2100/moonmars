@@ -21,8 +21,8 @@ function select_province_menu() {
  * @param array $form_state
  */
 function select_province_form_alter(&$form, &$form_state) {
-  // Add the JS:
-  drupal_add_js(drupal_get_path('module', 'select_province') . '/select_province.js');
+  // Add JS:
+  $form['#attached']['js'][] = drupal_get_path('module', 'select_province') . '/js/select_province.js';
 }
 
 /**

@@ -2,8 +2,8 @@
 
 function astro_alpha_preprocess_page(&$vars) {
   // Include the jQuery Tools javascript, which has the tooltip code.
-  drupal_add_css('sites/all/libraries/jquery/tipTip/tipTip.css');
-  drupal_add_js('sites/all/libraries/jquery/tipTip/jquery.tipTip.js');
+//  drupal_add_css('sites/all/libraries/jquery/tipTip/tipTip.css');
+//  drupal_add_js('sites/all/libraries/jquery/tipTip/jquery.tipTip.js');
 
   // Some more lovely jQuery plugins:
   drupal_add_js('sites/all/libraries/jquery/jquery.sizes.js');
@@ -16,4 +16,7 @@ function astro_alpha_preprocess_page(&$vars) {
   drupal_add_js('/sites/all/libraries/star/js/strings.js');
   drupal_add_js('/sites/all/libraries/star/js/arrays.js');
   drupal_add_js('/sites/all/libraries/star/js/debug.js');
+
+
+//  dbg($vars);
 }

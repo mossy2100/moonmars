@@ -1,217 +1,33 @@
 <?php
 
-function moonmars_members_get_user_object($user) {
-  if (is_null($user)) {
-    global $user;
-  }
-  elseif (is_uint($user)) {
-    $user = user_load($user);
-  }
-  if (is_object($user)) {
-    return $user;
-  }
-  return FALSE;
-}
-
 /**
- * Get the user's full name.
- *
- * @param int|stdClass $user
- * @return string
+ * Implements hook_menu().
  */
-function moonmars_members_get_full_name($user) {
-  if (!is_object($user)) {
-    $user = user_load($user);
-  }
-
-  $first_name = $user->field_first_name ? $user->field_first_name[LANGUAGE_NONE][0]['value'] : '';
-  $last_name = $user->field_last_name ? $user->field_last_name[LANGUAGE_NONE][0]['value'] : '';
-  return trim("$first_name $last_name");
-}
-
-/**
- * Get the user's name with full name.
- *
- * @param int|stdClass $user
- * @return string
- */
-function moonmars_members_get_name_plus_full_name($user) {
-  if (!is_object($user)) {
-    $user = user_load($user);
-  }
-
-  $full_name = moonmars_members_get_full_name($user->uid);
-  return $user->name . ($full_name ? " ($full_name)" : '');
-}
-
-/**
- * Get the user's location as city, state, country.
- *
- * @param int|stdClass $user
- * @return string
- */
-function moonmars_members_get_location($user) {
-  if (!is_object($user)) {
-    $user = user_load($user);
-  }
-
-  if ($user->field_user_location) {
-    $city = isset($user->field_user_location[LANGUAGE_NONE][0]['city']) ? $user->field_user_location[LANGUAGE_NONE][0]['city'] : NULL;
-    $province = isset($user->field_user_location[LANGUAGE_NONE][0]['province']) ? $user->field_user_location[LANGUAGE_NONE][0]['province'] : NULL;
-    $country = isset($user->field_user_location[LANGUAGE_NONE][0]['country']) ? $user->field_user_location[LANGUAGE_NONE][0]['country'] : NULL;
-    return implode(', ', array_filter(array(
-      $city,
-      $province,
-      $country
-    )));
-  }
-  return NULL;
-}
-
-/**
- * Calculate the user's age from their date of birth.
- *
- * @param int|stdClass $user
- * @return int|null
- */
-function moonmars_members_get_age($user) {
-  if (!is_object($user)) {
-    $user = user_load($user);
-  }
-
-  $date_of_birth = $user->field_date_of_birth ? $user->field_date_of_birth[LANGUAGE_NONE][0]['value'] : NULL;
-  if ($date_of_birth) {
-    $date_of_birth = new StarDateTime($date_of_birth);
-    $today = StarDateTime::today();
-    $birth_year = $date_of_birth->year();
-    $current_year = $today->year();
-    $birthday_this_year = $date_of_birth;
-    $birthday_this_year->year($today->year());
-    return ($current_year - $birth_year) + ($birthday_this_year <= $today ? 1 : 0);
-  }
-  return NULL;
-}
-
-/**
- * Get the user's gender as a single letter.
- *
- * @param int|stdClass $user
- * @return string
- */
-function moonmars_members_get_gender($user) {
-  if (!is_object($user)) {
-    $user = user_load($user);
-  }
-
-  return $user->field_gender ? $user->field_gender[LANGUAGE_NONE][0]['value'] : NULL;
-}
-
-/**
- * Generate HTML for an avatar tooltip.
- *
- * @param int|stdClass $user
- * @return string
- */
-function moonmars_members_get_tooltip($user) {
-  if (!is_object($user)) {
-    $user = user_load($user);
-  }
-
-  // HTML for the tooltip:
-  $user_name = "<strong>$user->name</strong>";
-  $full_name = moonmars_members_get_full_name($user->uid);
-
-  // Cater for names that are too long - we don't want the tooltip too big.
-  if (strlen($full_name) > 50) {
-    $full_name = substr($full_name, 0, 47) . '...';
-  }
-
-  $age_gender = implode('/', array_filter(array(
-    moonmars_members_get_gender($user->uid),
-    moonmars_members_get_age($user->uid),
-  )));
-  $location = moonmars_members_get_location($user->uid);
-  return
-    "<div class='user-tooltip' title='Visit $user->name&apos;s profile'>" .
-      moonmars_members_get_avatar($user) .
-      "<div class='user-tooltip-text'>" .
-        implode('<br>', array_filter(array(
-          $user_name,
-          $full_name,
-          $age_gender,
-          $location
-        ))) .
-      "</div>" .
-    "</div>";
-}
-
-/**
- * Generate HTML for a user avatar.
- *
- * @param int|stdClass $user
- * @return string
- */
-function moonmars_members_get_avatar($user) {
-  if (!is_object($user)) {
-    $user = user_load($user);
-  }
-
-  // The avatar icon:
-  if ($user->picture) {
-    // If the user has a picture, use it:
-    $icon_path = $user->picture->uri;
-  }
-  else {
-    // If the user doesn't have a picture, use a default icon:
-    $icon = isset($user->field_moon_or_mars[LANGUAGE_NONE][0]['value']) ? $user->field_moon_or_mars[LANGUAGE_NONE][0]['value'] : 'both';
-    $icon_path = "avatars/870x870/$icon-870x870.jpg";
-  }
-
-  $image = array(
-    'style_name'  => 'icon-40x40',
-    'path'        => $icon_path,
-    'alt'         => $user->name,
-    'attributes'  => array('class' => array('avatar-icon')),
+function moonmars_members_menu() {
+  $items = array();
+  $items['profile'] = array(
+    'page callback' => 'moonmars_members_profile',
+    'access callback' => 'user_is_logged_in',
+    'type' => MENU_NORMAL_ITEM
   );
-
-  return theme('image_style', $image);
-}
-
-/**
- * Generate HTML for a user avatar with link.
- *
- * @param int|stdClass $user
- * @return string
- */
-function moonmars_members_get_avatar_link($user) {
-  if (!is_object($user)) {
-    $user = user_load($user);
-  }
-
-  return "<a class='avatar-link' href='/users/$user->name'>" . moonmars_members_get_avatar($user->uid) . "</a>";
-}
-
-/**
- * Generate HTML for a user avatar with link and tooltip.
- *
- * @param int|stdClass $user
- * @return string
- */
-function moonmars_members_get_avatar_tooltip($user) {
-  if (!is_object($user)) {
-    $user = user_load($user);
-  }
-
-  // HTML for the tooltip:
-  $avatar = moonmars_members_get_avatar_link($user->uid);
-  $tooltip = moonmars_members_get_tooltip($user->uid);
-
-  return "
-    <div class='avatar-tooltip'>
-      $avatar
-      $tooltip
-    </div>
-  ";
+  $items['profile/edit'] = array(
+    'page callback' => 'moonmars_members_profile_edit',
+    'access callback' => 'user_is_logged_in',
+    'type' => MENU_NORMAL_ITEM
+  );
+  $items['user/%/follow'] = array(
+    'page callback'    => 'moonmars_members_follow',
+    'page arguments'   => array(1),
+    'access callback'  => 'user_is_logged_in',
+    'type'             => MENU_CALLBACK,
+  );
+  $items['user/%/unfollow'] = array(
+    'page callback'    => 'moonmars_members_unfollow',
+    'page arguments'   => array(1),
+    'access callback'  => 'user_is_logged_in',
+    'type'             => MENU_CALLBACK,
+  );
+  return $items;
 }
 
 /**
@@ -230,77 +46,17 @@ function moonmars_members_levels() {
 }
 
 /**
- * Get a member's level.
- *
- * @param object|int|null $user
- * @return string|bool
- */
-function moonmars_members_get_level($user = NULL) {
-  if (!$user) {
-    global $user;
-  }
-  elseif (!is_object($user)) {
-    $user = user_load($user);
-  }
-  if (!$user || !$user->uid) {
-    return FALSE;
-  }
-
-  $levels = array_reverse(moonmars_members_levels());
-  $user_level = FALSE;
-
-  foreach ($levels as $level) {
-    if (in_array($level, $user->roles)) {
-      if (!$user_level) {
-        $user_level = $level;
-      }
-      else {
-        // The user level has already been found, so remove this level role:
-        $user->roles = array_diff($user->roles, array($level));
-        $save_user = TRUE;
-      }
-    }
-  }
-
-  // If no user level found, default to iron:
-  if (!$user_level) {
-    $user_level = 'iron';
-    // Add the role:
-    $role = user_role_load_by_name('iron');
-    $user->roles[$role->rid] = 'iron';
-    $save_user = TRUE;
-  }
-
-  if ($save_user) {
-    user_save($user);
-  }
-
-  return $user_level;
-}
-
-/**
- * Get the user's member level number.
- *
- * @param object|int|null $user
- * @return int
- */
-function moonmars_members_get_level_num($user = NULL) {
-  return array_search(moonmars_members_get_level($user), moonmars_members_levels());
-}
-
-/**
  * Implements hook_form_alter().
  */
 function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
+  // dpm($form_id);
 
   switch ($form_id) {
 
     case 'user_register_form':
 
       // Add JS for the Moon or Mars field:
-      $form['#attached']['js'] = array(
-        drupal_get_path('module', 'moonmars_members') . '/js/moon-or-mars.js',
-      );
+      $form['#attached']['js'][] = drupal_get_path('module', 'moonmars_members') . '/js/moon-or-mars.js';
 
       // Add rules fields:
       $weight = $form['field_moon_or_mars']['#weight'];
@@ -329,7 +85,7 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
       );
       $form['rules-cb'] = array(
         '#type' => 'checkbox',
-        '#title' => "I agree to the Rules and understand that if I don't follow them I will be kicked out.",
+        '#title' => "I agree to the Rules.",
         '#required' => TRUE,
         '#weight' => ++$weight,
       );
@@ -339,10 +95,8 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
 
       // Add JS for the Moon or Mars field:
       $module_path = drupal_get_path('module', 'moonmars_members');
-      $form['#attached']['js'] = array(
-        "$module_path/js/moon-or-mars.js",
-        "$module_path/js/profile-form.js",
-      );
+      $form['#attached']['js'][] = "$module_path/js/moon-or-mars.js";
+      $form['#attached']['js'][] = "$module_path/js/profile-form.js";
 
       // Order the fields:
       $weight = 0;
@@ -358,8 +112,13 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
       $form['field_date_of_birth']['#weight'] = ++$weight;
       $form['field_gender']['#weight'] = ++$weight;
       $form['field_user_location']['#weight'] = ++$weight;
+      $form['timezone']['#weight'] = ++$weight;
       $form['field_mobile_phone']['#weight'] = ++$weight;
       $form['field_bio']['#weight'] = ++$weight;
+      $form['field_website']['#weight'] = ++$weight;
+      $form['field_facebook']['#weight'] = ++$weight;
+      $form['field_linkedin']['#weight'] = ++$weight;
+      $form['field_twitter']['#weight'] = ++$weight;
       $form['signature']['#weight'] = ++$weight;
       $form['contact']['#weight'] = ++$weight;
 
@@ -369,7 +128,15 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
       // Add an after_build handler:
       $form['#after_build'][] = 'moonmars_members_user_profile_form_after_build';
 
-//      dbg($form['field_date_of_birth']);
+      // Add a submit handler:
+      $form['#submit'][] = 'moonmars_members_user_profile_form_submit';
+
+//      $keys = array_keys($form);
+//      foreach ($form as $key => $value) {
+//        if (is_array($value) && isset($value['#weight'])) {
+//          dbg("$key weight {$value['#weight']}");
+//        }
+//      }
 
       break;
   }
@@ -385,7 +152,7 @@ function moonmars_members_user_profile_form_after_build($form) {
 
   // Reformat the timezone options:
   $rx = "/([^\:]+)\:([^\+]+)([\+\-]\d{2})(\d{2})/";
-  foreach ($form['timezone']['timezone']['#options'] as $tz => &$option) {
+  foreach ($form['timezone']['timezone']['#options'] as &$option) {
     $n = preg_match($rx, $option, $matches);
     if ($n) {
       $option = $matches[1] . ' ' . $matches[3] . ':' . $matches[4];
@@ -396,6 +163,248 @@ function moonmars_members_user_profile_form_after_build($form) {
   $form['field_user_location'][LANGUAGE_NONE][0]['country']['#description'] = "Select your country";
   $form['field_user_location'][LANGUAGE_NONE][0]['province']['#description'] = "Select your state or province";
   $form['field_user_location'][LANGUAGE_NONE][0]['city']['#description'] = "Enter your city";
+  unset($form['field_user_location'][LANGUAGE_NONE][0]['delete_location']);
 
   return $form;
+}
+
+/**
+ * Submit handler for the user account/profile form.
+ *
+ * @param array $form
+ * @return array
+ */
+function moonmars_members_user_profile_form_submit($form, $form_state) {
+  // Go back to the user's profile:
+  drupal_goto('user/' . arg(1));
+}
+
+/**
+ * Create a follows relationship between the logged in user and the user specified in the parameter.
+ *
+ * @param $uid2
+ */
+function moonmars_members_follow($uid2) {
+  global $user;
+  $uid1 = $user->uid;
+  if ($uid1 && $uid2) {
+    $member1 = Member::create($uid1);
+    $member2 = Member::create($uid2);
+    if ($member1->follows($member2->uid)) {
+      drupal_set_message(t("You are already following %user2_name.", array('%user2_name' => $member2->name)));
+    }
+    else {
+      // Create the follow relationship:
+      moonmars_relationships_create_relationship('has_follower', 'user', $uid2, 'user', $uid1, TRUE);
+
+      // Subscribe the follower to the member's channel:
+      $channel_nid = $member2->channel();
+      moonmars_relationships_update_relationship('has_subscriber', 'node', $channel_nid, 'user', $uid1);
+
+      // Tell the user:
+      drupal_set_message(t("You are now following %user2_name.", array('%user2_name' => $member2->name)));
+    }
+  }
+  drupal_goto("user/$uid2");
+}
+
+/**
+ * Removes a follows relationship between the logged in user and the user specified in the parameter.
+ *
+ * @param $uid2
+ */
+function moonmars_members_unfollow($uid2) {
+  global $user;
+  $uid1 = $user->uid;
+  if ($uid1 && $uid2) {
+    $member1 = Member::create($uid1);
+    $member2 = Member::create($uid2);
+    if ($member1->follows($member2->uid)) {
+      // Remove the follow relationship:
+      moonmars_relationships_delete_relationship('has_follower', 'user', $uid2, 'user', $uid1);
+
+      // Unsubscribe the follower from the member's channel:
+      $channel_nid = $member2->channel();
+      moonmars_relationships_delete_relationship('has_subscriber', 'node', $channel_nid, 'user', $uid1);
+
+      // Tell the user:
+      drupal_set_message(t("You are no longer following %user2_name.", array('%user2_name' => $member2->name)));
+    }
+    else {
+      drupal_set_message(t("You weren't following %user2_name.", array('%user2_name' => $member2->name)));
+    }
+  }
+  drupal_goto("user/$uid2");
+}
+
+/**
+ * Go to the member's profile.
+ */
+function moonmars_members_profile() {
+  global $user;
+  drupal_goto("user/$user->uid");
+}
+
+/**
+ * Go to the member's profile edit form.
+ */
+function moonmars_members_profile_edit() {
+  global $user;
+  drupal_goto(drupal_get_path_alias("user/$user->uid") . '/edit');
+}
+
+/**
+ * Show the form for filtering a member's profile channel.
+ *
+ * @return array
+ */
+function moonmars_members_filter_channel_form() {
+  $form = array();
+  $form['profile_filter'] = array(
+    '#type' => 'checkbox',
+    '#title' => "Just show my stuff (my public profile)",
+    '#default_value' => isset($_SESSION['user']['profile_filter']) ? $_SESSION['user']['profile_filter'] : FALSE,
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'Go'
+  );
+
+  $form['#attached']['js'][] = drupal_get_path('module', 'moonmars_members') . '/js/profile-filter.js';
+
+  return $form;
+}
+
+/**
+ * Submit handler for moonmars_members_filter_channel_form().
+ */
+function moonmars_members_filter_channel_form_submit($form, &$form_state) {
+  // Store the checkbox state:
+  $_SESSION['user']['profile_filter'] = (bool) $form_state['values']['profile_filter'];
+  // Reload the page:
+  drupal_goto('user/' . arg(1));
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Blocks
+
+/**
+ * Implementation of hook_block_info().
+ */
+function moonmars_members_block_info() {
+  $blocks['member-menu'] = array(
+    'info' => t('Member menu'),
+    'cache' => DRUPAL_CACHE_PER_USER,
+  );
+  $blocks['member-groups'] = array(
+    'info' => t("Member's groups"),
+    'cache' => DRUPAL_CACHE_PER_PAGE,
+  );
+  return $blocks;
+}
+
+/**
+ * Implementation of hook_block_view().
+ */
+function moonmars_members_block_view($delta = '') {
+  $block = array();
+  switch ($delta) {
+    case 'member-menu':
+      $block['subject'] = NULL;
+      $block['content'] = moonmars_members_menu_block();
+      break;
+
+    case 'member-groups':
+      $block['subject'] = 'Groups';
+      $block['content'] = moonmars_members_groups_block();
+      break;
+  }
+  return $block;
+}
+
+/**
+ * Generate HTML for the member menu block.
+ *
+ * @return string
+ */
+function moonmars_members_menu_block() {
+  global $user;
+  if (!user_is_logged_in()) {
+    return "<p>Please <a href='/login'>login</a> or <a href='/register'>register</a> to follow this user.</p>";
+  }
+
+  $html = "<ul id='member-menu' class='menu'>";
+
+  // Get the user ids of the follower and the followee:
+  $uid1 = $user->uid;
+  $uid2 = (int) arg(1);
+
+  // On your own profile, show an edit link:
+  if ($uid1 == $uid2) {
+    $edit_link = l('Edit profile', drupal_get_path_alias("user/$uid2") . '/edit');
+    $html .= "<li>$edit_link</li>";
+  }
+  else {
+    // On someone else's profile, show a follow/unfollow link:
+    $member1 = Member::create($uid1);
+    if ($member1->follows($uid2)) {
+      $follow_link = l('Unfollow', "user/$uid2/unfollow");
+    }
+    else {
+      $follow_link = l('Follow', "user/$uid2/follow");
+    }
+    $html .= "<li>$follow_link</li>";
+  }
+
+  $html .= "</ul>";
+  return $html;
+}
+
+/**
+ * Generate HTML for a member's most recent groups.
+ *
+ * @return string
+ */
+function moonmars_members_groups_block() {
+  // Get the member's uid from the URL:
+  $member_uid = (int) arg(1);
+
+  // Get the latest 12 group members:
+  $member = Member::create($member_uid);
+  $group_nids = $member->groups(0, 4);
+
+  // Generate HTML:
+  $html = "<ul class='member-groups clearfix'>\n";
+  // Avatars for most recent groups:
+  foreach ($group_nids as $group_nid) {
+    $html .= "<li class='member-group'>\n";
+
+    // Create a link to the group:
+    $label = '';
+
+    // Do we have an image for this group?
+    $group = node_load($group_nid);
+    if (isset($group->field_logo[LANGUAGE_NONE][0]['fid'])) {
+      $logo = file_load($group->field_logo[LANGUAGE_NONE][0]['fid']);
+      $image_style = array(
+        'style_name' => 'sidebar-logo-90-wide',
+        'path'       => $logo->uri,
+        'alt'        => $group->title,
+      );
+      $label .= theme('image_style', $image_style) . '<br>';
+    }
+    $label .= $group->title;
+    $html .= l($label, "node/$group_nid", array('html' => TRUE, 'attributes' => array('title' => $group->title)));
+
+    $html .= "</li>\n";
+  }
+  $html .= "</ul>\n";
+
+  // View all groups link:
+//  $html .= "<div class='view-all-groups-link'>\n";
+//  $html .= l('View all', drupal_get_path_alias("user/$member_uid") . '/groups');
+//  $html .= "</div>";
+
+  return $html;
 }

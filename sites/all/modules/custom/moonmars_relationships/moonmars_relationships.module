@@ -1,44 +1,164 @@
 <?php
 
 /**
- * Get a member's followers.
+ * Get relationships matching parameters.
  *
- * @param int|stdClass $user
+ * @param string $relationship_type
+ * @param string $entity_type0
+ *   Use NULL to match all.
+ * @param int $entity_id0
+ *   Use NULL to match all.
+ * @param string $entity_type1
+ *   Use NULL to match all.
+ * @param int $entity_id1
+ *   Use NULL to match all.
+ * @param null|int $offset
+ * @param null|int $limit
+ * @return array
  */
-function moonmars_relationships_get_followers($user) {
-
-}
-
-/**
- * Get a member's followees (i.e. other members that the member follows).
- *
- * @param int|stdClass $user
- */
-function moonmars_relationships_get_followees($user) {
-
-}
-
-/**
- * Lookup a relationship between two entities.
- * If a match cannot be found, return FALSE.
- *
- * @param $relationship_type
- * @param $entity_type0
- * @param $entity_id0
- * @param $entity_type1
- * @param $entity_id1
- * @return object|bool
- */
-function moonmars_relationships_get_relationship($relationship_type, $entity_type0, $entity_id0, $entity_type1, $entity_id1) {
+function moonmars_relationships_get_relationships($relationship_type, $entity_type0 = NULL, $entity_id0 = NULL, $entity_type1 = NULL, $entity_id1 = NULL, $offset = NULL, $limit = NULL) {
   // Look for a relationship record:
   $q = db_select('view_relationship', 'vr')
-    ->fields('vr', array('rid'))
-    ->condition('relation_type', $relationship_type)
-    ->condition('entity_type0', $entity_type0)
-    ->condition('entity_id0', $entity_id0)
-    ->condition('entity_type1', $entity_type1)
-    ->condition('entity_id1', $entity_id1);
+    ->fields('vr');
+
+  // Add WHERE clause:
+  $q->condition('relation_type', $relationship_type);
+  if ($entity_type0 !== NULL) {
+    $q->condition('entity_type0', $entity_type0);
+  }
+  if ($entity_id0 !== NULL) {
+    $q->condition('entity_id0', $entity_id0);
+  }
+  if ($entity_type1 !== NULL) {
+    $q->condition('entity_type1', $entity_type1);
+  }
+  if ($entity_id1 !== NULL) {
+    $q->condition('entity_id1', $entity_id1);
+  }
+
+  // Add LIMIT clause:
+  if ($offset !== NULL && $limit !== NULL) {
+    $q->range($offset, $limit);
+  }
+
+  // Add ORDER BY clause:
+  $q->orderBy('changed', 'DESC');
+
+//  dbg_query($q);
+
+  // Get the relationships:
   $rs = $q->execute();
-  $rec = $rs->fetch(PDO::FETCH_OBJ);
-  return $rec ? relation_load($rec->rid) : FALSE;
+  $results = array();
+  foreach ($rs as $rec) {
+    $results[] = $rec;
+  }
+  return $results;
+}
+
+/**
+ * Get the entity ids of relationships matching parameters.
+ *
+ * @param string $relationship_type
+ * @param string $entity_type0
+ *   Use NULL to match all.
+ * @param int $entity_id0
+ *   Use NULL to match all.
+ * @param string $entity_type1
+ *   Use NULL to match all.
+ * @param int $entity_id1
+ *   Use NULL to match all.
+ * @param null|int $offset
+ * @param null|int $limit
+ * @return array
+ */
+function moonmars_relationships_get_entity_ids($relationship_type, $entity_type0, $entity_id0, $entity_type1, $entity_id1, $offset = NULL, $limit = NULL) {
+  $rels = moonmars_relationships_get_relationships($relationship_type, $entity_type0, $entity_id0, $entity_type1, $entity_id1, $offset, $limit);
+  $ids = array();
+  foreach ($rels as $rel) {
+    if ($entity_id0 === NULL && $entity_type0 == $rel->entity_type0) {
+      $ids[] = $rel->entity_id0;
+    }
+    elseif ($entity_id1 === NULL && $entity_type1 == $rel->entity_type1) {
+      $ids[] = $rel->entity_id1;
+    }
+  }
+  return $ids;
+}
+
+/**
+ * Create a new relationship.
+ *
+ * @param string $relationship_type
+ * @param string $entity_type0
+ * @param int $entity_id0
+ * @param string $entity_type1
+ * @param int $entity_id1
+ * @param bool $save
+ * @return stdClass
+ */
+function moonmars_relationships_create_relationship($relationship_type, $entity_type0, $entity_id0, $entity_type1, $entity_id1, $save = FALSE) {
+  $end_points = array(
+    array(
+      'entity_type' => $entity_type0,
+      'entity_id'   => $entity_id0,
+    ),
+    array(
+      'entity_type' => $entity_type1,
+      'entity_id'   => $entity_id1,
+    ),
+  );
+  $relation = relation_create($relationship_type, $end_points);
+
+  // Save if requested:
+  if ($save) {
+    $relation->rid = relation_save($relation);
+  }
+
+  return $relation;
+}
+
+/**
+ * Update or create a relationship.
+ *
+ * @param string $relationship_type
+ * @param string $entity_type0
+ * @param int $entity_id0
+ * @param string $entity_type1
+ * @param int $entity_id1
+ */
+function moonmars_relationships_update_relationship($relationship_type, $entity_type0, $entity_id0, $entity_type1, $entity_id1) {
+  // See if the relationship already exists:
+  $rels = moonmars_relationships_get_relationships($relationship_type, $entity_type0, $entity_id0, $entity_type1, $entity_id1);
+  if ($rels) {
+    // Update the relationship. We really just want to update the changed timestamp, so let's just load and save it.
+    return relation_save(relation_load($rels[0]->rid));
+  }
+  else {
+    // Create a new relationship:
+    $rel = moonmars_relationships_create_relationship($relationship_type, $entity_type0, $entity_id0, $entity_type1, $entity_id1, TRUE);
+    return $rel->rid;
+  }
+}
+
+/**
+ * Delete relationships.
+ *
+ * @param string $relationship_type
+ * @param string $entity_type0
+ * @param int $entity_id0
+ * @param string $entity_type1
+ * @param int $entity_id1
+ * @return bool
+ *   TRUE on success, FALSE on failure
+ */
+function moonmars_relationships_delete_relationships($relationship_type, $entity_type0, $entity_id0, $entity_type1, $entity_id1) {
+  $rels = moonmars_relationships_get_relationships($relationship_type, $entity_type0, $entity_id0, $entity_type1, $entity_id1);
+  if (empty($rels)) {
+    return FALSE;
+  }
+  // Delete the relationship:
+  foreach ($rels as $rel) {
+    relation_delete($rel->rid);
+  }
+  return TRUE;
 }

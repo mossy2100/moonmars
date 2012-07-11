@@ -3,14 +3,21 @@
 function astro_alpha_preprocess_comment(&$vars) {
 
   // Theme the user picture:
-  $vars['picture'] = moonmars_members_get_avatar_tooltip($vars['elements']['#comment']->uid);
+  $member = Member::create($vars['elements']['#comment']->uid);
+  $vars['picture'] = $member->avatarTooltip();
 
   // Format the username as a link:
   $username = $vars['elements']['#comment']->name;
-  $vars['username'] = "<a class='username' href='/users/$username' title='Visit $username&apos;s profile.'>$username</a>";
+  $vars['username'] = l($username, 'user/' . $vars['elements']['#comment']->uid,
+    array(
+         'attributes' => array(
+           'class' => array('username'),
+           'title' => "Visit $username&apos;s profile."
+         )
+    ));
 
   // Format the comment created datetime:
-  $vars['created_datetime'] = astro_created_datetime($vars['elements']['#comment']->created);
+  $vars['created_datetime'] = astro_format_about_how_long_ago($vars['elements']['#comment']->created);
 
   // If no score is set, make up a random one for now:
   $vars['score'] = isset($vars['elements']['#comment']->field_score[LANGUAGE_NONE][0]['value']) ? $vars['elements']['#comment']->field_score[LANGUAGE_NONE][0]['value'] : 0;

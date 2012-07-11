@@ -71,6 +71,10 @@ class SassString extends SassLiteral {
     return $this;
   }
 
+  public function op_eq($other) {
+    return new SassBoolean($this->value == $other->value);
+  }
+
   /**
    * Evaluates the value as a boolean.
    */

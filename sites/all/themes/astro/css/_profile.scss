@@ -1,0 +1,15 @@
+#moonmars-members-filter-channel-form {
+  @include channel-page-section;
+
+  label {
+    font-weight: normal;
+  }
+
+  .form-submit {
+    display: none;
+  }
+
+  .form-item {
+    margin: 0;
+  }
+}

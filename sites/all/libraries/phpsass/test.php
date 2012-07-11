@@ -77,7 +77,6 @@
             print "\n\n" . $names[1] . "\n";
             print strlen($two) . ' ' . $two;
           }
-          die;
         }
         flush();
 

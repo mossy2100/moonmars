@@ -1,50 +1,53 @@
-(function($) {
-  
-  /////////////////////////////////////////////////////////////////////////////
-  // Check and uncheck functions
+(function ($) {
 
-  // Check the selected elements:
-  $.fn.check = function() {
-    return this.attr('checked', 'checked');
-  };
-  
-  // Uncheck all the selected elements:
-  $.fn.uncheck = function() {
-    return this.removeAttr('checked');
-  };
-  
-  // Returns whether or not the element is checked:
-  $.fn.checked = function() {
-    return this.is(':checked');
-  };
-  
-  // Returns whether or not the element is unchecked:
-  $.fn.unchecked = function() {
-    return !this.checked();
-  };
+  $.extend($.fn, {
 
+    /////////////////////////////////////////////////////////////////////////////
+    // Check and uncheck functions
 
-  /////////////////////////////////////////////////////////////////////////////
-  // Enable and disable functions
+    // Check the selected elements:
+    check: function () {
+      return this.attr('checked', 'checked');
+    },
 
-  // Disable all the selected elements:
-  $.fn.disable = function() {
-    return this.attr('disabled', 'disabled');
-  };
+    // Uncheck all the selected elements:
+    uncheck: function () {
+      return this.removeAttr('checked');
+    },
 
-  // Enable all the selected elements:
-  $.fn.enable = function() {
-    return this.removeAttr('disabled');
-  };
+    // Returns whether or not the element is checked:
+    checked: function () {
+      return this.is(':checked');
+    },
 
-  // Returns whether or not the element is enabled:
-  $.fn.disabled = function() {
-    return this.is(':disabled');
-  };
+    // Returns whether or not the element is unchecked:
+    unchecked: function () {
+      return !this.checked();
+    },
 
-  // Returns whether or not the element is enabled:
-  $.fn.enabled = function() {
-    return !this.disabled();
-  };
+    /////////////////////////////////////////////////////////////////////////////
+    // Enable and disable functions
+
+    // Disable all the selected elements:
+    disable: function () {
+      return this.attr('disabled', 'disabled');
+    },
+
+    // Enable all the selected elements:
+    enable: function () {
+      return this.removeAttr('disabled');
+    },
+
+    // Returns whether or not the element is enabled:
+    disabled: function () {
+      return this.is(':disabled');
+    },
+
+    // Returns whether or not the element is enabled:
+    enabled: function () {
+      return !this.disabled();
+    }
+
+  });
 
 })(jQuery);

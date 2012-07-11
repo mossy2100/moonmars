@@ -354,77 +354,77 @@ class StarDateTime extends DateTime {
   /**
    * Add years.
    *
-   * @param int $n
+   * @param int $years
    * @return StarDateTime
    */
-  public function addYears($n) {
+  public function addYears($years) {
     $dt = clone $this;
-    return $dt->year($dt->year() + $n);
+    return $dt->year($dt->year() + $years);
   }
 
   /**
    * Add months.
    *
-   * @param int $n
+   * @param int $months
    * @return StarDateTime
    */
-  public function addMonths($n) {
+  public function addMonths($months) {
     $dt = clone $this;
-    return $dt->month($dt->month() + $n);
+    return $dt->month($dt->month() + $months);
   }
 
   /**
    * Add weeks.
    *
-   * @param int $n
+   * @param int $weeks
    * @return StarDateTime
    */
-  public function addWeeks($n) {
-    return $this->addDays($n * 7);
+  public function addWeeks($weeks) {
+    return $this->addDays($weeks * 7);
   }
 
   /**
    * Add days.
    *
-   * @param int $n
+   * @param int $days
    * @return StarDateTime
    */
-  public function addDays($n) {
+  public function addDays($days) {
     $dt = clone $this;
-    return $dt->day($dt->day() + $n);
+    return $dt->day($dt->day() + $days);
   }
 
   /**
    * Add hours.
    *
-   * @param int $n
+   * @param int $hours
    * @return StarDateTime
    */
-  public function addHours($n) {
+  public function addHours($hours) {
     $dt = clone $this;
-    return $dt->hour($dt->hour() + $n);
+    return $dt->hour($dt->hour() + $hours);
   }
 
   /**
    * Add minutes.
    *
-   * @param int $n
+   * @param int $minutes
    * @return StarDateTime
    */
-  public function addMinutes($n) {
+  public function addMinutes($minutes) {
     $dt = clone $this;
-    return $dt->minute($dt->minute() + $n);
+    return $dt->minute($dt->minute() + $minutes);
   }
 
   /**
    * Add seconds.
    *
-   * @param int $n
+   * @param int $seconds
    * @return StarDateTime
    */
-  public function addSeconds($n) {
+  public function addSeconds($seconds) {
     $dt = clone $this;
-    return $dt->second($dt->second() + $n);
+    return $dt->second($dt->second() + $seconds);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -433,71 +433,71 @@ class StarDateTime extends DateTime {
   /**
    * Subtract years.
    *
-   * @param int $n
+   * @param int $years
    * @return StarDateTime
    */
-  public function subYears($n) {
-    return $this->addYears(-$n);
+  public function subYears($years) {
+    return $this->addYears(-$years);
   }
 
   /**
    * Subtract months.
    *
-   * @param int $n
+   * @param int $months
    * @return StarDateTime
    */
-  public function subMonths($n) {
-    return $this->addMonths(-$n);
+  public function subMonths($months) {
+    return $this->addMonths(-$months);
   }
 
   /**
    * Subtract weeks.
    *
-   * @param int $n
+   * @param int $weeks
    * @return StarDateTime
    */
-  public function subWeeks($n) {
-    return $this->addWeeks(-$n);
+  public function subWeeks($weeks) {
+    return $this->addWeeks(-$weeks);
   }
 
   /**
    * Subtract days.
    *
-   * @param int $n
+   * @param int $days
    * @return StarDateTime
    */
-  public function subDays($n) {
-    return $this->addDays(-$n);
+  public function subDays($days) {
+    return $this->addDays(-$days);
   }
 
   /**
    * Subtract hours.
    *
-   * @param int $n
+   * @param int $hours
    * @return StarDateTime
    */
-  public function subHours($n) {
-    return $this->addHours(-$n);
+  public function subHours($hours) {
+    return $this->addHours(-$hours);
   }
 
   /**
    * Subtract minutes.
    *
-   * @param int $n
+   * @param int $minutes
    * @return StarDateTime
    */
-  public function subMinutes($n) {
-    return $this->addMinutes(-$n);
+  public function subMinutes($minutes) {
+    return $this->addMinutes(-$minutes);
   }
 
   /**
    * Subtract seconds.
    *
-   * @param int $n
+   * @param int $seconds
    * @return StarDateTime
    */
-  public function subSeconds($n) {
-    return $this->addSeconds(-$n);
+  public function subSeconds($seconds) {
+    return $this->addSeconds(-$seconds);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -505,19 +505,19 @@ class StarDateTime extends DateTime {
 
   /**
    * Clamp the year to a specified range.
-   * Either min or max can be specified.
+   * Either min or max or neither or both can be specified.
    *
-   * @param int|null $min
-   * @param int|null $max
+   * @param int|null $min_year
+   * @param int|null $max_year
    */
-  public function clampYear($min = NULL, $max = NULL) {
+  public function clampYear($min_year = NULL, $max_year = NULL) {
     // Clamp to min year, if specified:
-    if ($min !== NULL && $this->year() < $min) {
-      $this->year($min);
+    if ($min_year !== NULL && $this->year() < $min_year) {
+      $this->year($min_year);
     }
     // Clamp to max year, if specified:
-    if ($max !== NULL && $this->year() > $max) {
-      $this->year($max);
+    if ($max_year !== NULL && $this->year() > $max_year) {
+      $this->year($max_year);
     }
   }
 
@@ -592,6 +592,24 @@ class StarDateTime extends DateTime {
     // Years:
     $years = round($seconds / self::SECONDS_PER_YEAR);
     return $years == 1 ? 'a year' : "$years years";
+  }
+
+  /**
+   * Calculate the difference in seconds between two datetimes.
+   *
+   * The signature is identical to
+   * @see DateTime::diff(), which returns a DateInterval.
+   *
+   * @param StarDateTime $dt2
+   * @param bool $absolute
+   *   If TRUE then the absolute value of the difference is returned.
+   */
+  function diffSeconds(StarDateTime $datetime2, $absolute = FALSE) {
+    $diff = $this->timestamp() - $datetime2->timestamp();
+    if ($absolute) {
+      $diff = abs($diff);
+    }
+    return $diff;
   }
 
 }

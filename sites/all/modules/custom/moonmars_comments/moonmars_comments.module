@@ -4,10 +4,14 @@
  * Implements hook_menu().
  */
 function moonmars_comments_menu() {
-  $items['ajax/comment/update'] = array(
-    'page callback'    => 'moonmars_comments_ajax_update',
-    'access callback'  => 'comment_access',
-    'access arguments' => array('edit', 1),
+  $items['ajax/comment/create'] = array(
+    'page callback'    => 'moonmars_comments_ajax_create',
+    'access callback'  => 'moonmars_comments_can_create',
+    'type'             => MENU_CALLBACK,
+  );
+  $items['ajax/comment/edit'] = array(
+    'page callback'    => 'moonmars_comments_ajax_edit',
+    'access callback'  => 'moonmars_comments_can_edit',
     'type'             => MENU_CALLBACK,
   );
 
@@ -35,49 +39,106 @@ function moonmars_comments_form_alter(&$form, &$form_state, $form_id) {
   }
 }
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// AJAX comment actions/callbacks.
+
 /**
- * Update or create new comment via AJAX.
+ * Create new comment via AJAX.
  */
-function moonmars_comments_ajax_update() {
-  // Get the request parameters. Support either GET or POST here, so we can use POST from the form but test using the query string.
-  $cid = (int) $_REQUEST['cid'];
-  $nid = (int) $_REQUEST['nid'];
+function moonmars_comments_ajax_create() {
+  // Get the request parameters.
+  // We use $_REQUEST here in order to support either GET or POST.
+  // Then we can use POST from the form but test using the query string.
+  $item_nid = (int) $_REQUEST['item_nid'];
   $text = trim($_REQUEST['text']);
   global $user;
 
-  $mode = $cid ? 'edit' : 'create';
+  // Create the data array:
+  $data = array(
+    'item_nid' => $item_nid,
+    'text'     => $text,
+  );
 
   // Check we have all the necessary params:
-  if (!$nid || !$text || !$user || !$user->uid) {
-
-    // Create the data array:
-    $data = array(
-      'result' => FALSE,
-      'cid'    => $cid,
-      'nid'    => $nid,
-      'text'   => $text,
-      'mode'   => $mode,
-    );
-
-    // Encode and send:
+  if (!$item_nid || !$text || !$user || !$user->uid) {
+    // Encode result and send:
+    $data['result'] = FALSE;
+    $data['error'] = 'Invalid parameters';
     echo json_encode($data);
     return;
   }
 
-  if ($cid) {
-    // Load the comment:
-    $comment = comment_load($cid);
+  // Create a new comment:
+  $comment = entity_create('comment', array('type' => 'comment'));
+  $comment->pid = 0;
+  $comment->uid = $user->uid;
+  $comment->name = $user->name;
+  $comment->mail = $user->mail;
+  $comment->is_anonymous = FALSE;
+  $comment->nid = $item_nid;
+  $comment->status = 1;
+  $comment->comment_body[LANGUAGE_NONE][0]['value'] = $text;
+
+  // Save the comment:
+  comment_submit($comment);
+  comment_save($comment);
+
+  // Build the comment content:
+  $item_node = node_load($item_nid);
+  comment_build_content($comment, $item_node);
+
+  // Post/update the item:
+  moonmars_channels_post_item($item_nid, TRUE, TRUE);
+
+  // Theme the comment:
+  $html = render_comment($comment);
+
+  // Encode and send result:
+  $data['result'] = TRUE;
+  $data['cid'] = $comment->cid;
+  $data['html'] = $html;
+  echo json_encode($data);
+}
+
+/**
+ * Edit a comment via AJAX.
+ */
+function moonmars_comments_ajax_edit() {
+  // Get the request parameters.
+  // We use $_REQUEST here in order to support either GET or POST.
+  // Then we can use POST from the form but test using the query string.
+  $cid = (int) $_REQUEST['cid'];
+  $item_nid = (int) $_REQUEST['item_nid'];
+  $text = trim($_REQUEST['text']);
+  global $user;
+
+  // Create the data array:
+  $data = array(
+    'cid'      => $cid,
+    'item_nid' => $item_nid,
+    'text'     => $text,
+  );
+
+  // Check we have all the necessary params:
+  if (!$cid || !$item_nid || !$text || !$user || !$user->uid) {
+    // Encode result and send:
+    $data['result'] = FALSE;
+    $data['error'] = 'Invalid parameters';
+    echo json_encode($data);
+    return;
   }
-  else {
-    // Create a new comment:
-    $comment = entity_create('comment', array('type' => 'comment'));
-    $comment->pid = 0;
-    $comment->uid = $user->uid;
-    $comment->name = $user->name;
-    $comment->mail = $user->mail;
-    $comment->is_anonymous = FALSE;
-    $comment->nid = $nid;
-    $comment->status = 1;
+
+  // Load the comment:
+  $comment = comment_load($cid);
+
+  // Check this user has permission to edit the comment:
+  if ($comment != $user->uid) {
+    // Encode result and send:
+    $data['result'] = FALSE;
+    $data['error'] = 'Access denied';
+    echo json_encode($data);
+    return;
   }
 
   // Update the comment text:
@@ -88,31 +149,18 @@ function moonmars_comments_ajax_update() {
   comment_save($comment);
 
   // Build the comment content:
-  $node = node_load($nid);
-  comment_build_content($comment, $node);
+  $item_node = node_load($item_nid);
+  comment_build_content($comment, $item_node);
+
+  // Post/update the item:
+  moonmars_channels_post_item($item_nid, FALSE, TRUE);
 
   // Theme the comment:
-  $html = theme('comment',
-    array(
-      'elements' => array(
-        '#comment' => $comment,
-        '#node'    => $node,
-      ),
-      'content'  => $comment->content
-    )
-  );
+  $html = render_comment($comment);
 
-  // Create the data array:
-  $data = array(
-    'result' => TRUE,
-    'cid'    => $comment->cid,
-    'nid'    => $nid,
-    'mode'   => $mode,
-    'text'   => $text,
-    'html'   => $html,
-  );
-
-  // Encode and send:
+  // Encode and send result:
+  $data['result'] = TRUE;
+  $data['html'] = $html;
   echo json_encode($data);
 }
 
@@ -123,18 +171,19 @@ function moonmars_comments_ajax_delete() {
   // Get the request parameters. Support either GET or POST here, so we can use POST from the form but test using the query string.
   $cid = (int) $_REQUEST['cid'];
 
+  // Create the data array:
+  $data = array(
+    'cid'      => $cid,
+  );
+
   // Check we have all the necessary params:
   if (!$cid) {
-    $data = array(
-      'result' => FALSE,
-    );
+    $data['result'] = FALSE;
   }
   else {
     // Delete the comment:
     comment_delete($cid);
-    $data = array(
-      'result' => TRUE,
-    );
+    $data['result'] = TRUE;
   }
 
   // Encode and send:

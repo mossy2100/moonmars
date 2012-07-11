@@ -95,9 +95,9 @@ $(function () {
 
   // If any of the date selectors change, refresh the calendar:
   $('.view-calendar .date-nav select').change(function() {
-    var year = $("select.calendar-year").selectBox('value');
-    var month = $("select.calendar-month").selectBox('value');
-    var day = $("select.calendar-day").selectBox('value');
+//    var year = $("select.calendar-year").selectBox('value');
+//    var month = $("select.calendar-month").selectBox('value');
+//    var day = $("select.calendar-day").selectBox('value');
 
     switch (Drupal.settings.calendar.template) {
       case 'year':

@@ -2,3 +2,4 @@ name = moonmars.com Geography
 description = Support for geographical stuff on moonmars.com.
 core = 7.x
 package = moonmars.com
+dependencies[] = geonames

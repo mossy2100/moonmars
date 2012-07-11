@@ -1,13 +1,10 @@
 <?php
 
 function moonmars_items_menu() {
-  $items['ajax/item/update'] = array(
-    'page callback'    => 'moonmars_items_ajax_update',
+  $items['ajax/item/edit'] = array(
+    'page callback'    => 'moonmars_items_ajax_edit',
     'access callback'  => 'node_access',
-    'access arguments' => array(
-      'update',
-      1
-    ),
+    'access arguments' => array('update', 1),
     'type'             => MENU_CALLBACK,
   );
 
@@ -94,7 +91,24 @@ function moonmars_items_auto_nodetitle(stdClass $node) {
 //}
 
 function moonmars_items_form_alter(&$form, &$form_state, $form_id) {
-  if ($form_id == 'item_node_form' && moonmars_groups_is_group_page()) {
+  if ($form_id == 'item_node_form' && moonmars_channels_is_embedded_channel_page()) {
+    $entity_type = arg(0);
+    $entity_id = (int) arg(1);
+//    $channel_nid = moonmars_channels_get_channel($entity_type, $entity_id);
+
+    // Set the title:
+    switch ($entity_type) {
+      case 'user':
+        $account = user_load($entity_id);
+        drupal_set_title('Member: ' . $account->name);
+        break;
+
+      case 'node':
+        $node = node_load($entity_id);
+        drupal_set_title(ucfirst($node->type) . ': ' . $node->title);
+        break;
+    }
+
     // Hide a bunch of shit we don't want to see:
     unset($form['title']);
     unset($form['field_score']);
@@ -117,16 +131,11 @@ function moonmars_items_form_alter(&$form, &$form_state, $form_id) {
     $form['field_item_text'][LANGUAGE_NONE][0]['value']['#resizable'] = FALSE;
     $form['field_item_text'][LANGUAGE_NONE][0]['value']['#rows'] = 2;
 
-    // If this is a group channel, put the group nid in a hidden field so we can access it in the submit handler.
-    if (alias_arg(0) == 'group') {
-      $group_nid = (int) arg(1);
-      if ($group_nid) {
-        $form['group_nid'] = array(
-          '#type'          => 'hidden',
-          '#default_value' => $group_nid,
-        );
-      }
-    }
+//    // Put the channel nid in a hidden field so we can access it.
+//    $form['channel_nid'] = array(
+//      '#type'          => 'hidden',
+//      '#default_value' => $channel_nid,
+//    );
 
     // Add an afterbuild handler so we can remove the submit buttons added in file_managed_file_process().
     $form['#after_build'][] = 'moonmars_items_form_after_build';
@@ -157,35 +166,24 @@ function moonmars_items_form_after_build($form) {
  */
 function moonmars_items_node_insert($node) {
   if ($node->type == 'item') {
-    $item = $node;
 
-    // Gather all the endpoint entities into one array
-    if (moonmars_groups_is_group_page()) {
-      $group_nid = arg(1);
-      $group = node_load($group_nid);
-      if ($group && $group->type == 'group') {
-        $end_points = array(
-          array(
-            'entity_label' => $item->title,
-            'entity_type'  => 'node',
-            'entity_id'    => $item->nid
-          ),
-          array(
-            'entity_label' => $group->title,
-            'entity_type'  => 'node',
-            'entity_id'    => $group_nid,
-          ),
-        );
-
-        $type = 'is_post_for';
-        $relation = relation_create($type, $end_points);
-//        entity_form_submit_build_entity('relation', $relation, $form['relation_options'], $form_state);
-        relation_save($relation);
-
-        // Reload the group page:
-        drupal_goto(drupal_get_path_alias('node/' . $group_nid));
-      }
+    // Get the entity type:
+    $entity_type = arg(0);
+    if (!in_array($entity_type, array('user', 'node'))) {
+      return;
     }
+
+    // Get the entity id:
+    $entity_id = arg(1);
+    if (!is_uint($entity_id)) {
+      return;
+    }
+
+    // Post the item in the current channel:
+    moonmars_channels_post_item($node->nid, TRUE, FALSE);
+
+    // Reload the group page:
+    drupal_goto("$entity_type/$entity_id");
   }
 }
 
@@ -203,44 +201,34 @@ function moonmars_items_form_submit($form, &$form_state) {
 }
 
 /**
- * Create or update an item via AJAX.
+ * Edit an item's text via AJAX.
  *
  * @return string
  */
-function moonmars_items_ajax_update() {
-  // Get the request parameters. Support either GET or POST here, so we can use POST from the form but test using the query string.
+function moonmars_items_ajax_edit() {
+  // Get the request parameters. Use $_REQUEST so we can use POST from the form but test using the query string.
   $item_nid = (int) $_REQUEST['item_nid'];
-  $group_nid = (int) $_REQUEST['group_nid'];
   $text = trim($_REQUEST['text']);
   global $user;
 
-  $mode = $item_nid ? 'edit' : 'create';
+  // Create the data array:
+  $data = array(
+    'item_nid' => $item_nid,
+    'text'     => $text,
+  );
 
   // Check we have all the necessary params:
-  if (!$group_nid || !$text || !$user || !$user->uid) {
-    // Create the data array:
-    $data = array(
-      'result'    => FALSE,
-      'item_nid'  => $item_nid,
-      'group_nid' => $group_nid,
-      'text'      => $text,
-      'mode'      => $mode,
-    );
+  if (!$item_nid || !$text || !$user || !$user->uid) {
+    // Update the data array:
+    $data['result'] = FALSE;
+
     // Encode and send:
     echo json_encode($data);
     return;
   }
 
-  if ($item_nid) {
-    // Load the item:
-    $item = node_load($item_nid);
-  }
-  else {
-    // Create a new item:
-    $item = entity_create('node', array('type' => 'item'));
-    $item->uid = $user->uid;
-    $item->status = 1;
-  }
+  // Load the item:
+  $item = node_load($item_nid);
 
   // Update the item text:
   $item->field_item_text[LANGUAGE_NONE][0]['value'] = $text;
@@ -248,71 +236,75 @@ function moonmars_items_ajax_update() {
   // Save the item:
   entity_save('node', $item);
 
-//  $render_array = node_view($item);
+  // Post/bump the item in all relevant channels:
+  moonmars_channels_post_item($item_nid, FALSE, FALSE);
 
   // Theme the item:
-  $html = theme('node',
-    array(
-         'elements' => array(
-           '#node'    => $item,
-         ),
-         //      'content'  => $item->content
-    )
-  );
+  $html = render_node($item);
 
-  // Create the data array:
-  $data = array(
-    'result'    => TRUE,
-    'item_nid'  => $item->nid,
-    'group_nid' => $group_nid,
-    'mode'      => $mode,
-    'text'      => $text,
-    'html'      => $html,
-  );
+  // Update the data array:
+  $data['result'] = FALSE;
+  $data['html'] = $html;
 
   // Encode and send:
   echo json_encode($data);
 }
 
 /**
- * Checks if an item is a post for a channel node (e.g. group, event, project).
+ * Get the nid and title of the channel where this item was originally posted.
  *
  * @param int $item_nid
- * @param int $channel_nid
+ * @return stdClass
  */
-function moonmars_items_is_post_for($item_nid, $channel_nid) {
-  // Get all is_post_for relations starting at $item_nid:
-  $q = db_select('field_data_endpoints', 'fde')
-    ->fields('fde', array('entity_id'))
-    ->condition('bundle', 'is_post_for')
-    ->condition('endpoints_entity_type', 'node')
-    ->condition('endpoints_entity_id', $item_nid)
-    ->condition('endpoints_r_index', 0);
+function moonmars_items_get_original_channel($item_nid) {
+  // Cache the results:
+  static $original_channels = array();
 
-//  dpm_query($q);
-
-  $rs = $q->execute();
-  foreach ($rs as $rec) {
-//    dpm($rec);
-
-    // See if there's a row with the same relation entity_id and endpoint at the channel node:
-    $q2 = db_select('field_data_endpoints', 'fde')
-      ->fields('fde', array('entity_id'))
-      ->condition('bundle', 'is_post_for')
-      ->condition('entity_id', $rec->entity_id)
-      ->condition('endpoints_entity_type', 'node')
-      ->condition('endpoints_entity_id', $channel_nid)
-      ->condition('endpoints_r_index', 1);
-    $rs2 = $q2->execute();
-    foreach ($rs2 as $rec2) {
-//      dpm($rec2);
-    }
-
-    if ($rs2->rowCount()) {
-      return TRUE;
+  if (!isset($original_channels[$item_nid])) {
+    $original_channel = db_select('view_item_original_channel', 'v')
+      ->fields('v', array('channel_nid', 'channel_title'))
+      ->condition('item_nid', $item_nid)
+      ->execute()
+      ->fetch();
+    if ($original_channel) {
+      $original_channels[$item_nid] = $original_channel;
     }
   }
-  return FALSE;
+
+  return isset($original_channels[$item_nid]) ? $original_channels[$item_nid] : NULL;
+}
+
+/**
+ * Get the nid of the channel where this item was originally posted.
+ *
+ * @param int $item_nid
+ * @return int
+ */
+function moonmars_items_get_original_channel_nid($item_nid) {
+  $original_channel = moonmars_items_get_original_channel($item_nid);
+  return $original_channel ? $original_channel->channel_nid : FALSE;
+}
+
+/**
+ * Get the uid of the member who posted this item.
+ *
+ * @param int $item_nid
+ * @return int
+ */
+function moonmars_items_original_poster_uid($item_nid) {
+  // Cache the results:
+  static $original_posters = array();
+
+  if (!isset($original_posters[$item_nid])) {
+    $original_posters[$item_nid] = db_select('node', 'n')
+      ->fields('n', array('uid'))
+      ->condition('nid', $item_nid)
+      ->execute()
+      ->fetch()
+      ->uid;
+  }
+
+  return $original_posters[$item_nid];
 }
 
 /**
@@ -346,9 +338,9 @@ function moonmars_items_ajax_rate() {
 
   // Check if the user already rated this:
   $rel_type = 'rated';
-  $rel = moonmars_relationships_get_relationship($rel_type, 'user', $user->uid, 'node', $item_nid);
-  if ($rel) {
-    dbg($rel);
+  $rels = moonmars_relationships_get_relationships($rel_type, 'user', $user->uid, 'node', $item_nid);
+  if ($rels) {
+    $rel = $rels[0];
 
     // Subtract the points for the previous rating:
     $old_rating_score = $rel->field_rating[LANGUAGE_NONE][0]['value'] * $rel->field_multiplier[LANGUAGE_NONE][0]['value'];
@@ -358,24 +350,12 @@ function moonmars_items_ajax_rate() {
     relation_delete($rel->rid);
   }
 
-  // Create the rating:
-  $end_points = array(
-    array(
-      'entity_label' => $user->name,
-      'entity_type'  => 'user',
-      'entity_id'    => $user->uid
-    ),
-    array(
-      'entity_label' => $item->title,
-      'entity_type'  => 'node',
-      'entity_id'    => $item_nid,
-    ),
-  );
-  $relation = relation_create($rel_type, $end_points);
-  relation_save($relation);
+  // Create the rating relationship:
+  moonmars_relationships_create_relationship('rated', 'user', $user->uid, 'node', $item_nid, TRUE);
 
   // Add the points for the new rating:
-  $new_rating_score = $rating_scores[$rating] * moonmars_members_get_level_num($user);
+  $member = Member::create($user->uid);
+  $new_rating_score = $rating_scores[$rating] * $member->levelNum();
   $score += $new_rating_score;
 
   // Update the item's score:

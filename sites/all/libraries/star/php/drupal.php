@@ -131,17 +131,37 @@ function theme_node($node) {
 /**
  * Create a new node of a certain type, with default settings.
  * The node is not saved to the DB by this function.
- * Remember that the uid is set to 1, so you may want to override this.
+ *
+ * Remember that the uid is set to the current user by default, so you may want to override this.
+ *
  * @param string $type
- * @return object
+ * @param string|null $title
+ * @param bool $published
+ * @param string|null $path
+ * @param string $lang
+ * @return stdClass
  */
-function node_create($type, $published = TRUE) {
+function node_create($type, $title = NULL, $published = TRUE, $path = NULL, $lang = LANGUAGE_NONE) {
   $node = new stdClass();
   $node->type = $type;
-  $node->status = (int)$published;
-  $node->uid = 1;
-  $node->language = 'en';
-  $node->created = $node->changed = time();
+  node_object_prepare($node);
+
+  // Set the title if specified:
+  if ($title !== NULL) {
+    $node->title = $title;
+  }
+
+  // Set the status:
+  $node->status = (int) $published;
+
+  // Set the language:
+  $node->language = $lang;
+
+  // Set the path if specified:
+  if ($path !== NULL) {
+    $node->path = array('alias' => $path);
+  }
+
   return $node;
 }
 
@@ -177,14 +197,26 @@ function node_delete_by_type($type) {
 
 /**
  * Get a node's title, given its nid.
+ *
  * @param int $nid
  * @return string
  */
 function node_get_title($nid) {
   if (!$nid) {
-    return '';
+    return FALSE;
   }
-  return db_result(db_query('SELECT title FROM {node} WHERE nid = %d', $nid));
+
+  $rs = db_select('node', 'n')
+    ->fields('n', array('title'))
+    ->condition('nid', $nid)
+    ->execute();
+
+  if (!$rs->rowCount()) {
+    return FALSE;
+  }
+
+  $rec = $rs->fetchAssoc();
+  return $rec['title'];
 }
 
 /**
@@ -278,27 +310,21 @@ function user_create($first_name, $last_name = NULL, $status = 0) {
 }
 
 /**
- * Get a user's name - include the first and last name from the profile if found.
+ * Get a user's name from a uid.
+ *
+ * This is faster than loading the user object - but here's the catch - only if the user object isn't already loaded
+ * and in the cache. But there's no way to check that.
+ *
  * @param int $uid
  * @return string
- * @author shaunm
  */
 function user_get_name($uid) {
-  if (!$uid) {
-    return '';
-  }
-  $sql = "
-    SELECT u.name, p.field_profile_first_name_value, p.field_profile_last_name_value
-    FROM users u
-      JOIN node n ON u.uid = n.uid AND n.type = 'profile'
-      JOIN content_type_profile p USING (vid)
-    WHERE u.uid = %d";
-  $rec = db_fetch_array(db_query($sql, $uid));
-  if (!$rec) {
-    return '';
-  }
-  $name = trim("{$rec['field_profile_first_name_value']} {$rec['field_profile_last_name_value']}");
-  return $name ? "$name ({$rec['name']})" : $rec['name'];
+  return db_select('users', 'u')
+    ->fields('u', array('name'))
+    ->condition('uid', $uid)
+    ->execute()
+    ->fetch()
+    ->uid;
 }
 
 /**
@@ -565,4 +591,171 @@ function absolute_path_to_drupal() {
   }
   
   return $absolute_path_to_drupal;
+}
+
+
+/**
+ * Given a node object or a nid, get the node object.
+ *
+ * @param mixed $node
+ * @return stdClass|bool
+ */
+function param_node($node) {
+  if (is_uint($node)) {
+    return node_load($node);
+  }
+  elseif (is_object($node)) {
+    return $node;
+  }
+  return FALSE;
+}
+
+/**
+ * Given a node object or a nid, get the nid.
+ *
+ * @param mixed $node
+ * @return int|bool
+ */
+function param_nid($node) {
+  if (is_uint($node)) {
+    return $node;
+  }
+  elseif (is_object($node)) {
+    return $node->nid;
+  }
+  return FALSE;
+}
+
+/**
+ * Given a user object or a uid, get the user object.
+ *
+ * @param mixed $user
+ * @return stdClass|bool
+ */
+function param_user($user) {
+  if (is_null($user)) {
+    global $user;
+    return $user;
+  }
+  elseif (is_uint($user)) {
+    return user_load($user);
+  }
+  elseif (is_object($user)) {
+    return $user;
+  }
+  elseif (is_string($user)) {
+    $user = user_load_by_name($user);
+    if ($user) {
+      return $user;
+    }
+    // Try to find the matching path alias:
+    $alias = "users/$user";
+    $path = drupal_get_normal_path($alias);
+    $path_parts = explode('/', $path);
+    if (is_uint($path_parts[1])) {
+      return user_load($path_parts[1]);
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * Given a user object or a uid, get the uid.
+ *
+ * @param mixed $user
+ * @return int|bool
+ */
+function param_uid($user) {
+  if (is_null($user)) {
+    global $user;
+    return $user->uid;
+  }
+  elseif (is_uint($user)) {
+    return $user;
+  }
+  elseif (is_object($user)) {
+    return $user->uid;
+  }
+  elseif (is_string($user)) {
+    return db_select('users', 'u')
+      ->fields('u', 'uid')
+      ->condition('name', $user)
+      ->execute()
+      ->fetch()
+      ->uid;
+  }
+  return FALSE;
+}
+
+/**
+ * Given a node or user object, or a nid or uid, get the entity id.
+ *
+ * @param string $entity_type
+ * @param int|stdClass $entity
+ * @return int|bool
+ */
+function param_entity_id($entity_type, $entity) {
+  switch ($entity_type) {
+    case 'node':
+      return param_nid($entity);
+
+    case 'user':
+      return param_uid($entity);
+  }
+  return FALSE;
+}
+
+/**
+ * Given a node or user object, or a nid or uid, get the entity id.
+ *
+ * @param string $entity_type
+ * @param int|stdClass $entity
+ * @return int|bool
+ */
+function param_entity($entity_type, $entity) {
+  switch ($entity_type) {
+    case 'node':
+      return param_node($entity);
+
+    case 'user':
+      return param_user($entity);
+  }
+  return FALSE;
+}
+
+/**
+ * Get the HTML for a node.
+ *
+ * @param stdClass|int $node
+ * @return mixed|string
+ */
+function render_node($node, $view_mode = 'full') {
+  $node = param_node($node);
+  return theme('node',
+    array(
+      'elements' => array(
+        '#node'      => $node,
+        '#view_mode' => $view_mode,
+      ),
+    )
+  );
+}
+
+/**
+ * Get the HTML for a comment.
+ *
+ * @param $comment
+ * @return mixed|string
+ */
+function render_comment($comment) {
+  $node = node_load($comment->nid);
+  return theme('comment',
+    array(
+         'elements' => array(
+           '#comment' => $comment,
+           '#node'    => $node,
+         ),
+         'content'  => $comment->content
+    )
+  );
 }

@@ -4,18 +4,80 @@
  * Implements hook_init().
  */
 function moonmars_init() {
+  // Include some PHP:
   require_once DRUPAL_ROOT . '/sites/all/libraries/star/php/strings.php';
   require_once DRUPAL_ROOT . '/sites/all/libraries/star/php/numbers.php';
   require_once DRUPAL_ROOT . '/sites/all/libraries/star/php/arrays.php';
   require_once DRUPAL_ROOT . '/sites/all/libraries/star/php/drupal.php';
-  require_once DRUPAL_ROOT . '/sites/all/libraries/star/php/classes/StarDateTime.class.php';
+
+  // Activate debugging:
   dbg_on();
+
+  // Include some JS.
+  // Include the jQuery Tools javascript, which has the tooltip code.
+//  drupal_add_css('sites/all/libraries/jquery/tipTip/tipTip.css');
+//  drupal_add_js('sites/all/libraries/jquery/tipTip/jquery.tipTip.js');
+
+//  // Some more lovely jQuery plugins:
+//  drupal_add_js('sites/all/libraries/jquery/jquery.sizes.js');
+//  drupal_add_js('sites/all/libraries/jquery/jquery.dimensions.js');
+//  drupal_add_js('sites/all/libraries/jquery/jquery.boolAttr.js');
+////  drupal_add_js('sites/all/libraries/jquery/jquery.getStyleObject.js');
+////  drupal_add_js('sites/all/libraries/jquery/jquery.autoresize.js');
+//
+//  // Star library strings:
+//  drupal_add_js('/sites/all/libraries/star/js/strings.js');
+//  drupal_add_js('/sites/all/libraries/star/js/arrays.js');
+//  drupal_add_js('/sites/all/libraries/star/js/debug.js');
+
+  // Register our autoload function:
+  spl_autoload_register(
+    function ($class) {
+      // Try sites/all/classes:
+      $path = DRUPAL_ROOT . "/sites/all/classes/$class.class.php";
+      if (file_exists($path)) {
+        require_once $path;
+        return;
+      }
+
+      // Try sites/all/libraries/star/php/classes:
+      $path = DRUPAL_ROOT . "/sites/all/libraries/star/php/classes/$class.class.php";
+      if (file_exists($path)) {
+        require_once $path;
+        return;
+      }
+    }
+  );
+}
+
+function moonmars_menu() {
+  $items = array();
+  $items['home'] = array(
+    'page callback' => 'moonmars_home',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK
+  );
+  return $items;
 }
 
 /**
  * Implements hook_form_alter().
+ *
+ * Place form changes here that belong to all forms.
  */
 function moonmars_form_alter(&$form, &$form_state, $form_id) {
-  // Load the selectbox
-  drupal_add_js('/sites/all/libraries/jquery/selectBox/jquery.selectBox.js');
+  // Attach the selectBox JS:
+//  $form['#attached']['js'][] = '/sites/all/libraries/jquery/selectBox/jquery.selectBox.js';
+}
+
+/**
+ * Redirect the user to the appropriate default start page.
+ */
+function moonmars_home() {
+  if (user_is_logged_in()) {
+    drupal_goto('profile');
+  }
+  else {
+    drupal_goto('news');
+  }
 }

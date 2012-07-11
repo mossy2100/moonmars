@@ -4,7 +4,7 @@
  * Implements hook_init().
  */
 function vr_init() {
-  dbg_on();
+
 }
 
 /**

@@ -1,11 +1,13 @@
 form {
+  background-color: $grey5;
+  border: solid 1px $grey4;
+  @include border-radius(3px);
+  padding: 10px;
+  margin-bottom: 20px;
 
   div.form-item label,
   span.fieldset-legend {
     font-weight: bold;
-  }
-
-  .date-no-float {
   }
 
   fieldset {
@@ -111,6 +113,21 @@ form {
       }
     }
   }
+
+  .field-type-link-field {
+    .link-field-url {
+      .form-item {
+        margin: 0;
+      }
+    }
+  }
+}
+
+#region-sidebar-first,
+#region-sidebar-second {
+  form {
+    padding: 5px;
+  }
 }
 
 
@@ -142,6 +159,7 @@ form {
 // User profile form
 
 #user-profile-form {
+  margin-bottom: 20px;
 
   #edit-current-pass,
   #edit-pass-pass1,
@@ -239,13 +257,13 @@ form {
 
 #edit-field-moon-or-mars-und {
 
-  height: 120px;
+  height: 110px;
   margin: 0;
 
   div.form-item {
     float: left;
     width: 92px;
-    margin: 0 12px 0 0;
+    margin: 0 8px 0 0;
 
     &:last-child {
       margin-right: 0;
@@ -260,17 +278,18 @@ form {
       background-repeat: no-repeat;
       background-position: 5px 5px;
       text-align: center;
-      @include border-radius(3px);
+      background-color: white;
       border: solid 1px $grey4;
-
-      &:hover {
-        background-color: $red4;
-        border-color: $red3;
-      }
+      @include border-radius(3px);
 
       &.selected {
         background-color: $blue4;
         border-color: $blue3;
+      }
+
+      &:hover {
+        background-color: $red4;
+        border-color: $red3;
       }
     }
 
@@ -289,13 +308,17 @@ form {
     width: 100%;
   }
 
-  .form-submit {
-    float:right;
-    margin-top: 3px;
-    margin-right: 0;
-  }
-}
+  .form-actions {
+    display: block;
+    text-align: right;
 
+    .form-submit {
+      margin-top: 3px;
+      margin-right: 0;
+    }
+  }
+
+}
 
 ////////////////////////////////////
 // User login form in sidebar

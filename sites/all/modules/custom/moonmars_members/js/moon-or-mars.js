@@ -1,7 +1,12 @@
 var $ = jQuery;
 
+//alert(1);
+
 $(function() {
+
   $('#edit-field-moon-or-mars-und').addClass('clearfix');
+
+  // Add the images:
   var moonmarsOptions = $('#edit-field-moon-or-mars-und .form-item label');
   moonmarsOptions.eq(0).css('background-image', "url('/sites/all/themes/astro/images/moon-80x80.jpg')");
   moonmarsOptions.eq(1).css('background-image', "url('/sites/all/themes/astro/images/mars-80x80.jpg')");

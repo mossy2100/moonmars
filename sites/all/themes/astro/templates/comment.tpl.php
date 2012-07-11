@@ -7,10 +7,13 @@
 
     <div class='post-content-wrapper' <?php print $content_attributes; ?>>
       <div class='post-content'>
-        <?php
-        echo $username;
-        echo $created_datetime;
 
+        <div class='who_where_when_posted'>
+          <?php echo $username; ?>
+          <?php echo $created_datetime; ?>
+        </div>
+
+        <?php
         // Hide links now so we can render them later.
         hide($content['links']);
         print render($content);
@@ -27,11 +30,12 @@
       <div class='more-link-wrapper'>
         <a href='javascript:void(0)' class='more-link'>Read more <span class='expand-icon'>&#x25BC;</span></a>
       </div>
-      <div class='post-score-wrapper'>
-        Score: <span class='post-score'><?php echo $score; ?></span>
-      </div>
+<!--      <div class='post-score-wrapper'>-->
+<!--        Score: <span class='post-score'>--><?php //echo $score; ?><!--</span>-->
+<!--      </div>-->
     </div> <!-- /score-more-wrapper -->
 
+    <?php /*
     <div class='post-controls'>
       <?php if (user_is_logged_in()) { ?>
         <div class='rating-buttons'>
@@ -51,6 +55,8 @@
         <nav class="links post-links clearfix"><?php print render($content['links']); ?></nav>
       <?php endif; ?>
     </div> <!-- /post-controls -->
+    */ ?>
+
   </div>
 
 </article>

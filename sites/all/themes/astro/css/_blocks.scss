@@ -1,8 +1,17 @@
+@mixin avatar-grid {
+  float: left;
+  margin: 0 5px 5px 0;
+}
+
 .view-newest-users {
 	.views-row {
-		float: left;
-		margin: 0 5px 5px 0;
+	  @include avatar-grid;
 	}
+
+  .view-footer {
+    clear: both;
+    // display: none; TEMPORARY - until /members page done
+  }
 }
 
 .block-group-info-block {
@@ -40,6 +49,57 @@
       li {
         margin-left: 0;
         font-size: 10px;
+      }
+    }
+  }
+}
+
+.block-user-info-block {
+
+  .views-field {
+    margin: 4px 0;
+  }
+
+  .views-field-field-moon-or-mars {
+    .views-label-field-moon-or-mars {
+      color: $grey3;
+      font-style: italic;
+    }
+
+    .field-content {
+      display: inline;
+    }
+  }
+}
+
+
+ul.group-members {
+  list-style-type: none;
+  margin: 3px 0;
+
+  li {
+    @include avatar-grid;
+  }
+}
+
+ul.member-groups {
+  list-style-type: none;
+  margin: 3px 0 0;
+
+  li {
+    margin-bottom: 3px;
+
+    a {
+      @include border-radius(3px);
+      display: block;
+      width: 100%;
+      padding: 5px 0;
+      background-color: $grey5;
+      text-align: center;
+
+      &:hover {
+        background-color: $red3;
+        color: white;
       }
     }
   }
