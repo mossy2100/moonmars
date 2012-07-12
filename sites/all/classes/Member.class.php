@@ -10,6 +10,23 @@ class Member extends User {
   private $tooltip;
 
   /**
+   * Constructor.
+   */
+  protected function __construct() {
+    return parent::__construct();
+  }
+
+  /**
+   * Create a new Member object.
+   *
+   * @param int $uid
+   * @return Member
+   */
+  public static function create($uid = NULL) {
+    return parent::create(__CLASS__, $uid);
+  }
+
+  /**
    * Get the member's full name.
    */
   public function fullName() {
@@ -138,6 +155,10 @@ class Member extends User {
    */
   public function avatar() {
     if (!$this->avatar) {
+
+      // Make sure the user is loaded:
+      $this->load();
+
       // If the user has a picture, use it:
       if (isset($this->entity->picture)) {
         // If we just have the fid, load the file:
@@ -172,7 +193,7 @@ class Member extends User {
    * @return string
    */
   public function avatarLink() {
-    return l($this->avatar(), 'user/' . $this->entity->uid, array('html' => TRUE, 'attributes' => array('class' => array('avatar-link'))));
+    return l($this->avatar(), $this->alias(), array('html' => TRUE, 'attributes' => array('class' => array('avatar-link'))));
   }
 
   /**
@@ -182,10 +203,13 @@ class Member extends User {
    */
   function tooltip() {
     if (!$this->tooltip) {
+
+      // Make sure the user is loaded:
       $this->load();
+
+      // Get the name:
       $username = $this->name();
       $full_name = $this->fullName();
-
       // Cater for names that are too long - we don't want the tooltip too wide.
       if (strlen($full_name) > 50) {
         $full_name = substr($full_name, 0, 47) . '...';
@@ -298,13 +322,21 @@ class Member extends User {
     return array_search($this->level(), moonmars_members_levels());
   }
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Follow-related methods.
+
   /**
    * Get a member's followers.
    *
    * @return array
    */
   public function followers() {
-    return moonmars_relationships_get_entity_ids('follows', 'user', NULL, 'user', $this->entity->uid);
+    $follower_uids = moonmars_relationships_get_entity_ids('has_follower', 'user', $this->uid(), 'user', NULL);
+    $followers = array();
+    foreach ($follower_uids as $follower_uid) {
+      $followers[] = Member::create($follower_uid);
+    }
+    return $followers;
   }
 
   /**
@@ -313,17 +345,42 @@ class Member extends User {
    * @return array
    */
   public function followees() {
-    return moonmars_relationships_get_entity_ids('follows', 'user', $this->entity->uid, 'user', NULL);
+    $followee_uids = moonmars_relationships_get_entity_ids('has_follower', 'user', NULL, 'user', $this->uid());
+    $followees = array();
+    foreach ($followee_uids as $followee_uid) {
+      $followees[] = Member::create($followee_uid);
+    }
+    return $followees;
   }
 
   /**
    * Checks if one user follows another.
    *
-   * @param int $uid
+   * @param Member $member
    */
-  public function follows($uid) {
-    $rels = moonmars_relationships_get_relationships('has_follower', 'user', $uid, 'user', $this->entity->uid);
+  public function follows(Member $member) {
+    $rels = moonmars_relationships_get_relationships('has_follower', 'user', $member->uid(), 'user', $this->uid());
     return !empty($rels);
+  }
+
+  /**
+   * Follow another member.
+   *
+   * @param Member $member
+   */
+  public function follow(Member $member) {
+    // Create the follow relationship:
+    moonmars_relationships_update_relationship('has_follower', 'user', $member->uid(), 'user', $this->uid());
+  }
+
+  /**
+   * Unfollow another member.
+   *
+   * @param Member $member
+   */
+  public function unfollow(Member $member) {
+    // Remove the follow relationship:
+    moonmars_relationships_delete_relationships('has_follower', 'user', $member->uid(), 'user', $this->uid());
   }
 
   /**
@@ -333,7 +390,7 @@ class Member extends User {
    * @return int
    */
   public function channel($create = TRUE) {
-    return moonmars_channels_get_channel('user', $this->entity->uid, $create);
+    return Channel::entityChannel('user', $this->uid(), $create);
   }
 
   /**
@@ -347,7 +404,7 @@ class Member extends User {
     // Get the group's members in reverse order of that in which they joined.
     $q = db_select('view_group_has_member', 'v')
       ->fields('v', array('group_nid'))
-      ->condition('member_uid', $this->entity->uid)
+      ->condition('member_uid', $this->uid())
       ->orderBy('created', 'DESC');
 
     // Set a limit if specified:

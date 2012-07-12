@@ -12,8 +12,9 @@ function astro_alpha_preprocess_node(&$vars) {
 
       // Add the channel title if set:
       if ($vars['node']->copied) {
-        $entity = moonmars_channels_get_entity($vars['node']->original_channel->channel_nid);
-        $vars['channel_posted'] = 'in ' . l($vars['node']->original_channel->channel_title, $entity['alias']);
+        $channel = Channel::create($vars['node']->original_channel->nid());
+        $entity = $channel->parentEntity();
+        $vars['channel_posted'] = 'in ' . l($vars['node']->original_channel->title(), $entity['alias']);
       }
       else {
         $vars['channel_posted'] = '';
@@ -51,16 +52,16 @@ function astro_alpha_preprocess_node(&$vars) {
       break;
 
     case 'group':
-      $vars['head_title'] = "moonmars.com - Group - " . $vars['node']->title;
-      drupal_set_title("moonmars.com - Group - " . $vars['node']->title);
+//      $vars['head_title'] = "moonmars.com - Group - " . $vars['node']->title;
+//      drupal_set_title("moonmars.com - Group - " . $vars['node']->title);
       break;
 
     case 'channel':
       drupal_add_js(drupal_get_path('module', 'moonmars_channels') . '/js/moonmars-channels.js');
 
       // Theme the user picture:
-      $current_member = Member::create($user->uid);
-      $vars['new_item_picture'] = $current_member->avatarTooltip();
+      $vars['current_member'] = Member::create($user->uid);
+      $vars['new_item_picture'] = $vars['current_member']->avatarTooltip();
 
       // Format the username of the current user:
       if ($user) {
@@ -88,19 +89,21 @@ function astro_alpha_preprocess_node(&$vars) {
         $include_copied_items = TRUE;
       }
 
+      // Get the channel object:
+      $vars['channel'] = Channel::create($vars['node']->nid);
+
       // Render the items:
-      $vars['items'] = moonmars_channels_render_channel($vars['node']->nid, $include_copied_items);
+      $vars['items'] = $vars['channel']->render($include_copied_items);
 
       // Remember the current channel:
-      $_SESSION['current_channel_nid'] = $vars['node']->nid;
+      Channel::currentChannel($vars['node']->nid);
 
       break;
   }
 
   // Get the channel if applicable:
   if (in_array($vars['node']->type, moonmars_channels_node_types())) {
-    $vars['channel_nid'] = moonmars_channels_get_channel('node', $vars['node']->nid);
-    $vars['channel'] = node_load($vars['channel_nid']);
+    $vars['channel'] = Channel::entityChannel('node', $vars['node']->nid);
   }
 
 }

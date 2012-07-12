@@ -182,59 +182,57 @@ function moonmars_members_user_profile_form_submit($form, $form_state) {
 /**
  * Create a follows relationship between the logged in user and the user specified in the parameter.
  *
- * @param $uid2
+ * @param $member2_uid
  */
-function moonmars_members_follow($uid2) {
+function moonmars_members_follow($member2_uid) {
   global $user;
-  $uid1 = $user->uid;
-  if ($uid1 && $uid2) {
-    $member1 = Member::create($uid1);
-    $member2 = Member::create($uid2);
-    if ($member1->follows($member2->uid)) {
-      drupal_set_message(t("You are already following %user2_name.", array('%user2_name' => $member2->name)));
+  $member1_uid = $user->uid;
+
+  if ($member1_uid && $member2_uid) {
+
+    $member1 = Member::create($member1_uid);
+    $member2 = Member::create($member2_uid);
+    
+    if ($member1->follows($member2)) {
+      drupal_set_message(t("You are already following %user2_name.", array('%user2_name' => $member2->name())));
     }
     else {
-      // Create the follow relationship:
-      moonmars_relationships_create_relationship('has_follower', 'user', $uid2, 'user', $uid1, TRUE);
-
-      // Subscribe the follower to the member's channel:
-      $channel_nid = $member2->channel();
-      moonmars_relationships_update_relationship('has_subscriber', 'node', $channel_nid, 'user', $uid1);
+      // Follow the member:
+      $member1->follow($member2);
 
       // Tell the user:
-      drupal_set_message(t("You are now following %user2_name.", array('%user2_name' => $member2->name)));
+      drupal_set_message(t("You are now following %user2_name.", array('%user2_name' => $member2->name())));
     }
   }
-  drupal_goto("user/$uid2");
+  drupal_goto("user/$member2_uid");
 }
 
 /**
  * Removes a follows relationship between the logged in user and the user specified in the parameter.
  *
- * @param $uid2
+ * @param $member2_uid
  */
-function moonmars_members_unfollow($uid2) {
+function moonmars_members_unfollow($member2_uid) {
   global $user;
-  $uid1 = $user->uid;
-  if ($uid1 && $uid2) {
-    $member1 = Member::create($uid1);
-    $member2 = Member::create($uid2);
-    if ($member1->follows($member2->uid)) {
-      // Remove the follow relationship:
-      moonmars_relationships_delete_relationship('has_follower', 'user', $uid2, 'user', $uid1);
+  $member1_uid = $user->uid;
 
-      // Unsubscribe the follower from the member's channel:
-      $channel_nid = $member2->channel();
-      moonmars_relationships_delete_relationship('has_subscriber', 'node', $channel_nid, 'user', $uid1);
+  if ($member1_uid && $member2_uid) {
+
+    $member1 = Member::create($member1_uid);
+    $member2 = Member::create($member2_uid);
+
+    if ($member1->follows($member2)) {
+      // Unfollow the member:
+      $member1->unfollow($member2);
 
       // Tell the user:
-      drupal_set_message(t("You are no longer following %user2_name.", array('%user2_name' => $member2->name)));
+      drupal_set_message(t("You are no longer following %user2_name.", array('%user2_name' => $member2->name())));
     }
     else {
-      drupal_set_message(t("You weren't following %user2_name.", array('%user2_name' => $member2->name)));
+      drupal_set_message(t("You weren't following %user2_name.", array('%user2_name' => $member2->name())));
     }
   }
-  drupal_goto("user/$uid2");
+  drupal_goto("user/$member2_uid");
 }
 
 /**
@@ -242,7 +240,7 @@ function moonmars_members_unfollow($uid2) {
  */
 function moonmars_members_profile() {
   global $user;
-  drupal_goto("user/$user->uid");
+  drupal_goto(drupal_get_path_alias("user/$user->uid"));
 }
 
 /**
@@ -348,7 +346,8 @@ function moonmars_members_menu_block() {
   else {
     // On someone else's profile, show a follow/unfollow link:
     $member1 = Member::create($uid1);
-    if ($member1->follows($uid2)) {
+    $member2 = Member::create($uid2);
+    if ($member1->follows($member2)) {
       $follow_link = l('Unfollow', "user/$uid2/unfollow");
     }
     else {

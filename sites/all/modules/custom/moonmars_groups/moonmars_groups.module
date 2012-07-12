@@ -53,31 +53,41 @@ function moonmars_groups_get_current_group() {
  */
 function moonmars_groups_join($group_nid) {
   // Get the group:
-  $group = node_load($group_nid);
-  if (!$group || $group->type != 'group') {
+  $group = Group::create($group_nid);
+
+  // Check the type:
+  if ($group->type() != 'group') {
     drupal_set_message('Group not found.');
     return;
   }
-  $group_page = drupal_get_path_alias("node/$group_nid");
 
-  // Get the user:
+  // Get the alias:
+  $group_alias = $group->alias();
+
+  // Check the user is logged in:
   global $user;
   if (!$user || !$user->uid) {
     drupal_set_message("You need to <a href='/login'>login</a> or <a href='/register'>register</a> before joining a group.");
-    drupal_goto('/login', array('query' => array('destination' => "$group_page/join")));
+    drupal_goto('/login', array('query' => array('destination' => "$group_alias/join")));
+    return;
+  }
+
+  // Get the member:
+  $member = Member::create($user->uid);
+
+  // Get the relationship:
+  if ($group->isMember($member)) {
+    drupal_set_message("You are already a member of this group.");
+    drupal_goto($group_alias);
     return;
   }
 
   // Add the member to the group:
-  moonmars_relationships_create_relationship('has_member', 'node', $group_nid, 'user', $user->uid, TRUE);
-
-  // Auto-subscribe the user to the group's channel:
-  $channel_nid = moonmars_channels_get_channel('node', $group_nid);
-  moonmars_relationships_create_relationship('has_subscriber', 'node', $channel_nid, 'user', $user->uid, TRUE);
+  $group->addMember($member);
 
   // Reload the group page:
-  drupal_set_message("You have been added to the group $group->title.");
-  drupal_goto($group_page);
+  drupal_set_message("You have been added to the group " . $group->title() . ".");
+  drupal_goto($group_alias);
 }
 
 /**
@@ -89,13 +99,16 @@ function moonmars_groups_leave($group_nid) {
   // Get the group:
   $group = Group::create($group_nid);
 
-  if ($group->type != 'group') {
+  // Check the type:
+  if ($group->type() != 'group') {
     drupal_set_message('Group not found.');
     return;
   }
+
+  // Get the alias:
   $group_alias = $group->alias();
 
-  // Get the user:
+  // Check the user is logged in:
   global $user;
   if (!$user || !$user->uid) {
     drupal_set_message("You need to <a href='/user'>login</a> before leaving a group.");
@@ -103,23 +116,24 @@ function moonmars_groups_leave($group_nid) {
     return;
   }
 
-  // Remove the user from the group.
-  // Get the relationship:
-  $rel = $group->memberRelationship($user->uid);
-  if (!$rel) {
-    drupal_set_message("You are not a member of this group.");
-  }
-  // Delete the membership relationship:
-  moonmars_relationships_delete_relationships('has_member', 'node', $group_nid, 'user', $user);
+  // Get the member:
+  $member = Member::create($user->uid);
 
-  // Unsubscribe the user from the group's channel:
-  $channel_nid = moonmars_channels_get_channel('node', $group_nid);
-  moonmars_relationships_delete_relationships('has_subscriber', 'node', $channel_nid, 'user', $user);
+  // Get the relationship:
+  if (!$group->isMember($member)) {
+    drupal_set_message("You are not a member of this group.");
+    drupal_goto($group_alias);
+    return;
+  }
+
+  // Remove the user from the group.
+  $group->removeMember($member);
 
   // Reload the group page:
-  drupal_set_message("You have been removed from the group $group->title.");
+  drupal_set_message("You have been removed from the group " . $group->title() . ".");
   drupal_goto($group_alias);
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Blocks
@@ -164,7 +178,7 @@ function moonmars_groups_block_view($delta = '') {
 function moonmars_groups_menu_block() {
   if (!moonmars_groups_is_group_page()) {
     // This is not a group page:
-    return 'x';
+    return '';
   }
 
   global $user;
@@ -172,11 +186,17 @@ function moonmars_groups_menu_block() {
     return "<p>To join this group, first <a href='user/register'>register an account</a>.</p>";
   }
 
+  // Get the group:
+  $group_nid = (int) arg(1);
+  $group = Group::create($group_nid);
+
+  // Get the current member:
+  $member = Member::create($user->uid);
+
   // Show different options if the member is in the group or not:
   $html = "<ul id='group-menu' class='menu'>";
-  $group_nid = (int) arg(1);
-  if (moonmars_groups_is_member($group_nid, $user)) {
-    $html .= "<li>" . l('Leave group', "node/$group_nid/leave") . "</li>";
+  if ($group->isMember($member)) {
+    $html .= "<li>" . l('Leave group', $group->alias() . '/leave') . "</li>";
 //    if (moonmars_groups_receive_emails($group_nid, $user)) {
 //      $html .= "<li>Stop email notifications</li>";
 //    }
@@ -186,7 +206,7 @@ function moonmars_groups_menu_block() {
   }
   else {
     // @todo Update to support "ask permission to join group"
-    $html .= "<li>" . l('Join group', "node/$group_nid/join") . "</li>";
+    $html .= "<li>" . l('Join group', $group->alias() . '/join') . "</li>";
   }
   $html .= "</ul>";
   return $html;
@@ -203,20 +223,18 @@ function moonmars_groups_members_block() {
   $group = Group::create($group_nid);
 
   // Get the latest 12 group members:
-  $member_uids = $group->members(0, 12);
-  $n_members = $group->memberCount();
+  $members = $group->members(0, 12);
 
   // Generate HTML:
 
   // Member count:
   $html = "<div class='group-member-count'>\n";
-  $html .= format_plural($n_members, '1 member', '@count members');
+  $html .= format_plural($group->memberCount(), '1 member', '@count members');
   $html .= "</div>";
 
   // Avatars for most recently joined members:
   $html .= "<ul class='group-members clearfix'>\n";
-  foreach ($member_uids as $member_uid) {
-    $member = Member::create($member_uid);
+  foreach ($members as $member) {
     $html .= "<li class='group-member'>\n";
     $html .= $member->avatarTooltip();
     $html .= "</li>\n";

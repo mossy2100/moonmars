@@ -152,13 +152,18 @@ function moonmars_relationships_update_relationship($relationship_type, $entity_
  *   TRUE on success, FALSE on failure
  */
 function moonmars_relationships_delete_relationships($relationship_type, $entity_type0, $entity_id0, $entity_type1, $entity_id1) {
+  // Get the relationships:
   $rels = moonmars_relationships_get_relationships($relationship_type, $entity_type0, $entity_id0, $entity_type1, $entity_id1);
+
+  // If none were found, return FALSE:
   if (empty($rels)) {
     return FALSE;
   }
-  // Delete the relationship:
+
+  // Delete the relationships:
   foreach ($rels as $rel) {
     relation_delete($rel->rid);
   }
+
   return TRUE;
 }

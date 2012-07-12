@@ -5,4 +5,4 @@ if ($viewing_own_profile) {
 }
 
 // Render the member's channel:
-echo render_node($channel);
+echo render_node($channel->node());

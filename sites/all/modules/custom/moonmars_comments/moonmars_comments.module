@@ -85,11 +85,12 @@ function moonmars_comments_ajax_create() {
   comment_save($comment);
 
   // Build the comment content:
-  $item_node = node_load($item_nid);
-  comment_build_content($comment, $item_node);
+  $item = Item::create($item_nid);
+  $item->load();
+  comment_build_content($comment, $item->node());
 
-  // Post/update the item:
-  moonmars_channels_post_item($item_nid, TRUE, TRUE);
+  // Post/bump the item in all relevant channels:
+  Channel::currentChannel()->postItem($item, TRUE, TRUE);
 
   // Theme the comment:
   $html = render_comment($comment);
@@ -149,11 +150,12 @@ function moonmars_comments_ajax_edit() {
   comment_save($comment);
 
   // Build the comment content:
-  $item_node = node_load($item_nid);
-  comment_build_content($comment, $item_node);
+  $item = Item::create($item_nid);
+  $item->load();
+  comment_build_content($comment, $item->node());
 
   // Post/update the item:
-  moonmars_channels_post_item($item_nid, FALSE, TRUE);
+  Channel::currentChannel()->postItem($item, FALSE, TRUE);
 
   // Theme the comment:
   $html = render_comment($comment);

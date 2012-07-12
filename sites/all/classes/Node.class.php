@@ -2,17 +2,26 @@
 /**
  * Node class.
  */
-class Node extends Entity {
+class Node extends EntityBase {
+
+  /**
+   * Constructor.
+   */
+  protected function __construct() {
+    return parent::__construct();
+  }
 
   /**
    * Create a new Node object.
    *
+   * @param string $class
    * @param int $nid
+   * @return Node
    */
-  public static function create($nid = NULL) {
+  public static function create($class = 'Node', $nid = NULL) {
     if (is_null($nid)) {
       // Create new node:
-      $node = new Node;
+      $node = new $class;
       // Assume published:
       $node->entity->status = 1;
       return $node;
@@ -24,7 +33,7 @@ class Node extends Entity {
       }
       else {
         // Create new node:
-        $node = new Node;
+        $node = new $class;
         // Set the nid:
         $node->entity->nid = $nid;
         // Put the new node in the cache:
@@ -58,30 +67,12 @@ class Node extends Entity {
   }
 
   /**
-   * Get/set the node title.
+   * Get the entity id.
    *
-   * @param string $title
-   * @return string|Node
+   * @return int
    */
-  public function title($title = NULL) {
-    if (func_num_args() == 0) {
-      // Get the node's title:
-      if (!$this->entity->title) {
-        // If we don't have the title yet, just load the title:
-        $this->entity->title = db_select('nodes', 'n')
-          ->fields('n', array('title'))
-          ->condition('nid', $this->entity->nid)
-          ->execute()
-          ->fetch()
-          ->title;
-      }
-      return $this->entity->title;
-    }
-    else {
-      // Set the node's title:
-      $this->entity->title = $title;
-      return $this;
-    }
+  public function id() {
+    return $this->nid();
   }
 
   /**
@@ -90,7 +81,70 @@ class Node extends Entity {
    * @return stdClass
    */
   public function node() {
+    $this->load();
     return $this->entity;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Get/set properties.
+
+  /**
+   * Get a property value.
+   *
+   * @param $property
+   * @param $quick_load
+   * @return mixed
+   */
+  public function getProperty($property, $quick_load = FALSE) {
+    return parent::getProperty('node', 'nid', $property, $quick_load);
+  }
+
+  /**
+   * Get the node's title.
+   *
+   * @return string
+   */
+  public function title() {
+    return $this->getProperty('title', TRUE);
+  }
+
+  /**
+   * Get the node's type.
+   *
+   * @return string
+   */
+  public function type() {
+    return $this->getProperty('type', TRUE);
+  }
+
+  /**
+   * Get/set a property value.
+   *
+   * @param string $property
+   * @param mixed $value
+   * @return mixed
+   */
+  public function prop($property, $value = NULL) {
+    if (func_get_args() == 1) {
+      // Get a property value:
+      return $this->getProperty($property);
+    }
+    else {
+      // Set a property value:
+      return $this->setProperty($property, $value);
+    }
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * Get/set the node's creator.
+   *
+   * @return Member
+   */
+  public function creator() {
+    $uid = $this->getProperty('uid', TRUE);
+    return Member::create($uid);
   }
 
   /**
@@ -120,7 +174,7 @@ class Node extends Entity {
       return $this;
     }
     else {
-      trigger_error("Can't load node without a valid identifier.", E_USER_ERROR);
+      trigger_error("Invalid node identifier.", E_USER_ERROR);
     }
   }
 
@@ -130,29 +184,40 @@ class Node extends Entity {
    * @return Node
    */
   public function save() {
-    $this->entity = node_save($this->entity);
+    // Save the node:
+    node_save($this->entity);
+
+    // If the node is new then we should add it to the cache:
+    $this->addToCache('node', $this->entity->nid);
+
     return $this;
   }
 
   /**
    * Get the path to the node's page.
+   *
+   * @return string
    */
   public function path() {
-    return "node/$this->entity->nid";
+    return 'node/' . $this->entity->nid;
   }
 
   /**
    * Get the path alias to the node's page.
+   *
+   * @return string
    */
   public function alias() {
-    return drupal_get_path_alias("node/$this->entity->nid");
+    return drupal_get_path_alias($this->path());
   }
 
   /**
    * Get a link to the node's profile.
+   *
+   * @return string
    */
   public function link() {
-    return l($this->title(), "node/$this->entity->nid");
+    return l($this->title(), $this->alias());
   }
 
 }

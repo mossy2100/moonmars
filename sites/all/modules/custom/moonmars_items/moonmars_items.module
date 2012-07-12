@@ -30,27 +30,6 @@ function moonmars_items_menu() {
 }
 
 /**
- * Gets a title from the item text, max 100 characters.
- *
- * @param stdClass $node
- * @return string
- */
-function moonmars_items_auto_nodetitle(stdClass $node) {
-  $text = $node->field_item_text[LANGUAGE_NONE][0]['value'];
-  return (strlen($text) <= 100) ? $text : (substr($text, 0, 97) . '...');
-}
-
-/**
- * Check if a user is directly or indirectly subscribed to an item.
- *
- * @param $nid
- * @param $uid
- */
-//function moonmars_items_member_subscribed($nid, $uid) {
-//
-//}
-
-/**
  * Create the form for posting new items in group channels.
  *
  * @todo Make this more generic so it can be used for user and event channels as well.
@@ -180,7 +159,8 @@ function moonmars_items_node_insert($node) {
     }
 
     // Post the item in the current channel:
-    moonmars_channels_post_item($node->nid, TRUE, FALSE);
+    $item = Item::create($node->nid);
+    Channel::currentChannel()->postItem($item, TRUE, FALSE);
 
     // Reload the group page:
     drupal_goto("$entity_type/$entity_id");
@@ -228,19 +208,20 @@ function moonmars_items_ajax_edit() {
   }
 
   // Load the item:
-  $item = node_load($item_nid);
+  $item = Item::create($item_nid);
+  $item->load();
 
   // Update the item text:
-  $item->field_item_text[LANGUAGE_NONE][0]['value'] = $text;
+  $item->field('field_item_text', LANGUAGE_NONE, 0, 'value', $text);
 
   // Save the item:
-  entity_save('node', $item);
+  $item->save();
 
   // Post/bump the item in all relevant channels:
-  moonmars_channels_post_item($item_nid, FALSE, FALSE);
+  Channel::currentChannel()->postItem($item, FALSE, FALSE);
 
   // Theme the item:
-  $html = render_node($item);
+  $html = render_node($item->node());
 
   // Update the data array:
   $data['result'] = FALSE;
@@ -251,63 +232,6 @@ function moonmars_items_ajax_edit() {
 }
 
 /**
- * Get the nid and title of the channel where this item was originally posted.
- *
- * @param int $item_nid
- * @return stdClass
- */
-function moonmars_items_get_original_channel($item_nid) {
-  // Cache the results:
-  static $original_channels = array();
-
-  if (!isset($original_channels[$item_nid])) {
-    $original_channel = db_select('view_item_original_channel', 'v')
-      ->fields('v', array('channel_nid', 'channel_title'))
-      ->condition('item_nid', $item_nid)
-      ->execute()
-      ->fetch();
-    if ($original_channel) {
-      $original_channels[$item_nid] = $original_channel;
-    }
-  }
-
-  return isset($original_channels[$item_nid]) ? $original_channels[$item_nid] : NULL;
-}
-
-/**
- * Get the nid of the channel where this item was originally posted.
- *
- * @param int $item_nid
- * @return int
- */
-function moonmars_items_get_original_channel_nid($item_nid) {
-  $original_channel = moonmars_items_get_original_channel($item_nid);
-  return $original_channel ? $original_channel->channel_nid : FALSE;
-}
-
-/**
- * Get the uid of the member who posted this item.
- *
- * @param int $item_nid
- * @return int
- */
-function moonmars_items_original_poster_uid($item_nid) {
-  // Cache the results:
-  static $original_posters = array();
-
-  if (!isset($original_posters[$item_nid])) {
-    $original_posters[$item_nid] = db_select('node', 'n')
-      ->fields('n', array('uid'))
-      ->condition('nid', $item_nid)
-      ->execute()
-      ->fetch()
-      ->uid;
-  }
-
-  return $original_posters[$item_nid];
-}
-
-/**
  * AJAX callback for rating items.
  */
 function moonmars_items_ajax_rate() {
@@ -315,13 +239,10 @@ function moonmars_items_ajax_rate() {
   $rating = $_REQUEST['warning'];
   global $user;
 
-  // Load the item:
-  $item = node_load($item_nid);
-
   $rating_scores = moonmars_ratings_scores();
 
   // Check we have all the necessary params:
-  if (!$item || !array_key_exists($rating, $rating_scores) || !$user || !$user->uid) {
+  if (!$item_nid || !array_key_exists($rating, $rating_scores) || !$user || !$user->uid) {
     // Create the data array:
     $data = array(
       'result'    => FALSE,
@@ -333,8 +254,12 @@ function moonmars_items_ajax_rate() {
     return;
   }
 
+  // Load the item:
+  $item = Item::create($item_nid);
+  $item->load();
+
   // Get the current score for the item:
-  $score = (int) $item->field_score[LANGUAGE_NONE][0]['value'];
+  $score = (int) $item->field('field_score');
 
   // Check if the user already rated this:
   $rel_type = 'rated';
@@ -359,8 +284,8 @@ function moonmars_items_ajax_rate() {
   $score += $new_rating_score;
 
   // Update the item's score:
-  $item->field_score[LANGUAGE_NONE][0]['value'] = $score;
-  node_save($item);
+  $item->field('field_score', LANGUAGE_NONE, 0, 'value', $score);
+  $item->save();
 
   // Create the data array:
   $data = array(

@@ -2,17 +2,26 @@
 /**
  * User object.
  */
-class User extends Entity {
+class User extends EntityBase {
+
+  /**
+   * Constructor.
+   */
+  protected function __construct() {
+    return parent::__construct();
+  }
 
   /**
    * Create a new User object.
    *
+   * @param string $class
    * @param int $uid
+   * @return User
    */
-  public static function create($uid = NULL) {
+  public static function create($class = 'User', $uid = NULL) {
     if (is_null($uid)) {
       // Create new user:
-      $user = new User;
+      $user = new $class;
       // Assume active:
       $user->entity->status = 1;
       return $user;
@@ -24,7 +33,7 @@ class User extends Entity {
       }
       else {
         // Create new user:
-        $user = new User;
+        $user = new $class;
         // Set the uid:
         $user->entity->uid = $uid;
         // Put the new user in the cache:
@@ -58,30 +67,12 @@ class User extends Entity {
   }
 
   /**
-   * Get/set the member's name.
+   * Get the entity id.
    *
-   * @param string $name
-   * @return string|User
+   * @return int
    */
-  public function name($name = NULL) {
-    if (func_num_args() == 0) {
-      // Get the member's name:
-      if (!$this->entity->name) {
-        // If we don't have the name yet, just load the name:
-        $this->entity->name = db_select('users', 'u')
-          ->fields('u', array('name'))
-          ->condition('uid', $this->entity->uid)
-          ->execute()
-          ->fetch()
-          ->name;
-      }
-      return $this->entity->name;
-    }
-    else {
-      // Set the member's name:
-      $this->entity->name = $name;
-      return $this;
-    }
+  public function id() {
+    return $this->uid();
   }
 
   /**
@@ -92,6 +83,58 @@ class User extends Entity {
   public function user() {
     return $this->entity;
   }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Get/set properties.
+
+  /**
+   * Get a property value.
+   *
+   * @param $property
+   * @param $quick_load
+   * @return mixed
+   */
+  public function getProperty($property, $quick_load = FALSE) {
+    return parent::getProperty('users', 'uid', $property, $quick_load);
+  }
+
+  /**
+   * Get the user's name.
+   *
+   * @return string
+   */
+  public function name() {
+    return $this->getProperty('name', TRUE);
+  }
+
+  /**
+   * Get the user's mail.
+   *
+   * @return string
+   */
+  public function mail() {
+    return $this->getProperty('mail', TRUE);
+  }
+
+  /**
+   * Get/set a property value.
+   *
+   * @param string $property
+   * @param mixed $value
+   * @return mixed
+   */
+  public function prop($property, $value = NULL) {
+    if (func_get_args() == 1) {
+      // Get a property value:
+      return $this->getProperty($property);
+    }
+    else {
+      // Set a property value:
+      return $this->setProperty($property, $value);
+    }
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   /**
    * Load the user object.
@@ -138,7 +181,12 @@ class User extends Entity {
    * @return User
    */
   public function save() {
+    // Save the user:
     $this->entity = user_save($this->entity);
+
+    // If the user is new then we should add it to the cache:
+    $this->addToCache('user', $this->entity->nid);
+
     return $this;
   }
 
@@ -146,21 +194,21 @@ class User extends Entity {
    * Get the path to the member's profile.
    */
   public function path() {
-    return "user/$this->entity->uid";
+    return 'user/' . $this->entity->uid;
   }
 
   /**
    * Get the path alias to the member's profile.
    */
   public function alias() {
-    return drupal_get_path_alias("user/$this->entity->uid");
+    return drupal_get_path_alias($this->path());
   }
 
   /**
    * Get a link to the member's profile.
    */
   public function link() {
-    return l($this->name(), "user/$this->entity->uid");
+    return l($this->name(), $this->alias());
   }
 
 }
