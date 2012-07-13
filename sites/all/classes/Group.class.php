@@ -81,7 +81,7 @@ class Group extends Node {
    * @param Member $member
    * @return bool
    */
-  public function isMember(Member $member) {
+  public function hasMember(Member $member) {
     $rels = moonmars_relationships_get_relationships('has_member', 'node', $this->nid(), 'user', $member->uid());
     return (bool) $rels;
   }

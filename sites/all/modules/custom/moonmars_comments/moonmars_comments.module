@@ -4,9 +4,9 @@
  * Implements hook_menu().
  */
 function moonmars_comments_menu() {
-  $items['ajax/comment/create'] = array(
-    'page callback'    => 'moonmars_comments_ajax_create',
-    'access callback'  => 'moonmars_comments_can_create',
+  $items['ajax/comment/post'] = array(
+    'page callback'    => 'moonmars_comments_ajax_post',
+    'access callback'  => 'moonmars_comments_can_post',
     'type'             => MENU_CALLBACK,
   );
   $items['ajax/comment/edit'] = array(
@@ -19,7 +19,7 @@ function moonmars_comments_menu() {
   // delete comment permissions, which is only available to users with the 'administer comments' permission.
   $items['ajax/comment/delete'] = array(
     'page callback'    => 'moonmars_comments_ajax_delete',
-    'access arguments' => array('administer comments'),
+    'access callback'  => 'moonmars_comments_can_delete',
     'type'             => MENU_CALLBACK,
   );
   return $items;
@@ -39,6 +39,54 @@ function moonmars_comments_form_alter(&$form, &$form_state, $form_id) {
   }
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Access callbacks.
+
+/**
+ * Check if the current user can post comments in the current channel.
+ *
+ * @return bool
+ */
+function moonmars_comments_can_post() {
+  // User can only post comments in a channel if they can also post items:
+  return moonmars_items_can_post();
+}
+
+/**
+ * Check if the current user can edit a comment.
+ *
+ * @return bool
+ */
+function moonmars_comments_can_edit() {
+  // Users with 'administer comments' (admins) can do whatever they want with comments.
+  if (user_access('administer comments')) {
+    return TRUE;
+  }
+
+  // We need a valid comment id:
+  $cid = (int) $_REQUEST['cid'];
+  if (!$cid) {
+    return FALSE;
+  }
+  $comment = comment_load($cid);
+  if (!$comment) {
+    return FALSE;
+  }
+
+  // Users can edit their own comments:
+  global $user;
+  return $comment->uid == $user->uid;
+}
+
+/**
+ * Check if the current user can delete a comment.
+ *
+ * @return bool
+ */
+function moonmars_comments_can_delete() {
+  // Same rules as for editing:
+  return moonmars_comments_can_edit();
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // AJAX comment actions/callbacks.

@@ -363,6 +363,19 @@ class Member extends User {
     return $group_nids;
   }
 
+  /**
+   * Get the number of groups that a member is in.
+   *
+   * @return int
+   */
+  public function groupCount() {
+    $q = db_select('view_group_has_member', 'v')
+      ->fields('v', array('group_nid'))
+      ->condition('member_uid', $this->uid());
+    $rs = $q->execute();
+    return $rs->rowCount();
+  }
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Follow-related methods.
 
@@ -423,12 +436,12 @@ class Member extends User {
     }
 
     $rs = $q->execute();
-    $followers = array();
+    $followees = array();
     foreach ($rs as $rec) {
-      $followers[] = Member::create($rec->follower_uid);
+      $followees[] = Member::create($rec->member_uid);
     }
 
-    return $followers;
+    return $followees;
   }
 
   /**

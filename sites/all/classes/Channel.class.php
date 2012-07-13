@@ -33,7 +33,7 @@ class Channel extends Node {
    *
    * @return array
    */
-  public function parentEntity() {
+  public function parentEntityInfo() {
     $channel_nid = $this->nid();
 
     // If we haven't already loaded this one, do it now:
@@ -132,7 +132,7 @@ class Channel extends Node {
    * @return string
    */
   public function entityLink() {
-    $entity = $this->parentEntity();
+    $entity = $this->parentEntityInfo();
     return l($this->title(), $entity['alias']);
   }
 
@@ -248,11 +248,11 @@ class Channel extends Node {
     }
 
     // d) If the item is being posted in a group, all members of the group.
-    $entity = $this->parentEntity();
+    $entity = $this->parentEntityInfo();
     if ($entity['entity_type'] == 'node') {
-      $group = Group::create($entity['entity_id']);
-      if ($group->type() == 'group') {
-        $members = $group->members();
+      $node = node_load($entity['entity_id']);
+      if ($node->type == 'group') {
+        $members = Group::create($node)->members();
         foreach ($members as $member) {
           $subscribers[$member->uid()] = $member;
         }
@@ -311,36 +311,6 @@ class Channel extends Node {
       // Set the current channel:
       $_SESSION['current_channel_nid'] = $channel_nid;
     }
-  }
-
-  /**
-   * Determine if a member can post in the channel.
-   *
-   * @param Member $member
-   * @return bool
-   */
-  public function canPost(Member $member) {
-    // Can only post in channels when the channel is embedded in an entity page:
-    if (!moonmars_channels_is_embedded_channel_page()) {
-      return FALSE;
-    }
-
-    // Get the channel's parent entity:
-    $entity = $this->parentEntity();
-
-    if ($entity['entity_type'] == 'user') {
-      // For now, we are going to allow anyone to post in anyone's channel:
-      return TRUE; // $entity['entity_id'] == $uid;
-    }
-    else {
-      // $entity_type == 'node'
-      $node = node_load($entity['entity_id']);
-      if ($node->type == 'group') {
-        $group = Group::create($entity['entity_id']);
-        return $group->isMember($member);
-      }
-    }
-    return FALSE;
   }
 
   /**

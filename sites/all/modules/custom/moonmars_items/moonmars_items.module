@@ -3,8 +3,7 @@
 function moonmars_items_menu() {
   $items['ajax/item/edit'] = array(
     'page callback'    => 'moonmars_items_ajax_edit',
-    'access callback'  => 'node_access',
-    'access arguments' => array('update', 1),
+    'access callback'  => 'moonmars_items_can_edit',
     'type'             => MENU_CALLBACK,
   );
 
@@ -12,7 +11,7 @@ function moonmars_items_menu() {
   // delete item permissions, which is only available to users with the 'administer items' permission.
   $items['ajax/item/delete'] = array(
     'page callback'    => 'moonmars_items_ajax_delete',
-    'access arguments' => array('administer items'),
+    'access arguments' => 'moonmars_items_can_delete',
     'type'             => MENU_CALLBACK,
   );
 
@@ -191,6 +190,108 @@ function moonmars_items_node_insert($node) {
     drupal_goto("$entity_type/$entity_id");
   }
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Access callbacks.
+
+/**
+ * Check if the current user can post items in the current channel.
+ *
+ * @return bool
+ */
+function moonmars_items_can_post() {
+  // Check basic permissions:
+  if (!user_access('create item content')) {
+    return FALSE;
+  }
+
+  global $user;
+  $channel = Channel::currentChannel();
+  $entity = $channel->parentEntityInfo();
+
+  // Only the member can post in their own channel.
+  if ($entity['entity_type'] == 'user') {
+    return $entity['entity_id'] == $user->uid;
+  }
+  else {
+    // $entity['entity_type'] == 'node'
+    $node = node_load($entity['entity_id']);
+    if ($node->type == 'group') {
+      // Only members of the group can post in the group channel:
+      return Group::create($node)->hasMember(Member::create($user));
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * Check if the current user can edit or delete an item.
+ *
+ * @return bool
+ */
+function moonmars_items_can_edit_delete() {
+  // We need a valid item id:
+  $item_nid = (int) $_REQUEST['item_nid'];
+  if (!$item_nid) {
+    return FALSE;
+  }
+  $item = node_load($item_nid);
+  if (!$item) {
+    return FALSE;
+  }
+
+  global $user;
+
+  // If this item doesn't belong to the user, they can't edit or delete it:
+  if ($item->uid != $user->uid) {
+    return FALSE;
+  }
+
+  // Ok so it's their item, but they can only edit or delete it if there haven't been any comments yet.
+  $item = Item::create($item);
+  if (!$item->commentCount()) {
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+/**
+ * Check if the current user can edit a item.
+ *
+ * @return bool
+ */
+function moonmars_items_can_edit() {
+  // Check basic permissions:
+  if (user_access('administer content') || user_access('edit any item content')) {
+    return TRUE;
+  }
+  if (!user_access('edit own item content')) {
+    return FALSE;
+  }
+
+  return moonmars_items_can_edit_delete();
+}
+
+/**
+ * Check if the current user can delete a item.
+ *
+ * @return bool
+ */
+function moonmars_items_can_delete() {
+  // Check basic permissions:
+  if (user_access('administer content') || user_access('delete any item content')) {
+    return TRUE;
+  }
+  if (!user_access('delete own item content')) {
+    return FALSE;
+  }
+
+  // Other than that, same rules as for editing:
+  return moonmars_items_can_edit_delete();
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // AJAX callbacks

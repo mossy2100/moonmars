@@ -150,30 +150,27 @@ abstract class EntityBase {
    * @param string $entity_type
    * @return bool
    */
-  public function addToCache($entity_type) {
-    self::$cache[$entity_type][$this->id()] = $this;
+  public function addToCache() {
+    self::$cache[self::$entityType][$this->id()] = $this;
   }
 
   /**
    * Check if an entity is in the cache.
    *
-   * @param string $entity_type
    * @param int $entity_id
    * @return bool
    */
-  public static function inCache($entity_type, $entity_id) {
-    return isset(self::$cache[$entity_type][$entity_id]);
+  public static function inCache($entity_id) {
+    return isset(self::$cache[self::$entityType][$entity_id]);
   }
 
   /**
    * Get an entity from the cache.
    *
-   * @param string $entity_type
-   * @param int $entity_id
    * @return Entity
    */
-  public static function getFromCache($entity_type, $entity_id) {
-    return self::$cache[$entity_type][$entity_id];
+  public static function getFromCache($entity_id) {
+    return self::$cache[self::$entityType][$entity_id];
   }
 
 }

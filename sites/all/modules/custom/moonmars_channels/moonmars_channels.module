@@ -63,12 +63,11 @@ function moonmars_channels_user_update(&$edit, $account, $category) {
 function moonmars_channels_is_embedded_channel_page() {
   $n_args = arg_count();
 
-  if (is_uint(arg(1))) {
+  if ($n_args == 2 && is_uint(arg(1))) {
     if (arg(0) == 'user') {
-      return $n_args == 2 || ($n_args == 3 && arg(2) == 'all');
+      return TRUE;
     }
-
-    if (arg(0) == 'node' && $n_args == 2) {
+    elseif (arg(0) == 'node') {
       $node = node_load(arg(1));
       return in_array($node->type, moonmars_channels_node_types());
     }

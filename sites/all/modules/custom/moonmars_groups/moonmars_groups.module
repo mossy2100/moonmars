@@ -76,7 +76,7 @@ function moonmars_groups_join($group_nid) {
   $member = Member::create($user->uid);
 
   // Get the relationship:
-  if ($group->isMember($member)) {
+  if ($group->hasMember($member)) {
     drupal_set_message("You are already a member of this group.");
     drupal_goto($group_alias);
     return;
@@ -120,7 +120,7 @@ function moonmars_groups_leave($group_nid) {
   $member = Member::create($user->uid);
 
   // Get the relationship:
-  if (!$group->isMember($member)) {
+  if (!$group->hasMember($member)) {
     drupal_set_message("You are not a member of this group.");
     drupal_goto($group_alias);
     return;
@@ -195,7 +195,7 @@ function moonmars_groups_menu_block() {
 
   // Show different options if the member is in the group or not:
   $html = "<ul id='group-menu' class='menu'>";
-  if ($group->isMember($member)) {
+  if ($group->hasMember($member)) {
     $html .= "<li>" . l('Leave group', $group->alias() . '/leave') . "</li>";
 //    if (moonmars_groups_receive_emails($group_nid, $user)) {
 //      $html .= "<li>Stop email notifications</li>";

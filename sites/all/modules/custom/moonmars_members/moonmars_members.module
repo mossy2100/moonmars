@@ -447,7 +447,14 @@ function moonmars_members_groups_block() {
   $group_nids = $member->groups(0, 4);
 
   // Generate HTML:
-  $html = "<ul class='member-groups clearfix'>\n";
+
+  // Group count:
+  $html = "<div class='group-count'>\n";
+  $html .= format_plural($member->groupCount(), '1 group', '@count groups');
+  $html .= "</div>";
+
+  // groups:
+  $html .= "<ul class='member-groups clearfix'>\n";
   // Avatars for most recent groups:
   foreach ($group_nids as $group_nid) {
     $html .= "<li class='member-group'>\n";

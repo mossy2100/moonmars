@@ -18,7 +18,7 @@ require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'node') . '/node.page
   <div<?php print $content_attributes; ?>>
 
     <?php
-    if ($channel->canPost($current_member)) {
+    if (moonmars_items_can_post()) {
       ?>
       <div class='post-form-wrapper'>
         <h2>Share something</h2>

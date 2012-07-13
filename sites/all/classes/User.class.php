@@ -88,7 +88,7 @@ class User extends EntityBase {
   public function uid($uid = NULL) {
     if ($uid === NULL) {
       // Get the uid:
-      return $this->entity->uid;
+      return isset($this->entity->uid) ? $this->entity->uid : NULL;
     }
     else {
       // Set the uid:

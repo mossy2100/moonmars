@@ -2,24 +2,22 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ff922214-f7cd-4eef-9f30-177ba578dd26" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_text/moonmars_text.info" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_text/moonmars_text.module" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/classes/Channel.class.php" afterPath="$PROJECT_DIR$/sites/all/classes/Channel.class.php" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/classes/EntityBase.class.php" afterPath="$PROJECT_DIR$/sites/all/classes/EntityBase.class.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/classes/Item.class.php" afterPath="$PROJECT_DIR$/sites/all/classes/Item.class.php" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/classes/Group.class.php" afterPath="$PROJECT_DIR$/sites/all/classes/Group.class.php" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/classes/Member.class.php" afterPath="$PROJECT_DIR$/sites/all/classes/Member.class.php" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/classes/Node.class.php" afterPath="$PROJECT_DIR$/sites/all/classes/Node.class.php" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/classes/User.class.php" afterPath="$PROJECT_DIR$/sites/all/classes/User.class.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/dbg/dbg.module" afterPath="$PROJECT_DIR$/sites/all/modules/custom/dbg/dbg.module" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars/moonmars.module" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars/moonmars.module" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/js/moonmars-channels.js" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/js/moonmars-channels.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/moonmars_channels.module" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/moonmars_channels.module" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_comments/moonmars_comments.module" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_comments/moonmars_comments.module" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_groups/moonmars_groups.module" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_groups/moonmars_groups.module" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_items/moonmars_items.module" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_items/moonmars_items.module" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/moonmars_members.module" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/moonmars_members.module" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/css/_blocks.scss" afterPath="$PROJECT_DIR$/sites/all/themes/astro/css/_blocks.scss" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/css/_channels.scss" afterPath="$PROJECT_DIR$/sites/all/themes/astro/css/_channels.scss" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/css/_nav.scss" afterPath="$PROJECT_DIR$/sites/all/themes/astro/css/_nav.scss" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-node.inc" afterPath="$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-node.inc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/templates/node--channel.tpl.php" afterPath="$PROJECT_DIR$/sites/all/themes/astro/templates/node--channel.tpl.php" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/templates/user-profile.tpl.php" afterPath="$PROJECT_DIR$/sites/all/themes/astro/templates/user-profile.tpl.php" />
     </list>
     <ignored path="moonmars.com.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -45,40 +43,55 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="Channel.class.php" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/sites/all/classes/Channel.class.php">
+      <file leaf-file-name="moonmars_items.module" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_items/moonmars_items.module">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="263" column="23" selection-start="8120" selection-end="8120" vertical-scroll-proportion="-8.14">
+            <state line="201" column="32" selection-start="6033" selection-end="6033" vertical-scroll-proportion="-125.625">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Item.class.php" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/sites/all/classes/Item.class.php">
+      <file leaf-file-name="moonmars_comments.module" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_comments/moonmars_comments.module">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="80" column="1" selection-start="1797" selection-end="1797" vertical-scroll-proportion="-37.416668">
+            <state line="7" column="23" selection-start="140" selection-end="140" vertical-scroll-proportion="0.17979452">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="moonmars_members.module" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/moonmars_members.module">
+      <file leaf-file-name="moonmars-channels.js" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/js/moonmars-channels.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="518" column="0" selection-start="15828" selection-end="15828" vertical-scroll-proportion="0.8778878">
-              <folding>
-                <marker date="1342181181000" expanded="true" signature="1644:1823" placeholder="..." />
-                <marker date="1342181181000" expanded="true" signature="1855:3348" placeholder="..." />
-              </folding>
+            <state line="232" column="36" selection-start="6929" selection-end="6929" vertical-scroll-proportion="0.0">
+              <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="moonmars_groups.module" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_groups/moonmars_groups.module">
+      <file leaf-file-name="node--channel.tpl.php" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/templates/node--channel.tpl.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="228" column="41" selection-start="5663" selection-end="5694" vertical-scroll-proportion="-19.916666">
+            <state line="20" column="31" selection-start="593" selection-end="593" vertical-scroll-proportion="-8.416667">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Node.class.php" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/sites/all/classes/Node.class.php">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="280" column="32" selection-start="5834" selection-end="5848" vertical-scroll-proportion="-15.791667">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="node.module" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/modules/node/node.module">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="2996" column="9" selection-start="98374" selection-end="98374" vertical-scroll-proportion="-8.416667">
               <folding />
             </state>
           </provider>
@@ -97,22 +110,22 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/sites/all/modules/custom/dbg/dbg.module" />
-        <option value="$PROJECT_DIR$/sites/all/themes/astro/css/_channels.scss" />
-        <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_items/moonmars_items.module" />
-        <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars/moonmars.module" />
-        <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_text/moonmars_text.info" />
-        <option value="$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-node.inc" />
-        <option value="$PROJECT_DIR$/sites/all/classes/EntityBase.class.php" />
-        <option value="$PROJECT_DIR$/sites/all/classes/Node.class.php" />
-        <option value="$PROJECT_DIR$/sites/all/classes/User.class.php" />
-        <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_text/moonmars_text.module" />
-        <option value="$PROJECT_DIR$/sites/all/themes/astro/css/_blocks.scss" />
-        <option value="$PROJECT_DIR$/sites/all/classes/Member.class.php" />
         <option value="$PROJECT_DIR$/sites/all/classes/Item.class.php" />
-        <option value="$PROJECT_DIR$/sites/all/classes/Channel.class.php" />
-        <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_groups/moonmars_groups.module" />
         <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/moonmars_members.module" />
+        <option value="$PROJECT_DIR$/sites/all/themes/astro/templates/user-profile.tpl.php" />
+        <option value="$PROJECT_DIR$/sites/all/classes/Member.class.php" />
+        <option value="$PROJECT_DIR$/sites/all/themes/astro/css/_blocks.scss" />
+        <option value="$PROJECT_DIR$/sites/all/classes/EntityBase.class.php" />
+        <option value="$PROJECT_DIR$/sites/all/classes/User.class.php" />
+        <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/moonmars_channels.module" />
+        <option value="$PROJECT_DIR$/sites/all/classes/Channel.class.php" />
+        <option value="$PROJECT_DIR$/sites/all/classes/Group.class.php" />
+        <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_groups/moonmars_groups.module" />
+        <option value="$PROJECT_DIR$/sites/all/classes/Node.class.php" />
+        <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_items/moonmars_items.module" />
+        <option value="$PROJECT_DIR$/sites/all/themes/astro/templates/node--channel.tpl.php" />
+        <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/js/moonmars-channels.js" />
+        <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_comments/moonmars_comments.module" />
       </list>
     </option>
   </component>
@@ -521,6 +534,36 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
+              <option name="myItemId" value="moonmars_comments" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="moonmars.com" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="www" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sites" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="all" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="modules" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="custom" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
               <option name="myItemId" value="moonmars_channels" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
@@ -808,121 +851,121 @@
     <breakpoint-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/templates/node--item.tpl.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="20" column="21" selection-start="675" selection-end="683" vertical-scroll-proportion="-12.5">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_text/moonmars_text.info">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="1" column="42" selection-start="67" selection-end="67" vertical-scroll-proportion="0.024154589">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_items/moonmars_items.module">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="165" column="3" selection-start="5184" selection-end="5184" vertical-scroll-proportion="71.708336">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-node.inc">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="52" column="0" selection-start="2016" selection-end="2016" vertical-scroll-proportion="1.3356165">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/classes/EntityBase.class.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="131" column="0" selection-start="3020" selection-end="3020" vertical-scroll-proportion="0.21324718">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/classes/User.class.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="88" column="16" selection-start="2058" selection-end="2058" vertical-scroll-proportion="0.34673366">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/classes/Node.class.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="79" column="16" selection-start="1781" selection-end="1781" vertical-scroll-proportion="0.33441034">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_text/moonmars_text.module">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="24" column="0" selection-start="649" selection-end="649" vertical-scroll-proportion="-15.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars/moonmars.module">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="62" column="3" selection-start="1971" selection-end="1971" vertical-scroll-proportion="0.38449112">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/classes/Group.class.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="76" column="0" selection-start="1417" selection-end="1714" vertical-scroll-proportion="0.7425569">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/classes/Member.class.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="414" column="49" selection-start="10994" selection-end="10994" vertical-scroll-proportion="-1.8481013">
+        <state line="401" column="16" selection-start="10608" selection-end="10608" vertical-scroll-proportion="0.57713246">
           <folding>
             <element signature="e#6#52#0" expanded="true" />
-            <marker date="1342180815000" expanded="true" signature="-1:-1" placeholder="..." />
+            <marker date="1342181883000" expanded="true" signature="-1:-1" placeholder="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/moonmars_members.module">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="454" column="0" selection-start="14167" selection-end="14167" vertical-scroll-proportion="0.40759075">
+          <folding>
+            <marker date="1342181313000" expanded="true" signature="-1:-1" placeholder="..." />
+            <marker date="1342181313000" expanded="true" signature="-1:-1" placeholder="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/_blocks.scss">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="74" column="16" selection-start="1041" selection-end="1041" vertical-scroll-proportion="0.20528771">
+        <state line="47" column="22" selection-start="758" selection-end="758" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/modules/comment/comment.module">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="223" column="33" selection-start="7272" selection-end="7272" vertical-scroll-proportion="0.34653464">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/classes/User.class.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="7" column="21" selection-start="90" selection-end="90" vertical-scroll-proportion="0.16962843">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/classes/EntityBase.class.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="154" column="3" selection-start="3699" selection-end="3699" vertical-scroll-proportion="3.1260097">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/moonmars_channels.module">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="74" column="0" selection-start="1601" selection-end="1601" vertical-scroll-proportion="0.7889447">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/classes/Channel.class.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="263" column="23" selection-start="8120" selection-end="8120" vertical-scroll-proportion="-8.14">
+        <state line="314" column="0" selection-start="9935" selection-end="9935" vertical-scroll-proportion="0.024232633">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/classes/Item.class.php">
+    <entry file="file://$PROJECT_DIR$/sites/all/classes/Group.class.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="80" column="1" selection-start="1797" selection-end="1797" vertical-scroll-proportion="-37.416668">
+        <state line="78" column="14" selection-start="1735" selection-end="1735" vertical-scroll-proportion="0.22110553">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_groups/moonmars_groups.module">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="228" column="41" selection-start="5663" selection-end="5694" vertical-scroll-proportion="-19.916666">
+        <state line="197" column="23" selection-start="4834" selection-end="4834" vertical-scroll-proportion="0.319933">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/moonmars_members.module">
+    <entry file="file://$PROJECT_DIR$/modules/node/node.module">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="518" column="0" selection-start="15828" selection-end="15828" vertical-scroll-proportion="0.8778878">
-          <folding>
-            <marker date="1342181181000" expanded="true" signature="1644:1823" placeholder="..." />
-            <marker date="1342181181000" expanded="true" signature="1855:3348" placeholder="..." />
-          </folding>
+        <state line="2996" column="9" selection-start="98374" selection-end="98374" vertical-scroll-proportion="-8.416667">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/classes/Node.class.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="280" column="32" selection-start="5834" selection-end="5848" vertical-scroll-proportion="-15.791667">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/templates/node--channel.tpl.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="20" column="31" selection-start="593" selection-end="593" vertical-scroll-proportion="-8.416667">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_items/moonmars_items.module">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="201" column="32" selection-start="6033" selection-end="6033" vertical-scroll-proportion="-125.625">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/js/moonmars-channels.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="232" column="36" selection-start="6929" selection-end="6929" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_comments/moonmars_comments.module">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="7" column="23" selection-start="140" selection-end="140" vertical-scroll-proportion="0.17979452">
+          <folding />
         </state>
       </provider>
     </entry>

@@ -77,7 +77,7 @@ class Node extends EntityBase {
    * @return int|Node
    */
   public function nid($nid = NULL) {
-    if ($nid === NULL) {
+    if ($nid = NULL) {
       // Get the nid:
       return $this->entity->nid;
     }
@@ -273,6 +273,18 @@ class Node extends EntityBase {
    */
   public function link() {
     return l($this->title(), $this->alias());
+  }
+
+  /**
+   * Find out how many published comments a node has.
+   */
+  public function commentCount() {
+    return db_select('comment', 'c')
+      ->fields('c', array('cid'))
+      ->condition('nid', $this->nid())
+      ->condition('status', 1)
+      ->execute()
+      ->rowCount();
   }
 
 }

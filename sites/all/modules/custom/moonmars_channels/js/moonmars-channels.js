@@ -230,7 +230,7 @@ function setupPostButton(commentArticle) {
           );
         }
         else {
-          $.post("/ajax/comment/create",
+          $.post("/ajax/comment/post",
             {
               item_nid: item_nid,
               text: commentText
