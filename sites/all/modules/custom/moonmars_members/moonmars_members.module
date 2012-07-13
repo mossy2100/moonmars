@@ -49,7 +49,6 @@ function moonmars_members_levels() {
  * Implements hook_form_alter().
  */
 function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
-  // dpm($form_id);
 
   switch ($form_id) {
 
@@ -89,6 +88,9 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
         '#required' => TRUE,
         '#weight' => ++$weight,
       );
+
+      $form['#validate'][] = 'moonmars_members_user_register_form_validate';
+
       break;
 
     case 'user_profile_form':
@@ -143,13 +145,31 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
 }
 
 /**
+ * Check if a username is valid.
+ *
+ * @param $name
+ * @return bool
+ */
+function moonmars_members_valid_username($name) {
+  return (bool) preg_match("/^[a-z0-9\-\_]{1,50}$/", $name);
+}
+
+/**
+ * Validation handler for the user registration form.
+ */
+function moonmars_members_user_register_form_validate($form, &$form_state) {
+  if (!moonmars_members_valid_username($form_state['values']['name'])) {
+    form_set_error('name', "Member nicknames may only contain letters, digits, hyphens and underscores.");
+  }
+}
+
+/**
  * After_build handler for the user account/profile form.
  *
  * @param array $form
  * @return array
  */
 function moonmars_members_user_profile_form_after_build($form) {
-
   // Reformat the timezone options:
   $rx = "/([^\:]+)\:([^\+]+)([\+\-]\d{2})(\d{2})/";
   foreach ($form['timezone']['timezone']['#options'] as &$option) {
@@ -169,10 +189,16 @@ function moonmars_members_user_profile_form_after_build($form) {
 }
 
 /**
+ * Validation handler for the user account/profile form.
+ */
+function moonmars_members_user_profile_form_validate($form, $form_state) {
+  if (!moonmars_members_valid_username($form_state['values']['name'])) {
+    form_set_error('name', "Member nicknames may only contain letters, digits, hyphens and underscores.");
+  }
+}
+
+/**
  * Submit handler for the user account/profile form.
- *
- * @param array $form
- * @return array
  */
 function moonmars_members_user_profile_form_submit($form, $form_state) {
   // Go back to the user's profile:
@@ -283,6 +309,35 @@ function moonmars_members_filter_channel_form_submit($form, &$form_state) {
   drupal_goto('user/' . arg(1));
 }
 
+/**
+ * Render some member avatars in a sidebar block.
+ *
+ * @param int $total_member_count
+ * @param array $members
+ * @return string
+ */
+function moonmars_members_render_avatars($total_member_count, $members, $view_all_link = NULL) {
+  // Member count:
+  $html = "<div class='member-count'>\n";
+  $html .= format_plural($total_member_count, '1 member', '@count members');
+  $html .= "</div>";
+
+  // Avatars for most recently joined members:
+  $html .= "<ul class='member-grid clearfix'>\n";
+  foreach ($members as $member) {
+    $html .= "<li>\n";
+    $html .= $member->avatarTooltip();
+    $html .= "</li>\n";
+  }
+  $html .= "</ul>\n";
+
+  if ($view_all_link) {
+    // @todo put the "View all" link here.
+  }
+
+  return $html;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Blocks
@@ -297,6 +352,14 @@ function moonmars_members_block_info() {
   );
   $blocks['member-groups'] = array(
     'info' => t("Member's groups"),
+    'cache' => DRUPAL_CACHE_PER_PAGE,
+  );
+  $blocks['member-followers'] = array(
+    'info' => t("Member's followers"),
+    'cache' => DRUPAL_CACHE_PER_PAGE,
+  );
+  $blocks['member-followees'] = array(
+    'info' => t("Member's followees"),
     'cache' => DRUPAL_CACHE_PER_PAGE,
   );
   return $blocks;
@@ -316,6 +379,16 @@ function moonmars_members_block_view($delta = '') {
     case 'member-groups':
       $block['subject'] = 'Groups';
       $block['content'] = moonmars_members_groups_block();
+      break;
+
+    case 'member-followers':
+      $block['subject'] = 'Followers';
+      $block['content'] = moonmars_members_followers_block();
+      break;
+
+    case 'member-followees':
+      $block['subject'] = 'Followees';
+      $block['content'] = moonmars_members_followees_block();
       break;
   }
   return $block;
@@ -404,6 +477,42 @@ function moonmars_members_groups_block() {
 //  $html .= "<div class='view-all-groups-link'>\n";
 //  $html .= l('View all', drupal_get_path_alias("user/$member_uid") . '/groups');
 //  $html .= "</div>";
+
+  return $html;
+}
+
+/**
+ * Get HTML for the followers block.
+ *
+ * @return string
+ */
+function moonmars_members_followers_block() {
+  // Whose profile are we on:
+  $member = Member::create(arg(1));
+
+  // Get the latest 12 followers:
+  $followers = $member->followers(0, 12);
+
+  // Generate HTML:
+  $html = moonmars_members_render_avatars($member->followerCount(), $followers);
+
+  return $html;
+}
+
+/**
+ * Get HTML for the followees block.
+ *
+ * @return string
+ */
+function moonmars_members_followees_block() {
+  // Whose profile are we on:
+  $member = Member::create(arg(1));
+
+  // Get the latest 12 followees:
+  $followers = $member->followees(0, 12);
+
+  // Generate HTML:
+  $html = moonmars_members_render_avatars($member->followeeCount(), $followers);
 
   return $html;
 }

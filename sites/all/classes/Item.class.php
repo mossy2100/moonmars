@@ -69,4 +69,13 @@ class Item extends Node {
     return NULL;
   }
 
+  /**
+   * Get/set the item text.
+   *
+   * @param null|string $text
+   */
+  public function text($text = NULL) {
+    return $this->field('field_item_text', LANGUAGE_NONE, 0, 'value', $text);
+  }
+
 }

@@ -141,7 +141,7 @@ function dbg_sql($query, $target = 'default') {
     $placeholder = ":db_{$statement_type}_placeholder_";
     $n = 0;
     foreach ($fields as $key => $value) {
-      dpm($value);
+      //dpm($value);
       $replacement = is_numeric($value) ? $value : $connection->quote($value);
       $query_string = str_replace($placeholder . $n, $replacement, $query_string);
       $n++;
@@ -183,4 +183,11 @@ function dbg_query($query, $target = 'default') {
  */
 function dpm_query($query, $target = 'default') {
   dpm(dbg_sql($query, $target));
+}
+
+/**
+ * Display previous functions called.
+ */
+function dpm_backtrace() {
+  dpm(debug_backtrace());
 }

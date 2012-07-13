@@ -1,11 +1,11 @@
-@mixin avatar-grid {
+@mixin member-grid-avatar {
   float: left;
   margin: 0 5px 5px 0;
 }
 
 .view-newest-users {
 	.views-row {
-	  @include avatar-grid;
+	  @include member-grid-avatar;
 	}
 
   .view-footer {
@@ -72,13 +72,12 @@
   }
 }
 
-
-ul.group-members {
+ul.member-grid {
   list-style-type: none;
   margin: 3px 0;
 
   li {
-    @include avatar-grid;
+    @include member-grid-avatar;
   }
 }
 

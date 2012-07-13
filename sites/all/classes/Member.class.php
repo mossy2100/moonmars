@@ -19,12 +19,15 @@ class Member extends User {
   /**
    * Create a new Member object.
    *
-   * @param int $uid
+   * @param null|int|stdClass|string $user_param
    * @return Member
    */
-  public static function create($uid = NULL) {
-    return parent::create(__CLASS__, $uid);
+  public static function create($user_param = NULL) {
+    return parent::create(__CLASS__, $user_param);
   }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Get member details.
 
   /**
    * Get the member's full name.
@@ -259,7 +262,7 @@ class Member extends User {
   public function level($level = NULL) {
     $levels = moonmars_members_levels();
 
-    if (func_num_args() == 0) {
+    if ($level === NULL) {
       // Get the member's level:
 
       $levels = array_reverse($levels);
@@ -322,67 +325,6 @@ class Member extends User {
     return array_search($this->level(), moonmars_members_levels());
   }
 
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Follow-related methods.
-
-  /**
-   * Get a member's followers.
-   *
-   * @return array
-   */
-  public function followers() {
-    $follower_uids = moonmars_relationships_get_entity_ids('has_follower', 'user', $this->uid(), 'user', NULL);
-    $followers = array();
-    foreach ($follower_uids as $follower_uid) {
-      $followers[] = Member::create($follower_uid);
-    }
-    return $followers;
-  }
-
-  /**
-   * Get a member's followees (i.e. other members that the member follows).
-   *
-   * @return array
-   */
-  public function followees() {
-    $followee_uids = moonmars_relationships_get_entity_ids('has_follower', 'user', NULL, 'user', $this->uid());
-    $followees = array();
-    foreach ($followee_uids as $followee_uid) {
-      $followees[] = Member::create($followee_uid);
-    }
-    return $followees;
-  }
-
-  /**
-   * Checks if one user follows another.
-   *
-   * @param Member $member
-   */
-  public function follows(Member $member) {
-    $rels = moonmars_relationships_get_relationships('has_follower', 'user', $member->uid(), 'user', $this->uid());
-    return !empty($rels);
-  }
-
-  /**
-   * Follow another member.
-   *
-   * @param Member $member
-   */
-  public function follow(Member $member) {
-    // Create the follow relationship:
-    moonmars_relationships_update_relationship('has_follower', 'user', $member->uid(), 'user', $this->uid());
-  }
-
-  /**
-   * Unfollow another member.
-   *
-   * @param Member $member
-   */
-  public function unfollow(Member $member) {
-    // Remove the follow relationship:
-    moonmars_relationships_delete_relationships('has_follower', 'user', $member->uid(), 'user', $this->uid());
-  }
-
   /**
    * Get the member's channel.
    *
@@ -420,6 +362,120 @@ class Member extends User {
 
     return $group_nids;
   }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Follow-related methods.
+
+  /**
+   * Get a member's followers.
+   *
+   * @return array
+   */
+  public function followers($offset = NULL, $limit = NULL) {
+    // Get the group's members in reverse order of that in which they joined.
+    $q = db_select('view_member_has_follower', 'v')
+      ->fields('v', array('follower_uid'))
+      ->condition('member_uid', $this->uid())
+      ->orderBy('created', 'DESC');
+
+    // Set a limit if specified:
+    if ($offset !== NULL && $limit !== NULL) {
+      $q->range($offset, $limit);
+    }
+
+    $rs = $q->execute();
+    $followers = array();
+    foreach ($rs as $rec) {
+      $followers[] = Member::create($rec->follower_uid);
+    }
+
+    return $followers;
+  }
+
+  /**
+   * Get the number of followers that a member has.
+   *
+   * @return int
+   */
+  public function followerCount() {
+    $q = db_select('view_member_has_follower', 'v')
+      ->fields('v', array('follower_uid'))
+      ->condition('member_uid', $this->uid());
+    $rs = $q->execute();
+    return $rs->rowCount();
+  }
+
+  /**
+   * Get a member's followees (i.e. other members that the member follows).
+   *
+   * @return array
+   */
+  public function followees($offset = NULL, $limit = NULL) {
+    // Get the group's members in reverse order of that in which they joined.
+    $q = db_select('view_member_has_follower', 'v')
+      ->fields('v', array('member_uid'))
+      ->condition('follower_uid', $this->uid())
+      ->orderBy('created', 'DESC');
+
+    // Set a limit if specified:
+    if ($offset !== NULL && $limit !== NULL) {
+      $q->range($offset, $limit);
+    }
+
+    $rs = $q->execute();
+    $followers = array();
+    foreach ($rs as $rec) {
+      $followers[] = Member::create($rec->follower_uid);
+    }
+
+    return $followers;
+  }
+
+  /**
+   * Get the number of followees that a member has.
+   *
+   * @return int
+   */
+  public function followeeCount() {
+    $q = db_select('view_member_has_follower', 'v')
+      ->fields('v', array('member_uid'))
+      ->condition('follower_uid', $this->uid());
+    $rs = $q->execute();
+    return $rs->rowCount();
+  }
+
+  /**
+   * Checks if one user follows another.
+   *
+   * @param Member $member
+   */
+  public function follows(Member $member) {
+    $rels = moonmars_relationships_get_relationships('has_follower', 'user', $member->uid(), 'user', $this->uid());
+    return !empty($rels);
+  }
+
+  /**
+   * Follow another member.
+   *
+   * @param Member $member
+   */
+  public function follow(Member $member) {
+    // Create the follow relationship:
+    moonmars_relationships_update_relationship('has_follower', 'user', $member->uid(), 'user', $this->uid());
+  }
+
+  /**
+   * Unfollow another member.
+   *
+   * @param Member $member
+   */
+  public function unfollow(Member $member) {
+    // Remove the follow relationship:
+    moonmars_relationships_delete_relationships('has_follower', 'user', $member->uid(), 'user', $this->uid());
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Notification methods.
 
   /**
    * Send a notification message to a member.

@@ -93,9 +93,7 @@ abstract class EntityBase {
           ->execute()
           ->fetch()
           ->$property;
-
-        dpm($property);
-        dpm($this->entity->{$property});
+//        dpm($table . '.' . $property. ' = ' . $this->entity->{$property});
       }
       else {
         // Load the whole object:
@@ -131,7 +129,7 @@ abstract class EntityBase {
    * @return mixed
    */
   public function field($field, $lang = LANGUAGE_NONE, $delta = 0, $key = 'value', $value = NULL) {
-    if (func_num_args() <= 4) {
+    if ($value === NULL) {
       // Get the field's value.
       $this->load();
       return isset($this->entity->{$field}[$lang][$delta][$key]) ? $this->entity->{$field}[$lang][$delta][$key] : NULL;
@@ -150,11 +148,10 @@ abstract class EntityBase {
    * Add an entity to the cache.
    *
    * @param string $entity_type
-   * @param int $entity_id
    * @return bool
    */
-  public function addToCache($entity_type, $entity_id) {
-    self::$cache[$entity_type][$entity_id] = $this;
+  public function addToCache($entity_type) {
+    self::$cache[$entity_type][$this->id()] = $this;
   }
 
   /**

@@ -1,0 +1,4 @@
+name = moonmars.com Text
+description = Support for text processing on moonmars.com.
+core = 7.x
+package = moonmars.com

@@ -5,6 +5,13 @@
 class Node extends EntityBase {
 
   /**
+   * The entity type.
+   *
+   * @var string
+   */
+  protected static $entityType = 'node';
+
+  /**
    * Constructor.
    */
   protected function __construct() {
@@ -15,31 +22,48 @@ class Node extends EntityBase {
    * Create a new Node object.
    *
    * @param string $class
-   * @param int $nid
+   * @param null|int|stdClass $node_param
    * @return Node
    */
-  public static function create($class = 'Node', $nid = NULL) {
-    if (is_null($nid)) {
+  public static function create($class = 'Node', $node_param = NULL) {
+    if (is_null($node_param)) {
       // Create new node:
-      $node = new $class;
+      $node_obj = new $class;
       // Assume published:
-      $node->entity->status = 1;
-      return $node;
+      $node_obj->entity->status = 1;
+      return $node_obj;
     }
-    elseif (is_uint($nid)) {
+    elseif (is_uint($node_param)) {
+      // nid provided:
+      $nid = $node_param;
       // Only create the new node if not already in the cache:
-      if (self::inCache('node', $nid)) {
-        return self::getFromCache('node', $nid);
+      if (self::inCache($nid)) {
+        return self::getFromCache($nid);
       }
       else {
         // Create new node:
-        $node = new $class;
+        $node_obj = new $class;
         // Set the nid:
-        $node->entity->nid = $nid;
+        $node_obj->entity->nid = $nid;
         // Put the new node in the cache:
-        $node->addToCache('node', $nid);
-        return $node;
+        $node_obj->addToCache();
+        return $node_obj;
       }
+    }
+    elseif (is_object($node_param)) {
+      // Drupal node object provided:
+      $node = $node_param;
+      // Get the User object:
+      if ($node->nid && self::inCache($node->nid)) {
+        $node_obj = self::getFromCache($node->nid);
+      }
+      else {
+        $node_obj = new $class;
+      }
+      $node_obj->entity = $node;
+      // Add to cache:
+      $node_obj->addToCache();
+      return $node_obj;
     }
     else {
       trigger_error("Invalid parameter to Node::create()", E_USER_ERROR);
@@ -53,7 +77,7 @@ class Node extends EntityBase {
    * @return int|Node
    */
   public function nid($nid = NULL) {
-    if (func_num_args() == 0) {
+    if ($nid === NULL) {
       // Get the nid:
       return $this->entity->nid;
     }
@@ -61,7 +85,7 @@ class Node extends EntityBase {
       // Set the nid:
       $this->entity->nid = $nid;
       // Add the node object to the cache if not already:
-      $this->addToCache('node', $nid);
+      $this->addToCache();
       return $this;
     }
   }
@@ -83,6 +107,38 @@ class Node extends EntityBase {
   public function node() {
     $this->load();
     return $this->entity;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Caching methods.
+
+  /**
+   * Add a node to the cache.
+   *
+   * @return bool
+   */
+  public function addToCache() {
+    parent::addToCache(self::$entityType);
+  }
+
+  /**
+   * Check if a node is in the cache.
+   *
+   * @param int $entity_id
+   * @return bool
+   */
+  public static function inCache($entity_id) {
+    return parent::inCache(self::$entityType, $entity_id);
+  }
+
+  /**
+   * Get a node from the cache.
+   *
+   * @param int $entity_id
+   * @return Node
+   */
+  public static function getFromCache($entity_id) {
+    return parent::getFromCache(self::$entityType, $entity_id);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -143,8 +199,7 @@ class Node extends EntityBase {
    * @return Member
    */
   public function creator() {
-    $uid = $this->getProperty('uid', TRUE);
-    return Member::create($uid);
+    return Member::create($this->getProperty('uid', TRUE));
   }
 
   /**
@@ -174,7 +229,7 @@ class Node extends EntityBase {
       return $this;
     }
     else {
-      trigger_error("Invalid node identifier.", E_USER_ERROR);
+      trigger_error("Invalid node identifier: " . $this->entity->nid, E_USER_ERROR);
     }
   }
 
@@ -188,7 +243,7 @@ class Node extends EntityBase {
     node_save($this->entity);
 
     // If the node is new then we should add it to the cache:
-    $this->addToCache('node', $this->entity->nid);
+    $this->addToCache();
 
     return $this;
   }

@@ -1,0 +1,77 @@
+<?php
+
+/**
+ * Scans a piece of text (item or comment) for @ references to members, and converts these to links.
+ *
+ * @param $text
+ */
+function moonmars_text_scan($text) {
+  $text2 = $text;
+
+  // Scan for referenced members:
+  $n_members = preg_match_all("/(^|\s)\@([a-z0-9\_\-]+)\b/i", $text, $matches);
+
+  $members = array();
+  if ($n_members) {
+    foreach ($matches[2] as $name) {
+      // Check if we have a member with this name:
+      $member = Member::create($name);
+      if ($member) {
+        $members[$member->uid()] = $member;
+        $text2 = preg_replace("/(^|\s)(\@$name)\b/i", "$1" . $member->link(TRUE), $text2);
+      }
+    }
+  }
+
+  // Scan for hash tags:
+//  $n_members = preg_match_all("/(^|\s)\@([a-z0-9\_\-]+)\b/i", $text, $matches);
+
+  $tags = array();
+//  if ($n_members) {
+//    $text2 = $text;
+//    foreach ($matches[2] as $name) {
+//      // Check if we have a member with this name:
+//      $member = Member::create($name);
+//      if ($member) {
+//        $members[$member->uid()] = $member;
+//        $text2 = preg_replace("/(^|\s)(\@$name)\b/i", "$1" . $member->link(TRUE), $text2);
+//      }
+//    }
+//  }
+
+  return array(
+    'filtered_text' => $text2,
+    'referenced_members' => $members,
+    'hash_tags' => $tags,
+  );
+}
+
+/**
+ * Scans a piece of text (item or comment) for member references and hash tags, and converts these to links.
+ *
+ * @param $text
+ */
+function moonmars_text_filter($text) {
+  $scan = moonmars_text_scan($text);
+  return $scan['filtered_text'];
+}
+
+/**
+ * Scans a piece of text (item or comment) for member references and returns the Member objects.
+ *
+ * @param $text
+ */
+function moonmars_text_referenced_members($text) {
+  $scan = moonmars_text_scan($text);
+  return $scan['referenced_members'];
+}
+
+/**
+ * Scans a piece of text (item or comment) for hash tags, and returns the Term objects.
+ *
+ * @param $text
+ */
+function moonmars_text_hash_tags($text) {
+  $scan = moonmars_text_scan($text);
+  return $scan['hash_tags'];
+}

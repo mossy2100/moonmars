@@ -69,6 +69,9 @@ function moonmars_items_menu() {
 //  return $form;
 //}
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Forms stuff
+
 function moonmars_items_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'item_node_form' && moonmars_channels_is_embedded_channel_page()) {
     $entity_type = arg(0);
@@ -107,6 +110,7 @@ function moonmars_items_form_alter(&$form, &$form_state, $form_id) {
     $form['actions']['submit']['#value'] = t('Post');
 
     // Make the textarea non-resizable and only 2 rows high. We will use the autoresize() plugin on the client.
+    $form['field_item_text']['#wysiwyg'] = FALSE;
     $form['field_item_text'][LANGUAGE_NONE][0]['value']['#resizable'] = FALSE;
     $form['field_item_text'][LANGUAGE_NONE][0]['value']['#rows'] = 2;
 
@@ -119,8 +123,10 @@ function moonmars_items_form_alter(&$form, &$form_state, $form_id) {
     // Add an afterbuild handler so we can remove the submit buttons added in file_managed_file_process().
     $form['#after_build'][] = 'moonmars_items_form_after_build';
 
+//    dpm($form);
+
     // Add a submit handler.
-    $form['#submit'][] = 'moonmars_items_form_submit';
+//    $form['#submit'][] = 'moonmars_items_form_submit';
   }
 }
 
@@ -131,13 +137,30 @@ function moonmars_items_form_alter(&$form, &$form_state, $form_id) {
  * @return array
  */
 function moonmars_items_form_after_build($form) {
-//  dpm($form);
-
   // Remove the file field's submit buttons from the form:
   unset($form['field_item_file'][LANGUAGE_NONE][0]['upload_button']);
   unset($form['field_item_file'][LANGUAGE_NONE][0]['remove_button']);
 
   return $form;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Node hooks.
+
+/**
+ * Implement hook_node_presave().
+ */
+function moonmars_items_node_presave($node) {
+  // Get the item text:
+  $text = &$node->field_item_text[LANGUAGE_NONE][0]['value'];
+
+  // If the item is a file, copy the entered text to the file description:
+  if (isset($node->field_item_file[LANGUAGE_NONE][0]['fid']) && $node->field_item_file[LANGUAGE_NONE][0]['fid']) {
+    $node->field_item_file[LANGUAGE_NONE][0]['description'] = $text;
+  }
+
+  // Set the title:
+  $node->title = (strlen($text) <= 100) ? $text : (substr($text, 0, 97) . '...');
 }
 
 /**
@@ -158,8 +181,10 @@ function moonmars_items_node_insert($node) {
       return;
     }
 
-    // Post the item in the current channel:
+    // Create the item object:
     $item = Item::create($node->nid);
+
+    // Post the item in the current channel:
     Channel::currentChannel()->postItem($item, TRUE, FALSE);
 
     // Reload the group page:
@@ -167,18 +192,8 @@ function moonmars_items_node_insert($node) {
   }
 }
 
-/**
- * Submit handler for add new item form.
- *
- * @param array $form
- * @param array $form_state
- */
-function moonmars_items_form_submit($form, &$form_state) {
-  // If the item is a file, copy the entered text to the file description:
-  if ($form_state['values']['field_item_file'][LANGUAGE_NONE][0]['fid']) {
-    $form_state['values']['field_item_file'][LANGUAGE_NONE][0]['description'] = $form_state['values']['field_item_file'][LANGUAGE_NONE][0]['value'];
-  }
-}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// AJAX callbacks
 
 /**
  * Edit an item's text via AJAX.

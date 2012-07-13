@@ -201,9 +201,7 @@ class Channel extends Node {
    *   TRUE if the post is a comment, FALSE if an item.
    */
   public function postItem(Item $item, $is_new, $is_comment) {
-    $item_nid = $item->nid();
-
-    // Current poster:
+    // Get the current poster:
     global $user;
     $poster_uid = $user->uid;
     $poster = Member::create($poster_uid);
@@ -249,8 +247,8 @@ class Channel extends Node {
       }
     }
 
-    // d) If the item is being posted in a group, all members of the group:
-    $entity = $this->entity();
+    // d) If the item is being posted in a group, all members of the group.
+    $entity = $this->parentEntity();
     if ($entity['entity_type'] == 'node') {
       $group = Group::create($entity['entity_id']);
       if ($group->type() == 'group') {
@@ -261,8 +259,13 @@ class Channel extends Node {
       }
     }
 
-    // f) Everyone mentioned in the item text. @todo
-    // g) Everyone following a tag that appears in the item text. @todo
+    // f) Everyone mentioned in the item text.
+    $referenced_members = moonmars_text_referenced_members($item->text());
+    foreach ($referenced_members as $member) {
+      $subscribers[$member->uid()] = $member;
+    }
+
+    // g) Everyone following a hash tag that appears in the item text. @todo
 
     /////////////////////////////////////////////////////////////////////////////
     // Step 4. Copy/bump the item in all the channels of all relevant subscribers:
@@ -272,6 +275,9 @@ class Channel extends Node {
 
       // Send notifications to everyone who isn't the poster:
       if ($subscriber->uid() != $poster_uid) {
+
+        // @todo update notifications to include messages about mentions (referenced members)
+
         $current_channel_link = $this->entityLink();
         if (!$is_comment) {
           // New item posted or existing item edited:
@@ -297,7 +303,7 @@ class Channel extends Node {
    * @return Channel
    */
   public static function currentChannel($channel_nid = NULL) {
-    if (func_num_args() == 0) {
+    if ($channel_nid === NULL) {
       // Get the current channel:
       return Channel::create($_SESSION['current_channel_nid']);
     }

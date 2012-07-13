@@ -5,6 +5,13 @@
 class User extends EntityBase {
 
   /**
+   * The entity type.
+   *
+   * @var string
+   */
+  protected static $entityType = 'user';
+
+  /**
    * Constructor.
    */
   protected function __construct() {
@@ -15,31 +22,57 @@ class User extends EntityBase {
    * Create a new User object.
    *
    * @param string $class
-   * @param int $uid
+   * @param null|int|string|stdClass $user_param
    * @return User
    */
-  public static function create($class = 'User', $uid = NULL) {
-    if (is_null($uid)) {
+  public static function create($class = 'User', $user_param = NULL) {
+    if (is_null($user_param)) {
       // Create new user:
-      $user = new $class;
+      $user_obj = new $class;
       // Assume active:
-      $user->entity->status = 1;
-      return $user;
+      $user_obj->entity->status = 1;
+      return $user_obj;
     }
-    elseif (is_uint($uid)) {
-      // Only create the new user if not already in the cache:
-      if (self::inCache('user', $uid)) {
-        return self::getFromCache('user', $uid);
+    elseif (is_uint($user_param)) {
+      // uid provided. Only create the new user if not already in the cache:
+      $uid = $user_param;
+      if (self::inCache($uid)) {
+        return self::getFromCache($uid);
       }
       else {
         // Create new user:
-        $user = new $class;
+        $user_obj = new $class;
         // Set the uid:
-        $user->entity->uid = $uid;
+        $user_obj->entity->uid = $uid;
         // Put the new user in the cache:
-        $user->addToCache('user', $uid);
-        return $user;
+        $user_obj->addToCache();
+        return $user_obj;
       }
+    }
+    elseif (is_object($user_param)) {
+      // Drupal user object provided.
+      $user = $user_param;
+      // Get the User object:
+      if ($user->uid && self::inCache($user->uid)) {
+        $user_obj = self::getFromCache($user->uid);
+      }
+      else {
+        $user_obj = new $class;
+      }
+      $user_obj->entity = $user;
+      // Add to cache:
+      $user_obj->addToCache();
+      return $user_obj;
+    }
+    elseif (is_string($user_param)) {
+      // User name provided. Load the user:
+      $name = $user_param;
+      $user = user_load_by_name($name);
+      if (!$user) {
+        return FALSE;
+      }
+      // Create from user object:
+      return self::create($class, $user);
     }
     else {
       trigger_error("Invalid parameter to User::create()", E_USER_ERROR);
@@ -53,7 +86,7 @@ class User extends EntityBase {
    * @return int|User
    */
   public function uid($uid = NULL) {
-    if (func_num_args() == 0) {
+    if ($uid === NULL) {
       // Get the uid:
       return $this->entity->uid;
     }
@@ -61,7 +94,7 @@ class User extends EntityBase {
       // Set the uid:
       $this->entity->uid = $uid;
       // Add the user object to the cache if not already:
-      $this->addToCache('user', $uid);
+      $this->addToCache();
       return $this;
     }
   }
@@ -82,6 +115,38 @@ class User extends EntityBase {
    */
   public function user() {
     return $this->entity;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Caching methods.
+
+  /**
+   * Add a user to the cache.
+   *
+   * @return bool
+   */
+  public function addToCache() {
+    parent::addToCache(self::$entityType);
+  }
+
+  /**
+   * Check if a user is in the cache.
+   *
+   * @param int $entity_id
+   * @return bool
+   */
+  public static function inCache($entity_id) {
+    return parent::inCache(self::$entityType, $entity_id);
+  }
+
+  /**
+   * Get a user from the cache.
+   *
+   * @param int $entity_id
+   * @return Node
+   */
+  public static function getFromCache($entity_id) {
+    return parent::getFromCache(self::$entityType, $entity_id);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -185,7 +250,7 @@ class User extends EntityBase {
     $this->entity = user_save($this->entity);
 
     // If the user is new then we should add it to the cache:
-    $this->addToCache('user', $this->entity->nid);
+    $this->addToCache();
 
     return $this;
   }
@@ -207,8 +272,8 @@ class User extends EntityBase {
   /**
    * Get a link to the member's profile.
    */
-  public function link() {
-    return l($this->name(), $this->alias());
+  public function link($include_at = FALSE) {
+    return l(($include_at ? '@' : '') . $this->name(), $this->alias());
   }
 
 }

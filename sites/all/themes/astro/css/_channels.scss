@@ -34,6 +34,7 @@ $ratingButtonHeight = 20px;
 article.node-item {
   .post-content-wrapper {
     overflow: hidden;
+    min-height: 40px;
   }
 }
 
@@ -145,6 +146,7 @@ article.node-item {
 
   h2 {
     margin-bottom: 10px;
+    line-height: 20px;
   }
 
   input.form-text,

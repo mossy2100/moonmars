@@ -226,25 +226,8 @@ function moonmars_groups_members_block() {
   $members = $group->members(0, 12);
 
   // Generate HTML:
-
-  // Member count:
-  $html = "<div class='group-member-count'>\n";
-  $html .= format_plural($group->memberCount(), '1 member', '@count members');
-  $html .= "</div>";
-
-  // Avatars for most recently joined members:
-  $html .= "<ul class='group-members clearfix'>\n";
-  foreach ($members as $member) {
-    $html .= "<li class='group-member'>\n";
-    $html .= $member->avatarTooltip();
-    $html .= "</li>\n";
-  }
-  $html .= "</ul>\n";
-
-  // "View all" link:
-//  $html .= "<div class='group-members-view-all'>\n";
-//  $html .= l('View all', drupal_get_path_alias("node/$group_nid") . '/members');
-//  $html .= "</div>";
+  $html = moonmars_members_render_avatars($group->memberCount(), $members);
+  // l('View all', drupal_get_path_alias("node/$group_nid") . '/members')
 
   return $html;
 }

@@ -49,6 +49,9 @@ function astro_alpha_preprocess_node(&$vars) {
         $vars['comments'] = "<div id='comments' class='comment-wrapper'></div>";
       }
 
+      // Add links to member references and hash tags:
+      $vars['content']['field_item_text'][0]['#markup'] = moonmars_text_filter($vars['content']['field_item_text'][0]['#markup']);
+
       break;
 
     case 'group':
