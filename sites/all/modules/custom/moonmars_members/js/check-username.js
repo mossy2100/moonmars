@@ -28,12 +28,15 @@ $(function() {
     // Get the username:
     var username = $('#edit-name').val();
 
+    // Get the uid:
+    var uid = $('#uid').val();
+
     if (!username) {
       alert("Enter a username before checking.");
     }
     else {
       usernameWaiting();
-      $.get('/ajax/username-check', {username: username}, function(data, textStatus, jqXHR) {
+      $.get('/ajax/username-check', {username: username, uid: uid}, function(data, textStatus, jqXHR) {
         $('#username-message').text(data.reason);
         if (data.result) {
           usernameValid(data.message);
@@ -72,6 +75,14 @@ function usernameValid(message) {
   $('#username-message').removeClass('username-invalid').addClass('username-valid').text(message).show();
 }
 
+/**
+ * Check if a username is valid.
+ *
+ * @see moonmars_members_valid_username()
+ *
+ * @param $name
+ * @return bool
+ */
 function validUsername(username) {
-  return username.match(/^[a-z0-9\-\_]{2,30}$/i);
+  return username.match(/^[a-z0-9\-\_]{1,60}$/i);
 }

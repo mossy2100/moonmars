@@ -14,8 +14,8 @@ function astro_alpha_preprocess_node(&$vars) {
       $vars['item'] = $item;
 
       // Get the original poster:
-      $original_poster = Member::create($vars['uid']);
-      $vars['original_poster'] = $original_poster;
+      $poster = Member::create($vars['uid']);
+      $vars['poster'] = $poster;
 
       // Get the current channel:
       $current_channel = Channel::currentChannel();
@@ -27,12 +27,13 @@ function astro_alpha_preprocess_node(&$vars) {
       if (Channel::equals($current_channel, $original_channel)) {
         $vars['original_channel'] = 'in this channel';
       }
-      elseif (Channel::equals($original_channel, $original_poster->channel())) {
+      elseif (Channel::equals($original_channel, $poster->channel())) {
         $vars['original_channel'] = 'in their channel';
       }
       else {
         $vars['original_channel'] = 'in ' . l($original_channel->title(), $original_channel->parentEntity()->alias());
       }
+      $vars['original_channel'] = "<span class='original_channel'>{$vars['original_channel']}</span>";
 
       // Format the post datetime:
       $vars['created_datetime'] = astro_format_about_how_long_ago($vars['node']->created);

@@ -9,8 +9,10 @@
       <div class='post-content'>
 
         <div class='who_where_when_posted'>
-          <?php echo $poster->tooltipLink(); ?>
-          <?php echo $created_datetime; ?>
+          <?php
+          // Who and when the item was posted:
+          echo $poster->tooltipLink() . " $created_datetime";
+          ?>
         </div>
 
         <?php

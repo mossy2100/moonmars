@@ -40,6 +40,12 @@ article.node-item {
 
 .who_where_when_posted {
   color: $grey3;
+  font-size: 11px;
+  line-height: 16px;
+
+  a.username {
+    font-weight: bold;
+  }
 }
 
 .post-article-body {
@@ -53,12 +59,6 @@ article.node-item {
 
   .post-content-wrapper {
     margin-left: 45px;
-
-    .post-content {
-      a.username {
-        font-weight: bold;
-      }
-    }
   }
 
   .user-picture {
@@ -89,6 +89,7 @@ article.node-item {
         float: right;
         display: block;
         height: $ratingButtonHeight;
+        line-height: $ratingButtonHeight;
         color: $blue3;
         cursor: pointer;
 
@@ -191,14 +192,6 @@ article.node-item {
     border-color: $grey4;
     width: 100%;
   }
-
-  //.form-submit {
-  //	background-color: $red2;
-  //
-  //	&:hover {
-  //		background-color: $red3;
-  //	}
-  //}
 }
 
 article.new-comment-form-article {

@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * Constant to explain username constraints:
+ */
+define('USERNAME_DESCRIPTION', "Usernames may only contain letters, digits, hyphens and underscores (a-z, A-Z, 0-9, -_), and must be between 1 and 60 characters in length.");
+
+/**
  * Implements hook_init().
  */
 function moonmars_members_init() {
@@ -80,7 +85,7 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
       $form['#attached']['js'][] = "$module_path/js/check-username.js";
 
       // Update username field description re valid characters:
-      $form['account']['name']['#description'] = "May only contain letters (upper or lower case), digits, hyphens and underscores, and must be between 2 and 30 characters in length.";
+      $form['account']['name']['#description'] = USERNAME_DESCRIPTION;
 
       // Add rules fields:
       $weight = $form['field_moon_or_mars']['#weight'];
@@ -114,7 +119,8 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
         '#weight' => ++$weight,
       );
 
-      $form['#validate'][] = 'moonmars_members_user_register_form_validate';
+      // Add a validation handler. Need to put this first so that our username rules get checked before Drupal core's.
+      array_unshift($form['#validate'], 'moonmars_members_user_register_form_validate');
 
       break;
 
@@ -126,7 +132,7 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
       $form['#attached']['js'][] = "$module_path/js/check-username.js";
 
       // Update username field description re valid characters:
-      $form['account']['name']['#description'] = "May only contain letters (upper or lower case), digits, hyphens and underscores, and must be between 2 and 30 characters in length.";
+      $form['account']['name']['#description'] = USERNAME_DESCRIPTION;
 
       // Order the fields:
       $weight = 0;
@@ -155,8 +161,18 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
       // Remove the grippie from the bio textarea:
       $form['field_bio'][LANGUAGE_NONE][0]['value']['#resizable'] = FALSE;
 
+      // Hidden field to contain the uid:
+      $form['uid'] = array(
+        '#type' => 'hidden',
+        '#value' => $form['#user']->uid,
+        '#attributes' => array('id' => 'uid'),
+      );
+
       // Add an after_build handler:
       $form['#after_build'][] = 'moonmars_members_user_profile_form_after_build';
+
+      // Add a validation handler. Need to put this first so that our username rules get checked before Drupal core's.
+      array_unshift($form['#validate'], 'moonmars_members_user_profile_form_validate');
 
       // Add a submit handler:
       $form['#submit'][] = 'moonmars_members_user_profile_form_submit';
@@ -175,11 +191,23 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
 /**
  * Check if a username is valid.
  *
+ * This means:
+ *   - Between 1 and 60 (USERNAME_MAX_LENGTH) characters.
+ *   - Letters, digits, hyphens and underscores only.
+ *
+ * This set of rules permits:
+ *   - Drupal will allow it. @see user.module/user_validate_name()
+ *   - Apache will allow it. If a username starts with a period then Apache will show a Forbidden message if their
+ *       profile path is requested.
+ *   - Uses only unreserved characters.
+ *       @see http://www.456bereastreet.com/archive/201006/be_careful_with_non-ascii_characters_in_urls/
+ *   - Member profile alias will match the username exactly, i.e. /member/$username
+ *
  * @param $name
  * @return bool
  */
 function moonmars_members_valid_username($name) {
-  return (bool) preg_match("/^[a-z0-9\-\_]{2,30}$/i", $name);
+  return (bool) preg_match("/^[a-z0-9\-\_]{1," . USERNAME_MAX_LENGTH . "}$/i", $name);
 }
 
 /**
@@ -187,7 +215,7 @@ function moonmars_members_valid_username($name) {
  */
 function moonmars_members_user_register_form_validate($form, &$form_state) {
   if (!moonmars_members_valid_username($form_state['values']['name'])) {
-    form_set_error('name', "Usernames may only contain letters (upper or lower case), digits, hyphens and underscores, and must be between 2 and 30 characters in length.");
+    form_set_error('name', USERNAME_DESCRIPTION);
   }
 }
 
@@ -219,16 +247,16 @@ function moonmars_members_user_profile_form_after_build($form) {
 /**
  * Validation handler for the user account/profile form.
  */
-function moonmars_members_user_profile_form_validate($form, $form_state) {
+function moonmars_members_user_profile_form_validate($form, &$form_state) {
   if (!moonmars_members_valid_username($form_state['values']['name'])) {
-    form_set_error('name', "Usernames may only contain letters (upper or lower case), digits, hyphens and underscores, and must be between 2 and 30 characters in length.");
+    form_set_error('name', USERNAME_DESCRIPTION);
   }
 }
 
 /**
  * Submit handler for the user account/profile form.
  */
-function moonmars_members_user_profile_form_submit($form, $form_state) {
+function moonmars_members_user_profile_form_submit($form, &$form_state) {
   // Go back to the user's profile:
   drupal_goto('user/' . arg(1));
 }
@@ -246,7 +274,7 @@ function moonmars_members_follow($member2_uid) {
 
     $member1 = Member::create($user);
     $member2 = Member::create($member2_uid);
-    
+
     if ($member1->follows($member2)) {
       drupal_set_message(t("You are already following %user2_name.", array('%user2_name' => $member2->name())));
     }
@@ -559,8 +587,9 @@ function moonmars_members_followees_block() {
  */
 function moonmars_members_ajax_username_check() {
   $username = isset($_REQUEST['username']) ? $_REQUEST['username'] : NULL;
+  $uid = isset($_REQUEST['uid']) ? $_REQUEST['uid'] : NULL;
 
-  // Check for valid letters and length:
+  // Check forvalid characters and and length:
   if (!moonmars_members_valid_username($username)) {
     $data = array(
       'result' => FALSE,
@@ -576,11 +605,11 @@ function moonmars_members_ajax_username_check() {
     ->condition('name', $username);
 
   // If the user is logged in then look for a different user with this username:
-  if (user_is_logged_in()) {
-    global $user;
-    $q->condition('uid', $user->uid, '!=');
+  if ($uid) {
+    $q->condition('uid', $uid, '!=');
   }
 
+  // Check if a match was found:
   if ($q->execute()->rowCount()) {
     $data = array(
       'result' => FALSE,
@@ -599,10 +628,16 @@ function moonmars_members_ajax_username_check() {
   return;
 }
 
+/**
+ * Implements hook_user_insert().
+ */
 function moonmars_members_user_insert(&$edit, $account, $category) {
   Member::create($account->uid)->resetAlias();
 }
 
+/**
+ * Implements hook_user_update().
+ */
 function moonmars_members_user_update(&$edit, $account, $category) {
   Member::create($account->uid)->resetAlias();
 }

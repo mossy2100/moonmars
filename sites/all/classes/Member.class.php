@@ -413,7 +413,7 @@ class Member extends User {
     if ($rec) {
       // Update:
       db_update('url_alias')
-        ->fields(array('alias' => "member/$this->entity->name"))
+        ->fields(array('alias' => $alias))
         ->condition('source', $source)
         ->execute();
     }
@@ -421,10 +421,10 @@ class Member extends User {
       // Insert:
       db_insert('url_alias')
         ->fields(array(
-                      'source'   => $source,
-                      'alias'    => $alias,
-                      'language' => LANGUAGE_NONE,
-                 ))
+          'source'   => $source,
+          'alias'    => $alias,
+          'language' => LANGUAGE_NONE,
+        ))
         ->execute();
     }
   }

@@ -32,12 +32,17 @@ require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'node') . '/node.page
 
           <div class='post-content-wrapper' <?php print $content_attributes; ?>>
             <div class='post-content'>
-              <?php
-              // Current member's username:
-              echo $current_member->tooltipLink();
-              // New item form:
-              echo render(node_add('item'));
-              ?>
+
+              <div class='who_where_when_posted'>
+                <?php
+                // Current member's username with link and tooltip:
+                echo $current_member->tooltipLink();
+
+                // New item form:
+                echo render(node_add('item'));
+                ?>
+              </div>
+
             </div>
           </div>
 

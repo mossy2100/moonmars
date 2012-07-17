@@ -2,16 +2,17 @@
 
   <div class='post-article-body'>
     <div class='user-picture'>
-      <?php print $original_poster->avatarTooltip(); ?>
+      <?php print $poster->avatarTooltip(); ?>
     </div>
 
     <div class='post-content-wrapper' <?php print $content_attributes; ?>>
       <div class='post-content'>
 
         <div class='who_where_when_posted'>
-          <?php echo $name; ?>
-          <span class='original_channel'><?php echo $original_channel; ?></span>
-          <?php echo $created_datetime; ?>
+          <?php
+          // Who, where and when the item was posted:
+          echo $poster->tooltipLink() . " $original_channel $created_datetime";
+          ?>
         </div>
 
         <?php
@@ -82,7 +83,7 @@
             <div class='post-content-wrapper'>
               <div class='post-content'>
 
-                <div class='post-header'>
+                <div class='who_where_when_posted'>
                   <?php echo $current_member->tooltipLink(); ?>
                 </div>
 
@@ -99,7 +100,6 @@
         </article>
         <?php
       }
-
     }
     else {
       ?>
