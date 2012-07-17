@@ -3,27 +3,29 @@
 function moonmars_items_menu() {
   $items['ajax/item/edit'] = array(
     'page callback'    => 'moonmars_items_ajax_edit',
-    'access callback'  => 'moonmars_items_can_edit',
+    'access callback'  => 'user_is_logged_in',
     'type'             => MENU_CALLBACK,
   );
-
-  // @todo For deleting items we need to use the same permissions as for edit - this is different from the usual
-  // delete item permissions, which is only available to users with the 'administer items' permission.
   $items['ajax/item/delete'] = array(
     'page callback'    => 'moonmars_items_ajax_delete',
-    'access arguments' => 'moonmars_items_can_delete',
+    'access callback'  => 'user_is_logged_in',
+    'type'             => MENU_CALLBACK,
+  );
+  $items['ajax/item/remove'] = array(
+    'page callback'    => 'moonmars_items_ajax_remove',
+    'access callback'  => 'user_is_logged_in',
     'type'             => MENU_CALLBACK,
   );
 
-  $items['ajax/item/rate'] = array(
-    'page callback'    => 'moonmars_items_ajax_rate',
-    'access callback'  => 'node_access',
-    'access arguments' => array(
-      'update',
-      1
-    ),
-    'type'             => MENU_CALLBACK,
-  );
+//  $items['ajax/item/rate'] = array(
+//    'page callback'    => 'moonmars_items_ajax_rate',
+//    'access callback'  => 'node_access',
+//    'access arguments' => array(
+//      'update',
+//      1
+//    ),
+//    'type'             => MENU_CALLBACK,
+//  );
 
   return $items;
 }
@@ -192,140 +194,52 @@ function moonmars_items_node_insert($node) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Access callbacks.
-
-/**
- * Check if the current user can post items in the current channel.
- *
- * @return bool
- */
-function moonmars_items_can_post() {
-  // Check basic permissions:
-  if (!user_access('create item content')) {
-    return FALSE;
-  }
-
-  global $user;
-  $channel = Channel::currentChannel();
-  $entity = $channel->parentEntityInfo();
-
-  // Only the member can post in their own channel.
-  if ($entity['entity_type'] == 'user') {
-    return $entity['entity_id'] == $user->uid;
-  }
-  else {
-    // $entity['entity_type'] == 'node'
-    $node = node_load($entity['entity_id']);
-    if ($node->type == 'group') {
-      // Only members of the group can post in the group channel:
-      return Group::create($node)->hasMember(Member::create($user));
-    }
-  }
-
-  return FALSE;
-}
-
-/**
- * Check if the current user can edit or delete an item.
- *
- * @return bool
- */
-function moonmars_items_can_edit_delete() {
-  // We need a valid item id:
-  $item_nid = (int) $_REQUEST['item_nid'];
-  if (!$item_nid) {
-    return FALSE;
-  }
-  $item = node_load($item_nid);
-  if (!$item) {
-    return FALSE;
-  }
-
-  global $user;
-
-  // If this item doesn't belong to the user, they can't edit or delete it:
-  if ($item->uid != $user->uid) {
-    return FALSE;
-  }
-
-  // Ok so it's their item, but they can only edit or delete it if there haven't been any comments yet.
-  $item = Item::create($item);
-  if (!$item->commentCount()) {
-    return TRUE;
-  }
-
-  return FALSE;
-}
-
-/**
- * Check if the current user can edit a item.
- *
- * @return bool
- */
-function moonmars_items_can_edit() {
-  // Check basic permissions:
-  if (user_access('administer content') || user_access('edit any item content')) {
-    return TRUE;
-  }
-  if (!user_access('edit own item content')) {
-    return FALSE;
-  }
-
-  return moonmars_items_can_edit_delete();
-}
-
-/**
- * Check if the current user can delete a item.
- *
- * @return bool
- */
-function moonmars_items_can_delete() {
-  // Check basic permissions:
-  if (user_access('administer content') || user_access('delete any item content')) {
-    return TRUE;
-  }
-  if (!user_access('delete own item content')) {
-    return FALSE;
-  }
-
-  // Other than that, same rules as for editing:
-  return moonmars_items_can_edit_delete();
-}
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // AJAX callbacks
 
 /**
  * Edit an item's text via AJAX.
+ * @todo This is not currently used, need to build UI.
  *
  * @return string
  */
 function moonmars_items_ajax_edit() {
-  // Get the request parameters. Use $_REQUEST so we can use POST from the form but test using the query string.
+  // Get the request parameters.
+  // We use $_REQUEST so we can use POST from the form, but test using the query string (GET).
   $item_nid = (int) $_REQUEST['item_nid'];
   $text = trim($_REQUEST['text']);
-  global $user;
 
-  // Create the data array:
+  // Get the current member:
+  $current_member = Member::currentMember();
+
+  // Begin the data array:
   $data = array(
     'item_nid' => $item_nid,
     'text'     => $text,
   );
 
   // Check we have all the necessary params:
-  if (!$item_nid || !$text || !$user || !$user->uid) {
-    // Update the data array:
+  if (!$item_nid || !$text || !$current_member) {
+    // Encode result and send:
     $data['result'] = FALSE;
-
-    // Encode and send:
+    $data['error'] = 'Invalid parameters';
     echo json_encode($data);
     return;
   }
 
-  // Load the item:
+  // Get the item:
   $item = Item::create($item_nid);
-  $item->load();
+
+  // Check this member has permission to edit this item:
+  if (!$current_member->canEditItem($item)) {
+    // Complete data array, encode and send:
+    $data['result'] = FALSE;
+    $data['error'] = 'Access denied';
+    echo json_encode($data);
+    return;
+  }
+
+  //////////////////////////////
+  // All good - update the item.
 
   // Update the item text:
   $item->field('field_item_text', LANGUAGE_NONE, 0, 'value', $text);
@@ -337,14 +251,117 @@ function moonmars_items_ajax_edit() {
   Channel::currentChannel()->postItem($item, FALSE, FALSE);
 
   // Theme the item:
-  $html = render_node($item->node());
+  $html = $item->render();
 
-  // Update the data array:
+  // Complete data array, encode and send:
   $data['result'] = FALSE;
   $data['html'] = $html;
-
-  // Encode and send:
   echo json_encode($data);
+}
+
+/**
+ * Delete an item via AJAX.
+ *
+ * @return string
+ */
+function moonmars_items_ajax_delete() {
+  // Get the request parameters.
+  $item_nid = (int) $_REQUEST['item_nid'];
+
+  // Get the current member:
+  $current_member = Member::currentMember();
+
+  // Begin the data array:
+  $data = array(
+    'item_nid' => $item_nid,
+  );
+
+  // Check we have all the necessary params:
+  if (!$item_nid || !$current_member) {
+    // Complete data array, encode and send:
+    $data['result'] = FALSE;
+    $data['error'] = 'Invalid parameters';
+    echo json_encode($data);
+    return;
+  }
+
+  // Get the item:
+  $item = Item::create($item_nid);
+
+  // Check this member has permission to delete this item:
+  if (!$current_member->canDeleteItem($item)) {
+    // Complete data array, encode and send:
+    $data['result'] = FALSE;
+    $data['error'] = 'Access denied';
+    echo json_encode($data);
+    return;
+  }
+
+  //////////////////////////////
+  // All good - delete the item.
+
+  // Don't actually delete the item, just unpublish it.
+  $item->unpublish();
+  $item->save();
+
+  // Remove the item from all channels:
+  moonmars_relationships_delete_relationships('has_item', 'node', NULL, 'node', $item_nid);
+
+  // Complete data array, encode and send:
+  $data['result'] = TRUE;
+  echo json_encode($data);
+  return;
+}
+
+/**
+ * AJAX callback for removing items from your channel.
+ */
+function moonmars_items_ajax_remove() {
+  // Get the request parameters.
+  $item_nid = (int) $_REQUEST['item_nid'];
+
+  // Get the current member:
+  $current_member = Member::currentMember();
+
+  // Get the current channel:
+  $current_channel = Channel::currentChannel();
+
+  // Begin the data array:
+  $data = array(
+    'item_nid' => $item_nid,
+  );
+
+  // Check we have all the necessary params:
+  if (!$item_nid || !$current_member) {
+    // Complete data array, encode and send:
+    $data['result'] = FALSE;
+    $data['error'] = 'Invalid parameters';
+    echo json_encode($data);
+    return;
+  }
+
+  // Get the item:
+  $item = Item::create($item_nid);
+
+  // Check this member has permission to remove this item:
+  if (!$current_member->canRemoveItem($item, $current_channel)) {
+    // Complete data array, encode and send:
+    $data['result'] = FALSE;
+    $data['error'] = 'Access denied';
+    echo json_encode($data);
+    return;
+  }
+
+  //////////////////////////////
+  // All good - remove the item.
+
+  // Remove the item from the current channel:
+  moonmars_relationships_delete_relationships('has_item', 'node', $current_channel->nid(), 'node', $item_nid);
+
+  // Complete data array, encode and send:
+  $data['result'] = TRUE;
+  echo json_encode($data);
+  return;
 }
 
 /**
@@ -372,7 +389,6 @@ function moonmars_items_ajax_rate() {
 
   // Load the item:
   $item = Item::create($item_nid);
-  $item->load();
 
   // Get the current score for the item:
   $score = (int) $item->field('field_score');
@@ -395,7 +411,7 @@ function moonmars_items_ajax_rate() {
   moonmars_relationships_create_relationship('rated', 'user', $user->uid, 'node', $item_nid, TRUE);
 
   // Add the points for the new rating:
-  $member = Member::create($user->uid);
+  $member = Member::currentMember();
   $new_rating_score = $rating_scores[$rating] * $member->levelNum();
   $score += $new_rating_score;
 
@@ -403,14 +419,13 @@ function moonmars_items_ajax_rate() {
   $item->field('field_score', LANGUAGE_NONE, 0, 'value', $score);
   $item->save();
 
-  // Create the data array:
+  // Complete data array, encode and send:
   $data = array(
     'result'    => TRUE,
     'item_nid'  => $item_nid,
     'rating'    => $rating,
     'score'     => $score,
   );
-  // Encode and send:
   echo json_encode($data);
   return;
 }

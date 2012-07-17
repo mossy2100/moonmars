@@ -779,12 +779,13 @@ function object_to_string($object, $indent = 0, $objects = array()) {
     $properties = $object->toArray();
   }
   else {
-    $properties = get_object_vars($object);
+//    $properties = get_object_vars($object);
+    $properties = object_to_array($object);
   }
   
   // Loop through properties:
   foreach ($properties as $key => $value) {
-    $lines[] = "$spaces  $key : " . var_to_string($value, $indent + 2, $objects) . ",";
+    $lines[] = "$spaces  $key: " . var_to_string($value, $indent + 2, $objects) . ",";
   }
   
   $lines[] = "$spaces}";

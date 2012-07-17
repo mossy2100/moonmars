@@ -5,21 +5,21 @@
 class Group extends Node {
 
   /**
+   * The group's channel.
+   *
+   * @var string
+   */
+  protected $channel;
+
+  /**
    * Constructor.
    */
   protected function __construct() {
     return parent::__construct();
   }
 
-  /**
-   * Create a new Group object.
-   *
-   * @param int $nid
-   * @return Group
-   */
-  public static function create($nid = NULL) {
-    return parent::create(__CLASS__, $nid);
-  }
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Get and set methods.
 
   /**
    * Get the group's channel.
@@ -28,11 +28,14 @@ class Group extends Node {
    * @return int
    */
   public function channel($create = TRUE) {
-    return Channel::entityChannel('node', $this->nid(), $create);
+    if (!isset($this->channel)) {
+      $this->channel = Channel::entityChannel('node', $this->nid(), $create);
+    }
+    return $this->channel;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Membership-related stuff.
+  // Membership-related methods.
 
   /**
    * Get the members of the group.

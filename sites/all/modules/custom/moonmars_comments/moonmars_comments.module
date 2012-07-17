@@ -6,20 +6,17 @@
 function moonmars_comments_menu() {
   $items['ajax/comment/post'] = array(
     'page callback'    => 'moonmars_comments_ajax_post',
-    'access callback'  => 'moonmars_comments_can_post',
+    'access callback'  => 'user_is_logged_in',
     'type'             => MENU_CALLBACK,
   );
   $items['ajax/comment/edit'] = array(
     'page callback'    => 'moonmars_comments_ajax_edit',
-    'access callback'  => 'moonmars_comments_can_edit',
+    'access callback'  => 'user_is_logged_in',
     'type'             => MENU_CALLBACK,
   );
-
-  // @todo For deleting comments we need to use the same permissions as for edit - this is different from the usual
-  // delete comment permissions, which is only available to users with the 'administer comments' permission.
   $items['ajax/comment/delete'] = array(
     'page callback'    => 'moonmars_comments_ajax_delete',
-    'access callback'  => 'moonmars_comments_can_delete',
+    'access callback'  => 'user_is_logged_in',
     'type'             => MENU_CALLBACK,
   );
   return $items;
@@ -40,110 +37,74 @@ function moonmars_comments_form_alter(&$form, &$form_state, $form_id) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Access callbacks.
-
-/**
- * Check if the current user can post comments in the current channel.
- *
- * @return bool
- */
-function moonmars_comments_can_post() {
-  // User can only post comments in a channel if they can also post items:
-  return moonmars_items_can_post();
-}
-
-/**
- * Check if the current user can edit a comment.
- *
- * @return bool
- */
-function moonmars_comments_can_edit() {
-  // Users with 'administer comments' (admins) can do whatever they want with comments.
-  if (user_access('administer comments')) {
-    return TRUE;
-  }
-
-  // We need a valid comment id:
-  $cid = (int) $_REQUEST['cid'];
-  if (!$cid) {
-    return FALSE;
-  }
-  $comment = comment_load($cid);
-  if (!$comment) {
-    return FALSE;
-  }
-
-  // Users can edit their own comments:
-  global $user;
-  return $comment->uid == $user->uid;
-}
-
-/**
- * Check if the current user can delete a comment.
- *
- * @return bool
- */
-function moonmars_comments_can_delete() {
-  // Same rules as for editing:
-  return moonmars_comments_can_edit();
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // AJAX comment actions/callbacks.
 
 /**
  * Create new comment via AJAX.
  */
-function moonmars_comments_ajax_create() {
+function moonmars_comments_ajax_post() {
   // Get the request parameters.
   // We use $_REQUEST here in order to support either GET or POST.
   // Then we can use POST from the form but test using the query string.
   $item_nid = (int) $_REQUEST['item_nid'];
   $text = trim($_REQUEST['text']);
-  global $user;
 
-  // Create the data array:
+  // Get the logged-in member:
+  $current_member = Member::currentMember();
+
+  // Begin the data array:
   $data = array(
     'item_nid' => $item_nid,
     'text'     => $text,
   );
 
   // Check we have all the necessary params:
-  if (!$item_nid || !$text || !$user || !$user->uid) {
-    // Encode result and send:
+  if (!$item_nid || !$text || !$current_member) {
+    // Complete data array, encode and send:
     $data['result'] = FALSE;
     $data['error'] = 'Invalid parameters';
     echo json_encode($data);
     return;
   }
 
+  // Get the item:
+  $item = Item::create($item_nid);
+
+  // Check this member has permission to edit this comment:
+  if (!$current_member->canPostComment($item)) {
+    // Complete data array, encode and send:
+    $data['result'] = FALSE;
+    $data['error'] = 'Access denied';
+    echo json_encode($data);
+    return;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // All good - create the comment.
+
   // Create a new comment:
   $comment = entity_create('comment', array('type' => 'comment'));
   $comment->pid = 0;
-  $comment->uid = $user->uid;
-  $comment->name = $user->name;
-  $comment->mail = $user->mail;
+  $comment->uid = $current_member->uid();
+  $comment->name = $current_member->name();
+  $comment->mail = $current_member->mail();
   $comment->is_anonymous = FALSE;
   $comment->nid = $item_nid;
   $comment->status = 1;
-  $comment->comment_body[LANGUAGE_NONE][0]['value'] = $text;
+  $comment->comment_body[LANGUAGE_NONE][0]['value'] = strip_tags($text);
 
   // Save the comment:
   comment_submit($comment);
   comment_save($comment);
 
-  // Build the comment content:
-  $item = Item::create($item_nid);
-  $item->load();
-  comment_build_content($comment, $item->node());
+  // Render the comment:
+  $item_comment = ItemComment::create($comment);
+  $html = $item_comment->render();
 
   // Post/bump the item in all relevant channels:
   Channel::currentChannel()->postItem($item, TRUE, TRUE);
 
-  // Theme the comment:
-  $html = render_comment($comment);
-
-  // Encode and send result:
+  // Complete data array, encode and send:
   $data['result'] = TRUE;
   $data['cid'] = $comment->cid;
   $data['html'] = $html;
@@ -160,9 +121,11 @@ function moonmars_comments_ajax_edit() {
   $cid = (int) $_REQUEST['cid'];
   $item_nid = (int) $_REQUEST['item_nid'];
   $text = trim($_REQUEST['text']);
-  global $user;
 
-  // Create the data array:
+  // Get the logged-in member:
+  $current_member = Member::currentMember();
+
+  // Begin the data array:
   $data = array(
     'cid'      => $cid,
     'item_nid' => $item_nid,
@@ -170,47 +133,45 @@ function moonmars_comments_ajax_edit() {
   );
 
   // Check we have all the necessary params:
-  if (!$cid || !$item_nid || !$text || !$user || !$user->uid) {
-    // Encode result and send:
+  if (!$cid || !$item_nid || !$text || !$current_member) {
+    // Complete data array, encode and send:
     $data['result'] = FALSE;
     $data['error'] = 'Invalid parameters';
     echo json_encode($data);
     return;
   }
 
-  // Load the comment:
-  $comment = comment_load($cid);
+  // Get the comment:
+  $item_comment = ItemComment::create($cid);
 
-  // Check this user has permission to edit the comment:
-  if ($comment != $user->uid) {
-    // Encode result and send:
+  // Check this member has permission to edit this comment:
+  if (!$current_member->canEditComment($item_comment)) {
+    // Complete data array, encode and send:
     $data['result'] = FALSE;
     $data['error'] = 'Access denied';
     echo json_encode($data);
     return;
   }
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // All good - update the comment.
+
   // Update the comment text:
-  $comment->comment_body[LANGUAGE_NONE][0]['value'] = $text;
+  $text = strip_tags($text);
+  $item_comment->field('comment_body', LANGUAGE_NONE, 0, 'value', $text);
+  $filtered_text = moonmars_text_filter($text);
 
   // Save the comment:
-  comment_submit($comment);
-  comment_save($comment);
+  // @todo maybe make these functions part of the Comment class.
+  comment_submit($item_comment->comment());
+  comment_save($item_comment->comment());
 
-  // Build the comment content:
-  $item = Item::create($item_nid);
-  $item->load();
-  comment_build_content($comment, $item->node());
+  // Post/update the comment's item:
+  Channel::currentChannel()->postItem($item_comment->item(), FALSE, TRUE);
 
-  // Post/update the item:
-  Channel::currentChannel()->postItem($item, FALSE, TRUE);
-
-  // Theme the comment:
-  $html = render_comment($comment);
-
-  // Encode and send result:
+  // Complete data array, encode and send:
   $data['result'] = TRUE;
-  $data['html'] = $html;
+  $data['filtered_text'] = $filtered_text;
   echo json_encode($data);
 }
 
@@ -221,21 +182,43 @@ function moonmars_comments_ajax_delete() {
   // Get the request parameters. Support either GET or POST here, so we can use POST from the form but test using the query string.
   $cid = (int) $_REQUEST['cid'];
 
+  // Get the logged-in member:
+  $current_member = Member::currentMember();
+
   // Create the data array:
   $data = array(
-    'cid'      => $cid,
+    'cid' => $cid,
   );
 
   // Check we have all the necessary params:
-  if (!$cid) {
+  if (!$cid || !$current_member) {
+    // Complete data array, encode and send:
     $data['result'] = FALSE;
-  }
-  else {
-    // Delete the comment:
-    comment_delete($cid);
-    $data['result'] = TRUE;
+    $data['error'] = 'Invalid parameters';
+    echo json_encode($data);
+    return;
   }
 
-  // Encode and send:
+  // Get the comment:
+  $item_comment = ItemComment::create($cid);
+
+  // Check this member has permission to delete this comment:
+  if (!$current_member->canDeleteComment($item_comment)) {
+    // Complete data array, encode and send:
+    $data['result'] = FALSE;
+    $data['error'] = 'Access denied';
+    echo json_encode($data);
+    return;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // All good - delete the comment.
+
+  // Delete the comment:
+  $item_comment->delete();
+
+  // Complete data array, encode and send:
+  $data['result'] = TRUE;
   echo json_encode($data);
+  return;
 }

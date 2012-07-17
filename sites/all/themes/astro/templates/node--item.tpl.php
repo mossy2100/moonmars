@@ -2,7 +2,7 @@
 
   <div class='post-article-body'>
     <div class='user-picture'>
-      <?php print $picture; ?>
+      <?php print $original_poster->avatarTooltip(); ?>
     </div>
 
     <div class='post-content-wrapper' <?php print $content_attributes; ?>>
@@ -10,7 +10,7 @@
 
         <div class='who_where_when_posted'>
           <?php echo $name; ?>
-          <span class='channel_posted'><?php echo $channel_posted; ?></span>
+          <span class='original_channel'><?php echo $original_channel; ?></span>
           <?php echo $created_datetime; ?>
         </div>
 
@@ -23,6 +23,9 @@
       </div>
     </div>
 
+    <?php
+    /*
+
     <div class='score-more-wrapper'>
       <div class='more-link-wrapper'>
         <a href='javascript:void(0)' class='more-link'>Read more <span class='expand-icon'>&#x25BC;</span></a>
@@ -31,12 +34,13 @@
         Score: <span class='post-score'><?php echo $score; ?></span>
       </div>
     </div> <!-- /score-more-wrapper -->
-
-    <?php
-    /*
-
+    */
+    ?>
 
     <div class='post-controls'>
+      <?php
+      /*
+
       <?php if (user_is_logged_in()) { ?>
         <div class='rating-buttons'>
           <input type='button' class='rating-button rating-button-warning' data-rating='warning' title='Warning (-2 points)'>
@@ -51,46 +55,51 @@
         Score: <span class='post-score'><?php echo $score; ?></span>
       </div>
 
-<!--      --><?php //if (!empty($content['links'])): ?>
-<!--        <nav class="links post-links clearfix">--><?php //print render($content['links']); ?><!--</nav>-->
-<!--      --><?php //endif; ?>
+      */
+      ?>
+
+      <?php
+      // Links for edit/delete/remove item:
+      echo $links;
+      ?>
 
     </div> <!-- /post-controls -->
-    */
-    ?>
-
 
     <?php print $comments; ?>
 
     <!-- new comment form -->
     <?php
-    if (user_is_logged_in()) {
-      ?>
-      <article class="new-comment-form-article comment comment-new comment-by-viewer clearfix" data-nid="<?php echo $node->nid; ?>">
+    if ($current_member) {
 
-        <div class='post-article-body'>
-          <div class='user-picture'>
-            <?php echo $new_comment_picture; ?>
-          </div>
-          <div class='post-content-wrapper'>
-            <div class='post-content'>
+      if ($current_member->canPostComment($item)) {
+        ?>
+        <article class="new-comment-form-article comment comment-new comment-by-viewer clearfix" data-nid="<?php echo $node->nid; ?>">
 
-              <div class='post-header'>
-                <?php echo $new_comment_username; ?>
-              </div>
+          <div class='post-article-body'>
+            <div class='user-picture'>
+              <?php echo $current_member->avatarTooltip(); ?>
+            </div>
+            <div class='post-content-wrapper'>
+              <div class='post-content'>
 
-              <form class='comment-form new-comment-form clearfix'>
-                <textarea class='new-comment-textarea'></textarea>
-                <div class='new-comment-controls'>
-                  <input data-nid='<?php echo $node->nid; ?>' class='new-comment-button' type='button' value='Post'>
+                <div class='post-header'>
+                  <?php echo $current_member->tooltipLink(); ?>
                 </div>
-                <div class='comment-description'>Write something to share.</div>
-              </form>
+
+                <form class='comment-form new-comment-form clearfix'>
+                  <textarea class='new-comment-textarea'></textarea>
+                  <div class='comment-buttons'>
+                    <input data-nid='<?php echo $node->nid; ?>' class='form-button new-comment-button' type='button' value='Post'>
+                  </div>
+                  <div class='comment-description'>Write something to share.</div>
+                </form>
+              </div>
             </div>
           </div>
-        </div>
-      </article>
-      <?php
+        </article>
+        <?php
+      }
+
     }
     else {
       ?>

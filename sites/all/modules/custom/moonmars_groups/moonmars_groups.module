@@ -8,7 +8,7 @@ function moonmars_groups_menu() {
   $items['node/%/join'] = array(
     'page callback'    => 'moonmars_groups_join',
     'page arguments'   => array(1),
-    'access callback'  => TRUE, // 'moonmars_groups_can_join',
+    'access callback'  => TRUE,
     'type'             => MENU_CALLBACK,
   );
   $items['node/%/leave'] = array(
@@ -47,7 +47,7 @@ function moonmars_groups_get_current_group() {
 }
 
 /**
- * Add a user to a group.
+ * Add a member to a group.
  *
  * @param int $group_nid
  */
@@ -55,7 +55,7 @@ function moonmars_groups_join($group_nid) {
   // Get the group:
   $group = Group::create($group_nid);
 
-  // Check the type:
+  // Check the type, in case the nid is dodgy:
   if ($group->type() != 'group') {
     drupal_set_message('Group not found.');
     return;
@@ -64,26 +64,32 @@ function moonmars_groups_join($group_nid) {
   // Get the alias:
   $group_alias = $group->alias();
 
+  // Get the current member:
+  $current_member = Member::currentMember();
+
   // Check the user is logged in:
-  global $user;
-  if (!$user || !$user->uid) {
-    drupal_set_message("You need to <a href='/login'>login</a> or <a href='/register'>register</a> before joining a group.");
+  if (!$current_member) {
+    drupal_set_message("Please <a href='/login'>login</a> or <a href='/register'>register</a> before joining a group.");
     drupal_goto('/login', array('query' => array('destination' => "$group_alias/join")));
     return;
   }
 
-  // Get the member:
-  $member = Member::create($user->uid);
+  // Check if the user can join this group:
+  if (!$current_member->canJoinGroup($group)) {
+    drupal_set_message("Sorry, you don't have permission to join this group.");
+    drupal_goto($group_alias);
+    return;
+  }
 
-  // Get the relationship:
-  if ($group->hasMember($member)) {
-    drupal_set_message("You are already a member of this group.");
+  // Check if they're already a member:
+  if ($group->hasMember($current_member)) {
+    drupal_set_message("You're already a member of this group.");
     drupal_goto($group_alias);
     return;
   }
 
   // Add the member to the group:
-  $group->addMember($member);
+  $group->addMember($current_member);
 
   // Reload the group page:
   drupal_set_message("You have been added to the group " . $group->title() . ".");
@@ -108,32 +114,30 @@ function moonmars_groups_leave($group_nid) {
   // Get the alias:
   $group_alias = $group->alias();
 
+  // Get the current member:
+  $current_member = Member::currentMember();
+
   // Check the user is logged in:
-  global $user;
-  if (!$user || !$user->uid) {
+  if (!$current_member) {
     drupal_set_message("You need to <a href='/user'>login</a> before leaving a group.");
     drupal_goto('/user', array('query' => array('destination' => "$group_alias/join")));
     return;
   }
 
-  // Get the member:
-  $member = Member::create($user->uid);
-
-  // Get the relationship:
-  if (!$group->hasMember($member)) {
+  // Check if they're actually a member:
+  if (!$group->hasMember($current_member)) {
     drupal_set_message("You are not a member of this group.");
     drupal_goto($group_alias);
     return;
   }
 
   // Remove the user from the group.
-  $group->removeMember($member);
+  $group->removeMember($current_member);
 
   // Reload the group page:
   drupal_set_message("You have been removed from the group " . $group->title() . ".");
   drupal_goto($group_alias);
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Blocks
@@ -191,7 +195,7 @@ function moonmars_groups_menu_block() {
   $group = Group::create($group_nid);
 
   // Get the current member:
-  $member = Member::create($user->uid);
+  $member = Member::create($user);
 
   // Show different options if the member is in the group or not:
   $html = "<ul id='group-menu' class='menu'>";

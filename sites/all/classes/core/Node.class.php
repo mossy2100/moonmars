@@ -9,7 +9,21 @@ class Node extends EntityBase {
    *
    * @var string
    */
-  protected static $entityType = 'node';
+  const entityType = 'node';
+
+  /**
+   * The table name.
+   *
+   * @var string
+   */
+  const table = 'node';
+
+  /**
+   * The primary key
+   *
+   * @var string
+   */
+  const primaryKey = 'nid';
 
   /**
    * Constructor.
@@ -18,14 +32,19 @@ class Node extends EntityBase {
     return parent::__construct();
   }
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Create and delete.
+
   /**
    * Create a new Node object.
    *
-   * @param string $class
    * @param null|int|stdClass $node_param
    * @return Node
    */
-  public static function create($class = 'Node', $node_param = NULL) {
+  public static function create($node_param = NULL) {
+    // Get the class of the object we want to create:
+    $class = get_called_class();
+
     if (is_null($node_param)) {
       // Create new node:
       $node_obj = new $class;
@@ -71,136 +90,14 @@ class Node extends EntityBase {
   }
 
   /**
-   * Get/set the nid.
-   *
-   * @param int $nid
-   * @return int|Node
+   * Delete a node.
    */
-  public function nid($nid = NULL) {
-    if ($nid = NULL) {
-      // Get the nid:
-      return $this->entity->nid;
-    }
-    else {
-      // Set the nid:
-      $this->entity->nid = $nid;
-      // Add the node object to the cache if not already:
-      $this->addToCache();
-      return $this;
-    }
-  }
-
-  /**
-   * Get the entity id.
-   *
-   * @return int
-   */
-  public function id() {
-    return $this->nid();
-  }
-
-  /**
-   * Get the node object.
-   *
-   * @return stdClass
-   */
-  public function node() {
-    $this->load();
-    return $this->entity;
+  public function delete() {
+    node_delete($this->nid());
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Caching methods.
-
-  /**
-   * Add a node to the cache.
-   *
-   * @return bool
-   */
-  public function addToCache() {
-    parent::addToCache(self::$entityType);
-  }
-
-  /**
-   * Check if a node is in the cache.
-   *
-   * @param int $entity_id
-   * @return bool
-   */
-  public static function inCache($entity_id) {
-    return parent::inCache(self::$entityType, $entity_id);
-  }
-
-  /**
-   * Get a node from the cache.
-   *
-   * @param int $entity_id
-   * @return Node
-   */
-  public static function getFromCache($entity_id) {
-    return parent::getFromCache(self::$entityType, $entity_id);
-  }
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Get/set properties.
-
-  /**
-   * Get a property value.
-   *
-   * @param $property
-   * @param $quick_load
-   * @return mixed
-   */
-  public function getProperty($property, $quick_load = FALSE) {
-    return parent::getProperty('node', 'nid', $property, $quick_load);
-  }
-
-  /**
-   * Get the node's title.
-   *
-   * @return string
-   */
-  public function title() {
-    return $this->getProperty('title', TRUE);
-  }
-
-  /**
-   * Get the node's type.
-   *
-   * @return string
-   */
-  public function type() {
-    return $this->getProperty('type', TRUE);
-  }
-
-  /**
-   * Get/set a property value.
-   *
-   * @param string $property
-   * @param mixed $value
-   * @return mixed
-   */
-  public function prop($property, $value = NULL) {
-    if (func_get_args() == 1) {
-      // Get a property value:
-      return $this->getProperty($property);
-    }
-    else {
-      // Set a property value:
-      return $this->setProperty($property, $value);
-    }
-  }
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  /**
-   * Get/set the node's creator.
-   *
-   * @return Member
-   */
-  public function creator() {
-    return Member::create($this->getProperty('uid', TRUE));
-  }
+  // Load and save.
 
   /**
    * Load the node object.
@@ -222,15 +119,17 @@ class Node extends EntityBase {
       $node = node_load($this->entity->nid);
     }
 
+    // Set the valid flag:
+    $this->valid = (bool) $node;
+
+    // If the node was successfully loaded, update properties:
     if ($node) {
-      // Success. Update properties:
       $this->entity = $node;
       $this->loaded = TRUE;
       return $this;
     }
-    else {
-      trigger_error("Invalid node identifier: " . $this->entity->nid, E_USER_ERROR);
-    }
+
+    trigger_error("Could not load node", E_USER_WARNING);
   }
 
   /**
@@ -246,6 +145,75 @@ class Node extends EntityBase {
     $this->addToCache();
 
     return $this;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Get and set.
+
+  /**
+   * Get/set the nid.
+   *
+   * @param int $nid
+   * @return int|Node
+   */
+  public function nid($nid = NULL) {
+    if ($nid === NULL) {
+      // Get the nid:
+      return isset($this->entity->nid) ? $this->entity->nid : NULL;
+    }
+    else {
+      // Set the nid:
+      $this->entity->nid = $nid;
+      // Add the node object to the cache if not already:
+      $this->addToCache();
+      return $this;
+    }
+  }
+
+  /**
+   * Get the node object.
+   *
+   * @return stdClass
+   */
+  public function node() {
+    $this->load();
+    return $this->entity;
+  }
+
+  /**
+   * Get the node's title.
+   *
+   * @return string
+   */
+  public function title() {
+    return $this->getProperty('title', TRUE);
+  }
+
+  /**
+   * Get the node's type.
+   *
+   * @return string
+   */
+  public function type() {
+    return $this->getProperty('type', TRUE);
+  }
+
+  /**
+   * Get the node's uid.
+   *
+   * @return int
+   */
+  public function uid() {
+    return $this->getProperty('uid', TRUE);
+  }
+
+  /**
+   * Get the node's creator.
+   *
+   * @return User
+   */
+  public function creator() {
+    return User::create($this->uid());
   }
 
   /**
@@ -285,6 +253,47 @@ class Node extends EntityBase {
       ->condition('status', 1)
       ->execute()
       ->rowCount();
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Publish and unpublish.
+
+  /**
+   * Publish the node, i.e. set the status flag to 1.
+   *
+   * @return Node
+   */
+  public function publish() {
+    return $this->prop('status', 1);
+  }
+
+  /**
+   * Unpublish the node, i.e. set the status flag to 0.
+   *
+   * @return Node
+   */
+  public function unpublish() {
+    return $this->prop('status', 0);
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Render method.
+
+  /**
+   * Get the HTML for a node.
+   *
+   * @param string $view_mode
+   * @return string
+   */
+  public function render($view_mode = 'full') {
+    return theme('node',
+      array(
+        'elements' => array(
+          '#node'      => $this->node(),
+          '#view_mode' => $view_mode,
+        ),
+      )
+    );
   }
 
 }

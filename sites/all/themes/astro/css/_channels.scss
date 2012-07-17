@@ -1,4 +1,4 @@
-$postFontSize = 11px;
+$postFontSize = 12px;
 $postLineHeight = $postFontSize * 1.5;
 $ratingButtonHeight = 20px;
 
@@ -76,21 +76,29 @@ article.node-item {
     padding-top: 1px;
     border-top: solid 1px $grey4;
 
-    nav.links {
+    ul.action-links {
       display: block;
       float: right;
       height: $ratingButtonHeight;
+      margin-bottom: 0;
 
       li {
-        padding: 0 5px;
-        border-right: solid 1px $grey4;
+        padding: 0 4px;
+        //border-right: solid 1px $grey4;
         margin: 0;
         float: right;
         display: block;
         height: $ratingButtonHeight;
+        color: $blue3;
+        cursor: pointer;
 
-        a {
-          line-height: $ratingButtonHeight;
+        &:hover {
+          color: $red3;
+        }
+
+        &.waiting {
+          padding-right: 19px;
+          background: url('../images/loading1.gif') no-repeat right top;
         }
       }
     }
@@ -139,6 +147,34 @@ article.node-item {
     font-size: 11px;
     color: $grey3;
   }
+
+  // Post, update and cancel buttons in channels:
+  form.node-item-form .form-actions,
+  .comment-buttons {
+    input[type=button],
+    input[type=submit],
+    .form-submit,
+    .form-button,
+    #edit-submit {
+      margin: 2px 0 0 2px;
+      padding: 1px 5px;
+      float: right;
+      font-size: 11px;
+      border: none;
+      background: none;
+      background-color: $blue3;
+      @include border-radius(3px);
+      color: white;
+      font-weight: bold;
+      text-shadow: none;
+      //box-sizing: border-box;
+      //height: 16px;
+
+      &:hover {
+        background-color: $red3;
+      }
+    }
+  }
 }
 
 .post-form-wrapper {
@@ -168,15 +204,13 @@ article.node-item {
 article.new-comment-form-article {
   .post-content-wrapper {
     height: auto;
-  }
-}
 
-.new-comment-controls {
-  input {
-    margin: 2px 0 0 2px;
-    padding: 1px 5px;
-    float: right;
-    font-size: 10px;
+    form {
+      padding: 0;
+      margin: 0;
+      border: none;
+      background: none;
+    }
   }
 }
 
@@ -287,16 +321,11 @@ form.node-item-form {
 
   .form-actions {
     margin: 0;
-
-    .form-submit {
-      float: right;
-      margin-right: 0;
-    }
   }
 
   #field-item-text-add-more-wrapper {
     .form-item {
-      margin-bottom: 2px;
+      margin-bottom: 0;
 
       .description {
         float: left;
@@ -304,7 +333,6 @@ form.node-item-form {
     }
   }
 }
-
 
 article.node-item {
   .field-name-field-item-text {

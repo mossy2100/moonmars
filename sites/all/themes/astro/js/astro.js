@@ -7,4 +7,3 @@ var $ = jQuery;
 $(function() {
   $('.form-actions').addClass('clearfix');
 });
-

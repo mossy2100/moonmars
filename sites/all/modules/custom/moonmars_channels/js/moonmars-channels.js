@@ -11,9 +11,9 @@ function initChannel() {
   // Convert select elements into selectBoxes:
 //  $('select').selectBox();
 
-  // Enable avatar tooltip behaviour:
-  $('.avatar-tooltip').each(function () {
-    setupTooltipBehaviour(this);
+  // Setup item behaviours:
+  $('article.node-item').each(function () {
+    setupItemBehaviour(this);
   });
 
   // Setup comment behaviours:
@@ -21,14 +21,9 @@ function initChannel() {
     setupCommentBehaviour(this);
   });
 
-  // Setup update/post button behaviour:
-  $('#comments article, article.new-comment-form-article').each(function () {
+  // Setup new comment form behaviour:
+  $('article.new-comment-form-article').each(function () {
     setupPostButton(this);
-  });
-
-  // Setup item behaviours:
-  $('article.node-item').each(function () {
-    setupItemBehaviour(this);
   });
 
   // Tidy up and setup behaviours for the new item form:
@@ -52,34 +47,6 @@ function initChannel() {
 
   // Setup rating button behaviours:
   setupRatings();
-}
-
-/**
- * Enable user avatar tooltips.
- */
-function setupTooltipBehaviour(tooltip) {
-  $(tooltip).hover(
-    function () {
-      $('.user-tooltip', this).css('display', 'block');
-    },
-    function () {
-      $('.user-tooltip', this).css('display', 'none');
-    }
-  ).click(
-    // When the tooltip is clicked, go to the user's profile:
-    function () {
-      location.href = $(this).find('.avatar-link').attr('href');
-    }
-  );
-  // Same effect if we hover over the user name to the right of the avatar icon:
-  $(tooltip).closest('.post-article-body').find('a.username').hover(
-    function () {
-      $('.user-tooltip', $(this).closest('.post-article-body').find('.avatar-tooltip')).eq(0).css('display', 'block');
-    },
-    function () {
-      $('.user-tooltip', $(this).closest('.post-article-body').find('.avatar-tooltip')).eq(0).css('display', 'none');
-    }
-  );
 }
 
 /**
@@ -107,21 +74,21 @@ function collapsePost(postArticle, autoCollapse) {
   var postControls = postArticle.find('.post-controls').eq(0);
   var scoreMoreWrapper = postArticle.find('.score-more-wrapper').eq(0);
 
-  if (postContentHeight <= collapsedContentHeight || !autoCollapse) {
+//  if (postContentHeight <= collapsedContentHeight || !autoCollapse) {
     // Hide the "Read more" link:
     scoreMoreWrapper.hide();
     // Show the links and rating buttons;
     postControls.show();
-  }
-  else {
-    // Collapse the post:
-    var postContentWrapper = postArticle.find('.post-content-wrapper').eq(0);
-    postContentWrapper.height(collapsedContentHeight);
-    // Hide the "Read more" link:
-    scoreMoreWrapper.show();
-    // Show the links and rating buttons:
-    postControls.hide();
-  }
+//  }
+//  else {
+//    // Collapse the post:
+//    var postContentWrapper = postArticle.find('.post-content-wrapper').eq(0);
+//    postContentWrapper.height(collapsedContentHeight);
+//    // Hide the "Read more" link:
+//    scoreMoreWrapper.show();
+//    // Show the links and rating buttons:
+//    postControls.hide();
+//  }
 
   // Setup handler for "Read more" link:
   var moreLink = scoreMoreWrapper.find('a').eq(0);
@@ -137,167 +104,25 @@ function collapsePost(postArticle, autoCollapse) {
 }
 
 /**
- * Setup behaviour for comments.
+ * Remove an item or comment with animation.
  *
- * @param object commentArticle
- * @param bool autoCollapse
+ * @param selector
  */
-function setupCommentBehaviour(commentArticle, autoCollapse) {
-  // Make sure commentArticle is a jQuery object:
-  commentArticle = $(commentArticle);
-
-  collapsePost(commentArticle, autoCollapse);
-
-  // Setup behaviour for edit link:
-  commentArticle.find('.links li.comment-edit a').click(
-    function () {
-      var commentArticle = $(this).closest('article');
-      // Hide the comment text and controls:
-      commentArticle.find('.field-name-comment-body').hide();
-      commentArticle.find('.post-controls').hide();
-      // Show the edit comment form:
-      commentArticle.find('.edit-comment-form').show();
-      commentArticle.find('.post-content-wrapper').css('height', 'auto');
-      return false;
-    }
-  );
-
-  // Setup behaviour for cancel button:
-  commentArticle.find('.cancel-comment-button').click(
-    function () {
-      var commentArticle = $(this).closest('article');
-      // Hide the edit comment form:
-      commentArticle.find('.edit-comment-form').hide();
-      // Show the comment text and controls:
-      commentArticle.find('.field-name-comment-body').show();
-      commentArticle.find('.post-controls').show();
-      return false;
-    }
-  );
-
-  // Setup behaviour for delete link:
-  commentArticle.find('.links li.comment-delete a').click(
-    function () {
-      var result = confirm('Are you sure you want to delete this comment?');
-      if (result) {
-        var commentArticle = $(this).closest('article');
-        var cid = commentArticle.attr('data-cid');
-        $.post("/ajax/comment/delete",
-          {
-            cid: cid
-          },
-          deleteCommentReturn,
-          'json'
-        );
-      }
-      return false;
-    }
-  );
-
+function removePost(selector) {
+  $(selector).animate({
+    opacity: 0,
+    height: 0,
+    marginTop: 0,
+    marginBottom: 0,
+    paddingTop: 0,
+    paddingBottom: 0
+  }, 500, function() {
+    $(this).remove();
+  });
 }
 
-/**
- * Setup handler for Post/Update button.
- * @param commentArticle
- */
-function setupPostButton(commentArticle) {
-  // Make sure commentArticle is a jQuery object:
-  commentArticle = $(commentArticle);
-
-  commentArticle.find('.new-comment-button').click(
-    function () {
-      var commentArticle = $(this).closest('article');
-      var commentTextarea = commentArticle.find('textarea');
-      var commentText = commentTextarea.val();
-      //      alert(commentText);
-      if (commentText == '') {
-        alert("Please enter a comment before clicking Post.");
-      }
-      else {
-        commentTextarea.attr('disabled', 'disabled').addClass('uploading');
-        var item_nid = commentArticle.attr('data-nid');
-        var cid = commentArticle.attr('data-cid');
-
-        if (cid) {
-          $.post("/ajax/comment/edit",
-            {
-              cid: cid,
-              item_nid: item_nid,
-              text: commentText
-            },
-            editCommentReturn,
-            'json'
-          );
-        }
-        else {
-          $.post("/ajax/comment/post",
-            {
-              item_nid: item_nid,
-              text: commentText
-            },
-            createCommentReturn,
-            'json'
-          );
-        }
-      }
-    }
-  );
-}
-
-/**
- * Handler from when we get back from updating or creating a comment via AJAX.
- */
-function createCommentReturn(data, textStatus, jqXHR) {
-  if (!data.result) {
-    alert('Sorry, your comment could not be posted for some reason. Please report the problem.');
-  }
-  else {
-    // Posted new comment:
-    var commentArticle = $(data.html);
-    var nodeArticle = $('#node-item-' + data.nid);
-    nodeArticle.find('#comments').append(commentArticle);
-    nodeArticle.find('.new-comment-form-article textarea').removeAttr('disabled').removeClass('uploading').val(''); //.autoresize();
-    // Set up the update button behaviour for the new comment:
-    nodeArticle.each(function () {
-      setupPostButton(this);
-    });
-  }
-
-  setupCommentBehaviour(commentArticle, false);
-  setupTooltipBehaviour(commentArticle.find('.tooltip'));
-}
-
-/**
- * Handler from when we get back from editing a comment via AJAX.
- */
-function editCommentReturn(data, textStatus, jqXHR) {
-  if (!data.result) {
-    alert('Sorry, your comment could not be edited for some reason. Please report the problem.');
-  }
-  else {
-    // Edited comment:
-    var commentArticle = $('#comment-article-' + data.cid);
-    commentArticle.find('textarea').removeAttr('disabled').removeClass('uploading').val(data.text); //.autoresize();
-    commentArticle.find('.field-name-comment-body').show();
-    commentArticle.find('.field-name-comment-body .field-item').text(data.text);
-
-    setupCommentBehaviour(commentArticle, false);
-    setupTooltipBehaviour(commentArticle.find('.tooltip'));
-  }
-}
-
-/**
- * Handler from when we get back from deleting a comment via AJAX.
- */
-function deleteCommentReturn(data, textStatus, jqXHR) {
-  if (!data.result) {
-    alert('Sorry, your comment could not be deleted for some reason. Please report the problem.');
-  }
-  else {
-    // Remove the comment:
-    $('#comment-article-' + data.cid).remove();
-  }
-}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Item behaviours.
 
 /**
  * Setup behaviour for items.
@@ -307,7 +132,113 @@ function deleteCommentReturn(data, textStatus, jqXHR) {
  */
 function setupItemBehaviour(itemArticle, autoCollapse) {
   itemArticle = $(itemArticle);
-  collapsePost(itemArticle, autoCollapse);
+
+//  // Setup behaviour for edit link:
+//  itemArticle.find('.links li.item-edit a').click(
+//    function () {
+//      var itemArticle = $(this).closest('article');
+//      // Hide the item text and controls:
+//      itemArticle.find('.field-name-field-item-text').hide();
+//      itemArticle.find('.post-controls').hide();
+//      // Show the edit item form:
+//      itemArticle.find('.edit-item-form').show();
+//      itemArticle.find('.post-content-wrapper').css('height', 'auto');
+//      return false;
+//    }
+//  );
+
+//  // Setup behaviour for update button:
+//  itemArticle.find('.update-item-button').click(
+//    function () {
+//      var itemTextarea = itemArticle.find('textarea');
+//      var itemText = itemTextarea.val();
+//      if (itemText == '') {
+//        alert("Please enter some text before clicking Update.");
+//      }
+//      else {
+//        itemTextarea.attr('disabled', 'disabled').addClass('uploading');
+//        var item_nid = itemArticle.attr('data-nid');
+//        $.post("/ajax/item/edit",
+//          {
+//            item_nid: item_nid,
+//            text: itemText
+//          },
+//          editItemReturn,
+//          'json'
+//        );
+//      }
+//    }
+//  );
+
+//  // Setup behaviour for cancel button:
+//  itemArticle.find('.cancel-item-button').click(
+//    function () {
+//      var itemArticle = $(this).closest('article');
+//      // Hide the edit item form:
+//      itemArticle.find('.edit-item-form').hide();
+//      // Show the item text and controls:
+//      itemArticle.find('.field-name-field-item-text').show();
+//      itemArticle.find('.post-controls').show();
+//      return false;
+//    }
+//  );
+
+  // Setup behaviour for delete link:
+  itemArticle.find('ul.item-links li.item-delete').click(
+    function () {
+      var result = confirm('Are you sure you want to delete this item? This action cannot be reversed.');
+      if (result) {
+        var itemArticle = $(this).closest('article');
+        var item_nid = itemArticle.attr('data-nid');
+        $(this).addClass('waiting');
+        $.post("/ajax/item/delete", {item_nid: item_nid}, deleteItemReturn, 'json');
+      }
+      return false;
+    }
+  );
+
+  // Setup behaviour for remove link:
+  itemArticle.find('ul.item-links li.item-remove').click(
+    function () {
+      var result = confirm('Are you sure you want to remove this item from your channel? This action cannot be reversed.');
+      if (result) {
+        var itemArticle = $(this).closest('article');
+        var item_nid = itemArticle.attr('data-nid');
+        $(this).addClass('waiting');
+        $.post("/ajax/item/remove", {item_nid: item_nid}, removeItemReturn, 'json');
+      }
+      return false;
+    }
+  );
+//  collapsePost(itemArticle, autoCollapse);
+}
+
+/**
+ * Handler from when we get back from deleting a item via AJAX.
+ */
+function deleteItemReturn(data, textStatus, jqXHR) {
+  $(this).removeClass('waiting');
+  if (!data.result) {
+    alert(data.error);
+  }
+  else {
+    // Remove the item:
+    removePost('#node-item-' + data.item_nid);
+  }
+}
+
+/**
+ * Handler from when we get back from removing a item via AJAX.
+ */
+function removeItemReturn(data, textStatus, jqXHR) {
+  $(this).removeClass('waiting');
+  if (!data.result) {
+    alert(data.error);
+  }
+  else {
+    // Remove the item:
+    removePost('#node-item-' + data.item_nid);
+  }
 }
 
 /**
@@ -336,6 +267,9 @@ function itemTypeSelected() {
   }
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Rating items.
+
 function setupRatings() {
   $('.rating-button').click(function() {
     var item_nid = $(this).closest('article').attr('data-nid');
@@ -347,4 +281,197 @@ function setupRatings() {
 
 function rateItemReturn(data, textStatus, jqXHR) {
   debug(data);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Setup behaviours for editing and deleting existing comments.
+
+/**
+ * Setup behaviour for comments.
+ *
+ * @param object commentArticle
+ * @param bool autoCollapse
+ */
+function setupCommentBehaviour(commentArticle, autoCollapse) {
+  // Make sure commentArticle is a jQuery object:
+  commentArticle = $(commentArticle);
+
+  collapsePost(commentArticle, autoCollapse);
+
+  // Setup behaviour for edit link:
+  commentArticle.find('ul.action-links li.comment-edit').click(
+    function () {
+      var commentArticle = $(this).closest('article');
+
+      // Hide the comment text and controls:
+      commentArticle.find('.field-name-comment-body').hide();
+      commentArticle.find('.post-controls').hide();
+
+      // Show the edit comment form:
+      commentArticle.find('.edit-comment-form').show();
+
+      // ??
+      commentArticle.find('.post-content-wrapper').css('height', 'auto');
+      
+      return false;
+    }
+  );
+
+  // Setup behaviour for Update button:
+  commentArticle.find('.update-comment-button').click(
+    function () {
+      var commentArticle = $(this).closest('article');
+      var commentTextarea = commentArticle.find('textarea');
+      var commentText = commentTextarea.val();
+
+      if (commentText == '') {
+        alert("Please enter a comment before clicking Update.");
+      }
+      else {
+        commentTextarea.attr('disabled', 'disabled').addClass('uploading');
+        var item_nid = commentArticle.attr('data-nid');
+        var cid = commentArticle.attr('data-cid');
+        $.post("/ajax/comment/edit", {cid: cid, item_nid: item_nid, text: commentText}, editCommentReturn, 'json');
+      }
+    }
+  );
+
+  // Setup behaviour for Cancel button:
+  commentArticle.find('.cancel-comment-button').click(
+    function () {
+      var commentArticle = $(this).closest('article');
+
+      // Hide the edit comment form:
+      commentArticle.find('.edit-comment-form').hide();
+
+      // Show the comment text and controls:
+      commentArticle.find('.field-name-comment-body').show();
+      commentArticle.find('.post-controls').show();
+
+      return false;
+    }
+  );
+
+  // Setup behaviour for delete link:
+  commentArticle.find('ul.action-links li.comment-delete').click(
+    function () {
+      var result = confirm('Are you sure you want to delete this comment? This action cannot be reversed.');
+      if (result) {
+        var commentArticle = $(this).closest('article');
+        var cid = commentArticle.attr('data-cid');
+        $(this).addClass('waiting');
+        $.post("/ajax/comment/delete", {cid: cid}, deleteCommentReturn, 'json');
+      }
+      return false;
+    }
+  );
+}
+
+/**
+ * Handler from when we get back from editing a comment via AJAX.
+ */
+function editCommentReturn(data, textStatus, jqXHR) {
+  if (!data.result) {
+    alert(data.error);
+  }
+  else {
+    // Edited comment.
+
+    // Get the comment article:
+    var commentArticle = $('#comment-article-' + data.cid);
+
+    // Update comment body contents:
+    var commentBody = commentArticle.find('.field-name-comment-body');
+    commentBody.find('.field-item').html(data.filtered_text);
+
+    // Remove uploading icon and disabled state from textarea, and update contents:
+    commentArticle.find('textarea').removeAttr('disabled').removeClass('uploading').val(data.text);
+
+    // Show the comment text and controls:
+    commentBody.show();
+    commentArticle.find('.post-controls').show();
+
+    // Hide the edit comment form:
+    commentArticle.find('.edit-comment-form').hide();
+  }
+}
+
+/**
+ * Handler from when we get back from deleting a comment via AJAX.
+ */
+function deleteCommentReturn(data, textStatus, jqXHR) {
+  $(this).removeClass('waiting');
+  if (!data.result) {
+    alert(data.error);
+  }
+  else {
+    // Remove the comment:
+    removePost('#comment-article-' + data.cid);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Posting new comments.
+
+/**
+ * Setup behaviour for Post button for posting new comments.
+ *
+ * @param commentArticle
+ */
+function setupPostButton(commentArticle) {
+  // Make sure commentArticle is a jQuery object:
+  commentArticle = $(commentArticle);
+
+  commentArticle.find('.new-comment-button').click(
+    function () {
+      var commentArticle = $(this).closest('article');
+      var commentTextarea = commentArticle.find('textarea');
+      var commentText = commentTextarea.val();
+
+      if (commentText == '') {
+        alert("Please enter a comment before clicking Post.");
+      }
+      else {
+        commentTextarea.attr('disabled', 'disabled').addClass('uploading');
+        var item_nid = commentArticle.attr('data-nid');
+
+        $.post("/ajax/comment/post",
+          {
+            item_nid: item_nid,
+            text: commentText
+          },
+          postCommentReturn,
+          'json'
+        );
+      }
+    }
+  );
+}
+
+/**
+ * Handler from when we get back from updating or creating a comment via AJAX.
+ */
+function postCommentReturn(data, textStatus, jqXHR) {
+  if (!data.result) {
+    alert(data.error);
+  }
+  else {
+    // Posted new comment.
+
+    // Get the node article:
+    var nodeArticle = $('#node-item-' + data.item_nid);
+
+    // Remove the uploading icon from the new comment textarea:
+    nodeArticle.find('.new-comment-form-article textarea').removeAttr('disabled').removeClass('uploading').val(''); //.autoresize();
+
+    // Create new comment article:
+    var commentArticle = $(data.html);
+
+    // Insert comment into DOM:
+    nodeArticle.find('#comments').append(commentArticle);
+
+    // Attach behaviours to the new comment:
+    setupCommentBehaviour(commentArticle, false);
+    setupTooltipBehaviour(commentArticle.find('.tooltip'));
+  }
 }

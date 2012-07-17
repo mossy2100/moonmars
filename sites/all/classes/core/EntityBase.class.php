@@ -14,6 +14,13 @@ abstract class EntityBase {
   private static $cache;
 
   /**
+   * The Drupal entity object (node, user, etc.)
+   *
+   * @var stdClass
+   */
+  protected $entity;
+
+  /**
    * If the entity has been loaded yet.
    *
    * @var bool
@@ -21,11 +28,11 @@ abstract class EntityBase {
   protected $loaded;
 
   /**
-   * The Drupal entity object (node, user, etc.)
+   * If the id is valid.
    *
-   * @var stdClass
+   * @var bool
    */
-  protected $entity;
+  protected $valid;
 
   /**
    * Constructor.
@@ -53,13 +60,8 @@ abstract class EntityBase {
    */
   abstract public function save();
 
-  /**
-   * Child classes must define an id method.
-   *
-   * @abstract
-   * @return int
-   */
-  abstract public function id();
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Get and set.
 
   /**
    * Get the entity object.
@@ -70,36 +72,60 @@ abstract class EntityBase {
     return $this->entity;
   }
 
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Get/set properties.
+  /**
+   * Get the entity id.
+   *
+   * @return int
+   */
+  public function id() {
+    $class = get_class($this);
+    $primaryKey = $class::primaryKey;
+    return $this->$primaryKey();
+  }
+
+  /**
+   * Get the entity type.
+   *
+   * @return stdClass
+   */
+  public function entityType() {
+    $class = get_class($this);
+    return $class::entityType;
+  }
 
   /**
    * Get a property value.
    *
-   * @param string $table
-   * @param string $primary_key
    * @param string $property
    * @param bool $quick_load
    * @return mixed
    */
-  public function getProperty($table, $primary_key, $property, $quick_load = FALSE) {
+  public function getProperty($property, $quick_load = FALSE) {
     // If not set, load the property value from the database:
     if (!isset($this->entity->{$property})) {
       // For some "quick load" properties, just get the field from the table record rather than load the whole object:
       if ($quick_load) {
-        $this->entity->{$property} = db_select($table, 't')
+        $class = get_class($this);
+        $rec = db_select($class::table, 't')
           ->fields('t', array($property))
-          ->condition($primary_key, $this->id())
+          ->condition($class::primaryKey, $this->id())
           ->execute()
-          ->fetch()
-          ->$property;
-//        dpm($table . '.' . $property. ' = ' . $this->entity->{$property});
+          ->fetch();
+
+        // If we got the record then set the property value:
+        if ($rec) {
+          $this->entity->{$property} = $rec->$property;
+        }
+
+        // If we got the record then the id is valid:
+        $this->valid = (bool) $rec;
       }
       else {
         // Load the whole object:
         $this->load();
       }
     }
+
     return isset($this->entity->{$property}) ? $this->entity->{$property} : NULL;
   }
 
@@ -116,7 +142,23 @@ abstract class EntityBase {
     return $this;
   }
 
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /**
+   * Get/set a property value.
+   *
+   * @param string $property
+   * @param mixed $value
+   * @return mixed
+   */
+  public function prop($property, $value = NULL) {
+    if ($value === NULL) {
+      // Get a property value:
+      return $this->getProperty($property);
+    }
+    else {
+      // Set a property value:
+      return $this->setProperty($property, $value);
+    }
+  }
 
   /**
    * Get/set an entity field's value.
@@ -141,17 +183,46 @@ abstract class EntityBase {
     }
   }
 
+  /**
+   * Check if the object is loaded.
+   *
+   * @return bool
+   */
+  public function loaded() {
+    return $this->loaded;
+  }
+
+  /**
+   * Check if the entity's id is valid.
+   *
+   * @return bool
+   */
+  public function valid() {
+    // If the id is not set then the entity is valid. It's simply a new entity that hasn't been saved yet.
+    if (!$this->id()) {
+      return TRUE;
+    }
+
+    // If the valid flag hasn't been set yet via getProperty(), then the simplest way to check if the entity is valid
+    // is to try and load it:
+    if (!isset($this->valid)) {
+      $this->load();
+    }
+
+    return $this->valid;
+  }
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Caching methods.
 
   /**
    * Add an entity to the cache.
    *
-   * @param string $entity_type
    * @return bool
    */
   public function addToCache() {
-    self::$cache[self::$entityType][$this->id()] = $this;
+    $class = get_class($this);
+    self::$cache[$class::entityType][$this->id()] = $this;
   }
 
   /**
@@ -161,16 +232,34 @@ abstract class EntityBase {
    * @return bool
    */
   public static function inCache($entity_id) {
-    return isset(self::$cache[self::$entityType][$entity_id]);
+    $class = get_called_class();
+    return isset(self::$cache[$class::entityType][$entity_id]);
   }
 
   /**
    * Get an entity from the cache.
    *
+   * @param int $entity_id
    * @return Entity
    */
   public static function getFromCache($entity_id) {
-    return self::$cache[self::$entityType][$entity_id];
+    $class = get_called_class();
+    return self::$cache[$class::entityType][$entity_id];
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Equals.
+
+  /**
+   * Checks if two entities are equal.
+   *
+   * @static
+   * @param EntityBase $entity1
+   * @param EntityBase $entity2
+   * @return bool
+   */
+  public static function equals(EntityBase $entity1, EntityBase $entity2) {
+    return ($entity1->entityType() == $entity2->entityType()) && ($entity1->id() == $entity2->id());
   }
 
 }

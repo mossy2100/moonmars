@@ -1,112 +1,123 @@
 <?php
 
 function astro_alpha_preprocess_node(&$vars) {
-  global $user;
+
+  // Get the current logged-in member:
+  $current_member = Member::currentMember();
+  $vars['current_member'] = $current_member;
 
   switch ($vars['node']->type) {
 
     case 'item':
-      // Theme the user picture of the member who originally posted the item:
-      $original_poster = Member::create($vars['uid']);
-      $vars['picture'] = $original_poster->avatarTooltip();
+      // Create the Item object:
+      $item = Item::create($vars['node']);
+      $vars['item'] = $item;
 
-      // Add the channel title if set:
-      if ($vars['node']->copied) {
-        $channel = Channel::create($vars['node']->original_channel->nid());
-        $entity = $channel->parentEntity();
-        $vars['channel_posted'] = 'in ' . l($vars['node']->original_channel->title(), $entity['alias']);
+      // Get the original poster:
+      $original_poster = Member::create($vars['uid']);
+      $vars['original_poster'] = $original_poster;
+
+      // Get the current channel:
+      $current_channel = Channel::currentChannel();
+
+      // Get the item's original channel:
+      $original_channel = $item->originalChannel();
+
+      // Original channel string:
+      if (Channel::equals($current_channel, $original_channel)) {
+        $vars['original_channel'] = 'in this channel';
+      }
+      elseif (Channel::equals($original_channel, $original_poster->channel())) {
+        $vars['original_channel'] = 'in their channel';
       }
       else {
-        $vars['channel_posted'] = '';
+        $vars['original_channel'] = 'in ' . l($original_channel->title(), $original_channel->parentEntity()->alias());
       }
 
       // Format the post datetime:
       $vars['created_datetime'] = astro_format_about_how_long_ago($vars['node']->created);
 
-      // Format the avatar tooltip for the current user:
-      $current_member = Member::create($user->uid);
-      $vars['new_comment_picture'] = $current_member->avatarTooltip();
-
-      // Format the username of the current user:
-      $new_comment_username = ($user && $user->uid) ? $user->name : '';
-      $vars['new_comment_username'] = "<a class='username' href='/users/$new_comment_username' title='Visit $new_comment_username&apos;s profile.'>$new_comment_username</a>";
-
-      // Format the post datetime:
-//      $vars['new_comment_created_datetime'] = "<time>now</time>";
-
       // Calculate the score for the item:
-      $vars['score'] = mt_rand(-20, 9999);
-
-      // If this is a group page, get the group:
-      if (moonmars_groups_is_group_page()) {
-        $vars['group'] = moonmars_groups_get_current_group();
-      }
+//      $vars['score'] = mt_rand(-20, 9999);
 
       // Render the comments for the item:
       $vars['comments'] = render($vars['content']['comments']);
-      // Make sure we still have a comment wrapper even if there are no comments:
+      // Make sure we still have a comment wrapper even if there are no comments, so our JS works:
       if ($vars['comments'] == '') {
         $vars['comments'] = "<div id='comments' class='comment-wrapper'></div>";
       }
 
-      // Add links to member references and hash tags:
+      // Add links in comment text to URLs, member references and hash tags:
       $vars['content']['field_item_text'][0]['#markup'] = moonmars_text_filter($vars['content']['field_item_text'][0]['#markup']);
+
+      // Links for edit/remove/delete item:
+      $links = '';
+      if ($current_member->canDeleteItem($item)) {
+        $links .= "<li class='item-delete'>delete</li>";
+      }
+      if ($current_member->canRemoveItem($item, $current_channel)) {
+        $links .= "<li class='item-remove'>remove</li>";
+      }
+      if ($current_member->canEditItem($item)) {
+        $links .= "<li class='item-edit'>edit</li>";
+      }
+      if ($links) {
+        $links = "
+          <ul class='action-links item-links clearfix'>
+            $links
+          </ul>
+        ";
+      }
+      $vars['links'] = $links;
 
       break;
 
     case 'group':
-//      $vars['head_title'] = "moonmars.com - Group - " . $vars['node']->title;
-//      drupal_set_title("moonmars.com - Group - " . $vars['node']->title);
+      // Get the group:
+      $group = Group::create($vars['node']);
+      $vars['group'] = $group;
+
+      // Get the group's channel:
+      $channel = $group->channel();
+      $vars['channel'] = $channel;
+
       break;
 
     case 'channel':
       drupal_add_js(drupal_get_path('module', 'moonmars_channels') . '/js/moonmars-channels.js');
 
-      // Theme the user picture:
-      $vars['current_member'] = Member::create($user->uid);
-      $vars['new_item_picture'] = $vars['current_member']->avatarTooltip();
-
-      // Format the username of the current user:
-      if ($user) {
-        $new_item_username = $user->name;
-        $vars['new_item_username'] = "<a class='username' href='/users/$new_item_username' title='Visit $new_item_username&apos;s profile.'>$new_item_username</a>";
-      }
-
-      // Format the post datetime:
-      $vars['new_item_created_datetime'] = "<time>now</time>";
-
-      if (arg(0) == 'user') {
-        // Hide the channel title if we're looking at a user profile:
-        $vars['title'] = '';
-        // If the member is viewing their own profile, include stuff they're following (unless they have the 'Show only my stuff' filter on).
-        $viewing_own_profile = $user->uid == arg(1);
-        $filter_on = $viewing_own_profile && (isset($_SESSION['user']['profile_filter']) ? $_SESSION['user']['profile_filter'] : FALSE);
-        $include_copied_items = $viewing_own_profile && !$filter_on;
-      }
-      elseif (arg(0) == 'node' && is_uint(arg(1))) {
-        $entity = node_load(arg(1));
-        // Hide the channel title if we aren't looking at a channel node page:
-        if ($entity->type != 'channel') {
-          $vars['title'] = '';
-        }
-        $include_copied_items = TRUE;
-      }
-
       // Get the channel object:
-      $vars['channel'] = Channel::create($vars['node']->nid);
-
-      // Render the items:
-      $vars['items'] = $vars['channel']->render($include_copied_items);
+      $channel = Channel::create($vars['node']);
+      $vars['channel'] = $channel;
 
       // Remember the current channel:
-      Channel::currentChannel($vars['node']->nid);
+      Channel::currentChannel($channel);
+
+      // Get the channel items.
+      // By default include all items in the channel:
+      $include_copied_items = TRUE;
+
+//      if (arg(0) == 'user') {
+//         If the member is viewing their own profile, include stuff they're following (unless they have the 'Show only my stuff' filter on).
+//        $viewing_own_profile = $user->uid == arg(1);
+//        $filter_on = $viewing_own_profile && (isset($_SESSION['user']['profile_filter']) ? $_SESSION['user']['profile_filter'] : FALSE);
+//        $include_copied_items = $viewing_own_profile && !$filter_on;
+//      }
+
+      // Set the page title:
+      if (arg(0) == 'node' && arg(1) == $channel->nid()) {
+        // Only display the channel title if we're on the channel's node page.
+        // Regular users should never see this. Even admins don't really need to see channel node pages.
+        $vars['title'] = $channel->title();
+      }
+      else {
+        $vars['title'] = '';
+      }
+
+      // Render the items:
+      $vars['items'] = $channel->renderItems($include_copied_items);
 
       break;
-  }
-
-  // Get the channel if applicable:
-  if (in_array($vars['node']->type, moonmars_channels_node_types())) {
-    $vars['channel'] = Channel::entityChannel('node', $vars['node']->nid);
   }
 
 }

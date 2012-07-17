@@ -5,11 +5,16 @@
 class Channel extends Node {
 
   /**
-   * Cache the channel-entity relationships so we don't have to look up the database every time.
+   * The default page size for channels.
+   */
+  const pageSize = 10;
+
+  /**
+   * The parent entity of the channel.
    *
    * @var array
    */
-  protected static $entityCache;
+  protected $parentEntity;
 
   /**
    * Constructor.
@@ -18,40 +23,42 @@ class Channel extends Node {
     return parent::__construct();
   }
 
-  /**
-   * Create a new Channel object.
-   *
-   * @param int $nid
-   * @return Channel
-   */
-  public static function create($nid = NULL) {
-    return parent::create(__CLASS__, $nid);
-  }
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Entity-related methods.
 
   /**
    * Get the entity that a channel belongs to.
    *
    * @return array
    */
-  public function parentEntityInfo() {
-    $channel_nid = $this->nid();
+  public function parentEntity() {
+    // Check if we remembered the result in the parentEntity property:
+    if (!isset($this->parentEntity)) {
 
-    // If we haven't already loaded this one, do it now:
-    if (!isset(self::$entityCache[$channel_nid])) {
-      $rels = moonmars_relationships_get_relationships('has_channel', NULL, NULL, 'node', $channel_nid);
-      if (empty($rels)) {
-        return FALSE;
+      // Look up the entity_has_channel relationship:
+      $rels = moonmars_relationships_get_relationships('has_channel', NULL, NULL, 'node', $this->nid());
+
+      if (!empty($rels)) {
+        if ($rels[0]->entity_type0 == 'user') {
+          return Member::create($rels[0]->entity_id0);
+        }
+
+        // $rels[0]->entity_type0 == 'node'
+        $node = node_load($rels[0]->entity_id0);
+        switch ($node->type) {
+          case 'group':
+            return Group::create($node);
+
+          case 'event':
+            return Event::create($node);
+
+          case 'project':
+            return Project::create($node);
+        }
       }
-
-      // Store the result in the cache:
-      self::$entityCache[$channel_nid] = array(
-        'entity_type' => $rels[0]->entity_type0,
-        'entity_id' => $rels[0]->entity_id0,
-        'alias' => drupal_get_path_alias($rels[0]->entity_type0 . '/' . $rels[0]->entity_id0)
-      );
     }
 
-    return self::$entityCache[$channel_nid];
+    return $this->parentEntity;
   }
 
   /**
@@ -65,7 +72,8 @@ class Channel extends Node {
     // Load the entity
     $entity = entity_load_single($entity_type, $entity_id);
 
-    // Determine the title and path alias for the channel:
+    // Determine the title and path alias for the channel.
+    // (This could probably better be done when the channel is saved, i.e. in moonmars_channels_node_presave())
     switch ($entity_type) {
       case 'node':
         $title = ucfirst($entity->type) . ': ' . $entity->title;
@@ -76,8 +84,10 @@ class Channel extends Node {
         break;
     }
 
-    // Create the new node:
+    // Determine the channel's alias:
     $alias = drupal_get_path_alias("$entity_type/$entity_id") . '/channel';
+
+    // Create the new node:
     $channel_node = node_create('channel', $title, TRUE, $alias);
 
     // Set the channel uid to match the node or user entity:
@@ -89,7 +99,8 @@ class Channel extends Node {
     // Create the relationship between the entity and the relationship:
     moonmars_relationships_create_relationship('has_channel', $entity_type, $entity_id, 'node', $channel_node->nid, TRUE);
 
-    return self::create($channel_node->nid);
+    // Create the Channel object from the node:
+    return self::create($channel_node);
   }
 
   /**
@@ -113,7 +124,58 @@ class Channel extends Node {
       return self::createEntityChannel($entity_type, $entity_id);
     }
 
-    return FALSE;
+    return NULL;
+  }
+
+  /**
+   * Get a link to a channel's entity's page.
+   *
+   * @return string
+   */
+  public function entityLink() {
+    $entity = $this->parentEntity();
+    return l($this->title(), $entity->alias());
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Item-related methods.
+
+  /**
+   * Get the items in the channel.
+   *
+   * @param bool $include_copied_items
+   * @param int $offset
+   * @param int $limit
+   * @return array
+   */
+  public function items($include_copied_items = TRUE, $offset = NULL, $limit = NULL) {
+    // Look for relationship records:
+    $q = db_select('view_channel_has_item', 'vci')
+      ->fields('vci', array('item_nid', 'copied'))
+      ->condition('channel_nid', $this->nid());
+
+    // Add condition if we want to exclude copied items:
+    if (!$include_copied_items) {
+      $q->condition(db_or()->condition('copied', 0)->condition('copied'));
+    }
+
+    // Add LIMIT clause:
+    if ($offset !== NULL && $limit !== NULL) {
+      $q->range($offset, $limit);
+    }
+
+    // Add ORDER BY clause:
+    $q->orderBy('changed', 'DESC');
+
+    // Get the items:
+    $rs = $q->execute();
+    $items = array();
+    foreach ($rs as $rec) {
+      $item = Item::create($rec->item_nid);
+//      $item->load();
+      $items[] = $item;
+    }
+    return $items;
   }
 
   /**
@@ -125,19 +187,6 @@ class Channel extends Node {
   public function hasItem(Item $item) {
     return (bool) moonmars_relationships_get_relationships('has_item', 'node', $this->nid(), 'node', $item->nid());
   }
-
-  /**
-   * Get a link to a channel's entity's page.
-   *
-   * @return string
-   */
-  public function entityLink() {
-    $entity = $this->parentEntityInfo();
-    return l($this->title(), $entity['alias']);
-  }
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Posting and updating items in channels.
 
   /**
    * Add an item to a channel.
@@ -248,14 +297,11 @@ class Channel extends Node {
     }
 
     // d) If the item is being posted in a group, all members of the group.
-    $entity = $this->parentEntityInfo();
-    if ($entity['entity_type'] == 'node') {
-      $node = node_load($entity['entity_id']);
-      if ($node->type == 'group') {
-        $members = Group::create($node)->members();
-        foreach ($members as $member) {
-          $subscribers[$member->uid()] = $member;
-        }
+    $entity = $this->parentEntity();
+    if ($entity instanceof Group) {
+      $members = $entity->members();
+      foreach ($members as $member) {
+        $subscribers[$member->uid()] = $member;
       }
     }
 
@@ -286,9 +332,9 @@ class Channel extends Node {
         }
         else {
           // New comment posted or existing comment edited:
-          $poster = ($subscriber->uid() == $original_poster->uid()) ? 'you' : $original_poster->link();
+          $original_poster_name = ($subscriber->uid() == $original_poster->uid()) ? 'you' : $original_poster->link();
           $action = $is_new ? "commented on an item" : "edited their comment on an item";
-          $message = $poster->link() . " $action posted by $poster in $current_channel_link.";
+          $message = $poster->link() . " $action posted by $original_poster_name in $current_channel_link.";
         }
         // Send the notification
         $subscriber->notify($message);
@@ -297,31 +343,12 @@ class Channel extends Node {
   }
 
   /**
-   * Get/set the current channel.
-   *
-   * @static
-   * @return Channel
-   */
-  public static function currentChannel($channel_nid = NULL) {
-    if ($channel_nid === NULL) {
-      // Get the current channel:
-      return Channel::create($_SESSION['current_channel_nid']);
-    }
-    else {
-      // Set the current channel:
-      $_SESSION['current_channel_nid'] = $channel_nid;
-    }
-  }
-
-  /**
-   * Get the items in the channel.
+   * Get the total number of items in the channel.
    *
    * @param bool $include_copied_items
-   * @param int $offset
-   * @param int $limit
    * @return array
    */
-  public function items($include_copied_items = TRUE, $offset = NULL, $limit = NULL) {
+  public function itemCount($include_copied_items = TRUE) {
     // Look for relationship records:
     $q = db_select('view_channel_has_item', 'vci')
       ->fields('vci', array('item_nid', 'copied'))
@@ -332,39 +359,18 @@ class Channel extends Node {
       $q->condition(db_or()->condition('copied', 0)->condition('copied'));
     }
 
-    // Add LIMIT clause:
-    if ($offset !== NULL && $limit !== NULL) {
-      $q->range($offset, $limit);
-    }
-
-    // Add ORDER BY clause:
-    $q->orderBy('changed', 'DESC');
-
-    // Get the items:
+    // Get the items and return the count:
     $rs = $q->execute();
-    $items = array();
-    foreach ($rs as $rec) {
-      $item = Item::create($rec->item_nid);
-      $item->load();
-
-      // If the item was copied, get some info about this:
-      $item->prop('copied', (bool) $rec->copied);
-      if ($rec->copied) {
-        $item->prop('original_channel', $item->originalChannel());
-      }
-
-      $items[] = $item;
-    }
-    return $items;
+    return $rs->rowCount();
   }
 
   /**
-   * Render a channel.
+   * Render a channel's items.
    *
    * @param bool $include_copied_items
    * @return string
    */
-  public function render($include_copied_items = TRUE) {
+  public function renderItems($include_copied_items = TRUE) {
     // Get the page number:
     $page = isset($_GET['page']) ? ((int) $_GET['page']) : 0;
     $page_size = 10;
@@ -380,7 +386,29 @@ class Channel extends Node {
       $node_view['comments'] = comment_node_page_additions($node);
       $node_views[] = $node_view;
     }
+
     return "<div id='channel-items'>" . render($node_views) . "</div>";
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Current channel.
+
+  /**
+   * Get/set the current channel.
+   *
+   * @static
+   * @param null|Channel $channel
+   * @return Channel
+   */
+  public static function currentChannel($channel = NULL) {
+    if ($channel === NULL) {
+      // Get the current channel:
+      return (isset($_SESSION['current_channel_nid']) && $_SESSION['current_channel_nid']) ? Channel::create($_SESSION['current_channel_nid']) : NULL;
+    }
+    else {
+      // Remember the current channel nid in the session:
+      $_SESSION['current_channel_nid'] = $channel->nid();
+    }
   }
 
 }

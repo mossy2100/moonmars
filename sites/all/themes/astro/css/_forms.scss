@@ -140,6 +140,45 @@ form {
   }
 }
 
+////////////////////////////////////////////////////////////////////////
+// Check username message - register and profile forms
+
+#edit-name-wrapper {
+  height: 24px;
+
+  input {
+    float: left;
+  }
+
+  div {
+    height: 24px;
+    line-height: 24px;
+    margin-left: 5px;
+    float: left;
+  }
+
+  #username-check {
+    color: $blue3;
+    cursor: pointer;
+  }
+
+  #username-message {
+    &.username-valid {
+      color: $green3;
+    }
+
+    &.username-invalid {
+      color: $red3;
+    }
+  }
+
+  #username-waiting {
+    height: 20px;
+    width: 16px;
+    background: url('../images/loading1.gif') no-repeat right 3px;
+  }
+}
+
 
 ////////////////////////////////////
 // User login form in page
@@ -248,9 +287,7 @@ form {
   #edit-field-mobile-phone-und-0-value {
     width: 150px;
   }
-
 }
-
 
 ////////////////////////////////////////////////////////////////////////
 // Moon or Mars field (register form and profile form)

@@ -18,7 +18,8 @@ require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'node') . '/node.page
   <div<?php print $content_attributes; ?>>
 
     <?php
-    if (moonmars_items_can_post()) {
+    // If the logged-in member can post items in this channel, show the new item form.
+    if ($current_member && $current_member->canPostItem($channel)) {
       ?>
       <div class='post-form-wrapper'>
         <h2>Share something</h2>
@@ -26,21 +27,29 @@ require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'node') . '/node.page
         <div class='post-article-body'>
 
           <div class='user-picture'>
-            <?php echo $new_item_picture; ?>
+            <?php echo $current_member->avatarTooltip(); ?>
           </div>
 
           <div class='post-content-wrapper' <?php print $content_attributes; ?>>
             <div class='post-content'>
-              <?php echo $new_item_username; ?>
-              <?php echo render(node_add('item')); ?>
+              <?php
+              // Current member's username:
+              echo $current_member->tooltipLink();
+              // New item form:
+              echo render(node_add('item'));
+              ?>
             </div>
           </div>
+
         </div>
       </div>
       <?php
     } ?>
 
-    <?php echo $items; ?>
+    <?php
+    // Channel items:
+    echo $items;
+    ?>
 
   </div>
 

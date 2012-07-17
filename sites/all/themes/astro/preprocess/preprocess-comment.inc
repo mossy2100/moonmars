@@ -2,31 +2,20 @@
 
 function astro_alpha_preprocess_comment(&$vars) {
 
-  // Theme the user picture:
-  $member = Member::create($vars['elements']['#comment']->uid);
-  $vars['picture'] = $member->avatarTooltip();
+  // Get the ItemComment object:
+  $item_comment = ItemComment::create($vars['elements']['#comment']);
+  $vars['item_comment'] = $item_comment;
 
-  // Format the username as a link:
-  $username = $vars['elements']['#comment']->name;
-  $vars['username'] = l($username, 'user/' . $vars['elements']['#comment']->uid,
-    array(
-         'attributes' => array(
-           'class' => array('username'),
-           'title' => "Visit $username&apos;s profile."
-         )
-    ));
+  // Theme the user picture:
+  $poster = $item_comment->creator();
+  $vars['poster'] = $poster;
+  $vars['picture'] = $poster->avatarTooltip();
 
   // Format the comment created datetime:
   $vars['created_datetime'] = astro_format_about_how_long_ago($vars['elements']['#comment']->created);
 
-  // If no score is set, make up a random one for now:
-  $vars['score'] = isset($vars['elements']['#comment']->field_score[LANGUAGE_NONE][0]['value']) ? $vars['elements']['#comment']->field_score[LANGUAGE_NONE][0]['value'] : 0;
-  if (!$vars['score']) {
-    $vars['score'] = mt_rand(-20, 9999);
-  }
-
-  // Remove the "reply" link. For now, people can only comment on the node, not on other comments.
-  unset($vars['content']['links']['comment']['#links']['comment-reply']);
+  // Get the comment's score:
+//  $vars['score'] = isset($vars['elements']['#comment']->field_score[LANGUAGE_NONE][0]['value']) ? $vars['elements']['#comment']->field_score[LANGUAGE_NONE][0]['value'] : 0;
 
   if (!user_is_logged_in()) {
     $login_to_comment = &$vars['content']['links']['comment']['#links']['comment_forbidden']['title'];
@@ -41,19 +30,45 @@ function astro_alpha_preprocess_comment(&$vars) {
   $vars['attributes_array']['data-nid'] = $nid;
   $vars['attributes_array']['id'] = "comment-article-$cid";
 
-  // If we have an edit link, add a form for editing the comment.
-  if (isset($vars['content']['links']['comment']['#links']['comment-edit'])) {
+  // Add links for urls, mentions and tags to the comment text:
+  $comment_text = $vars['content']['comment_body'][0]['#markup'];
+  $vars['content']['comment_body'][0]['#markup'] = moonmars_text_filter($comment_text);
+
+  // Get the current member:
+  $current_member = Member::currentMember();
+
+  // Remove the default links:
+  unset($vars['content']['links']);
+
+  // Generate links for editing and deleting comment:
+  $links = '';
+  if ($current_member->canDeleteComment($item_comment)) {
+    $links .= "<li class='comment-delete'>delete</li>";
+  }
+  if ($current_member->canEditComment($item_comment)) {
+    $links .= "<li class='comment-edit'>edit</li>";
+  }
+  if ($links) {
+    $links = "
+      <ul class='action-links clearfix'>
+        $links
+      </ul>
+    ";
+  }
+  $vars['links'] = $links;
+
+  // Add a form for editing the comment if the user is allowed to edit it:
+  if ($current_member->canEditComment($item_comment)) {
 //    dbg($vars['content']['comment_body'][0]['#markup']);
     $vars['edit_comment_form'] = "
       <form class='comment-form edit-comment-form'>
-        <textarea id='edit-comment-$cid'>{$vars['content']['comment_body'][0]['#markup']}</textarea>
-        <div class='new-comment-controls'>
-          <input data-nid='$nid' class='cancel-comment-button' type='button' value='Cancel'>
-          <input data-nid='$nid' class='new-comment-button' type='button' value='Update'>
+        <textarea id='edit-comment-$cid'>$comment_text</textarea>
+        <div class='comment-buttons'>
+          <input data-nid='$nid' class='form-button cancel-comment-button' type='button' value='Cancel'>
+          <input data-nid='$nid' class='form-button update-comment-button' type='button' value='Update'>
         </div>
       </form>
     ";
   }
-
 
 }

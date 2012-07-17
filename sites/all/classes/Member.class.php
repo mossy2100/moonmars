@@ -5,9 +5,33 @@
 
 class Member extends User {
 
-  private $age;
-  private $avatar;
-  private $tooltip;
+  /**
+   * The member's age.
+   *
+   * @var int
+   */
+  protected $age;
+
+  /**
+   * HTML for the member's avatar.
+   *
+   * @var string
+   */
+  protected $avatar;
+
+  /**
+   * HTML for the member's tooltip.
+   *
+   * @var string
+   */
+  protected $tooltip;
+
+  /**
+   * The member's channel.
+   *
+   * @var string
+   */
+  protected $channel;
 
   /**
    * Constructor.
@@ -17,17 +41,17 @@ class Member extends User {
   }
 
   /**
-   * Create a new Member object.
+   * Get the member object for the current logged-in user.
    *
-   * @param null|int|stdClass|string $user_param
-   * @return Member
+   * @static
+   * @return Member|null
    */
-  public static function create($user_param = NULL) {
-    return parent::create(__CLASS__, $user_param);
+  public static function currentMember() {
+    return user_is_logged_in() ? Member::create($GLOBALS['user']->uid) : NULL;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Get member details.
+  // Get and set methods.
 
   /**
    * Get the member's full name.
@@ -41,19 +65,18 @@ class Member extends User {
   /**
    * Get the location as an array.
    *
-   * @param bool $full
    * @return array
    */
-  public function location($full = FALSE) {
+  public function location() {
     $location = array(
       'city'          => $this->field('field_user_location', LANGUAGE_NONE, 0, 'city'),
       'province_code' => $this->field('field_user_location', LANGUAGE_NONE, 0, 'province'),
     );
 
-    // Get the country code:
+    // Get the country code. Note, this will be lower-case, because that's what the location module uses:
     $country_code = $this->field('field_user_location', LANGUAGE_NONE, 0, 'country');
 
-    // Location module uses lower-case country codes. Drupal and basically everyone else in the world uses upper-case:
+    // Get the upper-case country code because that's what everyone else in the whole world uses:
     $location['country_code'] = strtoupper($country_code);
 
     // Default names:
@@ -61,18 +84,16 @@ class Member extends User {
     $location['country_name'] = '';
 
     if ($country_code) {
-      if ($full) {
-        // If we have a province code, get the full province name:
-        if ($location['province_code']) {
-          $provinces = location_get_provinces($country_code);
-          $location['province_name'] = $provinces[$location['province_code']];
-        }
-
-        // Get the full country name:
-        require_once DRUPAL_ROOT . '/includes/locale.inc';
-        $countries = country_get_list();
-        $location['country_name'] = $countries[$location['country_code']];
+      // If we have a province code, get the full province name:
+      if ($location['province_code']) {
+        $provinces = location_get_provinces($country_code);
+        $location['province_name'] = $provinces[$location['province_code']];
       }
+
+      // Get the full country name:
+      require_once DRUPAL_ROOT . '/includes/locale.inc';
+      $countries = country_get_list();
+      $location['country_name'] = $countries[$location['country_code']];
     }
 
     return $location;
@@ -82,20 +103,32 @@ class Member extends User {
    * Get the location as a string.
    *
    * @param bool $full
+   *   If TRUE, use province and country names instead of codes.
    * @return array
    */
   public function locationStr($full = FALSE, $map_link = FALSE) {
-    $location = $this->location($full);
+    $location = $this->location();
 
     if ($full) {
-      $location_str = implode(', ', array_filter(array($location['city'], $location['province_name'], $location['country_name'])));
+      $location_str = implode(', ', array_filter(array(
+                                                      $location['city'],
+                                                      $location['province_name'],
+                                                      $location['country_name']
+                                                 )));
     }
     else {
-      $location_str = implode(', ', array_filter(array($location['city'], $location['province_code'], $location['country_code'])));
+      $location_str = implode(', ', array_filter(array(
+                                                      $location['city'],
+                                                      $location['province_code'],
+                                                      $location['country_code']
+                                                 )));
     }
 
     if ($map_link) {
-      return l($location_str, 'http://maps.google.com', array('attributes' => array('target' => '_blank'), 'query' => array('q' => $location_str)));
+      return l($location_str, 'http://maps.google.com', array(
+                                                             'attributes'  => array('target' => '_blank'),
+                                                             'query'       => array('q' => $location_str)
+                                                        ));
     }
     else {
       return $location_str;
@@ -109,8 +142,10 @@ class Member extends User {
    */
   public function age() {
     // Cache the result of the age calculation in the age property so we don't have to recalculate it again.
-    if (!$this->age) {
+    if (!isset($this->age)) {
+
       $date_of_birth = $this->field('field_date_of_birth');
+
       if ($date_of_birth) {
         $date_of_birth = new StarDateTime($date_of_birth);
         $today = StarDateTime::today();
@@ -118,8 +153,9 @@ class Member extends User {
         $current_year = $today->year();
         $birthday_this_year = $date_of_birth;
         $birthday_this_year->year($today->year());
-        $this->age = ($current_year - $birth_year) + ($birthday_this_year <= $today ? 1 : 0);
+        $this->age = ($current_year - $birth_year) - ($birthday_this_year <= $today ? 0 : 1);
       }
+
     }
     return $this->age;
   }
@@ -148,7 +184,10 @@ class Member extends User {
   public function ageGender($full = FALSE) {
     $gender = $this->gender($full);
     $age = $this->age();
-    return implode('/', array_filter(array($gender, $age)));
+    return implode('/', array_filter(array(
+                                          $gender,
+                                          $age
+                                     )));
   }
 
   /**
@@ -185,8 +224,11 @@ class Member extends User {
         'alt'        => $this->entity->name,
         'attributes' => array('class' => array('avatar-icon')),
       );
+
+      // Remember the HTML in the property so we don't have to theme the image again:
       $this->avatar = theme('image_style', $image);
     }
+
     return $this->avatar;
   }
 
@@ -196,7 +238,10 @@ class Member extends User {
    * @return string
    */
   public function avatarLink() {
-    return l($this->avatar(), $this->alias(), array('html' => TRUE, 'attributes' => array('class' => array('avatar-link'))));
+    return l($this->avatar(), $this->alias(), array(
+                                                   'html'       => TRUE,
+                                                   'attributes' => array('class' => array('avatar-link'))
+                                              ));
   }
 
   /**
@@ -213,6 +258,7 @@ class Member extends User {
       // Get the name:
       $username = $this->name();
       $full_name = $this->fullName();
+
       // Cater for names that are too long - we don't want the tooltip too wide.
       if (strlen($full_name) > 50) {
         $full_name = substr($full_name, 0, 47) . '...';
@@ -228,10 +274,11 @@ class Member extends User {
       );
       $info = implode('<br>', array_filter($info));
 
-      return
-        "<div class='user-tooltip' title='Visit $username&apos;s profile'>" .
-          $this->avatar() .
-          "<div class='user-tooltip-text'>$info</div>" .
+      // Remember the HTML in a property in case we need it again:
+      $this->tooltip = "
+        <div class='user-tooltip' title='Visit $username&apos;s profile'>" .
+        $this->avatar() .
+        "<div class='user-tooltip-text'>$info</div>" .
         "</div>";
     }
 
@@ -255,7 +302,18 @@ class Member extends User {
   }
 
   /**
-   * Get a member's level.
+   * Get a link to the member's profile with a tooltip.
+   */
+  public function tooltipLink() {
+    $attr = array(
+      'class' => array('username'),
+      'title' => 'Visit ' . $this->name() . '&apos;s profile.'
+    );
+    return l($this->name(), $this->alias(), array('attributes' => $attr));
+  }
+
+  /**
+   * Get/set a member's level.
    *
    * @return string|bool
    */
@@ -317,7 +375,7 @@ class Member extends User {
   }
 
   /**
-   * Get the user's member level number.
+   * Get the user's member level number, which is also their rating multiplier.
    *
    * @return int
    */
@@ -332,8 +390,47 @@ class Member extends User {
    * @return int
    */
   public function channel($create = TRUE) {
-    return Channel::entityChannel('user', $this->uid(), $create);
+    if (!isset($this->channel)) {
+      $this->channel = Channel::entityChannel('user', $this->uid(), $create);
+    }
+    return $this->channel;
   }
+
+  /**
+   * Update the path alias for the member's profile.
+   */
+  public function resetAlias() {
+    $source = 'user/' . $this->uid();
+    $alias = 'member/' . $this->name();
+
+    // See if there's already an alias for this user:
+    $rec = db_select('url_alias', 'ua')
+      ->fields('ua', array('alias'))
+      ->condition('source', $source)
+      ->execute()
+      ->fetch();
+
+    if ($rec) {
+      // Update:
+      db_update('url_alias')
+        ->fields(array('alias' => "member/$this->entity->name"))
+        ->condition('source', $source)
+        ->execute();
+    }
+    else {
+      // Insert:
+      db_insert('url_alias')
+        ->fields(array(
+                      'source'   => $source,
+                      'alias'    => $alias,
+                      'language' => LANGUAGE_NONE,
+                 ))
+        ->execute();
+    }
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Group-related methods.
 
   /**
    * Get a member's groups.
@@ -497,6 +594,199 @@ class Member extends User {
    */
   public function notify($message) {
 //    drupal_mail('moonmars_members', 'notification', $this->mail(), LANGUAGE_NONE, $params = array(), $from = NULL, $send = TRUE)
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Permissions.
+
+  /**
+   * Check if the member can post items in the channel.
+   *
+   * @param Channel $channel
+   * @return bool
+   */
+  public function canPostItem(Channel $channel) {
+    // Get the parent entity:
+    $parent_entity = $channel->parentEntity();
+
+    if ($parent_entity instanceof Member) {
+      // A member can post in their own channel, or in the channel of someone who follows them:
+      return Member::equals($parent_entity, $this) || $parent_entity->follows($this);
+    }
+    else if ($parent_entity instanceof Group) {
+      // Only members of the group can post in the group's channel:
+      return $parent_entity->hasMember($this);
+    }
+
+    return FALSE;
+  }
+
+  /**
+   * Check if the member can edit an item.
+   *
+   * @param Item $item
+   * @return bool
+   */
+  public function canEditItem(Item $item) {
+    // For now, no-one can edit items until the UI is sorted out.
+    return FALSE;
+
+    // This function will probably change to this code here, but need to think about the UI.
+//    return Member::equals($this, $item->creator());
+  }
+
+  /**
+   * Check if the member can delete an item.
+   *
+   * @param Item $item
+   * @return bool
+   */
+  public function canDeleteItem(Item $item) {
+    // Check the item is valid:
+    if (!$item->valid()) {
+      return FALSE;
+    }
+
+    // Check core permissions:
+//    if (user_access('administer nodes', $this->user()) || user_access('delete any item content', $this->user())) {
+//      return TRUE;
+//    }
+
+    // A member can delete an item if they posted it.
+    if (Member::equals($this, $item->creator())) {
+      return TRUE;
+    }
+
+    // A member can delete any item posted in their channel.
+    if (Channel::equals($this->channel(), $item->originalChannel())) {
+      return TRUE;
+    }
+
+    // A group administrator can delete any item from a group.
+    // (This rule will also apply to events and projects when implemented.)
+//    $parent_entity = $original_channel->parentEntity();
+//    if ($parent_entity instanceof Group && $parent_entity->hasAdmin($this)) {
+//      return TRUE;
+//    }
+
+    return FALSE;
+  }
+
+  /**
+   * Check if the member can remove an item from the specified channel
+   * (which is not necessarily the channel where the item was originally posted).
+   *
+   * @param Item $item
+   * @param Channel $channel
+   * @return bool
+   */
+  public function canRemoveItem(Item $item, Channel $channel) {
+    // Check the item and channel are valid:
+    if (!$item->valid() || !$channel->valid()) {
+      return FALSE;
+    }
+
+    // Members can remove any item from their own channel that they can't delete.
+    return Channel::equals($channel, $this->channel()) && !$this->canDeleteItem($item);
+  }
+
+  /**
+   * Check if the member can post a comment on an item.
+   *
+   * @param Item $item
+   * @return bool
+   */
+  public function canPostComment(Item $item) {
+    // Check the item is valid:
+    if (!$item->valid()) {
+      return FALSE;
+    }
+
+    // Get the channel where the item was originally posted:
+    $original_channel = $item->originalChannel();
+
+    // Get the parent entity of the original channel:
+    $parent_entity = $original_channel->parentEntity();
+
+    // If originally posted in a member channel:
+    if ($parent_entity instanceof Member) {
+      // If the item was posted in the member's own channel, they can comment on it:
+      if (Channel::equals($original_channel, $this->channel())) {
+        return TRUE;
+      }
+      else {
+        // If the item was posted in another member's channel, they can only comment on it if that member follows them:
+        return $parent_entity->follows($this);
+      }
+    }
+    elseif ($parent_entity instanceof Group) {
+      // If posted in a group channel, the member can comment on it if they are a member of the group:
+      return $parent_entity->hasMember($this);
+    }
+
+    return FALSE;
+  }
+
+  /**
+   * Check if the member can edit a comment.
+   *
+   * @param ItemComment $comment
+   * @return bool
+   */
+  public function canEditComment(ItemComment $comment) {
+    // Check the comment is valid:
+    if (!$comment->valid()) {
+      return FALSE;
+    }
+
+    // Users with 'administer comments' (i.e. admins) can edit any comment.
+//    if (user_access('administer comments', $this->user())) {
+//      return TRUE;
+//    }
+
+    // Members can edit their own comments:
+    return Member::equals($comment->creator(), $this);
+  }
+
+  /**
+   * Check if the member can delete the comment.
+   *
+   * @param ItemComment $comment
+   * @return bool
+   */
+  public function canDeleteComment(ItemComment $comment) {
+    // Check the comment is valid:
+    if (!$comment->valid()) {
+      return FALSE;
+    }
+
+    // Users with 'administer comments' (i.e. admins) can delete any comment.
+//    if (user_access('administer comments', $this->user())) {
+//      return TRUE;
+//    }
+
+    // Members can delete their own comments:
+    if (Member::equals($comment->creator(), $this)) {
+      return TRUE;
+    }
+
+    // Members can delete comments made on items posted in their channel.
+    if (Channel::equals($comment->item()->originalChannel(), $this->channel())) {
+      return TRUE;
+    }
+
+    return FALSE;
+  }
+
+  /**
+   * Check if the member can join a group.
+   *
+   * @param Group $group
+   * @return bool
+   */
+  public function canJoinGroup(Group $group) {
+    // For now, any member can join any group:
+    return TRUE;
   }
 
 }
