@@ -250,10 +250,15 @@ class Channel extends Node {
    *   TRUE if the post is a comment, FALSE if an item.
    */
   public function postItem(Item $item, $is_new, $is_comment) {
-    // Get the current poster:
+    // Get the current item/comment poster:
     global $user;
     $poster_uid = $user->uid;
     $poster = Member::create($poster_uid);
+    $poster_link = $poster->link();
+
+    // Get the original item poster:
+    $original_poster = $item->creator();
+    $original_poster_link = $original_poster->link();
 
     /////////////////////////////////////////////////////////////////////////////
     // Step 1. Add or bump the item in the current channel.
@@ -264,7 +269,7 @@ class Channel extends Node {
     // Step 2. Bump the item in the channel where it was originally posted, if different.
     if ($is_new && !$is_comment) {
       // New item. The current channel will be the original channel. No need to bump.
-      $original_channel_nid = $current_channel_nid;
+      $original_channel = $this;
     }
     else{
       $original_channel = $item->originalChannel();
@@ -274,25 +279,32 @@ class Channel extends Node {
       }
     }
 
+    $original_channel_link = $original_channel->entityLink();
+
     /////////////////////////////////////////////////////////////////////////////
     // Step 3. Find out which members should see this item in their channel:
     $subscribers = array();
 
     // a) The current user, i.e. the posting member.
-    $subscribers[$poster_uid] = $poster;
+    $subscribers[$poster_uid] = array(
+      'member' => $poster
+    );
 
-    // b) Everyone following the person who edited the item.
+    // b) Everyone following the person who posted, edited or commented.
     $followers = $poster->followers();
     foreach ($followers as $follower) {
-      $subscribers[$follower->uid()] = $follower;
+      $subscribers[$follower->uid()]['member'] = $follower;
+      $subscribers[$follower->uid()]['reasons'][] = "You follow $poster_link.";
     }
 
-    // c) Everyone following the original poster (if different).
-    $original_poster = $item->creator();
-    if ($original_poster->uid() != $poster_uid) {
+    // c) Everyone following the original poster (if different to the current poster).
+    if (!Member::equals($original_poster, $poster)) {
       $followers = $original_poster->followers();
       foreach ($followers as $follower) {
-        $subscribers[$follower->uid()] = $follower;
+        if (!array_key_exists($subscribers, $follower->uid())) {
+          $subscribers[$follower->uid()]['member'] = $follower;
+          $subscribers[$follower->uid()]['reasons'][] = "You follow $original_poster_link.";
+        }
       }
     }
 
@@ -301,41 +313,86 @@ class Channel extends Node {
     if ($entity instanceof Group) {
       $members = $entity->members();
       foreach ($members as $member) {
-        $subscribers[$member->uid()] = $member;
+        $subscribers[$member->uid()]['member'] = $member;
+        $subscribers[$member->uid()]['reasons'][] = "You're a member of the " . $entity->link() . " group.";
       }
     }
 
     // f) Everyone mentioned in the item text.
     $referenced_members = moonmars_text_referenced_members($item->text());
     foreach ($referenced_members as $member) {
-      $subscribers[$member->uid()] = $member;
+      $subscribers[$member->uid()]['member'] = $member;
+      $subscribers[$member->uid()]['reasons'][] = "You're mentioned in the " . ($is_comment ? 'comment' : 'item') . ".";
     }
 
     // g) Everyone following a hash tag that appears in the item text. @todo
 
     /////////////////////////////////////////////////////////////////////////////
     // Step 4. Copy/bump the item in all the channels of all relevant subscribers:
-    foreach ($subscribers as $subscriber) {
-      // Copy/bump the item:
+    foreach ($subscribers as $subscriber_uid => $subscriber_info) {
+      $subscriber = $subscriber_info['member'];
+
+      // Copy/bump the item in the subscribers channel:
       $subscriber->channel()->addItem($item);
 
       // Send notifications to everyone who isn't the poster:
-      if ($subscriber->uid() != $poster_uid) {
+      if ($subscriber_uid != $poster_uid) {
 
-        // @todo update notifications to include messages about mentions (referenced members)
+        $message = "<p>\n";
 
-        $current_channel_link = $this->entityLink();
-        if (!$is_comment) {
-          // New item posted or existing item edited:
-          $action = $is_new ? "posted a new item" : "edited an item";
-          $message = $poster->link() . " $action in $current_channel_link.";
+        if ($is_comment) {
+          // New comment posted or existing comment edited:
+          $action = $is_new ? "commented" : "edited their comment";
+          if (Member::equals($subscriber, $original_poster)) {
+            $posted_by = "you posted";
+          }
+          elseif (Member::equals($poster, $original_poster)) {
+            $posted_by = "they posted";
+          }
+          else {
+            $posted_by = "posted by $original_poster_link";
+          }
+          $message .= "$poster_link $action on an item $posted_by in $original_channel_link.\n";
         }
         else {
-          // New comment posted or existing comment edited:
-          $original_poster_name = ($subscriber->uid() == $original_poster->uid()) ? 'you' : $original_poster->link();
-          $action = $is_new ? "commented on an item" : "edited their comment on an item";
-          $message = $poster->link() . " $action posted by $original_poster_name in $current_channel_link.";
+          // New item posted or existing item edited:
+          $action = $is_new ? "posted a new" : "edited an";
+          $message .= "$poster_link $action item in $original_channel_link.\n";
         }
+
+        $message .= "</p>\n";
+
+        // Reasons:
+        $message .= "<p>You're receiving this notification because:\n";
+        $message .= "<ul>\n";
+        foreach ($subscriber_info['reasons'] as $reason) {
+          $message .= "<li>$reason</li>\n";
+        }
+        $message .= "</ul>\n";
+
+        // Item link:
+        $message .= "<p>Go to the item to review or post comments: " . $item->link() . "</p>\n";
+
+        // Comment by email instructions:
+        $can_post_comment = $subscriber->canPostComment($item);
+        if ($can_post_comment) {
+          $message .= "<hr>\n";
+          $message .= "<p>Scroll down to the bottom of this message to post a new comment by email.</p>";
+        }
+
+        // The item with comments:
+        $message .= "<hr>\n";
+        $message .= $item->render();
+
+        // Comment by email:
+        if ($can_post_comment) {
+          $message .= "<hr>\n";
+          $message .= "<p>To post a comment by email, enter your comment between the tags below, and click <em>Reply</em> in your email client:</p>\n";
+          $message .= "[BEGIN COMMENT]<br>";
+          $message .= "<br><br><br>";
+          $message .= "[END COMMENT]<br>";
+        }
+
         // Send the notification
         $subscriber->notify($message);
       }
@@ -373,10 +430,9 @@ class Channel extends Node {
   public function renderItems($include_copied_items = TRUE) {
     // Get the page number:
     $page = isset($_GET['page']) ? ((int) $_GET['page']) : 0;
-    $page_size = 10;
 
     // Get the items from this channel:
-    $items = $this->items($include_copied_items, $page * $page_size, $page_size);
+    $items = $this->items($include_copied_items, $page * self::pageSize, self::pageSize);
 
     // Render the items:
     $node_views = array();
@@ -386,8 +442,18 @@ class Channel extends Node {
       $node_view['comments'] = comment_node_page_additions($node);
       $node_views[] = $node_view;
     }
+    $items = render($node_views);
 
-    return "<div id='channel-items'>" . render($node_views) . "</div>";
+    // Render the pager:
+    $n_items = $this->itemCount();
+    pager_default_initialize($n_items, self::pageSize);
+    $pager = theme('pager', array('quantity' => $n_items));
+
+    return "
+      <div id='channel'>
+        <div id='channel-items'>$items</div>
+        <div id='channel-pager'>$pager</div>
+      </div>";
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,14 +1,6 @@
 
-button,
-input[type="button"],
-input[type="submit"],
-input[type="reset"],
-input[type="file"]::-webkit-file-upload-button,
-input.form-submit,
-#edit-submit,
-.view-calendar .pager a,
-.block-menu ul.menu li a {
-	background-image: none;
+@mixin button {
+	background: none;
   background-color: $blue3;
   text-shadow: none;
   color: white;
@@ -26,4 +18,21 @@ input.form-submit,
     color: white;
     text-decoration: none;
   }
+}
+
+
+button,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+input.form-submit,
+#edit-submit,
+.view-calendar .pager a,
+.block-menu ul.menu li a {
+  @include button;
+}
+
+// This one is last because Firefox can't parse it, thinks it's an error and discards the whole CSS declaration.
+input[type="file"]::-webkit-file-upload-button {
+  @include button;
 }

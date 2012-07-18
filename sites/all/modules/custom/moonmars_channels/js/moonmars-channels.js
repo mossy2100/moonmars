@@ -108,8 +108,8 @@ function collapsePost(postArticle, autoCollapse) {
  *
  * @param selector
  */
-function removePost(selector) {
-  $(selector).animate({
+function removePost(post) {
+  post.animate({
     opacity: 0,
     height: 0,
     marginTop: 0,
@@ -183,63 +183,89 @@ function setupItemBehaviour(itemArticle, autoCollapse) {
 //    }
 //  );
 
-  // Setup behaviour for delete link:
-  itemArticle.find('ul.item-links li.item-delete').click(
-    function () {
-      var result = confirm('Are you sure you want to delete this item? This action cannot be reversed.');
-      if (result) {
-        var itemArticle = $(this).closest('article');
-        var item_nid = itemArticle.attr('data-nid');
-        $(this).addClass('waiting');
-        $.post("/ajax/item/delete", {item_nid: item_nid}, deleteItemReturn, 'json');
-      }
-      return false;
-    }
-  );
-
-  // Setup behaviour for remove link:
-  itemArticle.find('ul.item-links li.item-remove').click(
-    function () {
-      var result = confirm('Are you sure you want to remove this item from your channel? This action cannot be reversed.');
-      if (result) {
-        var itemArticle = $(this).closest('article');
-        var item_nid = itemArticle.attr('data-nid');
-        $(this).addClass('waiting');
-        $.post("/ajax/item/remove", {item_nid: item_nid}, removeItemReturn, 'json');
-      }
-      return false;
-    }
-  );
 //  collapsePost(itemArticle, autoCollapse);
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Deleting items.
+
 /**
- * Handler from when we get back from deleting a item via AJAX.
+ * Handler for the delete item link.
+ *
+ * @param item_nid
+ * @return bool
+ */
+function deleteItem(item_nid) {
+  var result = confirm('Are you sure you want to delete this item? This action cannot be reversed.');
+  if (result) {
+    // Show the waiting icon:
+    var itemArticle = $('#node-item-' + item_nid);
+    itemArticle.find('.post-controls .item-delete').addClass('waiting');
+
+    // Request the deletion:
+    $.post("/ajax/item/delete", {item_nid: item_nid}, deleteItemReturn, 'json');
+  }
+  return false;
+}
+
+/**
+ * Handler for when we get back from deleting a item via AJAX.
  */
 function deleteItemReturn(data, textStatus, jqXHR) {
-  $(this).removeClass('waiting');
+  // Hide the waiting icon:
+  var itemArticle = $('#node-item-' + data.item_nid);
+  itemArticle.find('.post-controls .item-delete').removeClass('waiting');
+
   if (!data.result) {
     alert(data.error);
   }
   else {
     // Remove the item:
-    removePost('#node-item-' + data.item_nid);
+    removePost(itemArticle);
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Removing items.
+
+/**
+ * Handler for the remove item link.
+ *
+ * @param item_nid
+ * @return bool
+ */
+function removeItem(item_nid) {
+  var result = confirm('Are you sure you want to remove this item from your channel? This action cannot be reversed.');
+  if (result) {
+    // Show the waiting icon:
+    var itemArticle = $('#node-item-' + item_nid);
+    itemArticle.find('.post-controls .item-remove').addClass('waiting');
+
+    // Request the removal:
+    $.post("/ajax/item/remove", {item_nid: item_nid}, removeItemReturn, 'json');
+  }
+  return false;
 }
 
 /**
  * Handler from when we get back from removing a item via AJAX.
  */
 function removeItemReturn(data, textStatus, jqXHR) {
-  $(this).removeClass('waiting');
+  // Hide the waiting icon:
+  var itemArticle = $('#node-item-' + data.item_nid);
+  itemArticle.find('.post-controls .item-delete').removeClass('waiting');
+
   if (!data.result) {
     alert(data.error);
   }
   else {
     // Remove the item:
-    removePost('#node-item-' + data.item_nid);
+    removePost(itemArticle);
   }
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// New item form.
 
 /**
  * Handler for when the item type is selected.
@@ -284,10 +310,10 @@ function rateItemReturn(data, textStatus, jqXHR) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Setup behaviours for editing and deleting existing comments.
+// Editing comments.
 
 /**
- * Setup behaviour for comments.
+ * Setup behaviour for a comment.
  *
  * @param object commentArticle
  * @param bool autoCollapse
@@ -297,25 +323,6 @@ function setupCommentBehaviour(commentArticle, autoCollapse) {
   commentArticle = $(commentArticle);
 
   collapsePost(commentArticle, autoCollapse);
-
-  // Setup behaviour for edit link:
-  commentArticle.find('ul.action-links li.comment-edit').click(
-    function () {
-      var commentArticle = $(this).closest('article');
-
-      // Hide the comment text and controls:
-      commentArticle.find('.field-name-comment-body').hide();
-      commentArticle.find('.post-controls').hide();
-
-      // Show the edit comment form:
-      commentArticle.find('.edit-comment-form').show();
-
-      // ??
-      commentArticle.find('.post-content-wrapper').css('height', 'auto');
-      
-      return false;
-    }
-  );
 
   // Setup behaviour for Update button:
   commentArticle.find('.update-comment-button').click(
@@ -351,20 +358,28 @@ function setupCommentBehaviour(commentArticle, autoCollapse) {
       return false;
     }
   );
+}
 
-  // Setup behaviour for delete link:
-  commentArticle.find('ul.action-links li.comment-delete').click(
-    function () {
-      var result = confirm('Are you sure you want to delete this comment? This action cannot be reversed.');
-      if (result) {
-        var commentArticle = $(this).closest('article');
-        var cid = commentArticle.attr('data-cid');
-        $(this).addClass('waiting');
-        $.post("/ajax/comment/delete", {cid: cid}, deleteCommentReturn, 'json');
-      }
-      return false;
-    }
-  );
+/**
+ * Handler for the edit comment link.
+ *
+ * @param item_nid
+ * @return bool
+ */
+function editComment(cid) {
+  var commentArticle = $('#comment-article-' + cid);
+
+  // Hide the comment text and controls:
+  commentArticle.find('.field-name-comment-body').hide();
+  commentArticle.find('.post-controls').hide();
+
+  // Show the edit comment form:
+  commentArticle.find('.edit-comment-form').show();
+
+  // ??
+//  commentArticle.find('.post-content-wrapper').css('height', 'auto');
+
+  return false;
 }
 
 /**
@@ -396,17 +411,39 @@ function editCommentReturn(data, textStatus, jqXHR) {
   }
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Deleting comments.
+
+/**
+ * Handler for the delete comment link.
+ *
+ * @param item_nid
+ * @return bool
+ */
+function deleteComment(cid) {
+  var result = confirm('Are you sure you want to delete this comment? This action cannot be reversed.');
+  if (result) {
+    var commentArticle = $('#comment-article-' + cid);
+    commentArticle.find('.post-controls .comment-delete').addClass('waiting');
+    $.post("/ajax/comment/delete", {cid: cid}, deleteCommentReturn, 'json');
+  }
+  return false;
+}
+
 /**
  * Handler from when we get back from deleting a comment via AJAX.
  */
 function deleteCommentReturn(data, textStatus, jqXHR) {
-  $(this).removeClass('waiting');
+  // Remove the waiting icon:
+  var commentArticle = $('#comment-article-' + data.cid);
+  commentArticle.find('.post-controls .comment-delete').addClass('waiting');
+
   if (!data.result) {
     alert(data.error);
   }
   else {
     // Remove the comment:
-    removePost('#comment-article-' + data.cid);
+    removePost(commentArticle);
   }
 }
 
@@ -449,7 +486,7 @@ function setupPostButton(commentArticle) {
 }
 
 /**
- * Handler from when we get back from updating or creating a comment via AJAX.
+ * Handler from when we get back from posting a comment via AJAX.
  */
 function postCommentReturn(data, textStatus, jqXHR) {
   if (!data.result) {

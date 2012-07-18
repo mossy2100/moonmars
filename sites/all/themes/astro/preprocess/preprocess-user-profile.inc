@@ -13,7 +13,7 @@ function astro_alpha_preprocess_user_profile(&$vars) {
   $vars['current_member'] = $current_member;
 
   // Is the current member viewing their own profile?
-  $vars['viewing_own_profile'] = $profile_member->uid() == $current_member->uid();
+  $vars['viewing_own_profile'] = $current_member && ($profile_member->uid() == $current_member->uid());
 
   // Get the profile member's channel:
   $channel = $profile_member->channel();

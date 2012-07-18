@@ -90,16 +90,14 @@ article.node-item {
         display: block;
         height: $ratingButtonHeight;
         line-height: $ratingButtonHeight;
-        color: $blue3;
-        cursor: pointer;
 
-        &:hover {
-          color: $red3;
+        a {
+          line-height: $ratingButtonHeight;
         }
 
         &.waiting {
-          padding-right: 19px;
-          background: url('../images/loading1.gif') no-repeat right top;
+          padding-right: 18px;
+          background: url('../images/loading1.gif') no-repeat right 2px;
         }
       }
     }
@@ -161,15 +159,6 @@ article.node-item {
       padding: 1px 5px;
       float: right;
       font-size: 11px;
-      border: none;
-      background: none;
-      background-color: $blue3;
-      @include border-radius(3px);
-      color: white;
-      font-weight: bold;
-      text-shadow: none;
-      //box-sizing: border-box;
-      //height: 16px;
 
       &:hover {
         background-color: $red3;
@@ -277,7 +266,8 @@ input.rating-button {
 }
 
 #moonmars-members-filter-channel-form,
-article.node-channel form {
+article.node-channel form,
+article.node-item form {
   padding: 0;
   margin: 0;
   border: none;
@@ -347,5 +337,40 @@ article.comment {
   .post-article-body {
     background-color: $blue5;
     border-color: $blue4;
+  }
+}
+
+#channel-pager {
+  @include channel-page-section;
+  border-bottom: none;
+  margin-bottom: 0;
+
+  ul.pager {
+    height: 22px;
+    margin-bottom: 0;
+
+    li {
+      font-size: 12px;
+      line-height: 18px;
+      padding: 0;
+
+      &.pager-current {
+        padding: 2px 5px;
+        background-color: $blue3;
+        color: white;
+        @include border-radius(3px);
+      }
+
+      a {
+        padding: 2px 5px;
+        background-color: $grey5;
+        @include border-radius(3px);
+
+        &:hover {
+          background-color: $red3;
+          color: white;
+        }
+      }
+    }
   }
 }

@@ -9,25 +9,33 @@ function astro_alpha_preprocess_node(&$vars) {
   switch ($vars['node']->type) {
 
     case 'item':
+      drupal_add_js(drupal_get_path('module', 'moonmars_channels') . '/js/moonmars-channels.js');
+
       // Create the Item object:
       $item = Item::create($vars['node']);
       $vars['item'] = $item;
+      $item_nid = $item->nid();
 
       // Get the original poster:
       $poster = Member::create($vars['uid']);
       $vars['poster'] = $poster;
 
       // Get the current channel:
-      $current_channel = Channel::currentChannel();
+      if ($item_nid == arg(1)) {
+        $current_channel = NULL;
+      }
+      else {
+        $current_channel = Channel::currentChannel();
+      }
 
       // Get the item's original channel:
       $original_channel = $item->originalChannel();
 
       // Original channel string:
-      if (Channel::equals($current_channel, $original_channel)) {
+      if ($current_channel && Channel::equals($current_channel, $original_channel)) {
         $vars['original_channel'] = 'in this channel';
       }
-      elseif (Channel::equals($original_channel, $poster->channel())) {
+      elseif ($current_channel && Channel::equals($original_channel, $poster->channel())) {
         $vars['original_channel'] = 'in their channel';
       }
       else {
@@ -49,20 +57,32 @@ function astro_alpha_preprocess_node(&$vars) {
       }
 
       // Add links in comment text to URLs, member references and hash tags:
-      $vars['content']['field_item_text'][0]['#markup'] = moonmars_text_filter($vars['content']['field_item_text'][0]['#markup']);
+      if (isset($vars['content']['field_item_text'])) {
+        $vars['content']['field_item_text'][0]['#markup'] = moonmars_text_filter($vars['content']['field_item_text'][0]['#markup']);
+      }
 
       // Links for edit/remove/delete item:
       $links = '';
-      if ($current_member->canDeleteItem($item)) {
-        $links .= "<li class='item-delete'>delete</li>";
-      }
-      if ($current_member->canRemoveItem($item, $current_channel)) {
-        $links .= "<li class='item-remove'>remove</li>";
-      }
-      if ($current_member->canEditItem($item)) {
-        $links .= "<li class='item-edit'>edit</li>";
-      }
-      if ($links) {
+      if (user_is_logged_in()) {
+
+        // delete
+        if ($current_member->canDeleteItem($item)) {
+          $links .= "<li class='item-delete'><a href='javascript:deleteItem($item_nid)'>delete</a></li>";
+        }
+
+        // remove:
+        if ($current_channel && $current_member->canRemoveItem($item, $current_channel)) {
+          $links .= "<li class='item-remove'><a href='javascript:removeItem($item_nid)'>remove</a></li>";
+        }
+
+        // edit:
+        if ($current_member->canEditItem($item)) {
+          $links .= "<li class='item-edit'><a href='javascript:editItem($item_nid)'>edit</a></li>";
+        }
+
+        // view:
+        $links .= "<li class='item-view'><a href='/" . $item->alias() . "'>view</a></li>";
+
         $links = "
           <ul class='action-links item-links clearfix'>
             $links

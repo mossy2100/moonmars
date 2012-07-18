@@ -121,6 +121,14 @@ form {
       }
     }
   }
+
+  .form-item:first-child {
+    margin-top: 0;
+  }
+
+  #edit-actions {
+    margin-bottom: 0;
+  }
 }
 
 #region-sidebar-first,
@@ -178,21 +186,6 @@ form {
     background: url('../images/loading1.gif') no-repeat right 3px;
   }
 }
-
-
-////////////////////////////////////
-// User login form in page
-
-#user-login {
-}
-
-
-////////////////////////////////////
-// User login form in page
-
-#user-pass {
-}
-
 
 ////////////////////////////////////
 // User profile form
@@ -363,5 +356,9 @@ form {
 #user-login-form {
   input.form-text {
     width: 100%;
+  }
+
+  #edit-actions {
+    margin-bottom: 0;
   }
 }

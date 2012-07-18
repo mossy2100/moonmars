@@ -42,23 +42,30 @@ function astro_alpha_preprocess_comment(&$vars) {
 
   // Generate links for editing and deleting comment:
   $links = '';
-  if ($current_member->canDeleteComment($item_comment)) {
-    $links .= "<li class='comment-delete'>delete</li>";
-  }
-  if ($current_member->canEditComment($item_comment)) {
-    $links .= "<li class='comment-edit'>edit</li>";
-  }
-  if ($links) {
-    $links = "
-      <ul class='action-links clearfix'>
-        $links
-      </ul>
-    ";
+  if (user_is_logged_in()) {
+
+    // delete:
+    if ($current_member->canDeleteComment($item_comment)) {
+      $links .= "<li class='comment-delete'><a href='javascript:deleteComment($cid)'>delete</a></li>";
+    }
+
+    // edit:
+    if ($current_member->canEditComment($item_comment)) {
+      $links .= "<li class='comment-edit'><a href='javascript:editComment($cid)'>edit</a></li>";
+    }
+
+    if ($links) {
+      $links = "
+        <ul class='action-links clearfix'>
+          $links
+        </ul>
+      ";
+    }
   }
   $vars['links'] = $links;
 
   // Add a form for editing the comment if the user is allowed to edit it:
-  if ($current_member->canEditComment($item_comment)) {
+  if ($current_member && $current_member->canEditComment($item_comment)) {
 //    dbg($vars['content']['comment_body'][0]['#markup']);
     $vars['edit_comment_form'] = "
       <form class='comment-form edit-comment-form'>

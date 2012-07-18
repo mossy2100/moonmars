@@ -9,13 +9,13 @@ define('USERNAME_DESCRIPTION', "Usernames may only contain letters, digits, hyph
  * Implements hook_init().
  */
 function moonmars_members_init() {
+  $module_path = drupal_get_path('module', 'moonmars_members');
+  drupal_add_js("$module_path/js/avatar-tooltips.js");
+
   if (user_is_logged_in()) {
     global $user;
     drupal_add_js(array('moonmars_members' => array('username' => $user->name)), 'setting');
-
-    $module_path = drupal_get_path('module', 'moonmars_members');
     drupal_add_js("$module_path/js/set-username-menu.js");
-    drupal_add_js("$module_path/js/avatar-tooltips.js");
   }
 }
 
