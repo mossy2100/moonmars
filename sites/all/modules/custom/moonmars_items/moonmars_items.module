@@ -266,7 +266,8 @@ function moonmars_items_ajax_edit() {
  */
 function moonmars_items_ajax_delete() {
   // Get the request parameters.
-  $item_nid = (int) $_REQUEST['item_nid'];
+  $item_nid = isset($_REQUEST['item_nid']) ? ((int) $_REQUEST['item_nid']) : NULL;
+//  $item_node_page = isset($_REQUEST['item_node_page']) ? ((bool) $_REQUEST['item_node_page']) : FALSE;
 
   // Get the current member:
   $current_member = Member::currentMember();
@@ -297,15 +298,34 @@ function moonmars_items_ajax_delete() {
     return;
   }
 
-  //////////////////////////////
-  // All good - delete the item.
+  /////////////////////////////////
+  // All good - unpublish the item.
 
-  // Don't actually delete the item, just unpublish it.
+  // Don't actually delete the item, just unpublish it:
   $item->unpublish();
   $item->save();
 
-  // Remove the item from all channels:
-  moonmars_relationships_delete_relationships('has_item', 'node', NULL, 'node', $item_nid);
+//  // If we're on the item's node page, rather than the channel page, get the destination link so we know where to
+//  // send the user after the item is deleted.
+//  if ($item_node_page) {
+//    // Default to the channel where the item was initially posted.
+//    // Allow for the possibility that the relationship to the original channel is gone (should never happen).
+//    $originalChannel = $item->originalChannel();
+//    if ($originalChannel) {
+//      // Allow for the possibility that the relationship to the parent entity is gone (should never happen).
+//      $parentEntity = $originalChannel->parentEntity();
+//      if ($parentEntity) {
+//        $destination = $parentEntity->alias();
+//      }
+//    }
+//    // If we couldn't find the item's parent entity, return to the current member's profile:
+//    if (!$destination) {
+//      $destination = $current_member->alias();
+//    }
+//  }
+//  if ($destination) {
+//    $data['destination'] = "/$destination";
+//  }
 
   // Complete data array, encode and send:
   $data['result'] = TRUE;

@@ -1,6 +1,7 @@
 var $ = jQuery;
 
 var collapsedContentHeight = 96;
+var item_node_page;
 
 $(initChannel);
 
@@ -10,6 +11,9 @@ $(initChannel);
 function initChannel() {
   // Convert select elements into selectBoxes:
 //  $('select').selectBox();
+
+  // Check if we're on an item's node page:
+  item_node_page = Drupal.settings.astro && Drupal.settings.astro.item_node_page;
 
   // Setup item behaviours:
   $('article.node-item').each(function () {
@@ -196,14 +200,17 @@ function setupItemBehaviour(itemArticle, autoCollapse) {
  * @return bool
  */
 function deleteItem(item_nid) {
-  var result = confirm('Are you sure you want to delete this item? This action cannot be reversed.');
+  var result = confirm('Are you sure you want to delete this item?\nThis action cannot be reversed.');
   if (result) {
     // Show the waiting icon:
     var itemArticle = $('#node-item-' + item_nid);
     itemArticle.find('.post-controls .item-delete').addClass('waiting');
 
     // Request the deletion:
-    $.post("/ajax/item/delete", {item_nid: item_nid}, deleteItemReturn, 'json');
+    var query = {
+      item_nid: item_nid
+    };
+    $.post("/ajax/item/delete", query, deleteItemReturn, 'json');
   }
   return false;
 }
@@ -222,6 +229,13 @@ function deleteItemReturn(data, textStatus, jqXHR) {
   else {
     // Remove the item:
     removePost(itemArticle);
+
+    // If we're on an item's node page, go back to the channel where we came from:
+    if (item_node_page) {
+      var return_href = $('#return_link a').attr('href');
+      $('#region-content .block-main .content').html("Please wait while you are redirected...");
+      location.href = return_href;
+    }
   }
 }
 
@@ -235,7 +249,7 @@ function deleteItemReturn(data, textStatus, jqXHR) {
  * @return bool
  */
 function removeItem(item_nid) {
-  var result = confirm('Are you sure you want to remove this item from your channel? This action cannot be reversed.');
+  var result = confirm('Are you sure you want to remove this item from your channel?\nThis action cannot be reversed.');
   if (result) {
     // Show the waiting icon:
     var itemArticle = $('#node-item-' + item_nid);
@@ -421,7 +435,7 @@ function editCommentReturn(data, textStatus, jqXHR) {
  * @return bool
  */
 function deleteComment(cid) {
-  var result = confirm('Are you sure you want to delete this comment? This action cannot be reversed.');
+  var result = confirm('Are you sure you want to delete this comment?\nThis action cannot be reversed.');
   if (result) {
     var commentArticle = $('#comment-article-' + cid);
     commentArticle.find('.post-controls .comment-delete').addClass('waiting');

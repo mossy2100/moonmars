@@ -1,3 +1,9 @@
+<?php
+if ($item_node_page) {
+  echo "<div id='return_link'>Back to $return_link</div>";
+}
+?>
+
 <article<?php print $attributes; ?> data-nid='<?php echo $node->nid; ?>'>
 
   <div class='post-article-body'>
@@ -11,7 +17,7 @@
         <div class='who_where_when_posted'>
           <?php
           // Who, where and when the item was posted:
-          echo $poster->tooltipLink() . " $original_channel $created_datetime";
+          echo $poster->tooltipLink() . " $original_channel_string $created_datetime";
           ?>
         </div>
 

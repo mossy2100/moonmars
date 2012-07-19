@@ -16,32 +16,37 @@ function astro_alpha_preprocess_node(&$vars) {
       $vars['item'] = $item;
       $item_nid = $item->nid();
 
-      // Get the original poster:
-      $poster = Member::create($vars['uid']);
-      $vars['poster'] = $poster;
-
-      // Get the current channel:
-      if ($item_nid == arg(1)) {
+      // If we're on an item node page, tell the client:
+      $item_node_page = arg(0) == 'node' && arg(1) == $item_nid;
+      if ($item_node_page) {
+        drupal_add_js(array('astro' => array('item_node_page' => TRUE)), 'setting');
         $current_channel = NULL;
+        $vars['return_link'] = Channel::currentChannel()->entityLink();
       }
       else {
         $current_channel = Channel::currentChannel();
       }
+      $vars['item_node_page'] = $item_node_page;
+
+      // Get the original poster:
+      $poster = Member::create($vars['uid']);
+      $vars['poster'] = $poster;
 
       // Get the item's original channel:
       $original_channel = $item->originalChannel();
+      $vars['original_channel'] = $original_channel;
 
       // Original channel string:
       if ($current_channel && Channel::equals($current_channel, $original_channel)) {
-        $vars['original_channel'] = 'in this channel';
+        $vars['original_channel_string'] = 'in this channel';
       }
       elseif ($current_channel && Channel::equals($original_channel, $poster->channel())) {
-        $vars['original_channel'] = 'in their channel';
+        $vars['original_channel_string'] = 'in their channel';
       }
       else {
-        $vars['original_channel'] = 'in ' . l($original_channel->title(), $original_channel->parentEntity()->alias());
+        $vars['original_channel_string'] = 'in ' . l($original_channel->title(), $original_channel->parentEntity()->alias());
       }
-      $vars['original_channel'] = "<span class='original_channel'>{$vars['original_channel']}</span>";
+      $vars['original_channel_string'] = "<span class='original_channel'>{$vars['original_channel_string']}</span>";
 
       // Format the post datetime:
       $vars['created_datetime'] = astro_format_about_how_long_ago($vars['node']->created);
@@ -81,7 +86,9 @@ function astro_alpha_preprocess_node(&$vars) {
         }
 
         // view:
-        $links .= "<li class='item-view'><a href='/" . $item->alias() . "'>view</a></li>";
+        if (!$item_node_page) {
+          $links .= "<li class='item-view'><a href='/" . $item->alias() . "'>view</a></li>";
+        }
 
         $links = "
           <ul class='action-links item-links clearfix'>

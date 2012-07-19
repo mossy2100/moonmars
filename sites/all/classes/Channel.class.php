@@ -152,7 +152,8 @@ class Channel extends Node {
     // Look for relationship records:
     $q = db_select('view_channel_has_item', 'vci')
       ->fields('vci', array('item_nid', 'copied'))
-      ->condition('channel_nid', $this->nid());
+      ->condition('channel_nid', $this->nid())
+      ->condition('item_status', 1);
 
     // Add condition if we want to exclude copied items:
     if (!$include_copied_items) {
