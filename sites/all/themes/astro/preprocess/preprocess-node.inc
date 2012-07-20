@@ -21,7 +21,7 @@ function astro_alpha_preprocess_node(&$vars) {
       if ($item_node_page) {
         drupal_add_js(array('astro' => array('item_node_page' => TRUE)), 'setting');
         $current_channel = NULL;
-        $vars['return_link'] = Channel::currentChannel()->entityLink();
+        $vars['return_link'] = Channel::currentChannel()->parentEntityLink();
       }
       else {
         $current_channel = Channel::currentChannel();
@@ -43,7 +43,7 @@ function astro_alpha_preprocess_node(&$vars) {
       elseif ($current_channel && Channel::equals($original_channel, $poster->channel())) {
         $vars['original_channel_string'] = 'in their channel';
       }
-      else {
+      elseif ($original_channel) {
         $vars['original_channel_string'] = 'in ' . l($original_channel->title(), $original_channel->parentEntity()->alias());
       }
       $vars['original_channel_string'] = "<span class='original_channel'>{$vars['original_channel_string']}</span>";
@@ -54,8 +54,16 @@ function astro_alpha_preprocess_node(&$vars) {
       // Calculate the score for the item:
 //      $vars['score'] = mt_rand(-20, 9999);
 
-      // Render the comments for the item:
+      // Remove unpublished comments. Why are they even there?
+//      foreach ($vars['content']['comments']['comments'] as $key => $value) {
+//        if (is_numeric($key) && !$value['#comment']->status) {
+//          unset($vars['content']['comments']['comments'][$key]);
+//        }
+//      }
+
+      // Render comments:
       $vars['comments'] = render($vars['content']['comments']);
+
       // Make sure we still have a comment wrapper even if there are no comments, so our JS works:
       if ($vars['comments'] == '') {
         $vars['comments'] = "<div id='comments' class='comment-wrapper'></div>";
@@ -112,11 +120,19 @@ function astro_alpha_preprocess_node(&$vars) {
       break;
 
     case 'channel':
-      drupal_add_js(drupal_get_path('module', 'moonmars_channels') . '/js/moonmars-channels.js');
 
       // Get the channel object:
       $channel = Channel::create($vars['node']);
       $vars['channel'] = $channel;
+
+//      dbg(arg());
+//      // If we're on a channel node page, bounce the user to the parent entity's page:
+//      if (arg(0) == 'node' && arg(1) == $channel->nid()) {
+//        $parent_entity = $channel->parentEntity();
+//        drupal_goto($parent_entity->alias());
+//      }
+
+      drupal_add_js(drupal_get_path('module', 'moonmars_channels') . '/js/moonmars-channels.js');
 
       // Remember the current channel:
       Channel::currentChannel($channel);

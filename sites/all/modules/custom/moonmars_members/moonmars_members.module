@@ -6,6 +6,11 @@
 define('USERNAME_DESCRIPTION', "Usernames may only contain letters, digits, hyphens and underscores (a-z, A-Z, 0-9, -_), and must be between 1 and 60 characters in length.");
 
 /**
+ * The user id of the system user, which owns system messages.
+ */
+define('SYSTEM_UID', 167);
+
+/**
  * Implements hook_init().
  */
 function moonmars_members_init() {
@@ -272,7 +277,7 @@ function moonmars_members_follow($member2_uid) {
 
   if ($member1_uid && $member2_uid) {
 
-    $member1 = Member::create($user);
+    $member1 = Member::create($user->uid);
     $member2 = Member::create($member2_uid);
 
     if ($member1->follows($member2)) {
@@ -299,7 +304,6 @@ function moonmars_members_unfollow($member2_uid) {
   $member1_uid = $user->uid;
 
   if ($member1_uid && $member2_uid) {
-
     $member1 = Member::create($user);
     $member2 = Member::create($member2_uid);
 
@@ -393,7 +397,6 @@ function moonmars_members_render_avatars($total_member_count, $members, $view_al
 
   return $html;
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Blocks

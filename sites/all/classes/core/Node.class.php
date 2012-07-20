@@ -48,13 +48,23 @@ class Node extends EntityBase {
     if (is_null($node_param)) {
       // Create new node:
       $node_obj = new $class;
-      // Assume published:
+
+      // Set the type:
+      $node_obj->entity->type = $class::nodeType;
+
+      // Default status to published:
       $node_obj->entity->status = 1;
-      return $node_obj;
+
+      // Default language to none:
+      $node_obj->entity->language = LANGUAGE_NONE;
+
+      // Default user to current user:
+      $node_obj->entity->uid = user_is_logged_in() ? $GLOBALS['user']->uid : NULL;
     }
     elseif (is_uint($node_param)) {
       // nid provided:
       $nid = $node_param;
+
       // Only create the new node if not already in the cache:
       if (self::inCache($nid)) {
         return self::getFromCache($nid);
@@ -62,31 +72,34 @@ class Node extends EntityBase {
       else {
         // Create new node:
         $node_obj = new $class;
+
         // Set the nid:
         $node_obj->entity->nid = $nid;
-        // Put the new node in the cache:
-        $node_obj->addToCache();
-        return $node_obj;
       }
     }
     elseif (is_object($node_param)) {
       // Drupal node object provided:
       $node = $node_param;
-      // Get the User object:
+
+      // Get the object from the cache if possible:
       if ($node->nid && self::inCache($node->nid)) {
         $node_obj = self::getFromCache($node->nid);
       }
       else {
         $node_obj = new $class;
       }
+
+      // Link to the provided entity object:
       $node_obj->entity = $node;
-      // Add to cache:
+    }
+
+    // If we have a node object, add to cache and return:
+    if (isset($node_obj)) {
       $node_obj->addToCache();
       return $node_obj;
     }
-    else {
-      trigger_error("Invalid parameter to Node::create()", E_USER_ERROR);
-    }
+
+    trigger_error("Invalid parameter to Node::create()", E_USER_ERROR);
   }
 
   /**
@@ -217,24 +230,6 @@ class Node extends EntityBase {
   }
 
   /**
-   * Get the path to the node's page.
-   *
-   * @return string
-   */
-  public function path() {
-    return 'node/' . $this->entity->nid;
-  }
-
-  /**
-   * Get the path alias to the node's page.
-   *
-   * @return string
-   */
-  public function alias() {
-    return drupal_get_path_alias($this->path());
-  }
-
-  /**
    * Get a link to the node's profile.
    *
    * @return string
@@ -257,6 +252,15 @@ class Node extends EntityBase {
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Publish and unpublish.
+
+  /**
+   * Get the node status.
+   *
+   * @return Node
+   */
+  public function published() {
+    return $this->prop('status');
+  }
 
   /**
    * Publish the node, i.e. set the status flag to 1.

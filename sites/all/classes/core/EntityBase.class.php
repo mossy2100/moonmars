@@ -40,6 +40,7 @@ abstract class EntityBase {
   protected function __construct() {
     // Create an entity object:
     $this->entity = new stdClass;
+
     // Initially the entity is not loaded:
     $this->loaded = FALSE;
   }
@@ -48,7 +49,7 @@ abstract class EntityBase {
    * Child classes must define a load method.
    *
    * @abstract
-   * @return Entity
+   * @return EntityBase
    */
   abstract public function load();
 
@@ -56,7 +57,7 @@ abstract class EntityBase {
    * Child classes must define a save method.
    *
    * @abstract
-   * @return Entity
+   * @return EntityBase
    */
   abstract public function save();
 
@@ -143,6 +144,20 @@ abstract class EntityBase {
   }
 
   /**
+   * Set the values of multiple properties.
+   *
+   * @param array $values
+   * @return mixed
+   */
+  public function setProperties($values) {
+    // Set the property's value.
+    foreach ($values as $property => $value) {
+      $this->entity->{$property} = $value;
+    }
+    return $this;
+  }
+
+  /**
    * Get/set a property value.
    *
    * @param string $property
@@ -216,13 +231,16 @@ abstract class EntityBase {
   // Caching methods.
 
   /**
-   * Add an entity to the cache.
+   * Add an entity to the cache, if it has an id.
    *
    * @return bool
    */
   public function addToCache() {
-    $class = get_class($this);
-    self::$cache[$class::entityType][$this->id()] = $this;
+    $id = $this->id();
+    if ($id) {
+      $class = get_class($this);
+      self::$cache[$class::entityType][$id] = $this;
+    }
   }
 
   /**
@@ -240,11 +258,11 @@ abstract class EntityBase {
    * Get an entity from the cache.
    *
    * @param int $entity_id
-   * @return Entity
+   * @return EntityBase
    */
   public static function getFromCache($entity_id) {
     $class = get_called_class();
-    return self::$cache[$class::entityType][$entity_id];
+    return isset(self::$cache[$class::entityType][$entity_id]) ? self::$cache[$class::entityType][$entity_id] : NULL;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -260,6 +278,47 @@ abstract class EntityBase {
    */
   public static function equals(EntityBase $entity1, EntityBase $entity2) {
     return ($entity1->entityType() == $entity2->entityType()) && ($entity1->id() == $entity2->id());
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Path and alias-related methods.
+
+  /**
+   * Get the path to the entity's page.
+   *
+   * @return string
+   */
+  public function path() {
+    return $this->entityType() . '/' . $this->id();
+  }
+
+  /**
+   * Get/set the path alias to the entity's page.
+   *
+   * @return string
+   */
+  public function alias($alias = NULL) {
+    if ($alias === NULL) {
+      // Get the entity's alias:
+      return drupal_get_path_alias($this->path());
+    }
+    else {
+      // Set the entity's alias:
+      $source = $this->path();
+
+      // Delete any existing aliases for this entity.
+      db_delete('url_alias')
+        ->condition('source', $source);
+
+      // Insert the new alias:
+      db_insert('url_alias')
+        ->fields(array(
+                      'source'   => $source,
+                      'alias'    => $alias,
+                      'language' => LANGUAGE_NONE,
+                 ))
+        ->execute();
+    }
   }
 
 }

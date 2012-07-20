@@ -10,7 +10,6 @@ function moonmars_text_scan($text) {
 
   // Scan for referenced members:
   $n_members = preg_match_all("/(^|\s)\@([a-z0-9\_\-]+)\b/i", $text, $matches);
-
   $members = array();
   if ($n_members) {
     foreach ($matches[2] as $name) {
@@ -18,7 +17,7 @@ function moonmars_text_scan($text) {
       $member = Member::create($name);
       if ($member) {
         $members[$member->uid()] = $member;
-        $text2 = preg_replace("/(^|\s)(\@$name)\b/i", "$1" . $member->link(TRUE), $text2);
+        $text2 = preg_replace("/(^|\s)(\@$name)\b/i", "$1" . $member->link(), $text2);
       }
     }
   }
@@ -38,6 +37,18 @@ function moonmars_text_scan($text) {
 //      }
 //    }
 //  }
+
+  // Scan for entity links:
+  $n_entities = preg_match_all("/\[([^\]]+)\]/", $text, $matches);
+  if ($n_entities) {
+    foreach ($matches[1] as $channel_title) {
+      $channel = Channel::createByTitle($channel_title);
+      if ($channel) {
+        $parent_entity_link = $channel->parentEntityLink();
+        $text2 = str_replace("[$channel_title]", $parent_entity_link, $text2);
+      }
+    }
+  }
 
   return array(
     'filtered_text' => $text2,
@@ -74,4 +85,15 @@ function moonmars_text_referenced_members($text) {
 function moonmars_text_hash_tags($text) {
   $scan = moonmars_text_scan($text);
   return $scan['hash_tags'];
+}
+
+/**
+ * Trims a bit of text to a maximum length, using ellipsis to indicate the trim.
+ *
+ * @param string $text
+ * @param int $maxlen
+ * @return string
+ */
+function moonmars_text_trim($text, $maxlen = 100) {
+  return (strlen($text) <= $maxlen) ? $text : (substr($text, 0, $maxlen - 3) . '...');
 }

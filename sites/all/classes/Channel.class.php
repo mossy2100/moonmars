@@ -5,6 +5,11 @@
 class Channel extends Node {
 
   /**
+   * The node type.
+   */
+  const nodeType = 'channel';
+
+  /**
    * The default page size for channels.
    */
   const pageSize = 10;
@@ -21,6 +26,43 @@ class Channel extends Node {
    */
   protected function __construct() {
     return parent::__construct();
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Static methods that return Channels.
+
+  /**
+   * Get a channel given a channel title.
+   *
+   * @static
+   * @param $channel_title
+   * @return Channel
+   */
+  public static function createByTitle($channel_title) {
+    $rec = db_select('node', 'n')
+      ->fields('n', array('nid'))
+      ->condition('title', $channel_title)
+      ->execute()
+      ->fetch();
+    return $rec ? Channel::create($rec->nid) : FALSE;
+  }
+
+  /**
+   * Get/set the current channel.
+   *
+   * @static
+   * @param null|Channel $channel
+   * @return Channel
+   */
+  public static function currentChannel($channel = NULL) {
+    if ($channel === NULL) {
+      // Get the current channel:
+      return (isset($_SESSION['current_channel_nid']) && $_SESSION['current_channel_nid']) ? Channel::create($_SESSION['current_channel_nid']) : NULL;
+    }
+    else {
+      // Remember the current channel nid in the session:
+      $_SESSION['current_channel_nid'] = $channel->nid();
+    }
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -84,23 +126,24 @@ class Channel extends Node {
         break;
     }
 
-    // Determine the channel's alias:
-    $alias = drupal_get_path_alias("$entity_type/$entity_id") . '/channel';
-
-    // Create the new node:
-    $channel_node = node_create('channel', $title, TRUE, $alias);
-
-    // Set the channel uid to match the node or user entity:
-    $channel_node->uid = $entity->uid;
+    // Create the new channel:
+    $channel = Channel::create()
+      ->setProperties(array(
+        'uid' => $entity->uid,
+        'title' => $title,
+      ));
 
     // Save the node for the first time, which will give it a nid:
-    node_save($channel_node);
+    $channel->save();
 
     // Create the relationship between the entity and the relationship:
-    moonmars_relationships_create_relationship('has_channel', $entity_type, $entity_id, 'node', $channel_node->nid, TRUE);
+    moonmars_relationships_create_relationship('has_channel', $entity_type, $entity_id, 'node', $channel->nid(), TRUE);
 
-    // Create the Channel object from the node:
-    return self::create($channel_node);
+    // Update the alias for the channel:
+    $channel->setAlias();
+
+    // Return the Channel:
+    return $channel;
   }
 
   /**
@@ -131,10 +174,28 @@ class Channel extends Node {
    * Get a link to a channel's entity's page.
    *
    * @return string
+   *   Or FALSE if parent entity not found - should never happen.
    */
-  public function entityLink() {
+  public function parentEntityLink($brackets = FALSE) {
     $entity = $this->parentEntity();
-    return l($this->title(), $entity->alias());
+    if ($entity) {
+      $label = $brackets ? ('[' . $this->title() . ']') : $this->title();
+      return l($label, $entity->alias());
+    }
+    return FALSE;
+  }
+
+  /**
+   * Update the path alias for the channel.
+   *
+   * @return Channel
+   */
+  public function setAlias() {
+    $parent_entity = $this->parentEntity();
+    if ($parent_entity) {
+      $this->alias($parent_entity->alias() . '/channel');
+    }
+    return $this;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -194,7 +255,8 @@ class Channel extends Node {
    *
    * @param Item $item
    *   The item being posted.
-   * @return int
+   * @return bool
+   *   If a new relationship was created.
    */
   public function addItem(Item $item) {
     $channel_nid = $this->nid();
@@ -206,6 +268,8 @@ class Channel extends Node {
     if ($rels) {
       // No need to add the item to the channel, as it's already there. Just bump it by loading and saving.
       $rel = relation_load($rels[0]->rid);
+      relation_save($rel);
+      return FALSE;
     }
     else {
       // Create a new relationship without saving:
@@ -217,10 +281,11 @@ class Channel extends Node {
 
       // Set the copied flag:
       $rel->field_copied[LANGUAGE_NONE][0]['value'] = (int) ($original_channel_nid && $channel_nid != $original_channel_nid);
-    }
 
-    // Save the relationship:
-    return relation_save($rel);
+      // Save the relationship:
+      relation_save($rel);
+      return TRUE;
+    }
   }
 
   /**
@@ -264,23 +329,27 @@ class Channel extends Node {
     /////////////////////////////////////////////////////////////////////////////
     // Step 1. Add or bump the item in the current channel.
     $current_channel_nid = $this->nid();
-    $this->addItem($item);
+
+//    dbg("posting in $current_channel_nid");
+    $new_relation = $this->addItem($item);
 
     /////////////////////////////////////////////////////////////////////////////
     // Step 2. Bump the item in the channel where it was originally posted, if different.
-    if ($is_new && !$is_comment) {
+    if ($new_relation) {
       // New item. The current channel will be the original channel. No need to bump.
       $original_channel = $this;
     }
     else{
       $original_channel = $item->originalChannel();
-      $original_channel_nid = $original_channel->nid();
-      if ($original_channel_nid != $current_channel_nid) {
-        $original_channel->bumpItem($item);
-      }
     }
 
-    $original_channel_link = $original_channel->entityLink();
+//    dpm($original_channel->nid());
+
+    if (!Channel::equals($this, $original_channel)) {
+      $original_channel->bumpItem($item);
+    }
+
+    $original_channel_link = $original_channel->parentEntityLink();
 
     /////////////////////////////////////////////////////////////////////////////
     // Step 3. Find out which members should see this item in their channel:
@@ -401,6 +470,18 @@ class Channel extends Node {
   }
 
   /**
+   * Post a system message to the channel.
+   *
+   * @param $message
+   * @return Channel
+   */
+  public function postSystemMessage($message) {
+    $item = Item::createSystemMessage($message);
+    $this->postItem($item, TRUE, FALSE);
+    return $this;
+  }
+
+  /**
    * Get the total number of items in the channel.
    *
    * @param bool $include_copied_items
@@ -455,27 +536,6 @@ class Channel extends Node {
         <div id='channel-items'>$items</div>
         <div id='channel-pager'>$pager</div>
       </div>";
-  }
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Current channel.
-
-  /**
-   * Get/set the current channel.
-   *
-   * @static
-   * @param null|Channel $channel
-   * @return Channel
-   */
-  public static function currentChannel($channel = NULL) {
-    if ($channel === NULL) {
-      // Get the current channel:
-      return (isset($_SESSION['current_channel_nid']) && $_SESSION['current_channel_nid']) ? Channel::create($_SESSION['current_channel_nid']) : NULL;
-    }
-    else {
-      // Remember the current channel nid in the session:
-      $_SESSION['current_channel_nid'] = $channel->nid();
-    }
   }
 
 }

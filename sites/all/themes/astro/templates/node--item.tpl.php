@@ -1,5 +1,5 @@
 <?php
-if ($item_node_page) {
+if (isset($return_link)) {
   echo "<div id='return_link'>Back to $return_link</div>";
 }
 ?>
@@ -72,7 +72,7 @@ if ($item_node_page) {
 
     </div> <!-- /post-controls -->
 
-    <?php print $comments; ?>
+    <?php print render($content['comments']); ?>
 
     <!-- new comment form -->
     <?php

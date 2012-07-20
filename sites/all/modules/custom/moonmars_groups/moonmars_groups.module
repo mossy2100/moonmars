@@ -52,14 +52,17 @@ function moonmars_groups_get_current_group() {
  * @param int $group_nid
  */
 function moonmars_groups_join($group_nid) {
-  // Get the group:
-  $group = Group::create($group_nid);
+  // Load the node:
+  $node = node_load($group_nid);
 
   // Check the type, in case the nid is dodgy:
-  if ($group->type() != 'group') {
+  if ($node->type != 'group') {
     drupal_set_message('Group not found.');
     return;
   }
+
+  // Get the group:
+  $group = Group::create($node);
 
   // Get the alias:
   $group_alias = $group->alias();
@@ -88,8 +91,11 @@ function moonmars_groups_join($group_nid) {
     return;
   }
 
+  ////////////////////////////////////
+  // All good, add them to the group.
+
   // Add the member to the group:
-  $group->addMember($current_member);
+  $current_member->joinGroup($group);
 
   // Reload the group page:
   drupal_set_message("You have been added to the group " . $group->title() . ".");
@@ -131,8 +137,8 @@ function moonmars_groups_leave($group_nid) {
     return;
   }
 
-  // Remove the user from the group.
-  $group->removeMember($current_member);
+  // Remove the user from the group:
+  $current_member->leaveGroup($group);
 
   // Reload the group page:
   drupal_set_message("You have been removed from the group " . $group->title() . ".");

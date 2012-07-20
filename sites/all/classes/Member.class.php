@@ -399,34 +399,8 @@ class Member extends User {
   /**
    * Update the path alias for the member's profile.
    */
-  public function resetAlias() {
-    $source = 'user/' . $this->uid();
-    $alias = 'member/' . $this->name();
-
-    // See if there's already an alias for this user:
-    $rec = db_select('url_alias', 'ua')
-      ->fields('ua', array('alias'))
-      ->condition('source', $source)
-      ->execute()
-      ->fetch();
-
-    if ($rec) {
-      // Update:
-      db_update('url_alias')
-        ->fields(array('alias' => $alias))
-        ->condition('source', $source)
-        ->execute();
-    }
-    else {
-      // Insert:
-      db_insert('url_alias')
-        ->fields(array(
-          'source'   => $source,
-          'alias'    => $alias,
-          'language' => LANGUAGE_NONE,
-        ))
-        ->execute();
-    }
+  public function setAlias() {
+    $this->alias('member/' . $this->name());
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -572,6 +546,12 @@ class Member extends User {
   public function follow(Member $member) {
     // Create the follow relationship:
     moonmars_relationships_update_relationship('has_follower', 'user', $member->uid(), 'user', $this->uid());
+
+//    dpm($this->uid());
+//    dpm($this->channel()->parentEntity()->id());
+
+    // Post system message to the member's channel:
+    $this->channel()->postSystemMessage('@' . $this->name() . " followed @" . $member->name());
   }
 
   /**
@@ -584,16 +564,42 @@ class Member extends User {
     moonmars_relationships_delete_relationships('has_follower', 'user', $member->uid(), 'user', $this->uid());
   }
 
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Notification methods.
+  // Group-related methods. 
 
   /**
+   * Add a member to the group.
+   *
+   * @param Member $member
+   */
+  public function joinGroup(Group $group) {
+    // Create the membership relationship:
+    moonmars_relationships_update_relationship('has_member', 'node', $group->nid(), 'user', $this->uid());
+
+    // Post system message to the member's channel:
+    $system_message_item = moonmars_items_system_message('@' . $this->name() . " joined [" . $group->channel()->title() . "]");
+    $this->channel()->postItem($system_message_item, TRUE, FALSE);
+  }
+
+  /**
+   * Remove a member from the group.
+   *
+   * @param Member $member
+   */
+  public function leaveGroup(Group $group) {
+    // Delete the membership relationship:
+    moonmars_relationships_delete_relationships('has_member', 'node', $group->nid(), 'user', $this->uid());
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Notification methods.
+
+  /***
    * Send a notification message to a member.
    *
    * @param $message
    */
-  public function notify($message) {
-//    drupal_mail('moonmars_members', 'notification', $this->mail(), LANGUAGE_NONE, $params = array(), $from = NULL, $send = TRUE)
+  public function notify($message){//
+    //    drupal_mail('moonmars_members', 'notification', $this->mail(), LANGUAGE_NONE, $params = array(), $from = NULL, $send = TRUE)
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -642,8 +648,8 @@ class Member extends User {
    * @return bool
    */
   public function canDeleteItem(Item $item) {
-    // Check the item is valid:
-    if (!$item->valid()) {
+    // Check the item is valid and published:
+    if (!$item->valid() || !$item->published()) {
       return FALSE;
     }
 
@@ -682,7 +688,7 @@ class Member extends User {
    */
   public function canRemoveItem(Item $item, Channel $channel) {
     // Check the item and channel are valid:
-    if (!$item->valid() || !$channel->valid()) {
+    if (!$item->valid() || !$item->published() || !$channel->valid()) {
       return FALSE;
     }
 
@@ -704,6 +710,9 @@ class Member extends User {
 
     // Get the channel where the item was originally posted:
     $original_channel = $item->originalChannel();
+    if (!$original_channel) {
+      return FALSE;
+    }
 
     // Get the parent entity of the original channel:
     $parent_entity = $original_channel->parentEntity();
@@ -735,7 +744,7 @@ class Member extends User {
    */
   public function canEditComment(ItemComment $comment) {
     // Check the comment is valid:
-    if (!$comment->valid()) {
+    if (!$comment->valid() || !$comment->published()) {
       return FALSE;
     }
 
@@ -756,7 +765,7 @@ class Member extends User {
    */
   public function canDeleteComment(ItemComment $comment) {
     // Check the comment is valid:
-    if (!$comment->valid()) {
+    if (!$comment->valid() || !$comment->published()) {
       return FALSE;
     }
 

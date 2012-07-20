@@ -220,6 +220,15 @@ class Comment extends EntityBase {
   // Status flags.
 
   /**
+   * Get the comment status.
+   *
+   * @return Comment
+   */
+  public function published() {
+    return $this->prop('status');
+  }
+
+  /**
    * Publish the comment, i.e. set the status flag to 1.
    *
    * @return Comment

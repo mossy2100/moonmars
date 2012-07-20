@@ -8,20 +8,18 @@ $ratingButtonHeight = 20px;
   border-bottom: solid 1px $grey2;
 }
 
-#channel-items {
-  .node-item {
-    @include channel-page-section;
+.node-item {
+  @include channel-page-section;
 
-    header {
-      display: none;
-    }
+  header {
+    display: none;
+  }
 
-    .post-content {
-      .field {
-        margin: 8px 0;
-        font-size: 12px;
-        line-height: 16px;
-      }
+  .post-content {
+    .field {
+      margin: 8px 0;
+      font-size: 12px;
+      line-height: 16px;
     }
   }
 }
@@ -338,6 +336,19 @@ article.comment {
     background-color: $blue5;
     border-color: $blue4;
   }
+
+  &.comment-unpublished {
+    .post-article-body {
+      background-color: $grey7;
+      border-color: $grey4;
+      color: $grey3;
+    }
+  }
+
+  .unpublished {
+    float: right;
+    color: $grey2;
+  }
 }
 
 #channel-pager {
@@ -377,5 +388,5 @@ article.comment {
 
 #return_link {
   text-align: right;
-  margin: 8px 0;
+  margin: 8px 10px;
 }

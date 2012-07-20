@@ -5,6 +5,11 @@
 class Item extends Node {
 
   /**
+   * The node type.
+   */
+  const nodeType = 'item';
+
+  /**
    * The channel where the item was originally posted.
    *
    * @var Channel
@@ -73,6 +78,26 @@ class Item extends Node {
    */
   public function creator() {
     return Member::create($this->uid());
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // System messages.
+
+  /**
+   * Create a system message.
+   *
+   * @param string $message
+   * @param Channel $channel
+   */
+  public static function createSystemMessage($message) {
+    return self::create()
+      ->setProperties(array(
+        'uid'   => SYSTEM_UID,
+        'title' => moonmars_text_trim($message),
+      ))
+      ->field('field_item_text',   LANGUAGE_NONE, 0, 'value', $message)
+      ->field('field_item_system', LANGUAGE_NONE, 0, 'value', 1)
+      ->save();
   }
 
 }

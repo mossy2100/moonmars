@@ -45,14 +45,16 @@ function astro_file_link($variables) {
     $path = drupal_realpath($file->uri);
     $image_info = getimagesize($path);
 
+    $description = isset($file->description) ? $file->description : '';
+
     // Get the HTML for the image as medium style:
     $image_vars = array(
       'style_name' => 'medium',
       'path'       => $file->uri,
       'width'      => $image_info[0],
       'height'     => $image_info[1],
-      'alt'        => $file->description,
-      'title'      => $file->description,
+      'alt'        => $description,
+      'title'      => $description,
     );
     $image = theme('image_style', $image_vars);
 
@@ -61,8 +63,8 @@ function astro_file_link($variables) {
                                 'html'       => TRUE,
                                 'attributes' => array(
                                   'class' => array('colorbox'),
-                                  'alt'   => check_plain($file->description),
-                                  'title' => check_plain($file->description),
+                                  'alt'   => check_plain($description),
+                                  'title' => check_plain($description),
                                   'rel'   => 'gallery-channel',
                                 )
                            ));

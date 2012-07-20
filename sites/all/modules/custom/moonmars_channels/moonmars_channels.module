@@ -22,37 +22,28 @@ function moonmars_channels_node_types() {
 }
 
 /**
+ * Update a channel's alias - overides pathauto.
+ *
+ * @param $node
+ */
+function moonmars_channels_set_alias($node) {
+  if ($node->type == 'channel') {
+    Channel::create($node)->setAlias();
+  }
+}
+
+/**
  * Implements hook_node_insert().
  */
 function moonmars_channels_node_insert($node) {
-  if (in_array($node->type, moonmars_channels_node_types())) {
-    // Ensure that a channel exists for the node:
-    Channel::entityChannel('node', $node->nid);
-  }
+  moonmars_channels_set_alias($node);
 }
 
 /**
  * Implements hook_node_update().
  */
 function moonmars_channels_node_update($node) {
-  // Ensure that a channel exists for the node:
-  moonmars_channels_node_insert($node);
-}
-
-/**
- * Implements hook_user_insert().
- */
-function moonmars_channels_user_insert(&$edit, $account, $category) {
-  // Ensure that a channel exists for the user:
-  Channel::entityChannel('user', $account->uid);
-}
-
-/**
- * Implements hook_user_update().
- */
-function moonmars_channels_user_update(&$edit, $account, $category) {
-  // Ensure that a channel exists for the user:
-  moonmars_channels_user_insert($edit, $account, $category);
+  moonmars_channels_set_alias($node);
 }
 
 /**

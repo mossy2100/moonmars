@@ -57,6 +57,12 @@
       */ ?>
 
       <?php
+      if (!$item_comment->published()) {
+        echo "<div class='unpublished'>Unpublished</div>";
+      }
+      ?>
+
+      <?php
       // Links for edit/delete comment:
       echo $links;
       ?>

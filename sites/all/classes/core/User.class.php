@@ -215,20 +215,6 @@ class User extends EntityBase {
   }
 
   /**
-   * Get the path to the user's profile.
-   */
-  public function path() {
-    return 'user/' . $this->uid();
-  }
-
-  /**
-   * Get the path alias to the user's profile.
-   */
-  public function alias() {
-    return drupal_get_path_alias($this->path());
-  }
-
-  /**
    * Get a link to the user's profile.
    */
   public function link($include_at = FALSE) {

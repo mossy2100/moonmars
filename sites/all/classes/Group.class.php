@@ -5,6 +5,11 @@
 class Group extends Node {
 
   /**
+   * The node type.
+   */
+  const nodeType = 'group';
+
+  /**
    * The group's channel.
    *
    * @var string
@@ -87,26 +92,6 @@ class Group extends Node {
   public function hasMember(Member $member) {
     $rels = moonmars_relationships_get_relationships('has_member', 'node', $this->nid(), 'user', $member->uid());
     return (bool) $rels;
-  }
-
-  /**
-   * Add a member to the group.
-   *
-   * @param Member $member
-   */
-  public function addMember(Member $member) {
-    // Create the membership relationship:
-    moonmars_relationships_update_relationship('has_member', 'node', $this->nid(), 'user', $member->uid());
-  }
-
-  /**
-   * Remove a member from the group.
-   *
-   * @param Member $member
-   */
-  public function removeMember(Member $member) {
-    // Delete the membership relationship:
-    moonmars_relationships_delete_relationships('has_member', 'node', $this->nid(), 'user', $member->uid());
   }
 
 }

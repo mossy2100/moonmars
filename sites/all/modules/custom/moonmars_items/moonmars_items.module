@@ -73,11 +73,14 @@ function moonmars_items_menu() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Forms stuff
 
+/**
+ * Implements hook_form_alter().
+ */
 function moonmars_items_form_alter(&$form, &$form_state, $form_id) {
-  if ($form_id == 'item_node_form' && moonmars_channels_is_embedded_channel_page()) {
+  if ($form_id == 'item_node_form' && isset($GLOBALS['channel_nid']) && $GLOBALS['channel_nid']) {
+
     $entity_type = arg(0);
     $entity_id = (int) arg(1);
-//    $channel_nid = moonmars_channels_get_channel($entity_type, $entity_id);
 
     // Set the title:
     switch ($entity_type) {
@@ -92,9 +95,10 @@ function moonmars_items_form_alter(&$form, &$form_state, $form_id) {
         break;
     }
 
-    // Hide a bunch of shit we don't want to see:
+    // Hide stuff we don't want to see:
     unset($form['title']);
     unset($form['field_score']);
+    unset($form['field_item_system']);
     unset($form['additional_settings']);
     unset($form['revision_information']);
     unset($form['author']);
@@ -105,8 +109,6 @@ function moonmars_items_form_alter(&$form, &$form_state, $form_id) {
     unset($form['field_item_link'][LANGUAGE_NONE][0]['#title']);
     unset($form['field_item_file'][LANGUAGE_NONE][0]['#title']);
 
-//    dbg($form['field_item_type']);
-
     // Change the button label:
     $form['actions']['submit']['#value'] = t('Post');
 
@@ -115,27 +117,25 @@ function moonmars_items_form_alter(&$form, &$form_state, $form_id) {
     $form['field_item_text'][LANGUAGE_NONE][0]['value']['#resizable'] = FALSE;
     $form['field_item_text'][LANGUAGE_NONE][0]['value']['#rows'] = 2;
 
-//    // Put the channel nid in a hidden field so we can access it.
-//    $form['channel_nid'] = array(
-//      '#type'          => 'hidden',
-//      '#default_value' => $channel_nid,
-//    );
+    // Add a hidden field to carry the channel nid:
+    $form['channel_nid'] = array(
+      '#type' => 'hidden',
+      '#value' => $GLOBALS['channel_nid'],
+    );
 
     // Add an afterbuild handler so we can remove the submit buttons added in file_managed_file_process().
     $form['#after_build'][] = 'moonmars_items_form_after_build';
 
-//    dpm($form);
-
     // Add a submit handler.
-//    $form['#submit'][] = 'moonmars_items_form_submit';
+    $form['#submit'][] = 'moonmars_items_form_submit';
+
+    // After saving the item, go to back to the entity's page:
+//    $form_state['redirect'] = drupal_get_path_alias("$entity_type/$entity_id");
   }
 }
 
 /**
- * After build handler for add new item form on group channel.
- *
- * @param array $form
- * @return array
+ * After build handler for add new item form.
  */
 function moonmars_items_form_after_build($form) {
   // Remove the file field's submit buttons from the form:
@@ -145,6 +145,19 @@ function moonmars_items_form_after_build($form) {
   return $form;
 }
 
+/**
+ * Submit handler for add new item form.
+ */
+function moonmars_items_form_submit($form, &$form_state) {
+  if (isset($form_state['values']['channel_nid'])) {
+    $GLOBALS['channel_nid'] = $form_state['values']['channel_nid'];
+
+
+//    $form_state['values']['path']['pathauto'] = 1;
+
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Node hooks.
 
@@ -152,46 +165,65 @@ function moonmars_items_form_after_build($form) {
  * Implement hook_node_presave().
  */
 function moonmars_items_node_presave($node) {
-  // Get the item text:
-  $text = &$node->field_item_text[LANGUAGE_NONE][0]['value'];
+  if ($node->type == 'item') {
+    // Get the item text:
+    $text = &$node->field_item_text[LANGUAGE_NONE][0]['value'];
 
-  // If the item is a file, copy the entered text to the file description:
-  if (isset($node->field_item_file[LANGUAGE_NONE][0]['fid']) && $node->field_item_file[LANGUAGE_NONE][0]['fid']) {
-    $node->field_item_file[LANGUAGE_NONE][0]['description'] = $text;
+    // If the item is a file, copy the entered text to the file description:
+    if (isset($node->field_item_file[LANGUAGE_NONE][0]['fid']) && $node->field_item_file[LANGUAGE_NONE][0]['fid']) {
+      $node->field_item_file[LANGUAGE_NONE][0]['description'] = $text;
+    }
+
+    // Set the title:
+    $node->title = moonmars_text_trim($text);
+
+
+    // We want an automatic alias:
+//    $node->path['pathauto'] = 1;
   }
+}
 
-  // Set the title:
-  $node->title = (strlen($text) <= 100) ? $text : (substr($text, 0, 97) . '...');
+/**
+ * Common stuff to do if the item is inserted or updated from a channel.
+ *
+ * @param $node
+ */
+function moonmars_items_insert_update($node) {
+  // If the item was posted in a channel page:
+  if ($node->type == 'item' && isset($GLOBALS['channel_nid']) && $GLOBALS['channel_nid']) {
+
+    // Get the item:
+    $item = Item::create($node);
+
+    // Get the channel:
+    $channel = Channel::create($GLOBALS['channel_nid']);
+
+    // Connect the item to the channel:
+    $channel->postItem($item, TRUE, FALSE);
+
+    // Update the alias:
+    require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'pathauto') . '/pathauto.inc';
+    pathauto_create_alias('node', 'insert', $item->path(), array('node' => $node), 'item');
+
+    // Redirect back to the channel page:
+    drupal_goto($channel->parentEntity()->alias());
+  }
 }
 
 /**
  * Implement hook_node_insert().
  */
 function moonmars_items_node_insert($node) {
-  if ($node->type == 'item') {
-
-    // Get the entity type:
-    $entity_type = arg(0);
-    if (!in_array($entity_type, array('user', 'node'))) {
-      return;
-    }
-
-    // Get the entity id:
-    $entity_id = arg(1);
-    if (!is_uint($entity_id)) {
-      return;
-    }
-
-    // Create the item object:
-    $item = Item::create($node->nid);
-
-    // Post the item in the current channel:
-    Channel::currentChannel()->postItem($item, TRUE, FALSE);
-
-    // Reload the group page:
-    drupal_goto("$entity_type/$entity_id");
-  }
+  moonmars_items_insert_update($node);
 }
+
+/**
+ * Implement hook_node_update().
+ */
+function moonmars_items_node_update($node) {
+  moonmars_items_insert_update($node);
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // AJAX callbacks
@@ -238,7 +270,7 @@ function moonmars_items_ajax_edit() {
     return;
   }
 
-  //////////////////////////////
+  /////////////////////////////////////
   // All good - update the item.
 
   // Update the item text:
@@ -441,10 +473,10 @@ function moonmars_items_ajax_rate() {
 
   // Complete data array, encode and send:
   $data = array(
-    'result'    => TRUE,
-    'item_nid'  => $item_nid,
-    'rating'    => $rating,
-    'score'     => $score,
+    'result'   => TRUE,
+    'item_nid' => $item_nid,
+    'rating'   => $rating,
+    'score'    => $score,
   );
   echo json_encode($data);
   return;
