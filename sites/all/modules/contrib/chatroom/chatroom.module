@@ -6,6 +6,18 @@
  */
 
 /**
+ * Implements hook_permission().
+ */
+function chatroom_permission() {
+  return array(
+    'access all chatrooms' => array(
+      'title' => t('Access all chat rooms'),
+      'description' => t('Allow access to all chat rooms.'),
+    ),
+  );
+}
+
+/**
  * Implements hook_forms().
  */
 function chatroom_forms($form_id, $args) {
@@ -74,6 +86,24 @@ function chatroom_field_widget_form(&$form, &$form_state, $field, $instance, $la
     else {
       $chatroom = new Chatroom();
     }
+
+    $roles = user_roles();
+    $read_only_rids = array();
+    $read_and_write_rids = array();
+    $chatroom_roles = $chatroom->get('allowedRids');
+    $admin_role_rid = variable_get('user_admin_role', FALSE);
+    foreach ($chatroom_roles as $chatroom_role) {
+      if ($chatroom_role->read_only) {
+        $read_only_rids[] = $chatroom_role->rid;
+      }
+      else {
+        $read_and_write_rids[] = $chatroom_role->rid;
+      }
+    }
+    if ($admin_role_rid) {
+      unset($roles[$admin_role_rid]);
+    }
+
     // Why $gin_form? Because Gin helps me deal with FAPI.
     $gin_form = array(
       'chatroom' => array(
@@ -95,14 +125,30 @@ function chatroom_field_widget_form(&$form, &$form_state, $field, $instance, $la
           '#type' => 'value',
           '#value' => $chatroom->get('cid'),
         ),
-        'chatroom_roles' => array(
+        'chatroom_read_only_roles' => array(
           '#type' => 'select',
-          '#title' => 'Which roles have access to this chatroom',
-          '#options' => user_roles(TRUE),
-          '#default_value' => $chatroom->get('allowedRoles'),
+          '#multiple' => TRUE,
+          '#title' => t('Which roles have read-only access to this chatroom'),
+          '#options' => $roles,
+          '#default_value' => $read_only_rids,
+        ),
+        'chatroom_write_roles' => array(
+          '#type' => 'select',
+          '#multiple' => TRUE,
+          '#title' => t('Which roles can read and post in this chatroom'),
+          '#options' => $roles,
+          '#default_value' => $read_and_write_rids,
+          '#description' => t('Any roles selected here will automatically recieve read access to the chatroom.'),
         ),
       ),
     );
+    if ($chatroom->get('cid')) {
+      $gin_form['chatroom']['chatroom_archived'] = array(
+        '#title' => t('Is this an archived chatroom?'),
+        '#type' => 'checkbox',
+        '#default_value' => $chatroom->get('archived'),
+      );
+    }
     if ($formats = filter_formats($user)) {
       $format_options = array();
       foreach ($formats as $format) {
@@ -110,7 +156,7 @@ function chatroom_field_widget_form(&$form, &$form_state, $field, $instance, $la
      }
       $gin_form['chatroom']['chatroom_format'] = array(
         '#type' => 'select',
-        '#title' => 'Message output format',
+        '#title' => t('Message output format'),
         '#options' => $format_options,
         '#default_value' => $chatroom->get('format'),
       );
@@ -143,10 +189,14 @@ function chatroom_field_insert($entity_type, $entity, $field, $instance, $langco
     $chatroom = new Chatroom();
     $chatroom->set('title', $item['chatroom']['chatroom_title']);
     $chatroom->set('public', $item['chatroom']['chatroom_public']);
+    $chatroom->set('uid', $user->uid);
+    $chatroom->set('allowedRids', array($item['chatroom']['chatroom_roles']));
     if (isset($item['chatroom']['chatroom_format'])) {
       $chatroom->set('format', $item['chatroom']['chatroom_format']);
     }
-    $chatroom->set('uid', $user->uid);
+    if (isset($item['chatroom']['chatroom_archived'])) {
+      $chatroom->set('archived', $item['chatroom']['chatroom_archived']);
+    }
     $chatroom->save();
     $item['cid'] = $chatroom->get('cid');
   }
@@ -163,9 +213,26 @@ function chatroom_field_update($entity_type, $entity, $field, $instance, $langco
     $chatroom->set('title', $item['chatroom']['chatroom_title']);
     $chatroom->set('public', $item['chatroom']['chatroom_public']);
     $chatroom->set('uid', $user->uid);
+    $allowed_rids = array();
+    foreach ($item['chatroom']['chatroom_read_only_roles'] as $rid) {
+      $allowed_rids[$rid] = (object) array(
+        'rid' => $rid,
+        'read_only' => 1,
+      );
+    }
+    // Just overwrite any read-only values for the same role.
+    foreach ($item['chatroom']['chatroom_write_roles'] as $rid) {
+      $allowed_rids[$rid] = (object) array(
+        'rid' => $rid,
+        'read_only' => 0,
+      );
+    }
+    AD::ffs($allowed_rids);
+    $chatroom->set('allowedRids', $allowed_rids);
     if (isset($item['chatroom']['chatroom_format'])) {
       $chatroom->set('format', $item['chatroom']['chatroom_format']);
     }
+    $chatroom->set('archived', $item['chatroom']['chatroom_archived']);
     $chatroom->save();
     $item['cid'] = $chatroom->get('cid');
   }
@@ -210,6 +277,7 @@ function chatroom_field_formatter_view($entity_type, $entity, $field, $instance,
   $chatroom =& $items[0]['chatroom'];
   switch ($display['type']) {
     case 'chatroom_irc':
+      $name = $user->uid ? $user->name : variable_get('anonymous', t('Anonymous'));
       chatroom_add_js($chatroom);
       nodejs_send_content_channel_token('chatroom_' . $chatroom->get('cid'), TRUE);
       $user_online_message = (object) array(
@@ -218,7 +286,7 @@ function chatroom_field_formatter_view($entity_type, $entity, $field, $instance,
         'data' => array(
           'cid' => $chatroom->get('cid'),
           'uid' => $user->uid,
-          'name' => $user->name,
+          'name' => $name,
         ),
       );
       nodejs_send_content_channel_message($user_online_message);
@@ -275,10 +343,23 @@ function chatroom_field_info() {
 }
 
 /**
+ * Implements hook_init().
+ */
+function chatroom_init() {
+  chatroom_add_js();
+}
+
+/**
  * Implements hook_menu().
  */
 function chatroom_menu() {
   $items = array();
+  $items['chatroom/add/chat/ajax'] = array(
+    'type' => MENU_CALLBACK,
+    'page callback' => 'chatroom_add_chat_ajax',
+    'access arguments' => array('create chatrooom'),
+    'type' => MENU_CALLBACK,
+  );
   $items['chatroom/add'] = array(
     'title' => 'Create a new chatroom',
     'page callback' => 'drupal_get_form',
@@ -298,10 +379,60 @@ function chatroom_menu() {
     'page callback' => 'chatroom_post_message',
     'page arguments' => array(3),
     'access callback' => array('chatroom_user_has_access'),
-    'access arguments' => array(3),
+    'access arguments' => array(3, 'write'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['chatroom/%chatroom/messages/previous/%/%'] = array(
+    'title' => 'Get previous chat messages.',
+    'page callback' => 'chatroom_previous_messages',
+    'page arguments' => array(1, 4, 5),
+    'access callback' => array('chatroom_user_has_access'),
+    'access arguments' => array(1, 'read'),
     'type' => MENU_CALLBACK,
   );
   return $items;
+}
+
+/**
+ * Ajax POST handler for creating a chat from javascript.
+ */
+function chatroom_add_chat_ajax() {
+  global $user;
+
+  if (!isset($_POST['formToken'], $_POST['formId']) || !chatroom_check_token($_POST['formToken'], $_POST['formId'])) {
+    drupal_json_output(array('data' => array('accessDenied' => 'invalid token')));
+    drupal_exit();
+  }
+
+  $chatroom_data = isset($_POST['chatroom']) ? $_POST['chatroom'] : array();
+
+  $chatroom_data['uid'] = isset($chatroom_data['uid']) ? $chatroom_data['uid'] : $user->uid;
+  if (!isset($chatroom_data['allowedUids']) || !is_array($chatroom_data['allowedUids'])) {
+    $chatroom_data['allowedUids'] = array($chatroom_data['uid']);
+  }
+  else if (!in_array($chatroom_data['uid'], $chatroom_data['allowedUids'])) {
+    $chatroom_data['allowedUids'][] = $chatroom_data['uid'];
+  }
+
+  if (isset($chatroom_data['allowedRids']) && !is_array($chatroom_data['allowedRids'])) {
+    unset($chatroom_data['allowedRids']);
+  }
+
+  if (!isset($chatroom_data['title'])) {
+    $chatroom_data['title'] = 'Fix my title';
+  }
+
+  if (!isset($chatroom_data['public'])) {
+    $chatroom_data['public'] = 0;
+  }
+
+  $chatroom = new Chatroom();
+  foreach ($chatroom_data as $key => $value) {
+    $chatroom->set($key, $value);
+  }
+  $chatroom->save();
+  drupal_json_output(array('data' => array('cid' => $chatroom->get('cid'))));
+  drupal_exit();
 }
 
 /**
@@ -353,7 +484,7 @@ function chatroom_crud_form_submit($form, &$form_state) {
 /**
  * Add settings to chat page.
  */
-function chatroom_add_js($chatroom) {
+function chatroom_add_js($chatroom = NULL) {
   global $user;
 
   static $initialised;
@@ -361,8 +492,12 @@ function chatroom_add_js($chatroom) {
     $initialised = TRUE;
 
     $js = array(
+      'chatroomPath' => url('chatroom'),
       'postMessagePath' => url('chatroom/message/post', array('absolute' => TRUE)),
       'accessDeniedPath' => url('chatroom/access-denied', array('absolute' => TRUE)),
+      'createChatPath' => url('chatroom/add/chat/ajax', array('absolute' => TRUE)),
+      'createChatToken' => drupal_get_token('chatroom-create-chat'),
+      'createChatFormId' => 'chatroom-create-chat',
     );
 
     if (variable_get('configurable_timezones', 1) && $user->uid && drupal_strlen($user->timezone)) {
@@ -372,7 +507,7 @@ function chatroom_add_js($chatroom) {
       $js['timezone'] = variable_get('date_default_timezone', 0);
     }
 
-    drupal_add_js(drupal_get_path('module', 'chatroom') . '/chatroom.js');
+    drupal_add_js(drupal_get_path('module', 'chatroom') . '/chatroom.js', array('weight' => 10));
     drupal_add_css(drupal_get_path('module', 'chatroom') . '/chatroom.css');
 
     // Allow module to add js files to add functionality to the chatroom interface.
@@ -385,15 +520,19 @@ function chatroom_add_js($chatroom) {
     drupal_add_js(array('chatroom' => $js), 'setting');
   }
 
-  $latest_message = $chatroom->get('latestMessage');
-  $chatroom_settings = array(
-    'cid' => $chatroom->get('cid'),
-    'title' => $chatroom->get('title'),
-    'latestMsgId' => $latest_message ? $latest_message->cmid : 0,
-  );
-  // Allow modules to alter the js for a given room.
-  drupal_alter('chatroom_room_settings', $js, $chatroom);
-  drupal_add_js(array('chatroom' => array('chats' => array($chatroom->get('cid') => $chatroom_settings))), 'setting');
+  if ($chatroom instanceof Chatroom) {
+    $latest_message = $chatroom->get('latestMessage');
+    $previous_message_id = $chatroom->loadPrevMsgId();
+    $chatroom_settings = array(
+      'cid' => $chatroom->get('cid'),
+      'title' => $chatroom->get('title'),
+      'latestMsgId' => $latest_message ? $latest_message->cmid : 0,
+      'prevMsgId' => $previous_message_id ? $previous_message_id : 0,
+    );
+    // Allow modules to alter the js for a given room.
+    drupal_alter('chatroom_room_settings', $js, $chatroom);
+    drupal_add_js(array('chatroom' => array('chats' => array($chatroom->get('cid') => $chatroom_settings))), 'setting');
+  }
 }
 
 /**
@@ -410,9 +549,7 @@ function chatroom_get_message_time_string($timestamp) {
 }
 
 /**
- * Posted messages are handled here.
- *
- * @return boolean
+ * Check a token for a given form.
  */
 function chatroom_check_token($token, $form_id) {
   return $token == drupal_get_token($form_id);
@@ -421,14 +558,16 @@ function chatroom_check_token($token, $form_id) {
 /**
  * Checks if $account has access to $chatroom.
  */
-function chatroom_user_has_access($chatroom, $account) {
-  return $chatroom->userHasAccess($account);
+function chatroom_user_has_access($chatroom, $access_type = 'read', $account = NULL) {
+  if ($account === NULL) {
+    global $user;
+    $account = $user;
+  }
+  return $chatroom->userHasAccess($account, $access_type);
 }
 
 /**
  * Posted messages are handled here.
- *
- * @return void
  */
 function chatroom_post_message($chatroom) {
   global $user;
@@ -440,11 +579,6 @@ function chatroom_post_message($chatroom) {
 
   if (!chatroom_check_token($_POST['formToken'], $_POST['formId'])) {
     drupal_json_output(array('data' => array('accessDenied' => 'token')));
-    drupal_exit();
-  }
-
-  if (!chatroom_user_has_access($chatroom, $user)) {
-    drupal_json_output(array('data' => array('accessDenied' => 'kicked')));
     drupal_exit();
   }
 
@@ -478,6 +612,34 @@ function chatroom_post_message($chatroom) {
     nodejs_send_content_channel_message($push_message);
     drupal_json_output(array('data' => array('messageCmid' => $cmid)));
   }
+  drupal_exit();
+}
+
+/**
+ * Retrieve previous messages for the given chatroom.
+ */
+function chatroom_previous_messages($chatroom, $cmid, $limit) {
+  $previous_messages = $chatroom->loadPreviousMessages($cmid, $limit);
+
+  $message_data = array();
+  foreach ($previous_messages as $previous_message) {
+    $message = array(
+      'cid' => $previous_message->cid,
+      'uid' => $previous_message->uid,
+      'msg' => $previous_message->msg,
+      'msg_type' => 'message',
+      'recipient_uid' => $previous_message->recipient_uid,
+      'modified' => $previous_message->modified,
+      'anon_name' => $previous_message->anon_name,
+      'name' => $previous_message->name,
+    );
+    $message_data[] = array(
+      'cid' => $previous_message->cid,
+      'cmid' => $previous_message->cmid,
+      'msg' => theme('chatroom_message', array('message' => (object) $message, 'chatroom' => $chatroom)),
+    );
+  }
+  drupal_json_output($message_data);
   drupal_exit();
 }
 
@@ -626,7 +788,7 @@ function theme_chatroom_irc($variables) {
   global $user;
 
   $chatroom = $variables['chatroom'];
-  if (!$chatroom->userHasAccess($user)) {
+  if (!chatroom_user_has_access($chatroom, 'read')) {
     return '';
   }
 
@@ -640,7 +802,9 @@ function theme_chatroom_irc($variables) {
     $output .= theme('chatroom_message', array('message' => $message, 'chatroom' => $chatroom));
   }
   $output .= '</div></div>';
-  $output .= theme('chatroom_irc_buttons', array('chatroom' => $chatroom));
+  if (!$chatroom->get('archived') && chatroom_user_has_access($chatroom, 'write')) {
+    $output .= theme('chatroom_irc_buttons', array('chatroom' => $chatroom));
+  }
   return $output;
 }
 
@@ -756,5 +920,18 @@ function chatroom_irc_buttons_form($form, &$form_state, $chatroom) {
     '#value' => t('Chat'),
   );
   return $form;
+}
+
+/**
+ * Implements hook_field_delete().
+ */
+function chatroom_field_delete($entity_type, $entity, $field, $instance, $langcode, &$items) {
+  foreach ($items as $item) {
+    $tables = db_find_tables('chatroom%');
+    foreach ($tables as $table) {
+      $sql = 'DELETE FROM {' . $table . '} WHERE cid = :cid';
+      db_query($sql, array(':cid' => $item['cid']));
+    }
+  }
 }
 

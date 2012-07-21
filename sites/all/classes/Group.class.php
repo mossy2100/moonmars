@@ -39,6 +39,16 @@ class Group extends Node {
     return $this->channel;
   }
 
+  /**
+   * Get the group's logo.
+   *
+   * @return array
+   */
+  public function logo() {
+    $this->load();
+    return $this->entity->field_logo[LANGUAGE_NONE][0];
+  }
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Membership-related methods.
 
@@ -92,6 +102,43 @@ class Group extends Node {
   public function hasMember(Member $member) {
     $rels = moonmars_relationships_get_relationships('has_member', 'node', $this->nid(), 'user', $member->uid());
     return (bool) $rels;
+  }
+
+  /**
+   * Get the newest groups created.
+   *
+   * @static
+   * @param $n
+   */
+  public static function newest($n) {
+    $rs = db_select('node', 'n')
+      ->fields('n', array('nid'))
+      ->condition('type', 'group')
+      ->condition('status', 1)
+      ->orderBy('created', 'ASC')
+      ->range(0, $n)
+      ->execute();
+
+    $groups = array();
+    foreach ($rs as $rec) {
+      $groups[] = Group::create($rec->nid);
+    }
+    return $groups;
+  }
+
+  /**
+   * Get the total number of active (published) groups.
+   *
+   * @static
+   * @return int
+   */
+  public static function count() {
+    return db_select('node', 'n')
+      ->fields('n', array('nid'))
+      ->condition('type', 'group')
+      ->condition('status', 1)
+      ->execute()
+      ->rowCount();
   }
 
 }

@@ -68,6 +68,11 @@ function chatroom_schema() {
         'not null' => TRUE,
         'description' => 'ID of the user allowed in this chat.',
       ),
+      'read_only' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => 'Flag as to whether this uid is read-only.',
+      ),
     ),
     'indexes' => array(
       'cid' => array('cid'),
@@ -85,6 +90,11 @@ function chatroom_schema() {
         'type' => 'int',
         'not null' => TRUE,
         'description' => 'Role id of the role allowed in this chat.',
+      ),
+      'read_only' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => 'Flag as to whether this role is read-only.',
       ),
     ),
     'indexes' => array(

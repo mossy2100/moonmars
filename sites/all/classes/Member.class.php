@@ -425,13 +425,14 @@ class Member extends User {
       $q->range($offset, $limit);
     }
 
+    // Get the groups:
     $rs = $q->execute();
-    $group_nids = array();
+    $groups = array();
     foreach ($rs as $rec) {
-      $group_nids[] = $rec->group_nid;
+      $groups[] = Group::create($rec->group_nid);
     }
 
-    return $group_nids;
+    return $groups;
   }
 
   /**

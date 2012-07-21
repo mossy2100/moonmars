@@ -5,15 +5,24 @@
  */
 class Chatroom {
 
+  protected $changedAttributes = array();
+
   /**
    * Format to be used when filtering chat message output.
    */
   protected $format = '';
 
   /**
-   * List of role ids allowed in this chat.
+   * List of roles allowed to in this chat.
    */
-  protected $allowedRoles = array();
+  protected $allowedRids = array();
+
+  /**
+   * List of user uids allowed in this chat.
+   */
+  protected $allowedUids = array();
+
+  protected $archived = 0;
 
   protected $cid = 0;
 
@@ -29,13 +38,21 @@ class Chatroom {
 
   public function __construct($cid = FALSE) {
     if ($cid) {
-      $data = db_query('SELECT * FROM {chatroom} WHERE cid = :cid', array(':cid' => $cid))->fetchObject();
-      if ($data) {
-        $this->cid = $data->cid;
-        $this->public = $data->public;
-        $this->title = $data->title;
-        $this->format = $data->format ? $data->format : filter_fallback_format();
-      }
+      $this->load($cid);
+    }
+  }
+
+  public function load($cid) {
+    $data = db_query('SELECT * FROM {chatroom} WHERE cid = :cid', array(':cid' => $cid))->fetchObject();
+    if ($data) {
+      $this->cid = $data->cid;
+      $this->public = $data->public;
+      $this->archived = $data->archived;
+      $this->title = $data->title;
+      $this->format = $data->format ? $data->format : filter_fallback_format();
+      $this->loadAllowedRoles();
+      $this->loadAllowedUids();
+      $this->loadLatestMessage();
     }
   }
 
@@ -49,33 +66,42 @@ class Chatroom {
   }
 
   public function set($key, $value) {
-    if (isset($this->$key)) {
+    if (isset($this->$key) && $this->$key !== $value) {
       $this->$key = $value;
+      if (!in_array($key, $this->changedAttributes)) {
+        $this->changedAttributes[] = $key;
+      }
     }
   }
 
   public function get($key) {
     if (isset($this->$key)) {
-      if (in_array($key, array('latestMessage', 'allowedRoles'))) {
-        $loadMethod = 'load' . ucfirst($key);
-        $this->$key = $this->$loadMethod();
-      }
       return $this->$key;
     }
   }
 
   protected function loadLatestMessage() {
     $messages = $this->loadLatestMessages(1);
-    return $messages ? current($messages) : FALSE;
+    $this->latestMessage = $messages ? current($messages) : FALSE;
+    return $this->latestMessage;
   }
 
   protected function loadAllowedRoles() {
-    $this->allowedRoles = array();
-    $roles = db_query('SELECT rid FROM {chatroom_role} WHERE cid = :cid', array(':cid' => $this->cid))->fetchAll();
+    $this->allowedRids = array();
+    $roles = db_query('SELECT rid, read_only FROM {chatroom_role} WHERE cid = :cid', array(':cid' => $this->cid))->fetchAll();
     foreach ($roles as $role) {
-      $this->allowedRoles[$role->rid] = $role->rid;
+      $this->allowedRids[$role->rid] = $role;
     }
-    return $this->allowedRoles;
+    return $this->allowedRids;
+  }
+
+  protected function loadAllowedUids() {
+    $this->allowedUids = array();
+    $uids = db_query('SELECT uid, read_only FROM {chatroom_user} WHERE cid = :cid', array(':cid' => $this->cid))->fetchAll();
+    foreach ($uids as $uid) {
+      $this->allowedUids[] = $uid;
+    }
+    return $this->allowedUids;
   }
 
   /**
@@ -101,22 +127,39 @@ class Chatroom {
    * Check to see if the given user has access to this chat.
    *
    * @param mixed $account
+   * @param mixed $access_type
    * @return boolean
    */
-  public function userHasAccess($account) {
-    if ($this->get('public')) {
+  public function userHasAccess($account, $access_type) {
+    $admin_role_rid = variable_get('user_admin_role', FALSE);
+    if ($account->uid == 1 || ($admin_role_rid && isset($account->roles[$admin_role_rid]))) {
       return TRUE;
-    }
-
-    if ($allowed_roles = $this->get('allowedRoles')) {
-      return (bool) array_intersect_key($allowed_roles, $account->roles);
     }
 
     $params = array(
       ':cid' => $this->get('cid'),
       ':uid' => $account->uid,
     );
-    return (bool) db_query('SELECT cid FROM {chatroom_user} WHERE cid = :cid AND uid = :uid', $params)->fetchField();
+    $sql = 'SELECT cid, read_only FROM {chatroom_user} WHERE cid = :cid AND uid = :uid';
+    if ($user_access = db_query($sql, $params)->fetchObject()) {
+      if (!$user_access->read_only || $access_type == 'read') {
+        return TRUE;
+      }
+    }
+
+    if ($allowed_roles = $this->get('allowedRids')) {
+      foreach ($allowed_roles as $rid => $role_access) {
+        if (isset($account->roles[$rid])) {
+          if (!$role_access->read_only || $access_type == 'read') {
+            return TRUE;
+          }
+        }
+      }
+    }
+
+    if ($access_type == 'read' && ($this->get('public') || user_access('access all chatrooms', $account))) {
+      return TRUE;
+    }
   }
 
   /**
@@ -152,15 +195,44 @@ class Chatroom {
     return db_query('UPDATE {chatroom} SET public = 1 WHERE cid = :cid', array(':cid' => $this->get('cid')));
   }
 
+  protected function hasChanged($attribute) {
+    return in_array($attribute, $this->changedAttributes);
+  }
+
   /**
-   * Write a row for each uid for the given chat to allow access.
+   * Update the uids allowed to access a chat.
    *
    * @param mixed $uids
    * @return void
    */
-  public function addUser($uid) {
-    $data = array('uid' => $uid, 'cid' => $this->get('cid'));
-    drupal_write_record('chatroom_user', $data);
+  protected function updateUids() {
+    $sql = "DELETE
+            FROM {chatroom_user}
+            WHERE cid = :cid";
+    db_query($sql, array(':cid' => $this->get('cid')));
+
+    foreach ($this->allowedUids as $uid) {
+      $data = array('uid' => $uid->uid, 'cid' => $this->get('cid'), 'read_only' => $uid->read_only);
+      drupal_write_record('chatroom_user', $data);
+    }
+  }
+
+  /**
+   * Update the roles allowed to access a chat.
+   *
+   * @param mixed $rids
+   * @return void
+   */
+  protected function updateRids() {
+    $sql = "DELETE
+            FROM {chatroom_role}
+            WHERE cid = :cid";
+    db_query($sql, array(':cid' => $this->get('cid')));
+
+    foreach ($this->allowedRids as $rid) {
+      $data = array('rid' => $rid->rid, 'cid' => $this->get('cid'), 'read_only' => $rid->read_only);
+      drupal_write_record('chatroom_role', $data);
+    }
   }
 
   /**
@@ -172,22 +244,37 @@ class Chatroom {
   }
 
   public function save() {
-    $data = array(
-      'title' => $this->title,
-      'public' => $this->public,
-      'uid' => $this->uid,
-      'format' => $this->format,
-    );
-    if ($this->cid) {
-      $data['cid'] = $this->cid;
-      drupal_write_record('chatroom', $data, 'cid');
-      module_invoke_all('chatroom_update', $this);
+    $transaction = db_transaction();
+    try {
+      $data = array(
+        'title' => $this->title,
+        'public' => $this->public,
+        'uid' => $this->uid,
+        'archived' => $this->archived,
+        'format' => $this->format,
+      );
+      $op = $this->cid ? 'update' : 'insert';
+      if ($op == 'update') {
+        $data['cid'] = $this->cid;
+        drupal_write_record('chatroom', $data, 'cid');
+      }
+      else {
+        drupal_write_record('chatroom', $data);
+        $this->cid = $data['cid'];
+      }
+      if ($this->hasChanged('allowedRids')) {
+        $this->updateRids();
+      }
+      if ($this->hasChanged('allowedUids')) {
+        $this->updateUids();
+      }
+      module_invoke_all('chatroom_' . $op, $this);
+      return TRUE;
     }
-    else {
-      drupal_write_record('chatroom', $data);
-      $this->cid = $data['cid'];
-      $this->addUser($this->uid);
-      module_invoke_all('chatroom_insert', $this);
+    catch (Exception $e) {
+      $transaction->rollback();
+      watchdog_exception('chatroom_save', $e);
+      return FALSE;
     }
   }
 
@@ -233,57 +320,58 @@ class Chatroom {
     return array_reverse($messages, TRUE);
   }
 
+  /**
+   * Load older messages.
+   *
+   * @param $cmid
+   *   Only load messages with cmids less than this value.
+   * @param limit
+   *   The number of messages to return.
+   * @return array $messages
+   *
+   */
+  public function loadPreviousMessages($cmid, $limit = 20) {
+    $sql = "SELECT cm.*, u.name, 0 AS guest_id
+            FROM {chatroom_msg} cm
+            INNER JOIN {users} u ON u.uid = cm.uid
+            WHERE cm.cid = :cid
+            AND cm.cmid < :cmid
+            ORDER BY cm.cmid DESC
+            LIMIT $limit";
+    $args = array(
+      ':cid' => $this->cid,
+      ':cmid' => $cmid,
+    );
+    return $this->loadMessagesHelper($sql, $args);
+  }
+
+  /**
+   * Load the cmid of the oldest displayed message.
+   *
+   * @return $cmid
+   */
+  public function loadPrevMsgId() {
+    $message = array_shift($this->loadLatestMessages());
+    if (isset($message->cmid)) {
+      return $message->cmid;
+    }
+    return 0;
+  }
+
   protected function loadMessagesHelper($sql, $args) {
     $messages = array();
-    $guest_sids = array();
-    $guest_prefix = variable_get('chatroom_guest_user_prefix', t('guest-'));
-    $allow_anon_names = variable_get('chatroom_allow_anon_name', TRUE);
-
     $result = db_query($sql, $args)->fetchAll(PDO::FETCH_OBJ);
     foreach ($result as $message) {
-      if ($message->uid == 0 && !in_array($message->sid, $guest_sids)) {
-        $guest_sids[] = $message->sid;
-      }
       $messages[$message->cmid] = $message;
-    }
-
-    if (!empty($guest_sids)) {
-      // TODO: past beejeebus, please document this again, mkay?
-      $result = db_select('chatroom_online_list')
-        ->fields('sid')
-        ->fields('guest_id')
-        ->condition('sid', $guest_sids, 'IN')
-        ->execute()
-        ->fetchAll(PDO::FETCH_OBJ);
-      foreach ($result as $guest) {
-        foreach ($messages as $message) {
-          if ($message->sid == $guest->sid) {
-            if ($message->anon_name && $allow_anon_names) {
-              $messages[$message->cmid]->name = $message->anon_name;
-              $messages[$message->cmid]->guest_prefix = $guest_prefix;
-            }
-            else {
-              $messages[$message->cmid]->name = $guest_prefix . $guest->guest_id;
-            }
-            $messages[$message->cmid]->guest_id = $guest->guest_id;
-          }
-        }
-      }
     }
     return $messages;
   }
 
   /**
-   * Update the last seen time for a the given session id in the given chat.
-   *
-   * @param mixed $session_id
-   * @return void
+   * Why? Because fields caching is not what we want.
    */
-  function updateLastSeenTime($session_id) {
-    $sql = "UPDATE {chatroom_online_list}
-            SET last_seen_time = :last_seen_time
-            WHERE ccid = :ccid AND sid = :sid";
-    db_query($sql, array(':last_seen_time' => time(), ':cid' => $this->cid, ':sid' => $session_id));
+  public function __wakeup() {
+    $this->load($this->cid);
   }
 }
 

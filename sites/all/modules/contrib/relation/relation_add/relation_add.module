@@ -203,12 +203,6 @@ function relation_add_ajax($form, $form_state) {
  * Submit handler for the save button.
  */
 function relation_add_save($form, &$form_state) {
-
-//  dbg($form);
-//  echo "<hr>";
-//  dbg($form_state);
-//  exit;
-
   $type_array = explode(':', $form_state['values']['relation_type']);
   $type = $type_array[0];
   // entity_form_submit_build_entity() uses this later, so set it to the correct value

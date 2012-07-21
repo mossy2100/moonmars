@@ -97,6 +97,7 @@ function geonames_config($a = NULL, $b = NULL) {
       // our style        // geonames style
       'geonameid' => 'geonameId',
       'style'     => 'style',
+      'maxrows'   => 'maxRows',
       'lang'      => 'lang',
     ),
     'required_parameters' => array(
@@ -156,10 +157,10 @@ function geonames_config($a = NULL, $b = NULL) {
       'currencycode',
       'languages',
       'geonameid',
-      'bboxwest',
-      'bboxnorth',
-      'bboxsouth',
-      'bboxeast',
+      'west',
+      'east',
+      'north',
+      'south',
     ),
   );
   $config['countrysubdivision'] = array(
@@ -175,14 +176,13 @@ function geonames_config($a = NULL, $b = NULL) {
       'lat'      => 'lat',
       'lng'      => 'lng',
       'lang'     => 'lang',
-      'level'     => 'level',
     ),
     'required_parameters' => array( // If you have set query_defaults you should not include the parameter here
       'lat',
       'lng'
     ),
     'required_parameters_type' => 'all',
-    'columns' => array('countrycode', 'countryname', 'admincode1', 'adminname1', 'code'),
+    'columns' => array('countrycode', 'countryname', 'admincode1', 'adminname1'),
   );
   $config['get'] = array(
     'service_name'        => 'get',

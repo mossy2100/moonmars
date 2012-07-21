@@ -337,8 +337,8 @@ class Channel extends Node {
     }
 
     // Get the original item poster:
-    $original_poster = $item->creator();
-    $original_poster_link = $original_poster->link();
+    $item_poster = $item->creator();
+    $item_poster_link = $item_poster->link();
 
     /////////////////////////////////////////////////////////////////////////////
     // Step 1. Add or bump the item in the current channel.
@@ -356,10 +356,15 @@ class Channel extends Node {
     // Get a link to the original channel:
     $parent_entity = $original_channel->parentEntity();
     if ($parent_entity instanceof Member) {
-      $original_channel_link = $parent_entity->link() . "'s channel";
+      if (Member::equals($poster, $parent_entity)) {
+        $original_channel_link = "their channel";
+      }
+      else {
+        $original_channel_link = $parent_entity->link() . "'s channel";
+      }
     }
     else {
-      $original_channel_link = "the " . $parent_entity->link() . " " . $parent_entity->type() . "'s channel";
+      $original_channel_link = "the " . $parent_entity->link($parent_entity->title() . ' ' . $parent_entity->type()) . "'s channel";
     }
 
     /////////////////////////////////////////////////////////////////////////////
@@ -370,43 +375,43 @@ class Channel extends Node {
 
     /////////////////////////////////////////////////////////////////////////////
     // Step 3. Find out which members should see this item in their channel:
-    $subscribers = array();
+    $recipients = array();
 
     // a) The current user, i.e. the posting member.
     // Note, we omit a reason, because we don't need to notify this member.
-    $subscribers[$poster_uid] = array(
+    $recipients[$poster_uid] = array(
       'member' => $poster
     );
 
     // b) If the item is being posted in a member's channel, that member.
     if ($parent_entity instanceof Member) {
-      $subscribers[$parent_entity->uid()]['member'] = $parent_entity;
-      $subscribers[$parent_entity->uid()]['reasons'][] = "It's your channel.";
+      $recipients[$parent_entity->uid()]['member'] = $parent_entity;
+      $recipients[$parent_entity->uid()]['reasons'][] = "It's your channel.";
     }
 
     // c) If the item is being posted in a group, all members of the group.
     if ($parent_entity instanceof Group) {
       $members = $parent_entity->members();
       foreach ($members as $member) {
-        $subscribers[$member->uid()]['member'] = $member;
-        $subscribers[$member->uid()]['reasons'][] = "You're a member of the " . $parent_entity->link() . " group.";
+        $recipients[$member->uid()]['member'] = $member;
+        $recipients[$member->uid()]['reasons'][] = "You're a member of the " . $parent_entity->link() . " group.";
       }
     }
 
     // d) Everyone following the person who posted, edited or commented.
     $followers = $poster->followers();
     foreach ($followers as $follower) {
-      $subscribers[$follower->uid()]['member'] = $follower;
-      $subscribers[$follower->uid()]['reasons'][] = "You follow $poster_link.";
+      $recipients[$follower->uid()]['member'] = $follower;
+      $recipients[$follower->uid()]['reasons'][] = "You follow $poster_link.";
     }
 
     // e) Everyone following the original poster (if different to the current poster).
-    if (!Member::equals($original_poster, $poster)) {
-      $followers = $original_poster->followers();
+    if (!Member::equals($item_poster, $poster)) {
+      $followers = $item_poster->followers();
       foreach ($followers as $follower) {
-        if (!array_key_exists($subscribers, $follower->uid())) {
-          $subscribers[$follower->uid()]['member'] = $follower;
-          $subscribers[$follower->uid()]['reasons'][] = "You follow $original_poster_link.";
+        if (!array_key_exists($recipients, $follower->uid())) {
+          $recipients[$follower->uid()]['member'] = $follower;
+          $recipients[$follower->uid()]['reasons'][] = "You follow $item_poster_link.";
         }
       }
     }
@@ -414,48 +419,46 @@ class Channel extends Node {
     // f) Everyone mentioned in the item text.
     $referenced_members = moonmars_text_referenced_members($item->text());
     foreach ($referenced_members as $member) {
-      $subscribers[$member->uid()]['member'] = $member;
-      $subscribers[$member->uid()]['reasons'][] = "You're mentioned in the " . ($is_comment ? 'comment' : 'item') . ".";
+      $recipients[$member->uid()]['member'] = $member;
+      $recipients[$member->uid()]['reasons'][] = "You're mentioned in the " . ($is_comment ? 'comment' : 'item') . ".";
     }
 
     // g) Everyone following a hash tag that appears in the item text. @todo
 
     /////////////////////////////////////////////////////////////////////////////
     // Step 4. Copy/bump the item in all the channels of all relevant subscribers:
-    foreach ($subscribers as $subscriber_uid => $subscriber_info) {
-      $subscriber = $subscriber_info['member'];
+    foreach ($recipients as $recipient_uid => $recipient_info) {
+      $recipient = $recipient_info['member'];
 
       // Copy/bump the item in the subscribers channel:
-      $subscriber->channel()->addItem($item);
+      $recipient->channel()->addItem($item);
 
       // Send notifications to everyone who isn't the poster:
-      if ($subscriber_uid != $poster_uid) {
+      if ($recipient_uid != $poster_uid) {
 
-        if (Member::equals($parent_entity, $subscriber)) {
-          $original_channel_link = "your channel";
-        }
+        // Check if the recipient's channel equals the original channel:
+        $original_channel_link2 = Member::equals($parent_entity, $recipient) ? "your channel" : $original_channel_link;
 
         if ($is_comment) {
           // New comment posted or existing comment edited:
           $action = $is_new ? "commented" : "edited their comment";
-          if (Member::equals($subscriber, $original_poster)) {
+          if (Member::equals($recipient, $item_poster)) {
             $posted_by = "you posted";
           }
-          elseif (Member::equals($poster, $original_poster)) {
+          elseif (Member::equals($poster, $item_poster)) {
             $posted_by = "they posted";
           }
           else {
-            $posted_by = "posted by $original_poster_link";
+            $posted_by = "posted by $item_poster_link";
           }
-          $summary = "$poster_link $action on an item $posted_by in channel $original_channel_link.\n";
-
-          $text = "Comment text: <strong>" . moonmars_text_filter($comment->text()) . "</strong>";
+          $summary = "$poster_link $action on an item $posted_by in $original_channel_link2.\n";
+//          $text = "Comment text: <strong>" . moonmars_text_filter($comment->text()) . "</strong>";
         }
         else {
           // New item posted or existing item edited:
           $action = $is_new ? "posted a new" : "edited an";
-          $summary = "$poster_link $action item in $original_channel_link.\n";
-          $text = "Item text: <strong>" . moonmars_text_filter($item->text()) . "</strong>";
+          $summary = "$poster_link $action item in $original_channel_link2.\n";
+//          $text = "Item text: <strong>" . moonmars_text_filter($item->text()) . "</strong>";
         }
 
         // Set the subject:
@@ -467,27 +470,29 @@ class Channel extends Node {
         // Reasons:
         $message .= "<p>You're receiving this notification because:\n";
         $message .= "<ul>\n";
-        foreach ($subscriber_info['reasons'] as $reason) {
+        foreach ($recipient_info['reasons'] as $reason) {
           $message .= "<li>$reason</li>\n";
         }
         $message .= "</ul>\n";
 
         // Text:
-        $message .= "<p>$text</p>";
+//        $message .= "<p>$text</p>";
 
         // Item link:
         $message .= "<p>" . $item->link("Read or post comments") . "</p>\n";
 
         // Comment by email instructions:
-//        $can_post_comment = $subscriber->canPostComment($item);
+//        $can_post_comment = $recipient->canPostComment($item);
 //        if ($can_post_comment) {
 //          $message .= "<hr>\n";
 //          $message .= "<p>Scroll down to the bottom of this message to post a new comment by email.</p>";
 //        }
 
         // The item with comments:
-//        $message .= "<hr>\n";
-//        $message .= $item->render();
+        $message .= "<hr>\n";
+        $_SESSION['email_mode'] = 1;
+        $message .= $item->render(TRUE);
+        unset($_SESSION['email_mode']);
 
 //        // Comment by email:
 //        if ($can_post_comment) {
@@ -499,7 +504,7 @@ class Channel extends Node {
 //        }
 
         // Send the notification
-        $subscriber->notify($subject, $message);
+        $recipient->notify($subject, $message);
       }
     }
   }

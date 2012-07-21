@@ -94,6 +94,6 @@ function moonmars_text_hash_tags($text) {
  * @param int $maxlen
  * @return string
  */
-function moonmars_text_trim($text, $maxlen = 100) {
+function moonmars_text_trim($text, $maxlen = 40) {
   return (strlen($text) <= $maxlen) ? $text : (substr($text, 0, $maxlen - 3) . '...');
 }

@@ -1,0 +1,15 @@
+name = Email
+description = Plain theme for emails
+core = 7.x
+engine = phptemplate
+screenshot = screenshot.png
+
+; REQUIRED CORE REGIONS
+
+regions[content] = Content
+
+; OPTIONAL STYLESHEETS
+
+css[global.scss][name] = Custom global styles
+css[global.scss][description] = This file holds all the globally active custom CSS of your theme.
+css[global.scss][options][weight] = 1

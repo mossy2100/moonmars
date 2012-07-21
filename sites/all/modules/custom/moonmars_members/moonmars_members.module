@@ -503,50 +503,14 @@ function moonmars_members_groups_block() {
   // Get the member's uid from the URL:
   $member_uid = (int) arg(1);
 
-  // Get the latest 12 group members:
+  // Get the latest 4 groups that the member joined.
+  // (Might change this to the biggest or most active or most popular groups that the member is in.)
   $member = Member::create($member_uid);
-  $group_nids = $member->groups(0, 4);
+  $groups = $member->groups(0, 4);
+  $group_count = $member->groupCount();
 
   // Generate HTML:
-
-  // Group count:
-  $html = "<div class='group-count'>\n";
-  $html .= format_plural($member->groupCount(), '1 group', '@count groups');
-  $html .= "</div>";
-
-  // groups:
-  $html .= "<ul class='member-groups clearfix'>\n";
-  // Avatars for most recent groups:
-  foreach ($group_nids as $group_nid) {
-    $html .= "<li class='member-group'>\n";
-
-    // Create a link to the group:
-    $label = '';
-
-    // Do we have an image for this group?
-    $group = node_load($group_nid);
-    if (isset($group->field_logo[LANGUAGE_NONE][0]['fid'])) {
-      $logo = file_load($group->field_logo[LANGUAGE_NONE][0]['fid']);
-      $image_style = array(
-        'style_name' => 'sidebar-logo-90-wide',
-        'path'       => $logo->uri,
-        'alt'        => $group->title,
-      );
-      $label .= theme('image_style', $image_style) . '<br>';
-    }
-    $label .= $group->title;
-    $html .= l($label, "node/$group_nid", array('html' => TRUE, 'attributes' => array('title' => $group->title)));
-
-    $html .= "</li>\n";
-  }
-  $html .= "</ul>\n";
-
-  // View all groups link:
-//  $html .= "<div class='view-all-groups-link'>\n";
-//  $html .= l('View all', drupal_get_path_alias("user/$member_uid") . '/groups');
-//  $html .= "</div>";
-
-  return $html;
+  return moonmars_groups_render_block($groups, $group_count);
 }
 
 /**

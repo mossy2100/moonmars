@@ -145,6 +145,60 @@ function moonmars_groups_leave($group_nid) {
   drupal_goto($group_alias);
 }
 
+/**
+ * Render a sidebar block of groups.
+ *
+ * @param array $groups
+ *   Array of Group objects.
+ * @param int $group_count
+ *   The total number of groups (could be larger than the array count).
+ * @return string
+ */
+function moonmars_groups_render_block($groups, $group_count = NULL) {
+  $html = '';
+
+  // Group count:
+  if ($group_count !== NULL) {
+    $html = "<div class='group-count'>\n";
+    $html .= format_plural($group_count, '1 group', '@count groups');
+    $html .= "</div>";
+  }
+
+  // groups:
+  $html .= "<ul class='member-groups clearfix'>\n";
+  // Avatars for most recent groups:
+  foreach ($groups as $group) {
+    $html .= "<li class='member-group'>\n";
+
+    // Create a link to the group:
+    $label = '';
+
+    // Do we have an image for this group?
+    $logo = $group->logo();
+    $title = $group->title();
+    if (isset($logo['fid']) && $logo['fid']) {
+      $image_style = array(
+        'style_name' => 'sidebar-logo-90-wide',
+        'path'       => $logo['uri'],
+        'alt'        => $title,
+      );
+      $label .= theme('image_style', $image_style) . '<br>';
+    }
+    $label .= $title;
+    $html .= l($label, $group->alias(), array('html' => TRUE, 'attributes' => array('title' => $title)));
+
+    $html .= "</li>\n";
+  }
+  $html .= "</ul>\n";
+
+  // View all groups link:
+//  $html .= "<div class='view-all-groups-link'>\n";
+//  $html .= l('View all', drupal_get_path_alias("user/$member_uid") . '/groups');
+//  $html .= "</div>";
+
+  return $html;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Blocks
 
@@ -158,6 +212,10 @@ function moonmars_groups_block_info() {
   );
   $blocks['group-members'] = array(
     'info' => t('Group members'),
+    'cache' => DRUPAL_CACHE_PER_PAGE,
+  );
+  $blocks['newest-groups'] = array(
+    'info' => t('Newest groups'),
     'cache' => DRUPAL_CACHE_PER_PAGE,
   );
   return $blocks;
@@ -175,8 +233,14 @@ function moonmars_groups_block_view($delta = '') {
       break;
 
     case 'group-members':
-      $block['subject'] = t('Members');
+      $block['subject'] = 'Members';
       $block['content'] = moonmars_groups_members_block();
+      break;
+
+
+    case 'newest-groups':
+      $block['subject'] = 'Newest groups';
+      $block['content'] = moonmars_groups_newest_groups_block();
       break;
   }
   return $block;
@@ -238,6 +302,26 @@ function moonmars_groups_members_block() {
   // Generate HTML:
   $html = moonmars_members_render_avatars($group->memberCount(), $members);
   // l('View all', drupal_get_path_alias("node/$group_nid") . '/members')
+
+  return $html;
+}
+
+/**
+ * Generate HTML for the newest groups.
+ *
+ * @return string
+ */
+function moonmars_groups_newest_groups_block() {
+  // Get the newest 4 groups:
+  $groups = Group::newest(4);
+
+  // Generate HTML:
+  $html = moonmars_groups_render_block($groups);
+
+  // View all groups link:
+  $html .= "<div class='view-all-groups-link'>\n";
+  $html .= l('View all', 'groups');
+  $html .= "</div>";
 
   return $html;
 }

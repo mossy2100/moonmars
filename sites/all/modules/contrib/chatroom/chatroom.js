@@ -8,7 +8,7 @@ Drupal.chatroom.initialiseChat = function(chat) {
     var targetOffset = $('#chatroom-board-' + chat.cid + ' div.new-message:last').offset().top;
     var boardOffset = $('#chatroom-board-' + chat.cid).offset().top;
     var scrollAmount = targetOffset - boardOffset;
-    $('#chatroom-board-' + chat.cid).animate({scrollTop: '+='+ scrollAmount +'px'}, 500);
+    $('#chatroom-board-' + chat.cid).animate({scrollTop: '+='+ scrollAmount +'px'}, 250);
     $('#chatroom-board-' + chat.cid + '.new-message').removeClass('new-message');
   }
 
@@ -36,6 +36,40 @@ Drupal.chatroom.initialiseChat = function(chat) {
       $('#edit-chatroom-message-entry-box-' + chat.cid).val('').focus();
     }
   });
+
+  $('#chatroom-board-' + chat.cid).scroll(function() {
+    var chat = Drupal.settings.chatroom.chats[this.id.replace(/^chatroom-board-/, '')];
+    var yPos = $('#chatroom-board-' + chat.cid).scrollTop();
+    if (yPos === 0) {
+      Drupal.chatroom.getPreviousMessages(chat.cid, chat.prevMsgId);
+    }
+  });
+}
+
+/**
+ * Provide js API functions for modules that want to create chatrooms
+ * from js events.
+ */
+Drupal.chatroom.createChat = function(options, callback) {
+  if (typeof options.uid === 'undefined') {
+    options.uid = Drupal.settings.chatroom.uid;
+  }
+  if (typeof options.public === 'undefined') {
+    options.public = 0;
+  }
+  $.ajax({
+    type: 'POST',
+    url: Drupal.settings.chatroom.createChatPath,
+    dataType: 'json',
+    success: function (data, textStatus, XHR) {
+      callback(data.data);
+    },
+    data: {
+      chatroom: options,
+      formToken: Drupal.settings.chatroom.createChatToken,
+      formId: Drupal.settings.chatroom.createChatFormId
+    }
+  });
 }
 
 /**
@@ -51,6 +85,14 @@ Drupal.Nodejs.connectionSetupHandlers.chatroom = {
 };
 
 Drupal.chatroom.postMessage = function(message, anonName, chat) {
+  var formId = 'chatroom_form_token_' + chat.cid;
+  if (typeof chat.formId !== 'undefined') {
+    formId = chat.formId;
+  }
+  var formTokenDomId = '#edit-chatroom-chat-buttons-form-token-' + chat.cid;
+  if (typeof chat.formTokenDomId !== 'undefined') {
+    formTokenDomId = chat.formTokenDomId;
+  }
   $.ajax({
     type: 'POST',
     url: Drupal.settings.chatroom.postMessagePath + '/' + chat.cid,
@@ -59,8 +101,35 @@ Drupal.chatroom.postMessage = function(message, anonName, chat) {
     data: {
       message: message,
       anonName: anonName,
-      formToken: $('#edit-chatroom-chat-buttons-form-token-' + chat.cid).val(),
-      formId: 'chatroom_form_token_' + chat.cid
+      formToken: $(formTokenDomId).val(),
+      formId: formId
+    }
+  });
+}
+
+Drupal.chatroom.getPreviousMessages = function(cid, cmid, limit) {
+  if (limit === undefined) limit = 20;
+
+  $.ajax({
+    type: 'GET',
+    url: Drupal.settings.chatroom.chatroomPath + '/' + cid + '/messages/previous/' + cmid + '/' + limit,
+    success: function(data) {
+      /**
+       * Shamelessly stolen and adapted from here:
+       *
+       * http://stackoverflow.com/questions/5688362/how-to-prevent-scrolling-on-prepend
+       *
+       * Better implementation ideas welcome.
+       */
+      var currentTop = $('#chatroom-board-' + cid).children().first();
+      for (var message in data) {
+        Drupal.chatroom.addPreviousMessageToBoard(data[message]);
+      }
+      var previousHeight = 0;
+      currentTop.prevAll().each(function() {
+        previousHeight += $(this).outerHeight();
+      });
+      $('#chatroom-board-' + cid).animate({scrollTop: '+='+ previousHeight +'px'}, 10);
     }
   });
 }
@@ -76,11 +145,18 @@ Drupal.chatroom.addMessageToBoard = function(message) {
   Drupal.chatroom.scrollToLatestMessage(message.cid);
 }
 
+Drupal.chatroom.addPreviousMessageToBoard = function(message) {
+  var chat = Drupal.settings.chatroom.chats[message.cid];
+  chat.prevMsgId = message.cmid;
+  Drupal.settings.chatroom.chats[message.cid] = chat;
+  $('#chatroom-board-' + message.cid).prepend(message.msg);
+}
+
 Drupal.chatroom.scrollToLatestMessage = function(cid) {
   var boardOffset = $('#chatroom-board-' + cid).offset().top;
   var targetOffset = $('#chatroom-board-' + cid + ' div.new-message:last').offset().top;
   var scrollAmount = targetOffset - boardOffset;
-  $('#chatroom-board-' + cid).animate({scrollTop: '+='+ scrollAmount +'px'}, 500);
+  $('#chatroom-board-' + cid).animate({scrollTop: '+='+ scrollAmount +'px'}, 250);
   $('#chatroom-board-' + cid + ' .new-message').removeClass('new-message');
 }
 

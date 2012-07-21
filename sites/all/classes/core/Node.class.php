@@ -287,18 +287,17 @@ class Node extends EntityBase {
   /**
    * Get the HTML for a node.
    *
+   * @param bool $include_comments
    * @param string $view_mode
    * @return string
    */
-  public function render($view_mode = 'full') {
-    return theme('node',
-      array(
-        'elements' => array(
-          '#node'      => $this->node(),
-          '#view_mode' => $view_mode,
-        ),
-      )
-    );
+  public function render($include_comments = FALSE, $view_mode = 'full') {
+    $node = $this->node();
+    $node_view = node_view($node, $view_mode);
+    if ($include_comments) {
+      $node_view['comments'] = comment_node_page_additions($node);
+    }
+    return render($node_view);
   }
 
 }

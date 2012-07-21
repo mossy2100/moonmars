@@ -1,11 +1,11 @@
-<article<?php print $attributes; ?> xmlns="http://www.w3.org/1999/html">
+<article<?php echo $attributes; ?> xmlns="http://www.w3.org/1999/html">
 
   <div class='post-article-body'>
     <div class='user-picture'>
-      <?php print $poster->avatarTooltip(); ?>
+      <?php echo $avatar; ?>
     </div>
 
-    <div class='post-content-wrapper' <?php print $content_attributes; ?>>
+    <div class='post-content-wrapper' <?php echo $content_attributes; ?>>
       <div class='post-content'>
 
         <div class='who_where_when_posted'>
@@ -18,7 +18,7 @@
         <?php
         // Hide the default links:
         hide($content['links']);
-        print render($content);
+        echo render($content);
 
         // Render the edit_comment_form if present:
         if (isset($edit_comment_form)) {

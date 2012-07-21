@@ -8,10 +8,10 @@ if (isset($return_link)) {
 
   <div class='post-article-body'>
     <div class='user-picture'>
-      <?php print $poster->avatarTooltip(); ?>
+      <?php echo $avatar; ?>
     </div>
 
-    <div class='post-content-wrapper' <?php print $content_attributes; ?>>
+    <div class='post-content-wrapper' <?php echo $content_attributes; ?>>
       <div class='post-content'>
 
         <div class='who_where_when_posted'>
@@ -25,7 +25,7 @@ if (isset($return_link)) {
         // Hide comments and links now so we can render them later.
         hide($content['comments']);
         hide($content['links']);
-        print render($content);
+        echo render($content);
         ?>
       </div>
     </div>
@@ -77,12 +77,19 @@ if (isset($return_link)) {
 
     <!-- new comment form -->
     <?php
-    if ($current_member) {
-
-      if ($current_member->canPostComment($item)) {
+    if (!$email_mode) {
+      if (!$current_member) {
+        ?>
+        <p class='comment-instruction'>
+          <a href='/login?destination=<?php echo drupal_get_path_alias("node/$node->nid"); ?>'>Login</a> or
+          <a href='/register?destination=<?php echo drupal_get_path_alias("node/$node->nid"); ?>'>register</a>
+          to rate and post comments.
+        </p>
+        <?php
+      }
+      elseif ($current_member->canPostComment($item)) {
         ?>
         <article class="new-comment-form-article comment comment-new comment-by-viewer clearfix" data-nid="<?php echo $node->nid; ?>">
-
           <div class='post-article-body'>
             <div class='user-picture'>
               <?php echo $current_member->avatarTooltip(); ?>
@@ -108,16 +115,8 @@ if (isset($return_link)) {
         <?php
       }
     }
-    else {
-      ?>
-      <p class='comment-instruction'>
-        <a href='/login?destination=<?php echo drupal_get_path_alias("node/$node->nid"); ?>'>Login</a> or
-        <a href='/register?destination=<?php echo drupal_get_path_alias("node/$node->nid"); ?>'>register</a>
-        to rate and post comments.
-      </p>
-      <?php
-    }
     ?>
+
   </div>
 
 

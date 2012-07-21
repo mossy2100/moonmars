@@ -93,7 +93,7 @@ function geonames_metadata_update() {
     foreach ($lines as $line) {
       if (trim($line) != '' && substr($line, 0, 1) != '#' && substr($line, 0, 4) != 'null') {
         $a = explode("\t", $line);
-        $b = explode("\.", $a[0]);
+        $b = explode(".", $a[0]);
         $object = array_combine($field_names, array($b[0], $b[1], $a[1], $a[2]));
         drupal_write_record($tablename, $object);
       }
@@ -625,6 +625,9 @@ function geonames_query_required_parameters_set($service, $query, $single = 'sin
  *   $result object
  */
 function geonames_parse_xml($data, $columns = FALSE) {
+  $result = new stdClass();
+  $result->results = array();
+
   // temporary solution; get stuff from XML tag to distinguish between pay-service and free service
   preg_match('/<\?xml version="(.*)" encoding="([a-zA-Z\-0-9]*)"(.*)\?>/', $data, $regs);
   if ($regs[3]) {
@@ -733,6 +736,7 @@ function geonames_parse_get_xml($data) {
  * Parser for astergdem/srtm3/gtopo30 services.
  */
 function geonames_parse_elevation_xml($data) {
+  $result = new stdClass();
   $types = array('astergdem', 'srtm3', 'gtopo30');
   $xml = new SimpleXMLElement($data);
   foreach ($types as $key) {
@@ -900,10 +904,10 @@ function geonames_fields($type = FALSE, $keys = FALSE) {
     'areainaqkm'     => array('style' => 'o', 'geoname' => 'areaInSqKm',     'name' => t('Area (Km2)')),
     'currencycode'   => array('style' => 'o', 'geoname' => 'currencyCode',   'name' => t('Currency Code')),
     'languages'      => array('style' => 'o', 'geoname' => 'languages',      'name' => t('Languages')),
-    'bboxwest'       => array('style' => 'o', 'geoname' => 'bBoxWest',       'name' => t('Bound West')),
-    'bboxeast'       => array('style' => 'o', 'geoname' => 'bBoxNorth',      'name' => t('Bound East')),
-    'bboxnorth'      => array('style' => 'o', 'geoname' => 'bBoxEast',       'name' => t('Bound North')),
-    'bboxsouth'      => array('style' => 'o', 'geoname' => 'bBoxSouth',      'name' => t('Bound South')),
+    'west'           => array('style' => 'o', 'geoname' => 'West',           'name' => t('Bound West')),
+    'east'           => array('style' => 'o', 'geoname' => 'East',           'name' => t('Bound East')),
+    'north'          => array('style' => 'o', 'geoname' => 'North',          'name' => t('Bound North')),
+    'south'          => array('style' => 'o', 'geoname' => 'South',          'name' => t('Bound South')),
     'numpostalcodes' => array('style' => 'o', 'geoname' => 'numpostalcodes', 'name' => t('Number of Postal Codes')),
     'minpostalcode'  => array('style' => 'o', 'geoname' => 'minpostalcode', 'name' => t('Minimum Postal Code')),
     'maxpostalcode'  => array('style' => 'o', 'geoname' => 'maxpostalcode', 'name' => t('Maximum Postal Code')),
@@ -1069,6 +1073,9 @@ function theme_geonames_table($resultobj) {
  *   string, descending=DESC (ascending (ASC) is default)
  */
 function _geonames_sort(&$results, $key, $order) {
+  if (empty($results)) {
+    return;
+  }
   if (array_key_exists($key, $results[0])) {
     global $_geonames_sort_by_key;
     $_geonames_sort_by_key = $key;

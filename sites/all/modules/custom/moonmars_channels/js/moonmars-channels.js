@@ -20,15 +20,6 @@ function initChannel() {
     setupItemBehaviour(this);
   });
 
-  // Setup new item form behaviour:
-  $('#item-node-form #edit-submit').click(function() {
-    // Disable the post button:
-    $(this).disable();
-
-    // Show the uploading graphic:
-    $(this).closest('form').find('#edit-field-item-text textarea').addClass('uploading');
-  });
-
   // Setup comment behaviours:
   $('#comments article').each(function () {
     setupCommentBehaviour(this);
@@ -156,7 +147,6 @@ function setupItemBehaviour(itemArticle, autoCollapse) {
 //      // Show the edit item form:
 //      itemArticle.find('.edit-item-form').show();
 //      itemArticle.find('.post-content-wrapper').css('height', 'auto');
-//      return false;
 //    }
 //  );
 
@@ -192,7 +182,6 @@ function setupItemBehaviour(itemArticle, autoCollapse) {
 //      // Show the item text and controls:
 //      itemArticle.find('.field-name-field-item-text').show();
 //      itemArticle.find('.post-controls').show();
-//      return false;
 //    }
 //  );
 
@@ -221,7 +210,6 @@ function deleteItem(item_nid) {
     };
     $.post("/ajax/item/delete", query, deleteItemReturn, 'json');
   }
-  return false;
 }
 
 /**
@@ -267,7 +255,6 @@ function removeItem(item_nid) {
     // Request the removal:
     $.post("/ajax/item/remove", {item_nid: item_nid}, removeItemReturn, 'json');
   }
-  return false;
 }
 
 /**
@@ -377,8 +364,6 @@ function setupCommentBehaviour(commentArticle, autoCollapse) {
       // Show the comment text and controls:
       commentArticle.find('.field-name-comment-body').show();
       commentArticle.find('.post-controls').show();
-
-      return false;
     }
   );
 }
@@ -401,8 +386,6 @@ function editComment(cid) {
 
   // ??
 //  commentArticle.find('.post-content-wrapper').css('height', 'auto');
-
-  return false;
 }
 
 /**
@@ -450,7 +433,6 @@ function deleteComment(cid) {
     commentArticle.find('.post-controls .comment-delete').addClass('waiting');
     $.post("/ajax/comment/delete", {cid: cid}, deleteCommentReturn, 'json');
   }
-  return false;
 }
 
 /**

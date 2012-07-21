@@ -20,9 +20,6 @@ class MimeMailSystem implements MailSystemInterface {
    *   The formatted $message.
    */
   public function format(array $message) {
-  dbg($message);
-  dpm($message);
-
     if (is_array($message['body'])) {
       $message['body'] = implode("\n\n", $message['body']);
     }

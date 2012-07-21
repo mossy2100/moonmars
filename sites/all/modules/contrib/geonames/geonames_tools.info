@@ -14,9 +14,9 @@ core = 7.x
 files[] = geonames_tools.module
 ; files[] = tests/geonames.test
 
-; Information added by drupal.org packaging script on 2011-05-07
-version = "7.x-1.0"
+; Information added by drupal.org packaging script on 2012-07-19
+version = "7.x-1.1"
 core = "7.x"
 project = "geonames"
-datestamp = "1304738515"
+datestamp = "1342657638"
 
