@@ -170,21 +170,10 @@ function moonmars_groups_render_block($groups, $group_count = NULL) {
   foreach ($groups as $group) {
     $html .= "<li class='member-group'>\n";
 
-    // Create a link to the group:
-    $label = '';
-
-    // Do we have an image for this group?
-    $logo = $group->logo();
+    // Render a link to the group, with logo if present:
     $title = $group->title();
-    if (isset($logo['fid']) && $logo['fid']) {
-      $image_style = array(
-        'style_name' => 'sidebar-logo-90-wide',
-        'path'       => $logo['uri'],
-        'alt'        => $title,
-      );
-      $label .= theme('image_style', $image_style) . '<br>';
-    }
-    $label .= $title;
+    $logo = $group->renderLogo('sidebar-logo-90-wide');
+    $label = ($logo ? "$logo<br>" : '') . $title;
     $html .= l($label, $group->alias(), array('html' => TRUE, 'attributes' => array('title' => $title)));
 
     $html .= "</li>\n";

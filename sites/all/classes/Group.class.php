@@ -39,6 +39,9 @@ class Group extends Node {
     return $this->channel;
   }
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Logo stuff.
+
   /**
    * Get the group's logo.
    *
@@ -46,7 +49,25 @@ class Group extends Node {
    */
   public function logo() {
     $this->load();
-    return $this->entity->field_logo[LANGUAGE_NONE][0];
+    return isset($this->entity->field_logo[LANGUAGE_NONE][0]) ? $this->entity->field_logo[LANGUAGE_NONE][0] : NULL;
+  }
+
+  /**
+   * Render the logo HTML.
+   *
+   * @return array
+   */
+  public function renderLogo($style) {
+    $logo = $this->logo();
+    if ($logo) {
+      $image_style = array(
+        'style_name' => $style,
+        'path'       => $logo['uri'],
+        'alt'        => $this->title(),
+      );
+      return theme('image_style', $image_style);
+    }
+    return '';
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -115,7 +136,7 @@ class Group extends Node {
       ->fields('n', array('nid'))
       ->condition('type', 'group')
       ->condition('status', 1)
-      ->orderBy('created', 'ASC')
+      ->orderBy('created', 'DESC')
       ->range(0, $n)
       ->execute();
 
