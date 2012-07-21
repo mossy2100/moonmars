@@ -198,12 +198,12 @@ function moonmars_items_insert_update($node) {
     // Get the channel:
     $channel = Channel::create($GLOBALS['channel_nid']);
 
-    // Connect the item to the channel:
-    $channel->post($item, TRUE);
-
     // Update the alias:
     require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'pathauto') . '/pathauto.inc';
     pathauto_create_alias('node', 'insert', $item->path(), array('node' => $node), 'item');
+
+    // Connect the item to the channel (must be done after the alias is created).
+    $channel->post($item, TRUE);
 
     // Redirect back to the channel page:
     drupal_goto($channel->parentEntity()->alias());
