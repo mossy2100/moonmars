@@ -32,7 +32,6 @@ if (isset($return_link)) {
 
     <?php
     /*
-
     <div class='score-more-wrapper'>
       <div class='more-link-wrapper'>
         <a href='javascript:void(0)' class='more-link'>Read more <span class='expand-icon'>&#x25BC;</span></a>
@@ -72,7 +71,9 @@ if (isset($return_link)) {
 
     </div> <!-- /post-controls -->
 
-    <?php print render($content['comments']); ?>
+    <?php
+    echo $comments;
+    ?>
 
     <!-- new comment form -->
     <?php

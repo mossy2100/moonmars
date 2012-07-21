@@ -17,7 +17,7 @@ $ratingButtonHeight = 20px;
 
   .post-content {
     .field {
-      margin: 8px 0;
+      margin: 10px 0;
       font-size: 12px;
       line-height: 16px;
     }
@@ -275,15 +275,24 @@ article.node-item form {
 
 form.node-item-form {
 
-  #edit-field-item-type-und {
-    .form-type-radio {
-      display: inline;
-      margin: 0 10px 0 0;
+  #edit-field-item-type {
+    margin-top: 10px;
 
-      input {
-        margin: 0 3px;
+    .form-type-radios {
+
+      .form-type-radio {
+        display: inline;
+        margin: 0 10px 0 0;
+
+        input {
+          margin: 0 3px;
+        }
       }
     }
+  }
+
+  #edit-field-item-text {
+    margin-bottom: 0;
   }
 
   #field-item-link-add-more-wrapper {

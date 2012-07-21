@@ -230,12 +230,13 @@ class Node extends EntityBase {
   }
 
   /**
-   * Get a link to the node's profile.
+   * Get a link to the node's page.
    *
    * @return string
    */
-  public function link() {
-    return l($this->title(), $this->alias());
+  public function link($label = NULL) {
+    $label = ($label === NULL) ? $this->title() : $label;
+    return l($label, $this->alias());
   }
 
   /**

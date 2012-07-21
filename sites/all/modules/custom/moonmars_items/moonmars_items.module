@@ -199,7 +199,7 @@ function moonmars_items_insert_update($node) {
     $channel = Channel::create($GLOBALS['channel_nid']);
 
     // Connect the item to the channel:
-    $channel->postItem($item, TRUE, FALSE);
+    $channel->post($item, TRUE);
 
     // Update the alias:
     require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'pathauto') . '/pathauto.inc';
@@ -280,7 +280,7 @@ function moonmars_items_ajax_edit() {
   $item->save();
 
   // Post/bump the item in all relevant channels:
-  Channel::currentChannel()->postItem($item, FALSE, FALSE);
+  Channel::currentChannel()->post($item, FALSE);
 
   // Theme the item:
   $html = $item->render();

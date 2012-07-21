@@ -635,12 +635,25 @@ function moonmars_members_ajax_username_check() {
  * Implements hook_user_insert().
  */
 function moonmars_members_user_insert(&$edit, $account, $category) {
-  Member::create($account->uid)->resetAlias();
+  Member::create($account->uid)->setAlias();
 }
 
 /**
  * Implements hook_user_update().
  */
 function moonmars_members_user_update(&$edit, $account, $category) {
-  Member::create($account->uid)->resetAlias();
+  Member::create($account->uid)->setAlias();
+}
+
+/**
+ * Implements hook_mail().
+ */
+function moonmars_members_mail($key, &$message, $params) {
+  switch ($key) {
+    case 'notification':
+      $message['subject'] = $params['subject'];
+      $message['body'][] = $params['body'];
+      $message['headers']['Content-Type'] = "text/html; charset='utf-8';";
+      break;
+  }
 }

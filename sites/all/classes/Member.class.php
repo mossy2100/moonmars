@@ -547,9 +547,6 @@ class Member extends User {
     // Create the follow relationship:
     moonmars_relationships_update_relationship('has_follower', 'user', $member->uid(), 'user', $this->uid());
 
-//    dpm($this->uid());
-//    dpm($this->channel()->parentEntity()->id());
-
     // Post system message to the member's channel:
     $this->channel()->postSystemMessage('@' . $this->name() . " followed @" . $member->name());
   }
@@ -576,8 +573,7 @@ class Member extends User {
     moonmars_relationships_update_relationship('has_member', 'node', $group->nid(), 'user', $this->uid());
 
     // Post system message to the member's channel:
-    $system_message_item = moonmars_items_system_message('@' . $this->name() . " joined [" . $group->channel()->title() . "]");
-    $this->channel()->postItem($system_message_item, TRUE, FALSE);
+    $this->channel()->postSystemMessage("@" . $this->name() . " joined [" . $group->channel()->title() . "]");
   }
 
   /**
@@ -598,8 +594,12 @@ class Member extends User {
    *
    * @param $message
    */
-  public function notify($message){//
-    //    drupal_mail('moonmars_members', 'notification', $this->mail(), LANGUAGE_NONE, $params = array(), $from = NULL, $send = TRUE)
+  public function notify($subject, $message){
+    $params = array(
+      'subject' => "[moonmars.com] $subject",
+      'body'    => $message,
+    );
+    drupal_mail('moonmars_members', 'notification', $this->mail(), language_default(), $params);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

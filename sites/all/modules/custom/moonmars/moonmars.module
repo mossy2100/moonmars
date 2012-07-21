@@ -50,13 +50,3 @@ function moonmars_get_entity($node) {
   $class = ucfirst($node->type);
   return $class::create($node);
 }
-
-/**
- * Get the entity object for a node.
- */
-function moonmars_get_page_entity() {
-  $args = arg();
-  if ((count($args) == 2) && in_array($args[0], array('user', 'node')) && is_uint($args[1])) {
-    Channel::entityChannel();
-  }
-}

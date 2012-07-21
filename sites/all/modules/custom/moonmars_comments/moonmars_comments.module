@@ -101,8 +101,8 @@ function moonmars_comments_ajax_post() {
   $item_comment = ItemComment::create($comment);
   $html = $item_comment->render();
 
-  // Post/bump the item in all relevant channels:
-  Channel::currentChannel()->postItem($item, TRUE, TRUE);
+  // Post/bump the comment in all relevant channels:
+  Channel::currentChannel()->post($item_comment, TRUE);
 
   // Complete data array, encode and send:
   $data['result'] = TRUE;
@@ -167,7 +167,7 @@ function moonmars_comments_ajax_edit() {
   comment_save($item_comment->comment());
 
   // Post/update the comment's item:
-  Channel::currentChannel()->postItem($item_comment->item(), FALSE, TRUE);
+  Channel::currentChannel()->post($item_comment, FALSE);
 
   // Complete data array, encode and send:
   $data['result'] = TRUE;

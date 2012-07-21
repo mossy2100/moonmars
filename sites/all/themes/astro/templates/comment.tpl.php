@@ -58,7 +58,7 @@
 
       <?php
       if (!$item_comment->published()) {
-        echo "<div class='unpublished'>Unpublished</div>";
+        echo "<div class='unpublished'>unpublished</div>";
       }
       ?>
 

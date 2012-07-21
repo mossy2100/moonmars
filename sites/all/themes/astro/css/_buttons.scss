@@ -15,11 +15,14 @@
 
   &:hover {
     background-color: $red3;
-    color: white;
     text-decoration: none;
   }
-}
 
+  &:disabled,
+  &.disabled-hover {
+    background-color: $grey3;
+  }
+}
 
 button,
 input[type="button"],

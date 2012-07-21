@@ -21,4 +21,13 @@ class ItemComment extends Comment {
     return Member::create($this->uid());
   }
 
+  /**
+   * Get/set the comment text.
+   *
+   * @param null|string $text
+   */
+  public function text($text = NULL) {
+    return $this->field('comment_body', LANGUAGE_NONE, 0, 'value', $text);
+  }
+
 }

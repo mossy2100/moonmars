@@ -20,6 +20,15 @@ function initChannel() {
     setupItemBehaviour(this);
   });
 
+  // Setup new item form behaviour:
+  $('#item-node-form #edit-submit').click(function() {
+    // Disable the post button:
+    $(this).disable();
+
+    // Show the uploading graphic:
+    $(this).closest('form').find('#edit-field-item-text textarea').addClass('uploading');
+  });
+
   // Setup comment behaviours:
   $('#comments article').each(function () {
     setupCommentBehaviour(this);
