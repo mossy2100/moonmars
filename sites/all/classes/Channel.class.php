@@ -104,6 +104,31 @@ class Channel extends Node {
   }
 
   /**
+   * Creates a new entity.
+   *
+   * This method probably belongs elsewhere, but we have started using channel as a superclass to some degree,
+   * and maybe that's what it will become.
+   *
+   * @static
+   * @param string $entity_type
+   * @param int $entity_id
+   */
+  public static function createEntity($entity_type, $entity_id) {
+    switch ($entity_type) {
+      case 'user':
+        return Member::create($entity_id);
+
+      case 'node':
+        $node = node_load($entity_id);
+        if (in_array($node->type, moonmars_channels_node_types())) {
+          $class = ucfirst($node->type);
+          return $class::create($entity_id);
+        }
+    }
+    return FALSE;
+  }
+
+  /**
    * Creates a new channel for an entity.
    *
    * @param string $entity_type
@@ -111,26 +136,14 @@ class Channel extends Node {
    * @return int
    */
   public static function createEntityChannel($entity_type, $entity_id) {
-    // Load the entity
-    $entity = entity_load_single($entity_type, $entity_id);
-
-    // Determine the title and path alias for the channel.
-    // (This could probably better be done when the channel is saved, i.e. in moonmars_channels_node_presave())
-    switch ($entity_type) {
-      case 'node':
-        $title = ucfirst($entity->type) . ': ' . $entity->title;
-        break;
-
-      case 'user':
-        $title = 'Member: ' . $entity->name;
-        break;
-    }
+    // Get the parent entity object:
+    $parent_entity = Channel::createEntity($entity_type, $entity_id);
 
     // Create the new channel:
     $channel = Channel::create()
       ->setProperties(array(
-        'uid' => $entity->uid,
-        'title' => $title,
+        'uid'   => $parent_entity->uid(),
+        'title' => Channel::generateTitleFromParentEntity($parent_entity),
       ));
 
     // Save the node for the first time, which will give it a nid:
@@ -140,7 +153,7 @@ class Channel extends Node {
     moonmars_relationships_create_relationship('has_channel', $entity_type, $entity_id, 'node', $channel->nid(), TRUE);
 
     // Update the alias for the channel:
-    $channel->setAlias();
+    $channel->resetAlias();
 
     // Return the Channel:
     return $channel;
@@ -178,11 +191,78 @@ class Channel extends Node {
    */
   public function parentEntityLink($brackets = FALSE) {
     $entity = $this->parentEntity();
-    if ($entity) {
-      $label = $brackets ? ('[' . $this->title() . ']') : $this->title();
-      return l($label, $entity->alias());
+    if (!$entity) {
+      return FALSE;
     }
+
+    $label = $brackets ? ('[' . $this->title() . ']') : $this->title();
+    return l($label, $entity->alias());
+  }
+
+  /**
+   * Get the parent entity's name or title.
+   *
+   * @return string
+   *   Or FALSE if parent entity not found - should never happen.
+   */
+  public function parentEntityName() {
+    $entity = $this->parentEntity();
+    if (!$entity) {
+      return FALSE;
+    }
+
+    // Member:
+    if ($entity instanceof Member) {
+      return $entity->name();
+    }
+
+    // Node:
+    return $entity->title();
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Title and alias methods.
+
+  /**
+   * Generate's the channel's title given the parent entity.
+   *
+   * @return string
+   */
+  public static function generateTitleFromParentEntity($parent_entity) {
+    if ($parent_entity instanceof Member) {
+      // Member:
+      return 'Member: ' . $parent_entity->name();
+    }
+    else {
+      // Node such as Group, Event or Project:
+      return ucfirst($parent_entity->type()) . ': ' . $parent_entity->title();
+    }
+
     return FALSE;
+  }
+
+  /**
+   * Generates the channel's title.
+   * NOTE: Does not update the title. This result is used by the auto_nodetitle module, which does the updating.
+   *
+   * @return string
+   */
+  public function generateTitle() {
+    $parent_entity = $this->parentEntity();
+    return $parent_entity ? $this->generateTitleFromParentEntity($parent_entity) : FALSE;
+  }
+
+  /**
+   * Reset the channel's title. Call this if the parent entity's title or name changes.
+   *
+   * @return Channel
+   */
+  public function setTitle() {
+    $title = $this->generateTitle();
+    if ($title) {
+      $this->title($title);
+    }
+    return $this;
   }
 
   /**
@@ -576,6 +656,26 @@ class Channel extends Node {
         <div id='channel-items'>$items</div>
         <div id='channel-pager'>$pager</div>
       </div>";
+
+  }
+
+  /**
+   * Return HTML for the social links for this channel's entity.
+   *
+   * @return string
+   */
+  public function renderSocialLinks() {
+    $html = '';
+
+    $social_sites = array('facebook', 'linkedin', 'twitter', 'youtube', 'google', 'wikipedia');
+    foreach ($social_sites as $social_site) {
+      $field = "field_{$social_site}_link";
+      if (isset($this->entity->{$field}[LANGUAGE_NONE][0]['url'])) {
+        $html .= "<div class='social-link social-link-{$social_site}'><a href='" . $this->entity->{$field}[LANGUAGE_NONE][0]['url'] . "'>&nbsp;</a></div>";
+      }
+    }
+
+    return $html;
   }
 
 }

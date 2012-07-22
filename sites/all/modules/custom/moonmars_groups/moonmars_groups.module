@@ -254,10 +254,11 @@ function moonmars_groups_menu_block() {
   $group = Group::create($group_nid);
 
   // Get the current member:
-  $member = Member::create($user);
+  $member = Member::currentMember();
 
   // Show different options if the member is in the group or not:
   $html = "<ul id='group-menu' class='menu'>";
+
   if ($group->hasMember($member)) {
     $html .= "<li>" . l('Leave group', $group->alias() . '/leave') . "</li>";
 //    if (moonmars_groups_receive_emails($group_nid, $user)) {
@@ -271,6 +272,12 @@ function moonmars_groups_menu_block() {
     // @todo Update to support "ask permission to join group"
     $html .= "<li>" . l('Join group', $group->alias() . '/join') . "</li>";
   }
+
+  // Editing social links:
+  if ($group->hasAdmin($member)) {
+    $html .= "<li>" . l('Edit channel', $group->channel()->editAlias()) . "</li>";
+  }
+
   $html .= "</ul>";
   return $html;
 }

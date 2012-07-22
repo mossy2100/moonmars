@@ -321,4 +321,13 @@ abstract class EntityBase {
     }
   }
 
+  /**
+   * Get the path to the entity's edit page.
+   *
+   * @return string
+   */
+  public function editAlias() {
+    return $this->alias() . '/edit';
+  }
+
 }

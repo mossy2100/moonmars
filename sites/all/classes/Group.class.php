@@ -126,6 +126,21 @@ class Group extends Node {
   }
 
   /**
+   * Check if a user is an admin of the group.
+   *
+   * @todo Implement has_admin relationship
+   *
+   * @param Member $member
+   * @return bool
+   */
+  public function hasAdmin(Member $member) {
+    return $member->uid() == 1;
+
+//    $rels = moonmars_relationships_get_relationships('has_admin', 'node', $this->nid(), 'user', $member->uid());
+//    return (bool) $rels;
+  }
+
+  /**
    * Get the newest groups created.
    *
    * @static
@@ -160,6 +175,13 @@ class Group extends Node {
       ->condition('status', 1)
       ->execute()
       ->rowCount();
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Social links.
+
+  public function renderSocialLinks() {
+    return $this->channel()->renderSocialLinks();
   }
 
 }

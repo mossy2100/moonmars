@@ -325,16 +325,14 @@ function moonmars_members_unfollow($member2_uid) {
  * Go to the member's profile.
  */
 function moonmars_members_profile() {
-  global $user;
-  drupal_goto(drupal_get_path_alias("user/$user->uid"));
+  drupal_goto(Member::currentMember()->alias());
 }
 
 /**
  * Go to the member's profile edit form.
  */
 function moonmars_members_profile_edit() {
-  global $user;
-  drupal_goto(drupal_get_path_alias("user/$user->uid") . '/edit');
+  drupal_goto(Member::currentMember()->editAlias());
 }
 
 /**
@@ -460,6 +458,7 @@ function moonmars_members_block_view($delta = '') {
  */
 function moonmars_members_menu_block() {
   global $user;
+
   if (!user_is_logged_in()) {
     return "<p>Please <a href='/login'>login</a> or <a href='/register'>register</a> to follow this user.</p>";
   }
@@ -467,27 +466,28 @@ function moonmars_members_menu_block() {
   $html = "<ul id='member-menu' class='menu'>";
 
   // Get the user ids of the follower and the followee:
-  $uid1 = $user->uid;
-  $uid2 = (int) arg(1);
+  $current_member = Member::currentMember();
+  $profile_member = Member::create(arg(1));
 
-  // On your own profile, show an edit link:
-  if ($uid1 == $uid2) {
-    $edit_link = l('Edit profile', drupal_get_path_alias("user/$uid2") . '/edit');
+  // Edit profile dit link:
+  if (Member::equals($current_member, $profile_member)) {
+    $edit_link = l('Edit profile', $profile_member->editAlias());
     $html .= "<li>$edit_link</li>";
   }
   else {
     // On someone else's profile, show a follow/unfollow link:
-
-    $member1 = Member::create($user);
-    $member2 = Member::create($uid2);
-
-    if ($member1->follows($member2)) {
-      $follow_link = l('Unfollow', "user/$uid2/unfollow");
+    if ($current_member->follows($profile_member)) {
+      $follow_link = l('Unfollow', $profile_member->alias() . '/unfollow');
     }
     else {
-      $follow_link = l('Follow', "user/$uid2/follow");
+      $follow_link = l('Follow', $profile_member->alias() . '/follow');
     }
     $html .= "<li>$follow_link</li>";
+  }
+
+  // Editing social links:
+  if (Member::equals($current_member, $profile_member) || user_access('administer users', $user)) {
+    $html .= "<li>" . l('Edit links', $profile_member->channel()->editAlias()) . "</li>";
   }
 
   $html .= "</ul>";
@@ -596,17 +596,34 @@ function moonmars_members_ajax_username_check() {
 }
 
 /**
+ * Common code for when inserting or updating a user.
+ *
+ * @param $account
+ */
+function moonmars_members_insert_update($account) {
+  // Update the alias for the member's profile:
+  $member = Member::create($account->uid);
+  $member->setAlias();
+
+  // Update the alias and title for the member's channel:
+  $channel = $member->channel();
+  $channel->setAlias();
+  $channel->setTitle();
+  $channel->save();
+}
+
+/**
  * Implements hook_user_insert().
  */
 function moonmars_members_user_insert(&$edit, $account, $category) {
-  Member::create($account->uid)->setAlias();
+  moonmars_members_insert_update($account);
 }
 
 /**
  * Implements hook_user_update().
  */
 function moonmars_members_user_update(&$edit, $account, $category) {
-  Member::create($account->uid)->setAlias();
+  moonmars_members_insert_update($account);
 }
 
 /**

@@ -799,4 +799,11 @@ class Member extends User {
     return TRUE;
   }
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Social links.
+
+  public function renderSocialLinks() {
+    return $this->channel()->renderSocialLinks();
+  }
+
 }

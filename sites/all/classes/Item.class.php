@@ -24,13 +24,12 @@ class Item extends Node {
   }
 
   /**
-   * Gets a title from the item text, max 100 characters.
+   * Gets a title from the item text, max 40 characters.
    *
    * @return string
    */
   public function autoNodetitle() {
-    $text = $this->field('field_item_text');
-    return (strlen($text) <= 100) ? $text : (substr($text, 0, 97) . '...');
+    return moonmars_text_trim($this->field('field_item_text'));
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
