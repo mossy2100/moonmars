@@ -14,8 +14,9 @@ function moonmars_text_scan($text) {
   if ($n_members) {
     foreach ($matches[2] as $name) {
       // Check if we have a member with this name:
-      $member = Member::create($name);
-      if ($member) {
+      $user = user_load_by_name($name);
+      if ($user) {
+        $member = Member::create($user);
         $members[$member->uid()] = $member;
         $text2 = preg_replace("/(^|\s)(\@$name)\b/i", "$1" . $member->link(), $text2);
       }

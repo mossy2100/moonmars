@@ -26,6 +26,13 @@ class Comment extends EntityBase {
   const primaryKey = 'cid';
 
   /**
+   * Quick-load properties.
+   *
+   * @var array
+   */
+  protected static $quickLoadProperties = array('subject', 'nid', 'uid');
+
+  /**
    * Constructor.
    */
   protected function __construct() {
@@ -181,21 +188,33 @@ class Comment extends EntityBase {
   }
 
   /**
-   * Get the comment's subject.
+   * Get/set the comment's subject.
    *
-   * @return string
+   * @param null|string
+   * @return string|Comment
    */
-  public function subject() {
-    return $this->getProperty('subject', TRUE);
+  public function subject($subject = NULL) {
+    return $this->prop('subject', $subject);
   }
 
   /**
-   * Get the uid of the user who created the comment.
+   * Get/set the nid of the node that the comment is about.
    *
-   * @return int
+   * @param null|int
+   * @return int|Comment
    */
-  public function uid() {
-    return $this->getProperty('uid', TRUE);
+  public function nid($nid = NULL) {
+    return $this->prop('nid', $nid);
+  }
+
+  /**
+   * Get/set the uid of the user who created the comment.
+   *
+   * @param null|int
+   * @return int|Comment
+   */
+  public function uid($uid = NULL) {
+    return $this->prop('uid', $uid);
   }
 
   /**
@@ -205,15 +224,6 @@ class Comment extends EntityBase {
    */
   public function creator() {
     return User::create($this->uid());
-  }
-
-  /**
-   * Get the nid of the node that the comment is about.
-   *
-   * @return int
-   */
-  public function nid() {
-    return $this->getProperty('nid', TRUE);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

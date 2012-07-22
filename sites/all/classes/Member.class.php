@@ -47,7 +47,7 @@ class Member extends User {
    * @return Member|null
    */
   public static function currentMember() {
-    return user_is_logged_in() ? Member::create($GLOBALS['user']->uid) : NULL;
+    return user_is_logged_in() ? self::create($GLOBALS['user']->uid) : NULL;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -391,9 +391,18 @@ class Member extends User {
    */
   public function channel($create = TRUE) {
     if (!isset($this->channel)) {
-      $this->channel = Channel::entityChannel('user', $this->uid(), $create);
+      $this->channel = mmcEntity::getEntityChannel('user', $this->uid(), $create);
     }
     return $this->channel;
+  }
+
+  /**
+   * Get the title for the member's channel.
+   *
+   * @return string
+   */
+  public function channelTitle() {
+    return 'Member: ' . $this->name();
   }
 
   /**
@@ -471,7 +480,7 @@ class Member extends User {
     $rs = $q->execute();
     $followers = array();
     foreach ($rs as $rec) {
-      $followers[] = Member::create($rec->follower_uid);
+      $followers[] = self::create($rec->follower_uid);
     }
 
     return $followers;
@@ -510,7 +519,7 @@ class Member extends User {
     $rs = $q->execute();
     $followees = array();
     foreach ($rs as $rec) {
-      $followees[] = Member::create($rec->member_uid);
+      $followees[] = self::create($rec->member_uid);
     }
 
     return $followees;
@@ -618,7 +627,7 @@ class Member extends User {
 
     if ($parent_entity instanceof Member) {
       // A member can post in their own channel, or in the channel of someone who follows them:
-      return Member::equals($parent_entity, $this) || $parent_entity->follows($this);
+      return self::equals($parent_entity, $this) || $parent_entity->follows($this);
     }
     else if ($parent_entity instanceof Group) {
       // Only members of the group can post in the group's channel:
@@ -639,7 +648,7 @@ class Member extends User {
     return FALSE;
 
     // This function will probably change to this code here, but need to think about the UI.
-//    return Member::equals($this, $item->creator());
+//    return self::equals($this, $item->creator());
   }
 
   /**
@@ -660,7 +669,7 @@ class Member extends User {
 //    }
 
     // A member can delete an item if they posted it.
-    if (Member::equals($this, $item->creator())) {
+    if (self::equals($this, $item->creator())) {
       return TRUE;
     }
 
@@ -755,7 +764,7 @@ class Member extends User {
 //    }
 
     // Members can edit their own comments:
-    return Member::equals($comment->creator(), $this);
+    return self::equals($comment->creator(), $this);
   }
 
   /**
@@ -776,7 +785,7 @@ class Member extends User {
 //    }
 
     // Members can delete their own comments:
-    if (Member::equals($comment->creator(), $this)) {
+    if (self::equals($comment->creator(), $this)) {
       return TRUE;
     }
 

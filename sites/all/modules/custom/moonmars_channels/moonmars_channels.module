@@ -26,38 +26,27 @@ function moonmars_channels_node_types() {
  *
  * @param $node
  */
-function moonmars_channels_insert_update($node) {
-  // If inserting or updating a channel entity, update the channel's alias and title.
-  $channel = Channel::createEntityChannel('node', $node->nid);
-  if ($channel) {
-    $channel->setAlias();
-    $channel->setTitle();
-    $channel->save();
+function moonmars_channels_entity_save($entity, $type) {
+  // Update the channel's alias and title in case the entity's title was changed:
+  $entity = mmcEntity::getEntity($type, $entity);
+  if ($entity) {
+    $channel = $entity->channel();
+    $channel->updateAliasAndTitle();
   }
 }
 
 /**
  * Implements hook_node_insert().
  */
-function moonmars_channels_node_insert($node) {
-  if ($node->type == 'channel') {
-    // Set the channel alias for a new channel.
-    // Note that the channel title should be updated by auto_nodetitle.
-    $channel = Channel::create($node);
-    $channel->setAlias();
-  }
-  else {
-    moonmars_channels_insert_update($node);
-  }
+function moonmars_channels_entity_insert($entity, $type) {
+  moonmars_channels_entity_save($entity, $type);
 }
 
 /**
  * Implements hook_node_update().
  */
-function moonmars_channels_node_update($node) {
-  if ($node->type != 'channel') {
-    moonmars_channels_insert_update($node);
-  }
+function moonmars_channels_entity_update($entity, $type) {
+  moonmars_channels_entity_save($entity, $type);
 }
 
 /**

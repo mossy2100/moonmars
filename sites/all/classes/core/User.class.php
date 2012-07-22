@@ -26,6 +26,13 @@ class User extends EntityBase {
   const primaryKey = 'uid';
 
   /**
+   * Quick-load properties.
+   *
+   * @var array
+   */
+  protected static $quickLoadProperties = array('name', 'mail');
+
+  /**
    * Constructor.
    */
   protected function __construct() {
@@ -38,7 +45,7 @@ class User extends EntityBase {
   /**
    * Create a new User object.
    *
-   * @param null|int|string|stdClass $user_param
+   * @param null|int|stdClass $user_param
    * @return User
    */
   public static function create($user_param = NULL) {
@@ -48,29 +55,33 @@ class User extends EntityBase {
     if (is_null($user_param)) {
       // Create new user:
       $user_obj = new $class;
+
       // Assume active:
       $user_obj->entity->status = 1;
-      return $user_obj;
+
+      // Without a uid the user is valid:
+      $user_obj->valid = TRUE;
     }
     elseif (is_uint($user_param)) {
-      // uid provided. Only create the new user if not already in the cache:
+      // uid provided.
       $uid = $user_param;
+
+      // Only create the new node if not already in the cache:
       if (self::inCache($uid)) {
         return self::getFromCache($uid);
       }
       else {
         // Create new user:
         $user_obj = new $class;
+
         // Set the uid:
         $user_obj->entity->uid = $uid;
-        // Put the new user in the cache:
-        $user_obj->addToCache();
-        return $user_obj;
       }
     }
     elseif (is_object($user_param)) {
       // Drupal user object provided.
       $user = $user_param;
+
       // Get the User object:
       if ($user->uid && self::inCache($user->uid)) {
         $user_obj = self::getFromCache($user->uid);
@@ -78,24 +89,18 @@ class User extends EntityBase {
       else {
         $user_obj = new $class;
       }
+
+      // Reference the provided entity object:
       $user_obj->entity = $user;
-      // Add to cache:
+    }
+
+    // If we have a user object, add to cache and return:
+    if (isset($user_obj)) {
       $user_obj->addToCache();
       return $user_obj;
     }
-    elseif (is_string($user_param)) {
-      // User name provided. Load the user:
-      $name = $user_param;
-      $user = user_load_by_name($name);
-      if (!$user) {
-        return FALSE;
-      }
-      // Create from user object:
-      return self::create($user);
-    }
-    else {
-      trigger_error("Invalid parameter to User::create()", E_USER_ERROR);
-    }
+
+    trigger_error("Invalid parameter to User::create()", E_USER_ERROR);
   }
 
   /**
@@ -119,9 +124,6 @@ class User extends EntityBase {
       return $this;
     }
 
-    // Default result:
-    $user = FALSE;
-
     // Try to load the user:
     if (isset($this->entity->uid) && $this->entity->uid > 0) {
       // Load by uid. Drupal caching will prevent reloading of the same user.
@@ -134,6 +136,10 @@ class User extends EntityBase {
     elseif (isset($this->entity->mail) && $this->entity->mail != '') {
       // Load by mail:
       $user = user_load_by_mail($this->entity->mail);
+    }
+    else {
+      // Can't load the user:
+      return $this;
     }
 
     // Set the valid flag:
@@ -197,21 +203,23 @@ class User extends EntityBase {
   }
 
   /**
-   * Get the user's name.
+   * Get/set the user's name.
    *
-   * @return string
+   * @param null|string
+   * @return string|User
    */
-  public function name() {
-    return $this->getProperty('name', TRUE);
+  public function name($name = NULL) {
+    return $this->prop('name', $name);
   }
 
   /**
-   * Get the user's mail.
+   * Get/set the user's mail.
    *
-   * @return string
+   * @param null|string
+   * @return string|User
    */
-  public function mail() {
-    return $this->getProperty('mail', TRUE);
+  public function mail($mail = NULL) {
+    return $this->prop('mail', $mail);
   }
 
   /**

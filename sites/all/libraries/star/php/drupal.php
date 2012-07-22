@@ -215,8 +215,32 @@ function node_get_title($nid) {
     return FALSE;
   }
 
-  $rec = $rs->fetchAssoc();
-  return $rec['title'];
+  $rec = $rs->fetch();
+  return $rec->title;
+}
+
+/**
+ * Get a node's type, given its nid.
+ *
+ * @param int $nid
+ * @return string
+ */
+function node_get_type($nid) {
+  if (!$nid) {
+    return FALSE;
+  }
+
+  $rs = db_select('node', 'n')
+    ->fields('n', array('type'))
+    ->condition('nid', $nid)
+    ->execute();
+
+  if (!$rs->rowCount()) {
+    return FALSE;
+  }
+
+  $rec = $rs->fetch();
+  return $rec->type;
 }
 
 /**

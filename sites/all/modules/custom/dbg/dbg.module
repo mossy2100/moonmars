@@ -186,7 +186,14 @@ function dpm_query($query, $target = 'default') {
 }
 
 /**
- * Display previous functions called.
+ * Display previous functions called using dbg().
+ */
+function dbg_backtrace() {
+  dbg(debug_backtrace());
+}
+
+/**
+ * Display previous functions called using dpm().
  */
 function dpm_backtrace() {
   dpm(debug_backtrace());

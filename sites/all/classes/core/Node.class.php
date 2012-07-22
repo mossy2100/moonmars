@@ -19,11 +19,18 @@ class Node extends EntityBase {
   const table = 'node';
 
   /**
-   * The primary key
+   * The primary key.
    *
    * @var string
    */
   const primaryKey = 'nid';
+
+  /**
+   * Quick-load properties.
+   *
+   * @var array
+   */
+  protected static $quickLoadProperties = array('title', 'type', 'uid');
 
   /**
    * Constructor.
@@ -60,6 +67,9 @@ class Node extends EntityBase {
 
       // Default user to current user:
       $node_obj->entity->uid = user_is_logged_in() ? $GLOBALS['user']->uid : NULL;
+
+      // The node is valid without a nid:
+      $node_obj->valid = TRUE;
     }
     elseif (is_uint($node_param)) {
       // nid provided:
@@ -82,14 +92,14 @@ class Node extends EntityBase {
       $node = $node_param;
 
       // Get the object from the cache if possible:
-      if ($node->nid && self::inCache($node->nid)) {
+      if (isset($node->nid) && $node->nid && self::inCache($node->nid)) {
         $node_obj = self::getFromCache($node->nid);
       }
       else {
         $node_obj = new $class;
       }
 
-      // Link to the provided entity object:
+      // Reference the provided entity object:
       $node_obj->entity = $node;
     }
 
@@ -123,13 +133,13 @@ class Node extends EntityBase {
       return $this;
     }
 
-    // Default result:
-    $node = FALSE;
-
-    // Try to load the node:
-    if (isset($this->entity->nid) && $this->entity->nid > 0) {
-      // Load by nid. Drupal caching will prevent reloading of the same node.
+    // Check we have a nid:
+    if (isset($this->entity->nid) && $this->entity->nid) {
       $node = node_load($this->entity->nid);
+    }
+    else {
+      // Can't load the node:
+      return $this;
     }
 
     // Set the valid flag:
@@ -142,7 +152,8 @@ class Node extends EntityBase {
       return $this;
     }
 
-    trigger_error("Could not load node", E_USER_WARNING);
+    dpm_backtrace();
+    trigger_error("Could not load node." . (isset($this->entity->nid) ? (" nid: " . $this->entity->nid) : ''), E_USER_WARNING);
   }
 
   /**
@@ -151,6 +162,9 @@ class Node extends EntityBase {
    * @return Node
    */
   public function save() {
+    // Ensure the node is loaded:
+    $this->load();
+
     // Save the node:
     node_save($this->entity);
 
@@ -194,30 +208,33 @@ class Node extends EntityBase {
   }
 
   /**
-   * Get the node's title.
+   * Get/set the node's title.
    *
-   * @return string
+   * @param null|string
+   * @return string|Node
    */
-  public function title() {
-    return $this->getProperty('title', TRUE);
+  public function title($title = NULL) {
+    return $this->prop('title', $title);
   }
 
   /**
-   * Get the node's type.
+   * Get/set the node's type.
    *
-   * @return string
+   * @param null|string
+   * @return string|Node
    */
-  public function type() {
-    return $this->getProperty('type', TRUE);
+  public function type($type = NULL) {
+    return $this->prop('type', $type);
   }
 
   /**
-   * Get the node's uid.
+   * Get/set the node's uid.
    *
-   * @return int
+   * @param null|int
+   * @return int|Node
    */
-  public function uid() {
-    return $this->getProperty('uid', TRUE);
+  public function uid($uid = NULL) {
+    return $this->prop('uid', $uid);
   }
 
   /**

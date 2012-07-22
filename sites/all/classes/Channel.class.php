@@ -44,7 +44,7 @@ class Channel extends Node {
       ->condition('title', $channel_title)
       ->execute()
       ->fetch();
-    return $rec ? Channel::create($rec->nid) : FALSE;
+    return $rec ? self::create($rec->nid) : FALSE;
   }
 
   /**
@@ -57,7 +57,7 @@ class Channel extends Node {
   public static function currentChannel($channel = NULL) {
     if ($channel === NULL) {
       // Get the current channel:
-      return (isset($_SESSION['current_channel_nid']) && $_SESSION['current_channel_nid']) ? Channel::create($_SESSION['current_channel_nid']) : NULL;
+      return (isset($_SESSION['current_channel_nid']) && $_SESSION['current_channel_nid']) ? self::create($_SESSION['current_channel_nid']) : NULL;
     }
     else {
       // Remember the current channel nid in the session:
@@ -66,7 +66,7 @@ class Channel extends Node {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Entity-related methods.
+  // Parent entity-related methods.
 
   /**
    * Get the entity that a channel belongs to.
@@ -81,106 +81,11 @@ class Channel extends Node {
       $rels = moonmars_relationships_get_relationships('has_channel', NULL, NULL, 'node', $this->nid());
 
       if (!empty($rels)) {
-        if ($rels[0]->entity_type0 == 'user') {
-          return Member::create($rels[0]->entity_id0);
-        }
-
-        // $rels[0]->entity_type0 == 'node'
-        $node = node_load($rels[0]->entity_id0);
-        switch ($node->type) {
-          case 'group':
-            return Group::create($node);
-
-          case 'event':
-            return Event::create($node);
-
-          case 'project':
-            return Project::create($node);
-        }
+        $this->parentEntity = mmcEntity::getEntity($rels[0]->entity_type0, $rels[0]->entity_id0);
       }
     }
 
     return $this->parentEntity;
-  }
-
-  /**
-   * Creates a new entity.
-   *
-   * This method probably belongs elsewhere, but we have started using channel as a superclass to some degree,
-   * and maybe that's what it will become.
-   *
-   * @static
-   * @param string $entity_type
-   * @param int $entity_id
-   */
-  public static function createEntity($entity_type, $entity_id) {
-    switch ($entity_type) {
-      case 'user':
-        return Member::create($entity_id);
-
-      case 'node':
-        $node = node_load($entity_id);
-        if (in_array($node->type, moonmars_channels_node_types())) {
-          $class = ucfirst($node->type);
-          return $class::create($entity_id);
-        }
-    }
-    return FALSE;
-  }
-
-  /**
-   * Creates a new channel for an entity.
-   *
-   * @param string $entity_type
-   * @param int $entity_id
-   * @return int
-   */
-  public static function createEntityChannel($entity_type, $entity_id) {
-    // Get the parent entity object:
-    $parent_entity = Channel::createEntity($entity_type, $entity_id);
-
-    // Create the new channel:
-    $channel = Channel::create()
-      ->setProperties(array(
-        'uid'   => $parent_entity->uid(),
-        'title' => Channel::generateTitleFromParentEntity($parent_entity),
-      ));
-
-    // Save the node for the first time, which will give it a nid:
-    $channel->save();
-
-    // Create the relationship between the entity and the relationship:
-    moonmars_relationships_create_relationship('has_channel', $entity_type, $entity_id, 'node', $channel->nid(), TRUE);
-
-    // Update the alias for the channel:
-    $channel->resetAlias();
-
-    // Return the Channel:
-    return $channel;
-  }
-
-  /**
-   * Get an entity's channel.
-   *
-   * @param string $entity_type
-   * @param int $entity_id
-   * @param bool $create
-   * @return int
-   */
-  public static function entityChannel($entity_type, $entity_id, $create = TRUE) {
-    // Check if the entity already has a channel:
-    $rels = moonmars_relationships_get_relationships('has_channel', $entity_type, $entity_id, 'node', NULL);
-
-    if (!empty($rels)) {
-      return self::create($rels[0]->entity_id1);
-    }
-
-    // If the entity has no channel, and $create is TRUE, create the channel now:
-    if ($create) {
-      return self::createEntityChannel($entity_type, $entity_id);
-    }
-
-    return NULL;
   }
 
   /**
@@ -221,35 +126,27 @@ class Channel extends Node {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Title and alias methods.
+  // Alias and title methods.
 
   /**
-   * Generate's the channel's title given the parent entity.
+   * Update the path alias for the channel.
    *
-   * @return string
+   * @return Channel
    */
-  public static function generateTitleFromParentEntity($parent_entity) {
-    if ($parent_entity instanceof Member) {
-      // Member:
-      return 'Member: ' . $parent_entity->name();
-    }
-    else {
-      // Node such as Group, Event or Project:
-      return ucfirst($parent_entity->type()) . ': ' . $parent_entity->title();
-    }
-
-    return FALSE;
-  }
-
-  /**
-   * Generates the channel's title.
-   * NOTE: Does not update the title. This result is used by the auto_nodetitle module, which does the updating.
-   *
-   * @return string
-   */
-  public function generateTitle() {
+  public function setAlias() {
+    // Get the parent entity:
     $parent_entity = $this->parentEntity();
-    return $parent_entity ? $this->generateTitleFromParentEntity($parent_entity) : FALSE;
+    if (!$parent_entity) {
+      return FALSE;
+    }
+
+    // Set the alias:
+    $this->alias($parent_entity->alias() . '/channel');
+
+    // Make sure pathauto doesn't clobber the new alias:
+    $this->entity->path['pathauto'] = FALSE;
+
+    return $this;
   }
 
   /**
@@ -258,7 +155,8 @@ class Channel extends Node {
    * @return Channel
    */
   public function setTitle() {
-    $title = $this->generateTitle();
+    $entity = $this->parentEntity();
+    $title = $entity ? $entity->channelTitle() : FALSE;
     if ($title) {
       $this->title($title);
     }
@@ -266,16 +164,13 @@ class Channel extends Node {
   }
 
   /**
-   * Update the path alias for the channel.
-   *
-   * @return Channel
+   * Update a channel's alias and title to match the parent entity.
    */
-  public function setAlias() {
-    $parent_entity = $this->parentEntity();
-    if ($parent_entity) {
-      $this->alias($parent_entity->alias() . '/channel');
-    }
-    return $this;
+  public function updateAliasAndTitle() {
+    $this->load();
+    $this->setAlias();
+    $this->setTitle();
+    $this->save();
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -449,7 +344,7 @@ class Channel extends Node {
 
     /////////////////////////////////////////////////////////////////////////////
     // Step 2. Bump the item in the channel where it was originally posted, if different.
-    if (!Channel::equals($this, $original_channel)) {
+    if (!self::equals($this, $original_channel)) {
       $original_channel->bumpItem($item);
     }
 

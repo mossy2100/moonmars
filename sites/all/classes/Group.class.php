@@ -34,9 +34,18 @@ class Group extends Node {
    */
   public function channel($create = TRUE) {
     if (!isset($this->channel)) {
-      $this->channel = Channel::entityChannel('node', $this->nid(), $create);
+      $this->channel = mmcEntity::getEntityChannel('node', $this->nid(), $create);
     }
     return $this->channel;
+  }
+
+  /**
+   * Get the title for the group's channel.
+   *
+   * @return string
+   */
+  public function channelTitle() {
+    return 'Group: ' . $this->title();
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -182,6 +191,21 @@ class Group extends Node {
 
   public function renderSocialLinks() {
     return $this->channel()->renderSocialLinks();
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Debugging.
+
+  /**
+   * Debugging function.
+   */
+  public function dpm() {
+    dpm(array(
+             'object_id' => get_object_id($this),
+             'entity object id' => get_object_id($this->entity),
+             'nid' => $this->nid(),
+             'title' => $this->title(),
+        ));
   }
 
 }

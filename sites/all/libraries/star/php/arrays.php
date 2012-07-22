@@ -38,3 +38,15 @@ function object_to_array($object, $deep = FALSE, $objects = array()) {
   }
   return $result;
 }
+
+function get_object_id($obj) {
+  if (!is_object($obj)) {
+    return FALSE;
+  }
+
+  ob_start();
+  var_dump($obj);
+  $dump = ob_get_clean();
+  preg_match("/\d+/", $dump, $oid);
+  return $oid[0];
+}

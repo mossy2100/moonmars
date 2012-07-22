@@ -3559,6 +3559,10 @@ function user_node_load($nodes, $types) {
 
   // Add these values back into the node objects.
   foreach ($uids as $nid => $uid) {
+    if (!array_key_exists($nid, $nodes)) {
+      dpm_backtrace();
+    }
+
     $nodes[$nid]->name = $user_fields[$uid]->name;
     $nodes[$nid]->picture = $user_fields[$uid]->picture;
     $nodes[$nid]->data = $user_fields[$uid]->data;

@@ -23,15 +23,6 @@ class Item extends Node {
     return parent::__construct();
   }
 
-  /**
-   * Gets a title from the item text, max 40 characters.
-   *
-   * @return string
-   */
-  public function autoNodetitle() {
-    return moonmars_text_trim($this->field('field_item_text'));
-  }
-
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Get and set methods.
 

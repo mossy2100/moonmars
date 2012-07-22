@@ -54,6 +54,14 @@ abstract class EntityBase {
   abstract public function load();
 
   /**
+   * Reload the entity.
+   */
+  public function reload() {
+    $this->loaded = FALSE;
+    $this->load();
+  }
+
+  /**
    * Child classes must define a save method.
    *
    * @abstract
@@ -95,61 +103,14 @@ abstract class EntityBase {
   }
 
   /**
-   * Get a property value.
-   *
-   * @param string $property
-   * @param bool $quick_load
-   * @return mixed
-   */
-  public function getProperty($property, $quick_load = FALSE) {
-    // If not set, load the property value from the database:
-    if (!isset($this->entity->{$property})) {
-      // For some "quick load" properties, just get the field from the table record rather than load the whole object:
-      if ($quick_load) {
-        $class = get_class($this);
-        $rec = db_select($class::table, 't')
-          ->fields('t', array($property))
-          ->condition($class::primaryKey, $this->id())
-          ->execute()
-          ->fetch();
-
-        // If we got the record then set the property value:
-        if ($rec) {
-          $this->entity->{$property} = $rec->$property;
-        }
-
-        // If we got the record then the id is valid:
-        $this->valid = (bool) $rec;
-      }
-      else {
-        // Load the whole object:
-        $this->load();
-      }
-    }
-
-    return isset($this->entity->{$property}) ? $this->entity->{$property} : NULL;
-  }
-
-  /**
-   * Set a property value.
-   *
-   * @param string $property
-   * @param mixed $value
-   * @return mixed
-   */
-  public function setProperty($property, $value) {
-    // Set the property's value.
-    $this->entity->{$property} = $value;
-    return $this;
-  }
-
-  /**
    * Set the values of multiple properties.
    *
    * @param array $values
    * @return mixed
    */
   public function setProperties($values) {
+    $this->load();
+
     // Set the property's value.
     foreach ($values as $property => $value) {
       $this->entity->{$property} = $value;
@@ -166,12 +127,49 @@ abstract class EntityBase {
    */
   public function prop($property, $value = NULL) {
     if ($value === NULL) {
-      // Get a property value:
-      return $this->getProperty($property);
+      // Get a property's value.
+
+      // If not set, load the property value from the database:
+      if (!isset($this->entity->{$property})) {
+
+        // Get the object's class:
+        $class = get_class($this);
+
+        // For some "quick load" properties, just get the field from the table record rather than load the whole object:
+        if (in_array($property, $class::$quickLoadProperties)) {
+
+          $rec = db_select($class::table, 't')
+            ->fields('t', array($property))
+            ->condition($class::primaryKey, $this->id())
+            ->execute()
+            ->fetch();
+
+          // If we got the record then set the property value:
+          if ($rec) {
+            $this->entity->{$property} = $rec->$property;
+          }
+
+          // If we got the record then the id is valid:
+          $this->valid = (bool) $rec;
+        }
+        else {
+          // Load the whole object:
+          $this->load();
+        }
+      }
+
+      return isset($this->entity->{$property}) ? $this->entity->{$property} : NULL;
+
     }
     else {
-      // Set a property value:
-      return $this->setProperty($property, $value);
+      // Set a property's value.
+
+      // Make sure the object is loaded:
+      $this->load();
+
+      // Set the property's value:
+      $this->entity->{$property} = $value;
+      return $this;
     }
   }
 
@@ -218,7 +216,7 @@ abstract class EntityBase {
       return TRUE;
     }
 
-    // If the valid flag hasn't been set yet via getProperty(), then the simplest way to check if the entity is valid
+    // If the valid flag hasn't been set yet via prop(), then the simplest way to check if the entity is valid
     // is to try and load it:
     if (!isset($this->valid)) {
       $this->load();

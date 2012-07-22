@@ -600,30 +600,24 @@ function moonmars_members_ajax_username_check() {
  *
  * @param $account
  */
-function moonmars_members_insert_update($account) {
+function moonmars_members_user_save($account) {
   // Update the alias for the member's profile:
   $member = Member::create($account->uid);
   $member->setAlias();
-
-  // Update the alias and title for the member's channel:
-  $channel = $member->channel();
-  $channel->setAlias();
-  $channel->setTitle();
-  $channel->save();
 }
 
 /**
  * Implements hook_user_insert().
  */
 function moonmars_members_user_insert(&$edit, $account, $category) {
-  moonmars_members_insert_update($account);
+  moonmars_members_user_save($account);
 }
 
 /**
  * Implements hook_user_update().
  */
 function moonmars_members_user_update(&$edit, $account, $category) {
-  moonmars_members_insert_update($account);
+  moonmars_members_user_save($account);
 }
 
 /**
