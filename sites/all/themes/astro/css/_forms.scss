@@ -125,7 +125,7 @@ form {
     margin-top: 0;
   }
 
-  #edit-actions {
+  & > div > div#edit-actions {
     margin-bottom: 0;
   }
 }
@@ -134,16 +134,6 @@ form {
 #region-sidebar-second {
   form {
     padding: 5px;
-  }
-}
-
-
-////////////////////////////////////
-// User registration form
-
-#user-register-form {
-  #user-register-rules {
-    margin-left: 20px;
   }
 }
 
@@ -186,11 +176,44 @@ form {
   }
 }
 
-////////////////////////////////////
-// User profile form
+///////////////////////////////////////
+// User registration and profile forms
 
+#user-register-form,
 #user-profile-form {
   margin-bottom: 20px;
+
+  & > div > div,
+  & > div > fieldset,
+  #edit-account > div {
+    margin: 15px 0;
+  }
+
+  #edit-account {
+    margin-top: 0;
+
+    .form-item-name {
+      margin-top: 0;
+    }
+  }
+
+  #site-rules {
+    h3 {
+      margin: 0 0 5px;
+    }
+
+    p {
+      margin: 10px 0;
+    }
+
+    ul {
+      margin: 10px 0 0 20px;
+    }
+  }
+
+  .form-item-rules-cb {
+    margin: 10px 0 15px;
+  }
 
   #edit-current-pass,
   #edit-pass-pass1,
@@ -279,54 +302,63 @@ form {
   #edit-field-mobile-phone-und-0-value {
     width: 150px;
   }
+
+  #edit-picture {
+    .user-picture {
+      float: left;
+      margin-right: 10px;
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////
 // Moon or Mars field (register form and profile form)
 
-#edit-field-moon-or-mars-und {
+#edit-field-moon-or-mars {
+  margin: 15px 0;
 
-  height: 110px;
-  margin: 0;
+  #edit-field-moon-or-mars-und {
+    height: 110px;
+    margin: 0;
 
-  div.form-item {
-    float: left;
-    width: 92px;
-    margin: 0 8px 0 0;
+    div.form-item {
+      float: left;
+      width: 92px;
+      margin: 0 8px 0 0;
 
-    &:last-child {
-      margin-right: 0;
-    }
-
-    label {
-      display: block;
-      width: 80px;
-      height: 15px;
-      padding: 85px 5px 5px;
-      margin: 5px 0 0 0;
-      background-repeat: no-repeat;
-      background-position: 5px 5px;
-      text-align: center;
-      background-color: white;
-      border: solid 1px $grey4;
-      @include border-radius(3px);
-
-      &.selected {
-        background-color: $blue4;
-        border-color: $blue3;
+      &:last-child {
+        margin-right: 0;
       }
 
-      &:hover {
-        background-color: $red4;
-        border-color: $red3;
-      }
-    }
+      label {
+        display: block;
+        width: 80px;
+        height: 15px;
+        padding: 85px 5px 5px;
+        margin: 5px 0 0 0;
+        background-repeat: no-repeat;
+        background-position: 5px 5px;
+        text-align: center;
+        background-color: white;
+        border: solid 1px $grey4;
+        @include border-radius(3px);
 
-    input {
-      display: none;
+        &.selected {
+          background-color: $blue4;
+          border-color: $blue3;
+        }
+
+        &:hover {
+          background-color: $red4;
+          border-color: $red3;
+        }
+      }
+
+      input {
+        display: none;
+      }
     }
   }
-
 }
 
 ////////////////////////////////////

@@ -23,12 +23,13 @@ function moonmars_channels_node_types() {
 
 /**
  * Common code for inserting or updating nodes.
- *
- * @param $node
+ * 
+ * @param $entity
+ * @param $entity_type
  */
-function moonmars_channels_entity_save($entity, $type) {
+function moonmars_channels_entity_save($entity, $entity_type) {
   // Update the channel's alias and title in case the entity's title was changed:
-  $entity = mmcEntity::getEntity($type, $entity);
+  $entity = mmcEntity::getEntity($entity_type, $entity);
   if ($entity) {
     $channel = $entity->channel();
     $channel->updateAliasAndTitle();
@@ -36,17 +37,17 @@ function moonmars_channels_entity_save($entity, $type) {
 }
 
 /**
- * Implements hook_node_insert().
+ * Implements hook_entity_insert().
  */
-function moonmars_channels_entity_insert($entity, $type) {
-  moonmars_channels_entity_save($entity, $type);
+function moonmars_channels_entity_insert($entity, $entity_type) {
+  moonmars_channels_entity_save($entity, $entity_type);
 }
 
 /**
- * Implements hook_node_update().
+ * Implements hook_entity_update().
  */
-function moonmars_channels_entity_update($entity, $type) {
-  moonmars_channels_entity_save($entity, $type);
+function moonmars_channels_entity_update($entity, $entity_type) {
+  moonmars_channels_entity_save($entity, $entity_type);
 }
 
 /**
@@ -85,6 +86,21 @@ function moonmars_channels_form_alter(&$form, &$form_state, $form_id) {
 
       // Hide the channel title field:
       unset($form['title']);
+
+      // Submit handler:
+      $form['actions']['submit']['#submit'][] = 'moonmars_channels_channel_node_form_submit';
+
       break;
   }
+}
+
+/**
+ * Submit handler for channel_node_form.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function moonmars_channels_channel_node_form_submit($form, &$form_state) {
+  $channel = Channel::create($form['#node']);
+  $form_state['redirect'] = $channel->parentEntity()->alias();
 }

@@ -555,21 +555,43 @@ class Channel extends Node {
   }
 
   /**
-   * Return HTML for the social links for this channel's entity.
+   * Return the links for this channel's entity.
    *
    * @return string
    */
-  public function renderSocialLinks() {
+  public function renderLinks() {
     $html = '';
+    $entity = $this->parentEntity();
 
-    $social_sites = array('facebook', 'linkedin', 'twitter', 'youtube', 'google', 'wikipedia');
-    foreach ($social_sites as $social_site) {
+    // Official website:
+    $url = $this->field('field_website', LANGUAGE_NONE, 0, 'url');
+    if ($url) {
+      $title = htmlspecialchars("Visit " . (($entity instanceof Member) ? ($entity->name() . "'s official website") : ("the official website of " . $entity->title())), ENT_QUOTES);
+      $html .= "<p class='official-website'><a href='$url' target='_blank' title='$title'>Official website</a></p>\n";
+    }
+
+    // Social links:
+    $html .= "<div class='social-links clearfix'>\n";
+
+    $social_sites = array(
+      'facebook'  => 'facebook',
+      'twitter'   => 'twitter',
+      'linkedin'  => 'LinkedIn',
+      'google'    => 'Google+',
+      'youtube'   => 'YouTube',
+      'wikipedia' => 'Wikipedia'
+    );
+
+    foreach ($social_sites as $social_site => $social_site_name) {
       $field = "field_{$social_site}_link";
-      if (isset($this->entity->{$field}[LANGUAGE_NONE][0]['url'])) {
-        $html .= "<div class='social-link social-link-{$social_site}'><a href='" . $this->entity->{$field}[LANGUAGE_NONE][0]['url'] . "'>&nbsp;</a></div>";
+      $url = $this->field($field, LANGUAGE_NONE, 0, 'url');
+      if ($url) {
+        $title = htmlspecialchars("Visit " . (($entity instanceof Member) ? ($entity->name() . "'s") : ("the " . $entity->title())) . " $social_site_name page", ENT_QUOTES);
+        $html .= "<a class='social-link social-link-{$social_site}' href='$url' target='_blank' title='$title'></a>\n";
       }
     }
 
+    $html .= "</div>";
     return $html;
   }
 

@@ -93,36 +93,37 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
       $form['account']['name']['#description'] = USERNAME_DESCRIPTION;
 
       // Add rules fields:
-      $weight = $form['field_moon_or_mars']['#weight'];
       $form['rules'] = array(
         '#markup' => "
-  <h3>moonmars.com Rules</h3>
-  <p>This is not legal stuff, i.e. it's actually worth reading. If you don't
-  follow the rules, you'll be kicked out. Please review them and make sure you agree before proceeding.</p>
-  <ul id='user-register-rules'>
-    <li>Be nice to everyone, regardless of age, religion, race, gender, intelligence level, or political or planetary affiliation.</li>
-    <li>Be humble and willing to learn from others, regardless of how brilliant and qualified you think you are.</li>
-    <li>Be patient, helpful and willing to teach. Space will probably be settled by people younger than you. Teach them.</li>
-    <li>Swearing/cursing is ok but only for the purpose of humour or to make a point, never to abuse.</li>
-    <li>No lying, cheating or bullying. Treat others how you like to be treated.</li>
-    <li>Be creative and productive. This is not a social network or a water cooler. We're here to get shit done.</li>
-    <li>No complaining. Participate creatively and contribute your ideas and suggestions for how the site can be improved.</li>
-    <li>No porn or other offensive content. In fact, don't share anything that isn't related to space, tech or science.</li>
-    <li>Sincerely believe in and commit wholeheartedly to our goal of building settlements on the Moon and Mars.</li>
-    <li>Communicate clearly. Say what you mean, and take the time to use proper punctuation, spelling and grammar.</li>
-    <li>Use English. It may not be perfect, but it's become the <i>lingua franca</i> of Earth and of space.</li>
-    <li>If you aren't great at English, learn more and practice. It will definitely be worthwhile to you and the community.</li>
-    <li>No using the site naked. This is a family show.</li>
-  </ul>
+  <div id='site-rules'>
+    <h3>moonmars.com Rules</h3>
+    <p>This is not legal stuff, i.e. it's actually worth reading. If you don't
+    follow the rules, you'll be kicked out. Please review them and make sure you agree before proceeding.</p>
+    <ul>
+      <li>Be nice to everyone, regardless of age, religion, race, gender, intelligence level, or political or planetary affiliation.</li>
+      <li>Be humble and willing to learn from others, regardless of how brilliant and qualified you think you are.</li>
+      <li>Be patient, helpful and willing to teach. Space will probably be settled by people younger than you. Teach them.</li>
+      <li>Swearing/cursing is ok but only for the purpose of humour or to make a point, never to abuse.</li>
+      <li>No lying, cheating or bullying. Treat others how you like to be treated.</li>
+      <li>Be creative and productive. This is not a social network or a water cooler. We're here to get shit done.</li>
+      <li>No complaining. Participate creatively and contribute your ideas and suggestions for how the site can be improved.</li>
+      <li>No porn or other offensive content. In fact, don't share anything that isn't related to space, tech or science.</li>
+      <li>Sincerely believe in and commit wholeheartedly to our goal of building settlements on the Moon and Mars.</li>
+      <li>Communicate clearly. Say what you mean, and take the time to use proper punctuation, spelling and grammar.</li>
+      <li>Use English. It may not be perfect, but it's become the <i>lingua franca</i> of Earth and of space.</li>
+      <li>If you aren't great at English, learn more and practice. It will definitely be worthwhile to you and the community.</li>
+      <li>No using the site naked. This is a family show.</li>
+    </ul>
+  </div>
   ",
-        '#weight' => ++$weight,
       );
       $form['rules-cb'] = array(
         '#type' => 'checkbox',
         '#title' => "I agree to the Rules.",
         '#required' => TRUE,
-        '#weight' => ++$weight,
       );
+
+//      dbg($form);
 
       // Add a validation handler. Need to put this first so that our username rules get checked before Drupal core's.
       array_unshift($form['#validate'], 'moonmars_members_user_register_form_validate');
@@ -138,30 +139,6 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
 
       // Update username field description re valid characters:
       $form['account']['name']['#description'] = USERNAME_DESCRIPTION;
-
-      // Order the fields:
-      $weight = 0;
-      $form['account']['#weight'] = ++$weight;
-      $form['account']['name']['#weight'] = ++$weight;
-      $form['account']['mail']['#weight'] = ++$weight;
-      $form['account']['current_pass']['#weight'] = ++$weight;
-      $form['account']['pass']['#weight'] = ++$weight;
-      $form['field_first_name']['#weight'] = ++$weight;
-      $form['field_last_name']['#weight'] = ++$weight;
-      $form['picture']['#weight'] = ++$weight;
-      $form['field_moon_or_mars']['#weight'] = ++$weight;
-      $form['field_date_of_birth']['#weight'] = ++$weight;
-      $form['field_gender']['#weight'] = ++$weight;
-      $form['field_user_location']['#weight'] = ++$weight;
-      $form['timezone']['#weight'] = ++$weight;
-      $form['field_mobile_phone']['#weight'] = ++$weight;
-      $form['field_bio']['#weight'] = ++$weight;
-      $form['field_website']['#weight'] = ++$weight;
-      $form['field_facebook']['#weight'] = ++$weight;
-      $form['field_linkedin']['#weight'] = ++$weight;
-      $form['field_twitter']['#weight'] = ++$weight;
-      $form['signature']['#weight'] = ++$weight;
-      $form['contact']['#weight'] = ++$weight;
 
       // Remove the grippie from the bio textarea:
       $form['field_bio'][LANGUAGE_NONE][0]['value']['#resizable'] = FALSE;
@@ -182,15 +159,47 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
       // Add a submit handler:
       $form['#submit'][] = 'moonmars_members_user_profile_form_submit';
 
-//      $keys = array_keys($form);
+      break;
+  }
+
+  // Order the fields. This should work the same for both forms.
+  if ($form_id ==  'user_register_form' || $form_id ==  'user_register_form') {
+    $weight = 0;
+    $form['account']['#weight'] = ++$weight;
+    $form['account']['name']['#weight'] = ++$weight;
+    $form['account']['mail']['#weight'] = ++$weight;
+    $form['account']['current_pass']['#weight'] = ++$weight;
+    $form['account']['pass']['#weight'] = ++$weight;
+    $form['account']['roles']['#weight'] = ++$weight;
+    $form['account']['status']['#weight'] = ++$weight;
+    $form['account']['notify']['#weight'] = ++$weight;
+    $form['field_first_name']['#weight'] = ++$weight;
+    $form['field_last_name']['#weight'] = ++$weight;
+    $form['picture']['#weight'] = ++$weight;
+    $form['field_moon_or_mars']['#weight'] = ++$weight;
+    $form['field_date_of_birth']['#weight'] = ++$weight;
+    $form['field_gender']['#weight'] = ++$weight;
+    $form['field_user_location']['#weight'] = ++$weight;
+    $form['timezone']['#weight'] = ++$weight;
+    $form['field_mobile_phone']['#weight'] = ++$weight;
+    $form['field_bio']['#weight'] = ++$weight;
+    $form['field_website']['#weight'] = ++$weight;
+    $form['field_facebook']['#weight'] = ++$weight;
+    $form['field_linkedin']['#weight'] = ++$weight;
+    $form['field_twitter']['#weight'] = ++$weight;
+    $form['signature']['#weight'] = ++$weight;
+    $form['contact']['#weight'] = ++$weight;
+    $form['rules']['#weight'] = ++$weight;
+    $form['rules-cb']['#weight'] = ++$weight;
+
+    //      $keys = array_keys($form);
 //      foreach ($form as $key => $value) {
 //        if (is_array($value) && isset($value['#weight'])) {
 //          dbg("$key weight {$value['#weight']}");
 //        }
 //      }
-
-      break;
   }
+
 }
 
 /**

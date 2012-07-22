@@ -121,3 +121,53 @@ ul.member-groups {
     padding: 5px 0;
   }
 }
+
+.view-user-info {
+  .official-website {
+    margin: 5px 0;
+  }
+
+  .social-links {
+    margin: 10px 0;
+    padding: 0;
+
+    a.social-link {
+      display: block;
+      float: left;
+      width: 25px;
+      height: 25px;
+      margin: 0 5px 5px 0;
+      @include border-radius(3px);
+      @include opacity(0.6);
+
+      &:hover {
+        @include opacity(1);
+      }
+    }
+
+    .social-link-facebook {
+      background-image: url("../images/social-icons/facebook-25x25.png");
+    }
+    
+    .social-link-twitter {
+      background-image: url("../images/social-icons/twitter-25x25.png");
+    }
+    
+    .social-link-linkedin {
+      background-image: url("../images/social-icons/linkedin-25x25.png");
+    }
+    
+    .social-link-google {
+      background-image: url("../images/social-icons/google-plus-25x25.png");
+    }
+    
+    .social-link-youtube {
+      background-image: url("../images/social-icons/youtube-25x25.png");
+    }
+    
+    .social-link-wikipedia {
+      background-image: url("../images/social-icons/wikipedia-25x25.png");
+    }
+  }
+
+}

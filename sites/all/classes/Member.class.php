@@ -809,10 +809,10 @@ class Member extends User {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Social links.
+  // Rendering methods.
 
-  public function renderSocialLinks() {
-    return $this->channel()->renderSocialLinks();
+  public function renderLinks() {
+    return $this->channel()->renderLinks();
   }
 
 }

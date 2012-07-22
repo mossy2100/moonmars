@@ -226,7 +226,6 @@ function moonmars_groups_block_view($delta = '') {
       $block['content'] = moonmars_groups_members_block();
       break;
 
-
     case 'newest-groups':
       $block['subject'] = 'Newest groups';
       $block['content'] = moonmars_groups_newest_groups_block();
