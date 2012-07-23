@@ -62,24 +62,6 @@
   }
 }
 
-.block-user-info-block {
-
-  .views-field {
-    margin: 4px 0;
-  }
-
-  .views-field-field-moon-or-mars {
-    .views-label-field-moon-or-mars {
-      color: $grey3;
-      font-style: italic;
-    }
-
-    .field-content {
-      display: inline;
-    }
-  }
-}
-
 ul.member-grid {
   list-style-type: none;
   margin: 3px 0;
@@ -122,9 +104,30 @@ ul.member-groups {
   }
 }
 
-.view-user-info {
+
+
+.block-user-info-block {
+
+  .views-field {
+    margin: 4px 0;
+  }
+
+  .views-field-field-moon-or-mars {
+    margin: 10px 0;
+
+    .field-content {
+      color: $grey3;
+      display: inline;
+    }
+  }
+
   .official-website {
     margin: 5px 0;
+  }
+
+  .views-field-field-bio {
+    margin: 10px 0;
+    color: $grey3;
   }
 
   .social-links {

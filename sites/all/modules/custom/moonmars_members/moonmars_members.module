@@ -123,8 +123,6 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
         '#required' => TRUE,
       );
 
-//      dbg($form);
-
       // Add a validation handler. Need to put this first so that our username rules get checked before Drupal core's.
       array_unshift($form['#validate'], 'moonmars_members_user_register_form_validate');
 
@@ -272,7 +270,8 @@ function moonmars_members_user_profile_form_validate($form, &$form_state) {
  */
 function moonmars_members_user_profile_form_submit($form, &$form_state) {
   // Go back to the user's profile:
-  drupal_goto('user/' . arg(1));
+  $member = Member::create($form['#user']);
+  $form_state['redirect'] = $member->alias();
 }
 
 /**
@@ -300,7 +299,8 @@ function moonmars_members_follow($member2_uid) {
       drupal_set_message(t("You are now following %user2_name.", array('%user2_name' => $member2->name())));
     }
   }
-  drupal_goto("user/$member2_uid");
+
+  drupal_goto($member2->alias());
 }
 
 /**
@@ -327,7 +327,8 @@ function moonmars_members_unfollow($member2_uid) {
       drupal_set_message(t("You weren't following %user2_name.", array('%user2_name' => $member2->name())));
     }
   }
-  drupal_goto("user/$member2_uid");
+
+  drupal_goto($member2->alias());
 }
 
 /**
@@ -366,15 +367,16 @@ function moonmars_members_filter_channel_form() {
   return $form;
 }
 
-/**
- * Submit handler for moonmars_members_filter_channel_form().
- */
-function moonmars_members_filter_channel_form_submit($form, &$form_state) {
-  // Store the checkbox state:
-  $_SESSION['user']['profile_filter'] = (bool) $form_state['values']['profile_filter'];
-  // Reload the page:
-  drupal_goto('user/' . arg(1));
-}
+///**
+// * Submit handler for moonmars_members_filter_channel_form().
+// */
+//function moonmars_members_filter_channel_form_submit($form, &$form_state) {
+//  // Store the checkbox state:
+//  $_SESSION['user']['profile_filter'] = (bool) $form_state['values']['profile_filter'];
+//
+//  // Reload the page:
+//  drupal_goto('user/' . arg(1));
+//}
 
 /**
  * Render some member avatars in a sidebar block.

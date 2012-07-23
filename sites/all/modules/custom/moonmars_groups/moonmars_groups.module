@@ -126,7 +126,7 @@ function moonmars_groups_leave($group_nid) {
   // Check the user is logged in:
   if (!$current_member) {
     drupal_set_message("You need to <a href='/user'>login</a> before leaving a group.");
-    drupal_goto('/user', array('query' => array('destination' => "$group_alias/join")));
+    drupal_goto('/login', array('query' => array('destination' => "$group_alias/join")));
     return;
   }
 

@@ -18,13 +18,7 @@ function astro_alpha_preprocess_node_channel(&$vars) {
   $channel = Channel::create($node);
   $vars['channel'] = $channel;
 
-//      dbg(arg());
-//      // If we're on a channel node page, bounce the user to the parent entity's page:
-//      if (arg(0) == 'node' && arg(1) == $channel->nid()) {
-//        $parent_entity = $channel->parentEntity();
-//        drupal_goto($parent_entity->alias());
-//      }
-
+  // Load the channel JS:
   drupal_add_js(drupal_get_path('module', 'moonmars_channels') . '/js/moonmars-channels.js');
 
   // Remember the current channel:
@@ -33,13 +27,6 @@ function astro_alpha_preprocess_node_channel(&$vars) {
   // Get the channel items.
   // By default include all items in the channel:
   $include_copied_items = TRUE;
-
-//      if (arg(0) == 'user') {
-//         If the member is viewing their own profile, include stuff they're following (unless they have the 'Show only my stuff' filter on).
-//        $viewing_own_profile = $user->uid == arg(1);
-//        $filter_on = $viewing_own_profile && (isset($_SESSION['user']['profile_filter']) ? $_SESSION['user']['profile_filter'] : FALSE);
-//        $include_copied_items = $viewing_own_profile && !$filter_on;
-//      }
 
   // Set the page title:
   if (arg(0) == 'node' && arg(1) == $channel->nid()) {
