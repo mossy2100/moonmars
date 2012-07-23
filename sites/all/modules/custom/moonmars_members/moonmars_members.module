@@ -97,22 +97,19 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
         '#markup' => "
   <div id='site-rules'>
     <h3>moonmars.com Rules</h3>
-    <p>This is not legal stuff, i.e. it's actually worth reading. If you don't
-    follow the rules, you'll be kicked out. Please review them and make sure you agree before proceeding.</p>
+    <p>This is not legal stuff. Please review these and make sure you agree before proceeding.</p>
     <ul>
       <li>Be nice to everyone, regardless of age, religion, race, gender, intelligence level, or political or planetary affiliation.</li>
       <li>Be humble and willing to learn from others, regardless of how brilliant and qualified you think you are.</li>
       <li>Be patient, helpful and willing to teach. Space will probably be settled by people younger than you. Teach them.</li>
-      <li>Swearing/cursing is ok but only for the purpose of humour or to make a point, never to abuse.</li>
       <li>No lying, cheating or bullying. Treat others how you like to be treated.</li>
-      <li>Be creative and productive. This is not a social network or a water cooler. We're here to get shit done.</li>
-      <li>No complaining. Participate creatively and contribute your ideas and suggestions for how the site can be improved.</li>
-      <li>No porn or other offensive content. In fact, don't share anything that isn't related to space, tech or science.</li>
-      <li>Sincerely believe in and commit wholeheartedly to our goal of building settlements on the Moon and Mars.</li>
+      <li>Be creative and productive. This is not a social network or a water cooler. We're here to get things done.</li>
+      <li>No porn or other offensive content. In fact, don't share anything that isn't related to space.</li>
+      <li>Commit wholeheartedly to our shared goal of building settlements on the Moon and Mars.</li>
+      <li>Help to make this a positive and successful website and community.</li>
       <li>Communicate clearly. Say what you mean, and take the time to use proper punctuation, spelling and grammar.</li>
-      <li>Use English. It may not be perfect, but it's become the <i>lingua franca</i> of Earth and of space.</li>
-      <li>If you aren't great at English, learn more and practice. It will definitely be worthwhile to you and the community.</li>
-      <li>No using the site naked. This is a family show.</li>
+      <li>Use English. It may not be perfect, but it's become the <i>lingua franca</i> of Earth, and of the scientific and space community. If you aren't great at English, learn more and practice. It will be worthwhile to you, and the community.</li>
+      <li>Swearing/cursing is acceptable, but please keep it to a minimum. It should only be used for the purpose of humour or to make a point; never as abuse.</li>
     </ul>
   </div>
   ",

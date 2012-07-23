@@ -344,12 +344,14 @@ form {
         @include border-radius(3px);
 
         &.selected {
-          background-color: $blue4;
+          color: white;
+          background-color: $blue3;
           border-color: $blue3;
         }
 
         &:hover {
-          background-color: $red4;
+          color: white;
+          background-color: $red3;
           border-color: $red3;
         }
       }

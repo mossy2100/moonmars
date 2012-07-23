@@ -3,7 +3,7 @@ $postLineHeight = $postFontSize * 1.5;
 $ratingButtonHeight = 20px;
 
 @mixin channel-page-section {
-  padding: 0 10px 30px;
+  padding: 0 0 30px;
   margin-bottom: 30px;
   border-bottom: solid 1px $grey2;
 }
@@ -176,8 +176,12 @@ article.node-item {
   input.form-text,
   select,
   .form-textarea-wrapper textarea {
-    border-color: $grey4;
+    border: solid 1px $grey4;
     width: 100%;
+
+    &.error {
+      border-color: $red3;
+    }
   }
 }
 

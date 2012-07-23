@@ -40,5 +40,4 @@ function astro_alpha_preprocess_node_channel(&$vars) {
 
   // Render the items:
   $vars['items'] = $channel->renderItems($include_copied_items);
-
 }

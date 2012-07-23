@@ -126,19 +126,56 @@ function moonmars_items_form_alter(&$form, &$form_state, $form_id) {
     );
 
     // Validation handler.
-    $form['actions']['submit']['#validate'][] = 'moonmars_items_form_validate';
+//    $form['actions']['submit']['#validate'][] = 'moonmars_items_form_validate';
 
     // Submit handler.
     $form['actions']['submit']['#submit'][] = 'moonmars_items_form_submit';
   }
 }
 
-/**
- * Validation handler for add new item form.
- */
-function moonmars_items_form_validate($form, &$form_state) {
-  dpm($form_state['values']);
-}
+///**
+// * Validation handler for add new item form.
+// */
+//function moonmars_items_form_validate($form, &$form_state) {
+////  dpm($form_state['values']);
+//
+////  // Check we have a type:
+////  if (!$form_state['values']['field_item_type'][LANGUAGE_NONE][0]['value']) {
+////    form_set_error('field_item_type][und][0][value', "Select the type of item you wish to share.");
+////  }
+//
+//  // Check we have a text field:
+//  if (!$form_state['values']['field_item_text'][LANGUAGE_NONE][0]['value']) {
+//    form_set_error('field_item_text', "Please enter some text.");
+//  }
+//
+////  // For non-text types, ensure that the other field is filled in:
+////  switch ($form_state['values']['field_item_type'][LANGUAGE_NONE][0]['value']) {
+////    case 'image':
+////      if (!$form_state['values']['field_item_image'][LANGUAGE_NONE][0]['fid']) {
+////        form_set_error('field_item_image][und][0][fid', "If you want to share an image, please upload one from your computer.");
+////      }
+////      break;
+////
+////    case 'document':
+////      if (!$form_state['values']['field_item_document'][LANGUAGE_NONE][0]['fid']) {
+////        form_set_error('field_item_document][und][0][fid', "If you want to share a document, please upload one from your computer.");
+////      }
+////      break;
+////
+////    case 'video':
+////      if (!$form_state['values']['field_item_video'][LANGUAGE_NONE][0]['fid']) {
+////        form_set_error('field_item_video][und][0][fid', "If you want to share a video, please paste a YouTube URL in the field provided.");
+////      }
+////      break;
+////
+////    case 'link':
+////      if (!$form_state['values']['field_item_link'][LANGUAGE_NONE][0]['url']) {
+////        form_set_error('field_item_link][und][0][url', "If you want to share a link, please paste the URL in the field provided.");
+////      }
+////      break;
+////  }
+//}
 
 /**
  * Submit handler for add new item form.
