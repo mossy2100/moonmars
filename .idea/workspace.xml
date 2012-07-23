@@ -2,53 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ff922214-f7cd-4eef-9f30-177ba578dd26" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/colorbox/LICENSE.txt" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/colorbox/README.txt" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/colorbox/colorbox-insert-image.tpl.php" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/colorbox/colorbox.admin.inc" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/colorbox/colorbox.api.php" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/colorbox/colorbox.info" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/colorbox/colorbox.install" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/colorbox/colorbox.make.example" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/colorbox/colorbox.module" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/colorbox/colorbox.pages.inc" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/colorbox/colorbox.theme.inc" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/colorbox/colorbox.variable.inc" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/colorbox/drush/colorbox.drush.inc" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/colorbox/images/controls.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/colorbox/images/loading_animation.gif" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/colorbox/images/loading_background.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/colorbox/js/colorbox.js" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/colorbox/js/colorbox_admin_settings.js" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/colorbox/js/colorbox_image_module.js" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/colorbox/js/colorbox_inline.js" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/colorbox/js/colorbox_load.js" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/colorbox/js/colorbox_login.js" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/colorbox/styles/default/colorbox_default_style.css" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/colorbox/styles/default/colorbox_default_style.js" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/colorbox/styles/default/images/controls.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/colorbox/styles/default/images/loading_animation.gif" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/colorbox/styles/default/images/loading_background.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/colorbox/styles/stockholmsyndrome/colorbox_stockholmsyndrome.css" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/colorbox/styles/stockholmsyndrome/colorbox_stockholmsyndrome.js" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/colorbox/styles/stockholmsyndrome/colorbox_stockholmsyndrome_screen.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/colorbox/styles/stockholmsyndrome/images/bg_tab.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/colorbox/styles/stockholmsyndrome/images/controls.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/colorbox/styles/stockholmsyndrome/images/loading_animation.gif" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/colorbox/views/colorbox.views.inc" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/colorbox/views/colorbox_handler_field_colorbox.inc" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/classes/Channel.class.php" afterPath="$PROJECT_DIR$/sites/all/classes/Channel.class.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/classes/Group.class.php" afterPath="$PROJECT_DIR$/sites/all/classes/Group.class.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/js/moonmars-channels.js" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/js/moonmars-channels.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_groups/moonmars_groups.module" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_groups/moonmars_groups.module" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_items/moonmars_items.module" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_items/moonmars_items.module" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/css/_blocks.scss" afterPath="$PROJECT_DIR$/sites/all/themes/astro/css/_blocks.scss" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/css/_channels.scss" afterPath="$PROJECT_DIR$/sites/all/themes/astro/css/_channels.scss" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/css/_nav.scss" afterPath="$PROJECT_DIR$/sites/all/themes/astro/css/_nav.scss" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-node-item.inc" afterPath="$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-node-item.inc" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/template.php" afterPath="$PROJECT_DIR$/sites/all/themes/astro/template.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/templates/node--item.tpl.php" afterPath="$PROJECT_DIR$/sites/all/themes/astro/templates/node--item.tpl.php" />
     </list>
     <ignored path="moonmars.com.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -74,37 +28,19 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="moonmars_items.module" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="moonmars_items.module" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_items/moonmars_items.module">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="184" column="1" selection-start="5899" selection-end="5899" vertical-scroll-proportion="-5.329114">
+            <state line="110" column="36" selection-start="3186" selection-end="3186" vertical-scroll-proportion="0.6235864">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="_forms.scss" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/_forms.scss">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="182" column="9" selection-start="2843" selection-end="2843" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="_buttons.scss" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/_buttons.scss">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="41" column="0" selection-start="794" selection-end="794" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="_channels.scss" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="_channels.scss" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/_channels.scss">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="327" column="18" selection-start="5440" selection-end="5440" vertical-scroll-proportion="0.8184765">
+            <state line="14" column="17" selection-start="267" selection-end="280" vertical-scroll-proportion="-7.8846154">
               <folding />
             </state>
           </provider>
@@ -137,8 +73,8 @@
         <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/js/moonmars-channels.js" />
         <option value="$PROJECT_DIR$/sites/all/themes/astro/template.php" />
         <option value="$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-node-item.inc" />
-        <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_items/moonmars_items.module" />
         <option value="$PROJECT_DIR$/sites/all/themes/astro/css/_channels.scss" />
+        <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_items/moonmars_items.module" />
       </list>
     </option>
   </component>
@@ -1015,13 +951,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_items/moonmars_items.module">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="184" column="1" selection-start="5899" selection-end="5899" vertical-scroll-proportion="-5.329114">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/_forms.scss">
       <provider selected="true" editor-type-id="text-editor">
         <state line="182" column="9" selection-start="2843" selection-end="2843" vertical-scroll-proportion="0.0">
@@ -1038,7 +967,14 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/_channels.scss">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="327" column="18" selection-start="5440" selection-end="5440" vertical-scroll-proportion="0.8184765">
+        <state line="14" column="17" selection-start="267" selection-end="280" vertical-scroll-proportion="-7.8846154">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_items/moonmars_items.module">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="110" column="36" selection-start="3186" selection-end="3186" vertical-scroll-proportion="0.6235864">
           <folding />
         </state>
       </provider>

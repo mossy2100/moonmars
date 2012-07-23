@@ -107,7 +107,8 @@ function moonmars_items_form_alter(&$form, &$form_state, $form_id) {
     unset($form['field_item_type'][LANGUAGE_NONE]['#title']);
     unset($form['field_item_text'][LANGUAGE_NONE][0]['value']['#title']);
     unset($form['field_item_link'][LANGUAGE_NONE][0]['#title']);
-    unset($form['field_item_file'][LANGUAGE_NONE][0]['#title']);
+    unset($form['field_item_image'][LANGUAGE_NONE][0]['#title']);
+    unset($form['field_item_document'][LANGUAGE_NONE][0]['#title']);
 
     // Change the button label:
     $form['actions']['submit']['#value'] = t('Post');
@@ -123,26 +124,19 @@ function moonmars_items_form_alter(&$form, &$form_state, $form_id) {
       '#value' => $GLOBALS['channel_nid'],
     );
 
-    // Add an afterbuild handler so we can remove the submit buttons added in file_managed_file_process().
-    $form['#after_build'][] = 'moonmars_items_form_after_build';
+    // Validation handler.
+    $form['actions']['submit']['#validate'][] = 'moonmars_items_form_validate';
 
-    // Add a submit handler.
+    // Submit handler.
     $form['actions']['submit']['#submit'][] = 'moonmars_items_form_submit';
-
-    // After saving the item, go to back to the entity's page:
-//    $form_state['redirect'] = drupal_get_path_alias("$entity_type/$entity_id");
   }
 }
 
 /**
- * After build handler for add new item form.
+ * Validation handler for add new item form.
  */
-function moonmars_items_form_after_build($form) {
-  // Remove the file field's submit buttons from the form:
-  unset($form['field_item_file'][LANGUAGE_NONE][0]['upload_button']);
-  unset($form['field_item_file'][LANGUAGE_NONE][0]['remove_button']);
-
-  return $form;
+function moonmars_items_form_validate($form, &$form_state) {
+  dpm($form_state['values']);
 }
 
 /**
