@@ -167,14 +167,19 @@ function moonmars_items_form_submit($form, &$form_state) {
 function moonmars_items_node_presave($node) {
   if ($node->type == 'item') {
     // Get the item text:
-    $text = &$node->field_item_text[LANGUAGE_NONE][0]['value'];
+    $text = $node->field_item_text[LANGUAGE_NONE][0]['value'];
 
-    // If the item is a file, copy the entered text to the file description:
-    if (isset($node->field_item_file[LANGUAGE_NONE][0]['fid']) && $node->field_item_file[LANGUAGE_NONE][0]['fid']) {
-      $node->field_item_file[LANGUAGE_NONE][0]['description'] = $text;
+    // If the item is a image, copy the entered text to the image title:
+    if (isset($node->field_item_image[LANGUAGE_NONE][0]['fid']) && $node->field_item_image[LANGUAGE_NONE][0]['fid']) {
+      $node->field_item_image[LANGUAGE_NONE][0]['title'] = $text;
+    }
+    
+    // If the item is a document, copy the entered text to the document description:
+    if (isset($node->field_item_document[LANGUAGE_NONE][0]['fid']) && $node->field_item_document[LANGUAGE_NONE][0]['fid']) {
+      $node->field_item_document[LANGUAGE_NONE][0]['description'] = $text;
     }
 
-    // Set the title:
+    // Set the title to a trimmed version of the text:
     $node->title = moonmars_text_trim($text);
   }
 }

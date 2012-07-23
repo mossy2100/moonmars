@@ -571,7 +571,7 @@ class Channel extends Node {
     }
 
     // Social links:
-    $html .= "<div class='social-links clearfix'>\n";
+    $social_links = '';
 
     $social_sites = array(
       'facebook'  => 'facebook',
@@ -587,11 +587,14 @@ class Channel extends Node {
       $url = $this->field($field, LANGUAGE_NONE, 0, 'url');
       if ($url) {
         $title = htmlspecialchars("Visit " . (($entity instanceof Member) ? ($entity->name() . "'s") : ("the " . $entity->title())) . " $social_site_name page", ENT_QUOTES);
-        $html .= "<a class='social-link social-link-{$social_site}' href='$url' target='_blank' title='$title'></a>\n";
+        $social_links .= "<a class='social-link social-link-{$social_site}' href='$url' target='_blank' title='$title'></a>\n";
       }
     }
 
-    $html .= "</div>";
+    if ($social_links) {
+      $html .= "<div class='social-links clearfix'>\n$social_links\n</div>\n";
+    }
+
     return $html;
   }
 

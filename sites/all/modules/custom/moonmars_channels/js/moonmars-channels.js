@@ -285,20 +285,30 @@ function itemTypeSelected() {
   switch (itemType) {
     case 'text':
       $('#edit-field-item-link').hide();
-      $('#edit-field-item-file').hide();
+      $('#edit-field-item-image').hide();
+      $('#edit-field-item-document').hide();
       $('#field-item-text-add-more-wrapper .description').text('Write something to share.');
       break;
 
     case 'link':
       $('#edit-field-item-link').show();
-      $('#edit-field-item-file').hide();
+      $('#edit-field-item-image').hide();
+      $('#edit-field-item-document').hide();
       $('#field-item-text-add-more-wrapper .description').text('Enter a description of the link.');
       break;
 
-    case 'file':
+    case 'image':
       $('#edit-field-item-link').hide();
-      $('#edit-field-item-file').show();
-      $('#field-item-text-add-more-wrapper .description').text('Enter a description of the file.');
+      $('#edit-field-item-image').show();
+      $('#edit-field-item-document').hide();
+      $('#field-item-text-add-more-wrapper .description').text('Enter a description of the image.');
+      break;
+
+    case 'document':
+      $('#edit-field-item-link').hide();
+      $('#edit-field-item-image').hide();
+      $('#edit-field-item-document').show();
+      $('#field-item-text-add-more-wrapper .description').text('Enter a description of the document.');
       break;
   }
 }

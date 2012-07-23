@@ -208,4 +208,16 @@ class Group extends Node {
         ));
   }
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Permissions.
+
+  /**
+   * Get the mode for the group.
+   *
+   * @return string (open, restricted, closed or announce)
+   */
+  public function mode() {
+    return $this->field('field_group_mode');
+  }
+
 }

@@ -26,7 +26,7 @@ function astro_alpha_preprocess_node_item(&$vars) {
   $item_nid = $item->nid();
 
   // If we're on an item node page, tell the client:
-  $item_node_page = arg(0) == 'node' && arg(1) == $item_nid;
+  $item_node_page = (arg(0) == 'node') && (arg(1) == $item_nid);
   if ($item_node_page) {
     drupal_add_js(array('astro' => array('item_node_page' => TRUE)), 'setting');
     $current_channel = NULL;
@@ -34,6 +34,7 @@ function astro_alpha_preprocess_node_item(&$vars) {
   }
   else {
     $current_channel = Channel::currentChannel();
+    $vars['parent_entity'] = $current_channel->parentEntity();
   }
   $vars['item_node_page'] = $item_node_page;
 
@@ -106,10 +107,10 @@ function astro_alpha_preprocess_node_item(&$vars) {
       $links .= "<li class='item-edit'><a href='javascript:editItem($item_nid)'>edit</a></li>";
     }
 
-    // view link:
-    if (!$item_node_page) {
-      $links .= "<li class='item-view'><a href='/" . $item->alias() . "'>view</a></li>";
-    }
+//    // view link:
+//    if (!$item_node_page) {
+//      $links .= "<li class='item-view'><a href='/" . $item->alias() . "'>view</a></li>";
+//    }
 
     $links = "
           <ul class='action-links item-links clearfix'>

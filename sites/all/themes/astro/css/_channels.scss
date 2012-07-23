@@ -322,6 +322,12 @@ form.node-item-form {
       }
     }
   }
+
+  #edit-field-item-image-und-0-upload-button,
+  #edit-field-item-document-und-0-upload-button {
+    display: none;
+  }
+
 }
 
 article.node-item {

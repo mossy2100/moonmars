@@ -7,6 +7,7 @@ if (isset($return_link)) {
 <article<?php print $attributes; ?> data-nid='<?php echo $node->nid; ?>'>
 
   <div class='post-article-body'>
+
     <div class='user-picture'>
       <?php echo $avatar; ?>
     </div>
@@ -78,16 +79,8 @@ if (isset($return_link)) {
     <!-- new comment form -->
     <?php
     if (!$email_mode) {
-      if (!$current_member) {
-        ?>
-        <p class='comment-instruction'>
-          <a href='/login?destination=<?php echo drupal_get_path_alias("node/$node->nid"); ?>'>Login</a> or
-          <a href='/register?destination=<?php echo drupal_get_path_alias("node/$node->nid"); ?>'>register</a>
-          to rate and post comments.
-        </p>
-        <?php
-      }
-      elseif ($current_member->canPostComment($item)) {
+      if ($current_member && $current_member->canPostComment($item)) {
+        // Show the post comment form:
         ?>
         <article class="new-comment-form-article comment comment-new comment-by-viewer clearfix" data-nid="<?php echo $node->nid; ?>">
           <div class='post-article-body'>
@@ -114,10 +107,19 @@ if (isset($return_link)) {
         </article>
         <?php
       }
+      elseif (!$current_member && isset($parent_entity) && ($parent_entity instanceof Group) && $parent_entity->mode() == 'open') {
+        // Tell the user they can comment if they login or register:
+        ?>
+        <p class='comment-instruction'>
+          <a href='/login?destination=<?php echo $parent_entity->alias(); ?>'>Login</a> or
+          <a href='/register?destination=<?php echo $parent_entity->alias(); ?>'>register</a>
+          to <!-- rate and --> post comments.
+        </p>
+        <?php
+      }
     }
     ?>
 
   </div>
-
 
 </article>

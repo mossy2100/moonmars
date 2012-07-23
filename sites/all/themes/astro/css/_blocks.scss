@@ -18,7 +18,7 @@
 
   .view-group-info {
     .views-field {
-      margin: 16px 0;
+      margin: 10px 0;
     }
 
     .views-field-title {
@@ -42,10 +42,15 @@
 
     .views-field-field-group-type div {
       display: inline;
+      color: $grey3;
     }
 
     .views-field-field-logo {
       margin-top: 10px;
+    }
+
+    .views-field-php {
+      margin: 0;
     }
   }
 
@@ -104,10 +109,7 @@ ul.member-groups {
   }
 }
 
-
-
 .block-user-info-block {
-
   .views-field {
     margin: 4px 0;
   }
@@ -121,13 +123,21 @@ ul.member-groups {
     }
   }
 
-  .official-website {
-    margin: 5px 0;
-  }
-
   .views-field-field-bio {
     margin: 10px 0;
     color: $grey3;
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Channel links.
+
+.block-user-info-block,
+.block-group-info-block {
+
+  .official-website {
+    margin: 5px 0;
   }
 
   .social-links {
@@ -151,26 +161,25 @@ ul.member-groups {
     .social-link-facebook {
       background-image: url("../images/social-icons/facebook-25x25.png");
     }
-    
+
     .social-link-twitter {
       background-image: url("../images/social-icons/twitter-25x25.png");
     }
-    
+
     .social-link-linkedin {
       background-image: url("../images/social-icons/linkedin-25x25.png");
     }
-    
+
     .social-link-google {
       background-image: url("../images/social-icons/google-plus-25x25.png");
     }
-    
+
     .social-link-youtube {
       background-image: url("../images/social-icons/youtube-25x25.png");
     }
-    
+
     .social-link-wikipedia {
       background-image: url("../images/social-icons/wikipedia-25x25.png");
     }
   }
-
 }
