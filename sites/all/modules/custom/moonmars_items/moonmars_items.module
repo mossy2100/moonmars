@@ -108,6 +108,7 @@ function moonmars_items_form_alter(&$form, &$form_state, $form_id) {
     unset($form['field_item_text'][LANGUAGE_NONE][0]['value']['#title']);
     unset($form['field_item_link'][LANGUAGE_NONE][0]['#title']);
     unset($form['field_item_image'][LANGUAGE_NONE][0]['#title']);
+    unset($form['field_item_video'][LANGUAGE_NONE][0]['fid']['#title']);
     unset($form['field_item_document'][LANGUAGE_NONE][0]['#title']);
 
     // Change the button label:

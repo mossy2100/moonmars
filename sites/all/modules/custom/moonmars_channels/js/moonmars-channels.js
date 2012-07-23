@@ -30,6 +30,9 @@ function initChannel() {
     setupPostButton(this);
   });
 
+  // Setup rating button behaviours:
+//  setupRatings();
+
   // Tidy up and setup behaviours for the new item form:
   itemTypeSelected();
   $('#edit-field-item-type-und input:radio').click(itemTypeSelected);
@@ -49,8 +52,9 @@ function initChannel() {
   // Hack - remove pagers from beneath comments in channels:
   $('article.node-item #comments .item-list').remove();
 
-  // Setup rating button behaviours:
-  setupRatings();
+  // Resize YouTube videos:
+  $('.media-youtube-outer-wrapper, .media-youtube-preview-wrapper, .youtube-player').css({width: '240px', height: '180px'}).attr({width: 240, height: 180});
+
 }
 
 /**
@@ -286,6 +290,7 @@ function itemTypeSelected() {
     case 'text':
       $('#edit-field-item-link').hide();
       $('#edit-field-item-image').hide();
+      $('#edit-field-item-video').hide();
       $('#edit-field-item-document').hide();
       $('#field-item-text-add-more-wrapper .description').text('Write something to share.');
       break;
@@ -293,6 +298,7 @@ function itemTypeSelected() {
     case 'link':
       $('#edit-field-item-link').show();
       $('#edit-field-item-image').hide();
+      $('#edit-field-item-video').hide();
       $('#edit-field-item-document').hide();
       $('#field-item-text-add-more-wrapper .description').text('Enter a description of the link.');
       break;
@@ -300,13 +306,23 @@ function itemTypeSelected() {
     case 'image':
       $('#edit-field-item-link').hide();
       $('#edit-field-item-image').show();
+      $('#edit-field-item-video').hide();
       $('#edit-field-item-document').hide();
       $('#field-item-text-add-more-wrapper .description').text('Enter a description of the image.');
+      break;
+
+    case 'video':
+      $('#edit-field-item-link').hide();
+      $('#edit-field-item-image').hide();
+      $('#edit-field-item-video').show();
+      $('#edit-field-item-document').hide();
+      $('#field-item-text-add-more-wrapper .description').text('Enter a description of the video.');
       break;
 
     case 'document':
       $('#edit-field-item-link').hide();
       $('#edit-field-item-image').hide();
+      $('#edit-field-item-video').hide();
       $('#edit-field-item-document').show();
       $('#field-item-text-add-more-wrapper .description').text('Enter a description of the document.');
       break;
