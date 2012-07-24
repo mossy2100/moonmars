@@ -34,7 +34,7 @@ class Group extends Node {
    */
   public function channel($create = TRUE) {
     if (!isset($this->channel)) {
-      $this->channel = mmcEntity::getEntityChannel('node', $this->nid(), $create);
+      $this->channel = MmcEntity::getEntityChannel('node', $this->nid(), $create);
     }
     return $this->channel;
   }

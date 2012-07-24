@@ -81,7 +81,7 @@ class Channel extends Node {
       $rels = moonmars_relationships_get_relationships('has_channel', NULL, NULL, 'node', $this->nid());
 
       if (!empty($rels)) {
-        $this->parentEntity = mmcEntity::getEntity($rels[0]->entity_type0, $rels[0]->entity_id0);
+        $this->parentEntity = MmcEntity::getEntity($rels[0]->entity_type0, $rels[0]->entity_id0);
       }
     }
 

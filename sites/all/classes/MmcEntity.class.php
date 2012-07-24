@@ -3,7 +3,7 @@
  * Static entity-related methods.
  * This could perhaps be implemented as a trait that could be given to Member, Group, Event, etc.
  */
-class mmcEntity {
+class MmcEntity {
 
   /**
    * Gets an EntityBase-derived object from a Drupal entity.

@@ -391,7 +391,7 @@ class Member extends User {
    */
   public function channel($create = TRUE) {
     if (!isset($this->channel)) {
-      $this->channel = mmcEntity::getEntityChannel('user', $this->uid(), $create);
+      $this->channel = MmcEntity::getEntityChannel('user', $this->uid(), $create);
     }
     return $this->channel;
   }
