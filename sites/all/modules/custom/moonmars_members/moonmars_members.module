@@ -177,11 +177,8 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
     $form['field_user_location']['#weight'] = ++$weight;
     $form['timezone']['#weight'] = ++$weight;
     $form['field_mobile_phone']['#weight'] = ++$weight;
+    $form['field_skype']['#weight'] = ++$weight;
     $form['field_bio']['#weight'] = ++$weight;
-    $form['field_website']['#weight'] = ++$weight;
-    $form['field_facebook']['#weight'] = ++$weight;
-    $form['field_linkedin']['#weight'] = ++$weight;
-    $form['field_twitter']['#weight'] = ++$weight;
     $form['signature']['#weight'] = ++$weight;
     $form['contact']['#weight'] = ++$weight;
     $form['rules']['#weight'] = ++$weight;
