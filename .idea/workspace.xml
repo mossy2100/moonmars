@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="ff922214-f7cd-4eef-9f30-177ba578dd26" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/classes/Member.class.php" afterPath="$PROJECT_DIR$/sites/all/classes/Member.class.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/css/_views.scss" afterPath="$PROJECT_DIR$/sites/all/themes/astro/css/_views.scss" />
     </list>
     <ignored path="moonmars.com.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -89,10 +88,10 @@
       <file leaf-file-name="Member.class.php" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/sites/all/classes/Member.class.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="629" column="2" selection-start="17047" selection-end="17047" vertical-scroll-proportion="0.50087565">
+            <state line="741" column="0" selection-start="20418" selection-end="20418" vertical-scroll-proportion="0.68476355">
               <folding>
                 <element signature="e#6#52#0" expanded="true" />
-                <marker date="1343153066000" expanded="true" signature="8239:8290" placeholder="..." />
+                <marker date="1343153158000" expanded="true" signature="8239:8290" placeholder="..." />
               </folding>
             </state>
           </provider>
@@ -833,10 +832,10 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/classes/Member.class.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="629" column="2" selection-start="17047" selection-end="17047" vertical-scroll-proportion="0.50087565">
+        <state line="741" column="0" selection-start="20418" selection-end="20418" vertical-scroll-proportion="0.68476355">
           <folding>
             <element signature="e#6#52#0" expanded="true" />
-            <marker date="1343153066000" expanded="true" signature="8239:8290" placeholder="..." />
+            <marker date="1343153158000" expanded="true" signature="8239:8290" placeholder="..." />
           </folding>
         </state>
       </provider>

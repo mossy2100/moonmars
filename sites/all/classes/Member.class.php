@@ -731,14 +731,17 @@ class Member extends User {
 
     // If originally posted in a member channel:
     if ($parent_entity instanceof Member) {
-      // If the item was posted in the member's own channel, they can comment on it:
-      if (Channel::equals($original_channel, $this->channel())) {
-        return TRUE;
-      }
-      else {
-        // If the item was posted in another member's channel, they can only comment on it if that member follows them:
-        return $parent_entity->follows($this);
-      }
+      // Members can post comments in each other's channels.
+      return TRUE;
+
+//      // If the item was posted in the member's own channel, they can comment on it:
+//      if (Channel::equals($original_channel, $this->channel())) {
+//        return TRUE;
+//      }
+//      else {
+//        // If the item was posted in another member's channel, they can only comment on it if that member follows them:
+//        return $parent_entity->follows($this);
+//      }
     }
     elseif ($parent_entity instanceof Group) {
       // If posted in a group channel, the member can comment on it if they are a member of the group:
