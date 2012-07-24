@@ -405,11 +405,6 @@ article.comment {
   }
 }
 
-#return_link {
-  text-align: right;
-  margin: 8px 10px;
-}
-
 article.group {
   .group-description {
     @include channel-page-section;

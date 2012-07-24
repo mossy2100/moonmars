@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ff922214-f7cd-4eef-9f30-177ba578dd26" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/css/_views.scss" afterPath="$PROJECT_DIR$/sites/all/themes/astro/css/_views.scss" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/css/_channels.scss" afterPath="$PROJECT_DIR$/sites/all/themes/astro/css/_channels.scss" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-node-item.inc" afterPath="$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-node-item.inc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/templates/node--item.tpl.php" afterPath="$PROJECT_DIR$/sites/all/themes/astro/templates/node--item.tpl.php" />
     </list>
     <ignored path="moonmars.com.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -76,10 +78,39 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="_views.scss" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="_views.scss" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/_views.scss">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="81" column="18" selection-start="1343" selection-end="1343" vertical-scroll-proportion="0.7004831">
+            <state line="81" column="18" selection-start="1343" selection-end="1343" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="node--item.tpl.php" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/templates/node--item.tpl.php">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="preprocess-node-item.inc" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-node-item.inc">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="34" column="10" selection-start="924" selection-end="926" vertical-scroll-proportion="-6.98">
+              <folding>
+                <marker date="1343168952000" expanded="true" signature="4020:4055" placeholder="..." />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="_channels.scss" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/_channels.scss">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="406" column="0" selection-start="6613" selection-end="6613" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -110,9 +141,6 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/sites/default/settings.inc" />
-        <option value="$PROJECT_DIR$/sites/default/settings.php" />
-        <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars/moonmars.module" />
         <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/js/moonmars-channels.js" />
         <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_events/js/moonmars_calendar.js" />
         <option value="$PROJECT_DIR$/sites/all/themes/astro/css/_events.scss" />
@@ -126,6 +154,9 @@
         <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/moonmars_members.module" />
         <option value="$PROJECT_DIR$/sites/all/classes/Member.class.php" />
         <option value="$PROJECT_DIR$/sites/all/themes/astro/css/_views.scss" />
+        <option value="$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-node-item.inc" />
+        <option value="$PROJECT_DIR$/sites/all/themes/astro/css/_channels.scss" />
+        <option value="$PROJECT_DIR$/sites/all/themes/astro/templates/node--item.tpl.php" />
       </list>
     </option>
   </component>
@@ -314,6 +345,36 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="templates" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="moonmars.com" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="www" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sites" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="all" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="themes" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="astro" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="preprocess" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -720,27 +781,6 @@
     <breakpoint-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/js/moonmars-channels.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="11" column="0" selection-start="173" selection-end="173" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_events/js/moonmars_calendar.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="97" column="0" selection-start="3080" selection-end="3080" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/global.scss">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="17" column="16" selection-start="723" selection-end="723" vertical-scroll-proportion="0.39657855">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/_events.scss">
       <provider selected="true" editor-type-id="text-editor">
         <state line="51" column="10" selection-start="740" selection-end="740" vertical-scroll-proportion="0.33281493">
@@ -835,7 +875,30 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/_views.scss">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="81" column="18" selection-start="1343" selection-end="1343" vertical-scroll-proportion="0.7004831">
+        <state line="81" column="18" selection-start="1343" selection-end="1343" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-node-item.inc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="34" column="10" selection-start="924" selection-end="926" vertical-scroll-proportion="-6.98">
+          <folding>
+            <marker date="1343168952000" expanded="true" signature="4020:4055" placeholder="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/_channels.scss">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="406" column="0" selection-start="6613" selection-end="6613" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/templates/node--item.tpl.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>

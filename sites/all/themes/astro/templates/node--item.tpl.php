@@ -1,9 +1,3 @@
-<?php
-if (isset($return_link)) {
-  echo "<div id='return_link'>Back to $return_link</div>";
-}
-?>
-
 <article<?php print $attributes; ?> data-nid='<?php echo $node->nid; ?>'>
 
   <div class='post-article-body'>

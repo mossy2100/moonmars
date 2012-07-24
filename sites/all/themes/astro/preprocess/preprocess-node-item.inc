@@ -30,7 +30,6 @@ function astro_alpha_preprocess_node_item(&$vars) {
   if ($item_node_page) {
     drupal_add_js(array('astro' => array('item_node_page' => TRUE)), 'setting');
     $current_channel = NULL;
-    $vars['return_link'] = Channel::currentChannel()->parentEntityLink();
   }
   else {
     $current_channel = Channel::currentChannel();
