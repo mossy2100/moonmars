@@ -9,8 +9,6 @@ $(initChannel);
  * Set up behaviours of links, buttons and avatars.
  */
 function initChannel() {
-  // Convert select elements into selectBoxes:
-//  $('select').selectBox();
 
   // Check if we're on an item's node page:
   item_node_page = Drupal.settings.astro && Drupal.settings.astro.item_node_page;

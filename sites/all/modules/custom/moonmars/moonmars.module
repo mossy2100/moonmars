@@ -24,16 +24,6 @@ function moonmars_menu() {
 }
 
 /**
- * Implements hook_form_alter().
- *
- * Place form changes here that belong to all forms.
- */
-function moonmars_form_alter(&$form, &$form_state, $form_id) {
-  // Attach the selectBox JS:
-//  $form['#attached']['js'][] = '/sites/all/libraries/jquery/selectBox/jquery.selectBox.js';
-}
-
-/**
  * Redirect the user to the appropriate default start page.
  */
 function moonmars_home() {
