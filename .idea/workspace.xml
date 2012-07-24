@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ff922214-f7cd-4eef-9f30-177ba578dd26" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/classes/Member.class.php" afterPath="$PROJECT_DIR$/sites/all/classes/Member.class.php" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/css/_views.scss" afterPath="$PROJECT_DIR$/sites/all/themes/astro/css/_views.scss" />
     </list>
     <ignored path="moonmars.com.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -76,19 +76,19 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="_views.scss" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="_views.scss" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/_views.scss">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="48" column="0" selection-start="767" selection-end="767" vertical-scroll-proportion="0.0">
+            <state line="81" column="18" selection-start="1343" selection-end="1343" vertical-scroll-proportion="0.7004831">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Member.class.php" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="Member.class.php" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sites/all/classes/Member.class.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="741" column="0" selection-start="20418" selection-end="20418" vertical-scroll-proportion="0.68476355">
+            <state line="741" column="0" selection-start="20418" selection-end="20418" vertical-scroll-proportion="-7.82">
               <folding>
                 <element signature="e#6#52#0" expanded="true" />
                 <marker date="1343153158000" expanded="true" signature="8239:8290" placeholder="..." />
@@ -124,8 +124,8 @@
         <option value="$PROJECT_DIR$/sites/all/themes/astro/templates/node--channel.tpl.php" />
         <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_groups/moonmars_groups.module" />
         <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/moonmars_members.module" />
-        <option value="$PROJECT_DIR$/sites/all/themes/astro/css/_views.scss" />
         <option value="$PROJECT_DIR$/sites/all/classes/Member.class.php" />
+        <option value="$PROJECT_DIR$/sites/all/themes/astro/css/_views.scss" />
       </list>
     </option>
   </component>
@@ -813,13 +813,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/_views.scss">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="48" column="0" selection-start="767" selection-end="767" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/moonmars_members.module">
       <provider selected="true" editor-type-id="text-editor">
         <state line="639" column="0" selection-start="19422" selection-end="19422" vertical-scroll-proportion="-9.8">
@@ -832,11 +825,18 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/classes/Member.class.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="741" column="0" selection-start="20418" selection-end="20418" vertical-scroll-proportion="0.68476355">
+        <state line="741" column="0" selection-start="20418" selection-end="20418" vertical-scroll-proportion="-7.82">
           <folding>
             <element signature="e#6#52#0" expanded="true" />
             <marker date="1343153158000" expanded="true" signature="8239:8290" placeholder="..." />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/_views.scss">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="81" column="18" selection-start="1343" selection-end="1343" vertical-scroll-proportion="0.7004831">
+          <folding />
         </state>
       </provider>
     </entry>
