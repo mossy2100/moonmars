@@ -626,8 +626,10 @@ class Member extends User {
     $parent_entity = $channel->parentEntity();
 
     if ($parent_entity instanceof Member) {
+      // Members can post in each other's channels.
+      return TRUE;
       // A member can post in their own channel, or in the channel of someone who follows them:
-      return self::equals($parent_entity, $this) || $parent_entity->follows($this);
+//      return self::equals($parent_entity, $this) || $parent_entity->follows($this);
     }
     else if ($parent_entity instanceof Group) {
       // Only members of the group can post in the group's channel:
