@@ -2,36 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ff922214-f7cd-4eef-9f30-177ba578dd26" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/file_entity/file_entity.admin.inc" afterPath="$PROJECT_DIR$/sites/all/modules/contrib/file_entity/file_entity.admin.inc" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/file_entity/file_entity.api.php" afterPath="$PROJECT_DIR$/sites/all/modules/contrib/file_entity/file_entity.api.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/file_entity/file_entity.file_api.inc" afterPath="$PROJECT_DIR$/sites/all/modules/contrib/file_entity/file_entity.file_api.inc" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/file_entity/file_entity.info" afterPath="$PROJECT_DIR$/sites/all/modules/contrib/file_entity/file_entity.info" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/file_entity/file_entity.install" afterPath="$PROJECT_DIR$/sites/all/modules/contrib/file_entity/file_entity.install" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/file_entity/file_entity.module" afterPath="$PROJECT_DIR$/sites/all/modules/contrib/file_entity/file_entity.module" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/file_entity/file_entity.pages.inc" afterPath="$PROJECT_DIR$/sites/all/modules/contrib/file_entity/file_entity.pages.inc" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/file_entity/file_entity.tokens.inc" afterPath="$PROJECT_DIR$/sites/all/modules/contrib/file_entity/file_entity.tokens.inc" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/file_entity/tests/file_entity.test" afterPath="$PROJECT_DIR$/sites/all/modules/contrib/file_entity/tests/file_entity.test" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/file_entity/tests/file_entity_test.info" afterPath="$PROJECT_DIR$/sites/all/modules/contrib/file_entity/tests/file_entity_test.info" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/media/css/media.css" afterPath="$PROJECT_DIR$/sites/all/modules/contrib/media/css/media.css" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/media/file_entity/file_entity.info" afterPath="$PROJECT_DIR$/sites/all/modules/contrib/media/file_entity/file_entity.info" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/media/file_entity/file_entity.install" afterPath="$PROJECT_DIR$/sites/all/modules/contrib/media/file_entity/file_entity.install" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/media/file_entity/file_entity.module" afterPath="$PROJECT_DIR$/sites/all/modules/contrib/media/file_entity/file_entity.module" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/media/file_entity/tests/file_entity_test.info" afterPath="$PROJECT_DIR$/sites/all/modules/contrib/media/file_entity/tests/file_entity_test.info" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/media/includes/media.admin.inc" afterPath="$PROJECT_DIR$/sites/all/modules/contrib/media/includes/media.admin.inc" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/media/includes/media.browser.inc" afterPath="$PROJECT_DIR$/sites/all/modules/contrib/media/includes/media.browser.inc" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/media/includes/media.fields.inc" afterPath="$PROJECT_DIR$/sites/all/modules/contrib/media/includes/media.fields.inc" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/media/includes/media.filter.inc" afterPath="$PROJECT_DIR$/sites/all/modules/contrib/media/includes/media.filter.inc" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/media/includes/media.pages.inc" afterPath="$PROJECT_DIR$/sites/all/modules/contrib/media/includes/media.pages.inc" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/media/includes/media.variables.inc" afterPath="$PROJECT_DIR$/sites/all/modules/contrib/media/includes/media.variables.inc" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/media/js/media.browser.js" afterPath="$PROJECT_DIR$/sites/all/modules/contrib/media/js/media.browser.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/media/js/media.popups.js" afterPath="$PROJECT_DIR$/sites/all/modules/contrib/media/js/media.popups.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/media/media.info" afterPath="$PROJECT_DIR$/sites/all/modules/contrib/media/media.info" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/media/media.install" afterPath="$PROJECT_DIR$/sites/all/modules/contrib/media/media.install" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/media/media.module" afterPath="$PROJECT_DIR$/sites/all/modules/contrib/media/media.module" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/media/modules/media_internet/media_internet.info" afterPath="$PROJECT_DIR$/sites/all/modules/contrib/media/modules/media_internet/media_internet.info" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/media/modules/media_internet/media_internet.module" afterPath="$PROJECT_DIR$/sites/all/modules/contrib/media/modules/media_internet/media_internet.module" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/contrib/media/wysiwyg_plugins/media.inc" afterPath="$PROJECT_DIR$/sites/all/modules/contrib/media/wysiwyg_plugins/media.inc" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/templates/node--channel.tpl.php" afterPath="$PROJECT_DIR$/sites/all/themes/astro/templates/node--channel.tpl.php" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_groups/moonmars_groups.module" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_groups/moonmars_groups.module" />
     </list>
     <ignored path="moonmars.com.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -57,10 +28,28 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="node--channel.tpl.php" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="node--channel.tpl.php" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/templates/node--channel.tpl.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="48" column="40" selection-start="1565" selection-end="1565" vertical-scroll-proportion="0.75121164">
+            <state line="51" column="18" selection-start="1604" selection-end="1604" vertical-scroll-proportion="-21.25">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Group.class.php" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/sites/all/classes/Group.class.php">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="36" column="32" selection-start="655" selection-end="655" vertical-scroll-proportion="29.375">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="moonmars_groups.module" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_groups/moonmars_groups.module">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="263" column="15" selection-start="6715" selection-end="6715" vertical-scroll-proportion="0.75886524">
               <folding />
             </state>
           </provider>
@@ -79,7 +68,6 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/moonmars_members.module" />
         <option value="$PROJECT_DIR$/sites/all/themes/astro/css/_forms.scss" />
         <option value="$PROJECT_DIR$/sites/all/phpinfo.php" />
         <option value="$PROJECT_DIR$/sites/default/settings.inc" />
@@ -95,6 +83,7 @@
         <option value="$PROJECT_DIR$/sites/all/classes/mmcEntity.class.php" />
         <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/moonmars_channels.module" />
         <option value="$PROJECT_DIR$/sites/all/themes/astro/templates/node--channel.tpl.php" />
+        <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_groups/moonmars_groups.module" />
       </list>
     </option>
   </component>
@@ -283,6 +272,62 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="templates" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="moonmars.com" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="www" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sites" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="all" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="modules" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="custom" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="moonmars.com" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="www" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sites" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="all" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="modules" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="custom" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="moonmars_groups" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -573,13 +618,6 @@
     <breakpoint-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_items/moonmars_items.module">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="129" column="0" selection-start="3984" selection-end="3984" vertical-scroll-proportion="32.468353">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/moonmars_members.module">
       <provider selected="true" editor-type-id="text-editor">
         <state line="87" column="28" selection-start="2321" selection-end="2325" vertical-scroll-proportion="-3.72">
@@ -648,13 +686,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/classes/Group.class.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="36" column="32" selection-start="655" selection-end="655" vertical-scroll-proportion="-2.012658">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/classes/Member.class.php">
       <provider selected="true" editor-type-id="text-editor">
         <state line="393" column="24" selection-start="10583" selection-end="10583" vertical-scroll-proportion="-8.916667">
@@ -688,7 +719,21 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/templates/node--channel.tpl.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="48" column="40" selection-start="1565" selection-end="1565" vertical-scroll-proportion="0.75121164">
+        <state line="51" column="18" selection-start="1604" selection-end="1604" vertical-scroll-proportion="-21.25">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/classes/Group.class.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="36" column="32" selection-start="655" selection-end="655" vertical-scroll-proportion="29.375">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_groups/moonmars_groups.module">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="263" column="15" selection-start="6715" selection-end="6715" vertical-scroll-proportion="0.75886524">
           <folding />
         </state>
       </provider>
