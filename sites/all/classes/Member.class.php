@@ -252,7 +252,9 @@ class Member extends User {
   public function skypeLink() {
     $skype = $this->field('field_skype');
     if ($skype) {
-      return "<a href='callto://$skype'>$skype</a>";
+      return "
+          <a class='skype-add' href='skype:$skype?add'></a>
+      ";
     }
     return NULL;
   }

@@ -595,6 +595,15 @@ class Channel extends Node {
       }
     }
 
+    // Skype link:
+    if ($entity instanceof Member) {
+      $skype_name = $entity->field('field_skype');
+      if ($skype_name) {
+        $title = htmlspecialchars("Add " . $entity->name() . " on Skype", ENT_QUOTES);
+        $social_links .= "<a class='social-link social-link-skype' href='skype:$skype_name?add' title='$title'></a>\n";
+      }
+    }
+
     if ($social_links) {
       $html .= "<div class='social-links clearfix'>\n$social_links\n</div>\n";
     }
