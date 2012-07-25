@@ -257,7 +257,7 @@ function moonmars_groups_menu_block() {
 
   // If the user isn't logged in, no menu:
   if (!$current_member) {
-    return '';
+    return "<p><a href='/login'>Login</a> or <a href='/register'>register</a> to join this group.</p>";
   }
 
   // Check if they're a member of the group:
