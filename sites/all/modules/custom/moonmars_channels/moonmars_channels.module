@@ -1,12 +1,20 @@
 <?php
 
 define('MOONMARS_CHANNEL_DEFAULT_PAGE_SIZE', 10);
+define('MOONMARS_NEWS_CHANNEL_NID', 467);
 
 /**
  * Implements hook_menu().
  */
-//function moonmars_channels_menu() {
-//}
+function moonmars_channels_menu() {
+  $items = array();
+  $items['channels'] = array(
+    'page callback'    => 'moonmars_channels_list',
+    'access callback'  => TRUE,
+    'type'             => MENU_NORMAL_ITEM,
+  );
+  return $items;
+}
 
 /**
  * Return array of node types that have channels.
@@ -103,4 +111,58 @@ function moonmars_channels_form_alter(&$form, &$form_state, $form_id) {
 function moonmars_channels_channel_node_form_submit($form, &$form_state) {
   $channel = Channel::create($form['#node']);
   $form_state['redirect'] = $channel->parentEntity()->alias();
+}
+
+/**
+ * List all channels, and show whether the member is subscribed to them or not.
+ */
+function moonmars_channels_list() {
+  $current_member = Member::currentMember();
+
+  $rs = db_select('node', 'n')
+    ->fields('n', array('nid'))
+    ->condition('type', 'channel')
+    ->condition('uid', MOONMARS_SYSTEM_UID, '!=')
+    ->orderBy('n.title')
+    ->execute();
+
+  $header = array(
+    'Title',
+  );
+
+  // If the user is logged in, add the checkbox columns:
+  if ($current_member) {
+    $header[] = 'Subscribed?';
+    $header[] = 'Email notifications?';
+  }
+
+  foreach ($rs as $rec) {
+    $channel = Channel::create($rec->nid);
+    $row = array(
+      $channel->parentEntityLink(),
+//      get_class($channel->parentEntity()),
+    );
+
+    // If the user is logged in, add the checkbox columns:
+    if ($current_member) {
+      $subscriber_rel = $channel->getSubscriberRelationship($current_member);
+      $subscribed = (bool) $subscriber_rel;
+      $email_notification = $subscribed ? ((bool) $subscriber_rel->field('field_email_notification')) : FALSE;
+      $row[] = "<input type='checkbox' id='subscribed-{$rec->nid}'" . ($subscribed ? " checked" : "") . ">";
+      $row[] = "<input type='checkbox' id='email-notifification-{$rec->nid}'" . ($subscribed ? ($email_notification ? " checked" : "") : " disabled") . ">";
+    }
+
+    // Add the row:
+    $rows[] = $row;
+  }
+
+  $table = array(
+    'header' => $header,
+    'rows' => $rows,
+  );
+
+  $html = theme('table', $table);
+
+  return $html;
+
 }

@@ -3,12 +3,12 @@
 /**
  * Constant to explain username constraints:
  */
-define('USERNAME_DESCRIPTION', "Usernames may only contain letters, digits, hyphens and underscores (a-z, A-Z, 0-9, -_), and must be between 1 and 60 characters in length.");
+define('MOONMARS_USERNAME_DESCRIPTION', "Usernames may only contain letters, digits, hyphens and underscores (a-z, A-Z, 0-9, -_), and must be between 1 and 60 characters in length.");
 
 /**
  * The user id of the system user, which owns system messages.
  */
-define('SYSTEM_UID', 167);
+define('MOONMARS_SYSTEM_UID', 167);
 
 /**
  * Implements hook_init().
@@ -90,7 +90,7 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
       $form['#attached']['js'][] = "$module_path/js/check-username.js";
 
       // Update username field description re valid characters:
-      $form['account']['name']['#description'] = USERNAME_DESCRIPTION;
+      $form['account']['name']['#description'] = MOONMARS_USERNAME_DESCRIPTION;
 
       // Add rules fields:
       $form['rules'] = array(
@@ -133,7 +133,7 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
       $form['#attached']['js'][] = "$module_path/js/check-username.js";
 
       // Update username field description re valid characters:
-      $form['account']['name']['#description'] = USERNAME_DESCRIPTION;
+      $form['account']['name']['#description'] = MOONMARS_USERNAME_DESCRIPTION;
 
       // Remove the grippie from the bio textarea:
       $form['field_bio'][LANGUAGE_NONE][0]['value']['#resizable'] = FALSE;
@@ -221,7 +221,7 @@ function moonmars_members_valid_username($name) {
  */
 function moonmars_members_user_register_form_validate($form, &$form_state) {
   if (!moonmars_members_valid_username($form_state['values']['name'])) {
-    form_set_error('name', USERNAME_DESCRIPTION);
+    form_set_error('name', MOONMARS_USERNAME_DESCRIPTION);
   }
 }
 
@@ -255,7 +255,7 @@ function moonmars_members_user_profile_form_after_build($form) {
  */
 function moonmars_members_user_profile_form_validate($form, &$form_state) {
   if (!moonmars_members_valid_username($form_state['values']['name'])) {
-    form_set_error('name', USERNAME_DESCRIPTION);
+    form_set_error('name', MOONMARS_USERNAME_DESCRIPTION);
   }
 }
 

@@ -642,8 +642,10 @@ class Member extends User {
     $parent_entity = $channel->parentEntity();
 
     if ($parent_entity instanceof Member) {
+      // The member is the only one who can post in their own channel:
+      return self::equals($parent_entity, $this);
       // Members can post in each other's channels.
-      return TRUE;
+//      return TRUE;
       // A member can post in their own channel, or in the channel of someone who follows them:
 //      return self::equals($parent_entity, $this) || $parent_entity->follows($this);
     }
@@ -780,9 +782,9 @@ class Member extends User {
     }
 
     // Users with 'administer comments' (i.e. admins) can edit any comment.
-//    if (user_access('administer comments', $this->user())) {
-//      return TRUE;
-//    }
+    if (user_access('administer comments', $this->user())) {
+      return TRUE;
+    }
 
     // Members can edit their own comments:
     return self::equals($comment->creator(), $this);
@@ -801,9 +803,9 @@ class Member extends User {
     }
 
     // Users with 'administer comments' (i.e. admins) can delete any comment.
-//    if (user_access('administer comments', $this->user())) {
-//      return TRUE;
-//    }
+    if (user_access('administer comments', $this->user())) {
+      return TRUE;
+    }
 
     // Members can delete their own comments:
     if (self::equals($comment->creator(), $this)) {
@@ -834,6 +836,91 @@ class Member extends User {
 
   public function renderLinks() {
     return $this->channel()->renderLinks();
+  }
+
+  /**
+   * Get the common query elements used by the items() and itemCount() methods.
+   *
+   * @return array
+   */
+  public function itemQuery() {
+    // Select items from the member's own channel plus all channels they're subscribed to.
+    $sql = "
+      SELECT vci.item_nid
+      FROM view_channel_has_item vci
+      WHERE vci.item_status = 1
+        AND (
+          vci.channel_nid = :members_channel_nid
+          OR
+          vci.channel_nid IN (SELECT vcs.channel_nid FROM view_channel_has_subscriber vcs WHERE vcs.subscriber_uid = :member_uid)
+        )";
+
+    $params = array(
+      ':members_channel_nid' => $this->channel()->nid(),
+      ':member_uid'          => $this->uid()
+    );
+
+    return array($sql, $params);
+  }
+
+  /**
+   * Get the items that should appear in the member's channel.
+   *
+   * @param int $offset
+   * @param int $limit
+   * @return array
+   */
+  public function items($offset = NULL, $limit = NULL) {
+    list($sql, $params) = $this->itemQuery();
+
+    // Order by:
+    $sql .= " ORDER BY vci.changed DESC";
+
+    // Add the offset and limit if specified:
+    if ($offset !== NULL && $limit !== NULL) {
+      $offset = (int) $offset;
+      $limit = (int) $limit;
+      $sql .= " LIMIT $offset, $limit";
+    }
+
+    // Get the items:
+    $rs = db_query($sql, $params);
+    $items = array();
+    foreach ($rs as $rec) {
+      $items[] = Item::create($rec->item_nid);
+    }
+
+    return $items;
+  }
+
+  /**
+   * Get the total number of items in the member's profile channel.
+   *
+   * @return array
+   */
+  public function itemCount() {
+    list($sql, $params) = $this->itemQuery();
+    $rs = db_query($sql, $params);
+    return $rs->rowCount();
+  }
+
+  /**
+   * Render items for a member's profile.
+   *
+   * @return string
+   */
+  public function renderItems() {
+    // Get the page number:
+    $page = isset($_GET['page']) ? ((int) $_GET['page']) : 0;
+
+    // Get the items from this channel:
+    $items = $this->items($page * Channel::pageSize, Channel::pageSize);
+
+    // Get the total item count:
+    $total_n_items = $this->itemCount();
+
+    // Render the page of items:
+    return Channel::renderItemsPage($items, $total_n_items);
   }
 
 }

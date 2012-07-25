@@ -152,7 +152,6 @@ class Node extends EntityBase {
       return $this;
     }
 
-    dpm_backtrace();
     trigger_error("Could not load node." . (isset($this->entity->nid) ? (" nid: " . $this->entity->nid) : ''), E_USER_WARNING);
   }
 
@@ -168,7 +167,7 @@ class Node extends EntityBase {
     // Save the node:
     node_save($this->entity);
 
-    // If the node is new then we should add it to the cache:
+    // In case the node is new, add it to the cache:
     $this->addToCache();
 
     return $this;
@@ -191,8 +190,10 @@ class Node extends EntityBase {
     else {
       // Set the nid:
       $this->entity->nid = $nid;
+
       // Add the node object to the cache if not already:
       $this->addToCache();
+
       return $this;
     }
   }

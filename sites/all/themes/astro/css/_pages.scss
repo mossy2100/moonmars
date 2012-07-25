@@ -81,3 +81,49 @@
     }
   }
 }
+
+/////////////////////
+// Page tables
+
+.region-content {
+
+  table {
+    width: 100%;
+
+    tr {
+      background-color: transparent !important;
+
+      td {
+        border: solid 1px $grey4;
+        padding: 5px;
+        vertical-align: top;
+        margin: 0;
+
+        &.views-field-title {
+          font-size: 13px;
+          font-weight: bold;
+        }
+
+        &.views-field-field-description {
+          font-size: 11px;
+          color: $grey3;
+        }
+
+        &.views-field-php {
+          font-size: 12px;
+          color: black;
+        }
+      }
+
+      th {
+        border: solid 1px $grey4;
+        padding: 5px;
+        vertical-align: top;
+        margin: 0;
+        font-weight: bold;
+        font-size: 12px;
+        background-color: $blue5;
+      }
+    }
+  }
+}

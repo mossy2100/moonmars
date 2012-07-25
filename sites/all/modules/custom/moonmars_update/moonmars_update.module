@@ -1,0 +1,52 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function moonmars_update_menu() {
+  $items = array();
+  $items['update/subscriber-relationships'] = array(
+    'page callback'    => 'moonmars_update_subscriber_relationships',
+    'access arguments' => array('administer relation types'),
+    'type'             => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+function moonmars_update_subscriber_relationships() {
+  // Convert all has_follower relationships to has_subscriber:
+  $rels = moonmars_relationships_get_relationships('has_follower');
+  foreach ($rels as $rel) {
+    $member   = Member::create($rel->entity_id0);
+    $follower = Member::create($rel->entity_id1);
+
+    // Create the has_subscriber relationship:
+    moonmars_relationships_update_relationship('has_subscriber', 'node', $member->channel()->nid(), 'user', $follower->uid());
+  }
+
+  // Convert all has_member relationships to has_subscriber:
+  $rels = moonmars_relationships_get_relationships('has_member');
+  foreach ($rels as $rel) {
+    $group = Group::create($rel->entity_id0);
+    $follower = Member::create($rel->entity_id1);
+
+    // Create the has_subscriber relationship:
+    moonmars_relationships_update_relationship('has_subscriber', 'node', $group->channel()->nid(), 'user', $follower->uid());
+  }
+
+  // Subscribe everyone to the News channel:
+  $rs = db_select('users', 'u')
+    ->fields('u', array('uid'))
+    ->condition('status', 1)
+    ->execute();
+  foreach ($rs as $rec) {
+    $member = Member::create($rec->uid);
+
+    // Create the has_subscriber relationship:
+    moonmars_relationships_update_relationship('has_subscriber', 'node', MOONMARS_NEWS_CHANNEL_NID, 'user', $member->uid());
+  }
+
+  // Default email_notifications to TRUE in every subscription relationship.
+
+
+}

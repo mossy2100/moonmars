@@ -179,22 +179,16 @@ class Channel extends Node {
   /**
    * Get the items in the channel.
    *
-   * @param bool $include_copied_items
    * @param int $offset
    * @param int $limit
    * @return array
    */
-  public function items($include_copied_items = TRUE, $offset = NULL, $limit = NULL) {
+  public function items($offset = NULL, $limit = NULL) {
     // Look for relationship records:
     $q = db_select('view_channel_has_item', 'vci')
       ->fields('vci', array('item_nid', 'copied'))
       ->condition('channel_nid', $this->nid())
       ->condition('item_status', 1);
-
-    // Add condition if we want to exclude copied items:
-    if (!$include_copied_items) {
-      $q->condition(db_or()->condition('copied', 0)->condition('copied'));
-    }
 
     // Add LIMIT clause:
     if ($offset !== NULL && $limit !== NULL) {
@@ -499,19 +493,13 @@ class Channel extends Node {
   /**
    * Get the total number of items in the channel.
    *
-   * @param bool $include_copied_items
    * @return array
    */
-  public function itemCount($include_copied_items = TRUE) {
+  public function itemCount() {
     // Look for relationship records:
     $q = db_select('view_channel_has_item', 'vci')
       ->fields('vci', array('item_nid', 'copied'))
       ->condition('channel_nid', $this->nid());
-
-    // Add condition if we want to exclude copied items:
-    if (!$include_copied_items) {
-      $q->condition(db_or()->condition('copied', 0)->condition('copied'));
-    }
 
     // Get the items and return the count:
     $rs = $q->execute();
@@ -519,39 +507,42 @@ class Channel extends Node {
   }
 
   /**
-   * Render a channel's items.
+   * Render a page of items, with pagination.
    *
-   * @param bool $include_copied_items
    * @return string
    */
-  public function renderItems($include_copied_items = TRUE) {
+  public static function renderItemsPage($items, $total_n_items) {
+    // Render the items:
+    $items_html = Item::renderMultiple($items);
+
+    // Render the pager:
+    pager_default_initialize($total_n_items, self::pageSize);
+    $pager_html = theme('pager', array('quantity' => $total_n_items));
+
+    return "
+      <div id='channel'>
+        <div id='channel-items'>$items_html</div>
+        <div id='channel-pager'>$pager_html</div>
+      </div>";
+  }
+
+  /**
+   * Render a channel's items.
+   *
+   * @return string
+   */
+  public function renderItems() {
     // Get the page number:
     $page = isset($_GET['page']) ? ((int) $_GET['page']) : 0;
 
     // Get the items from this channel:
-    $items = $this->items($include_copied_items, $page * self::pageSize, self::pageSize);
+    $items = $this->items($page * self::pageSize, self::pageSize);
 
-    // Render the items:
-    $node_views = array();
-    foreach ($items as $item) {
-      $node = $item->node();
-      $node_view = node_view($node);
-      $node_view['comments'] = comment_node_page_additions($node);
-      $node_views[] = $node_view;
-    }
-    $items = render($node_views);
+    // Get the total item count:
+    $total_n_items = $this->itemCount();
 
-    // Render the pager:
-    $n_items = $this->itemCount();
-    pager_default_initialize($n_items, self::pageSize);
-    $pager = theme('pager', array('quantity' => $n_items));
-
-    return "
-      <div id='channel'>
-        <div id='channel-items'>$items</div>
-        <div id='channel-pager'>$pager</div>
-      </div>";
-
+    // Render the page of items:
+    return self::renderItemsPage($items, $total_n_items);
   }
 
   /**
@@ -609,6 +600,35 @@ class Channel extends Node {
     }
 
     return $html;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Subscriber methods.
+
+  /**
+   * Check if a member is a subscriber to the channel.
+   *
+   * @param Member $member
+   * @return bool
+   */
+  public function hasSubscriber(Member $member) {
+    $rels = moonmars_relationships_get_relationships('has_subscriber', 'node', $this->nid(), 'user', $member->uid());
+    return (bool) $rels;
+  }
+
+  /**
+   * Get subscriber relationship.
+   *
+   * @param Member $member
+   * @return array
+   *   or FALSE if the relationship doesn't exist.
+   */
+  public function getSubscriberRelationship(Member $member) {
+    $rels = moonmars_relationships_get_relationships('has_subscriber', 'node', $this->nid(), 'user', $member->uid());
+    if ($rels) {
+      return Relation::create($rels[0]->rid);
+    }
+    return FALSE;
   }
 
 }

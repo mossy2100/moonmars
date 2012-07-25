@@ -26,8 +26,6 @@ function astro_alpha_preprocess_node_channel(&$vars) {
   Channel::currentChannel($channel);
 
   // Get the channel items.
-  // By default include all items in the channel:
-  $include_copied_items = TRUE;
 
   // Set the page title:
   if (arg(0) == 'node' && arg(1) == $channel->nid()) {
@@ -39,6 +37,10 @@ function astro_alpha_preprocess_node_channel(&$vars) {
     $vars['title'] = '';
   }
 
-  // Render the items:
-  $vars['items'] = $channel->renderItems($include_copied_items);
+  // Get the parent entity:
+  $entity = $channel->parentEntity();
+
+  // Render the items.
+  // For a member, we don't just want items in their channel, but also the channels they're subscribed to.
+  $vars['items'] = ($entity instanceof Member) ? $entity->renderItems() : $channel->renderItems();
 }

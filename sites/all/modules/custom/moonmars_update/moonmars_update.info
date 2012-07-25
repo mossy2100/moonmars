@@ -1,0 +1,4 @@
+name = moonmars.com Update
+description = Support for running database update scripts on moonmars.com. **** Should only be enabled temporarily on live site. ****
+core = 7.x
+package = moonmars.com

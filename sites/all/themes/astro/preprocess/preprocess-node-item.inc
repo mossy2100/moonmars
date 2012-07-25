@@ -50,7 +50,8 @@ function astro_alpha_preprocess_node_item(&$vars) {
 
   // Original channel string:
   if ($current_channel && Channel::equals($current_channel, $original_channel)) {
-    $vars['original_channel_string'] = 'in this channel';
+    $vars['original_channel_string'] = '';
+//    $vars['original_channel_string'] = 'in this channel';
   }
   elseif ($current_channel && Channel::equals($original_channel, $poster->channel())) {
     $vars['original_channel_string'] = 'in their channel';
