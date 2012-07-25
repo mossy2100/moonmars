@@ -58,15 +58,6 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="user-profile.tpl.php" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/templates/user-profile.tpl.php">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="3" column="0" selection-start="63" selection-end="63" vertical-scroll-proportion="-1.875">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="moonmars_text.module" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_text/moonmars_text.module">
           <provider selected="true" editor-type-id="text-editor">
@@ -115,11 +106,20 @@
       <file leaf-file-name="Member.class.php" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/sites/all/classes/Member.class.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="253" column="0" selection-start="7091" selection-end="7091" vertical-scroll-proportion="0.7236181">
+            <state line="246" column="0" selection-start="6939" selection-end="6939" vertical-scroll-proportion="0.49748743">
               <folding>
                 <element signature="e#6#52#0" expanded="true" />
-                <marker date="1343175917000" expanded="true" signature="8442:8493" placeholder="..." />
+                <marker date="1343176655000" expanded="true" signature="8490:8541" placeholder="..." />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="common.inc" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/includes/common.inc">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="2099" column="9" selection-start="69477" selection-end="69477" vertical-scroll-proportion="-38.708332">
+              <folding />
             </state>
           </provider>
         </entry>
@@ -1017,13 +1017,6 @@
     <breakpoint-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/sites/all/libraries/star/php/strings.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="390" column="2" selection-start="9118" selection-end="9118" vertical-scroll-proportion="-4.24">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars/moonmars.module">
       <provider selected="true" editor-type-id="text-editor">
         <state line="10" column="0" selection-start="133" selection-end="133" vertical-scroll-proportion="-6.25">
@@ -1128,12 +1121,19 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/includes/common.inc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="2099" column="9" selection-start="69477" selection-end="69477" vertical-scroll-proportion="-38.708332">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/classes/Member.class.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="253" column="0" selection-start="7091" selection-end="7091" vertical-scroll-proportion="0.7236181">
+        <state line="246" column="0" selection-start="6939" selection-end="6939" vertical-scroll-proportion="0.49748743">
           <folding>
             <element signature="e#6#52#0" expanded="true" />
-            <marker date="1343175917000" expanded="true" signature="8442:8493" placeholder="..." />
+            <marker date="1343176655000" expanded="true" signature="8490:8541" placeholder="..." />
           </folding>
         </state>
       </provider>
