@@ -8,6 +8,7 @@ function moonmars_init() {
   dbg_on();
 
 //  relation_delete(518);
+
 }
 
 /**

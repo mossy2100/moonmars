@@ -340,39 +340,6 @@ function moonmars_members_profile_edit() {
 }
 
 /**
- * Show the form for filtering a member's profile channel.
- *
- * @return array
- */
-function moonmars_members_filter_channel_form() {
-  $form = array();
-  $form['profile_filter'] = array(
-    '#type' => 'checkbox',
-    '#title' => "Just show my stuff (my public profile)",
-    '#default_value' => isset($_SESSION['user']['profile_filter']) ? $_SESSION['user']['profile_filter'] : FALSE,
-  );
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => 'Go'
-  );
-
-  $form['#attached']['js'][] = drupal_get_path('module', 'moonmars_members') . '/js/profile-filter.js';
-
-  return $form;
-}
-
-///**
-// * Submit handler for moonmars_members_filter_channel_form().
-// */
-//function moonmars_members_filter_channel_form_submit($form, &$form_state) {
-//  // Store the checkbox state:
-//  $_SESSION['user']['profile_filter'] = (bool) $form_state['values']['profile_filter'];
-//
-//  // Reload the page:
-//  drupal_goto('user/' . arg(1));
-//}
-
-/**
  * Render some member avatars in a sidebar block.
  *
  * @param int $total_member_count

@@ -567,7 +567,11 @@ class Channel extends Node {
     $url = $this->field('field_website', LANGUAGE_NONE, 0, 'url');
     if ($url) {
       $title = htmlspecialchars("Visit " . (($entity instanceof Member) ? ($entity->name() . "'s official website") : ("the official website of " . $entity->title())), ENT_QUOTES);
-      $html .= "<p class='official-website'><a href='$url' target='_blank' title='$title'>Official website</a></p>\n";
+      $html .= "
+        <p class='official-website'>
+          Official website:<br>
+          <a href='$url' target='_blank' title='$title' class='autotrim'>" . rtrim(trimhttp($url), '/') . "</a>
+        </p>\n";
     }
 
     // Social links:

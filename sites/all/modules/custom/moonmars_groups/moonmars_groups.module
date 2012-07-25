@@ -275,7 +275,7 @@ function moonmars_groups_menu_block() {
   // Editing social links:
   if ($group->hasAdmin($current_member)) {
     $html .= "<li>" . l('Edit profile', $group->editAlias()) . "</li>";
-    $html .= "<li>" . l('Edit channel', $group->channel()->editAlias()) . "</li>";
+    $html .= "<li>" . l('Edit links', $group->channel()->editAlias()) . "</li>";
   }
 
   if ($is_member) {

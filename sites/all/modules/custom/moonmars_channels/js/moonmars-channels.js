@@ -52,7 +52,6 @@ function initChannel() {
 
   // Resize YouTube videos:
   $('.media-youtube-outer-wrapper, .media-youtube-preview-wrapper, .youtube-player').css({width: '240px', height: '180px'}).attr({width: 240, height: 180});
-
 }
 
 /**

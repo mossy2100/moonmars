@@ -20,6 +20,7 @@ function astro_alpha_preprocess_node_channel(&$vars) {
 
   // Load the channel JS:
   drupal_add_js(drupal_get_path('module', 'moonmars_channels') . '/js/moonmars-channels.js');
+  drupal_add_js(drupal_get_path('module', 'moonmars_text') . '/js/autotrim.js');
 
   // Remember the current channel:
   Channel::currentChannel($channel);
