@@ -111,12 +111,10 @@ ul.member-groups {
 
 .block-user-info-block {
   .views-field {
-    margin: 4px 0;
+    margin: 10px 0;
   }
 
   .views-field-field-moon-or-mars {
-    margin: 10px 0;
-
     .field-content {
       color: $grey3;
       display: inline;
@@ -124,7 +122,6 @@ ul.member-groups {
   }
 
   .views-field-field-bio {
-    margin: 10px 0;
     color: $grey3;
   }
 }
@@ -137,7 +134,7 @@ ul.member-groups {
 .block-group-info-block {
 
   .official-website {
-    margin: 5px 0;
+    margin: 10px 0;
   }
 
   .social-links {
