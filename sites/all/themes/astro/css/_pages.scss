@@ -51,9 +51,13 @@
   }
 }
 
-.node-page {
+.node-book {
   ul, ol {
     margin-left: 10px;
   }
 }
 
+.book-navigation .menu {
+  border: none;
+  padding: 0 0 20px;
+}

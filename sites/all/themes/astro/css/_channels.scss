@@ -3,9 +3,10 @@ $postLineHeight = $postFontSize * 1.5;
 $ratingButtonHeight = 20px;
 
 @mixin channel-page-section {
-  padding: 0 0 30px;
+  //padding: 0 0 30px;
+  //border-bottom: solid 1px $grey2;
+  padding: 0;
   margin-bottom: 30px;
-  border-bottom: solid 1px $grey2;
 }
 
 .node-item {
