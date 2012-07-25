@@ -104,6 +104,7 @@ function moonmars_items_form_alter(&$form, &$form_state, $form_id) {
     unset($form['author']);
     unset($form['comment_settings']);
     unset($form['options']);
+    unset($form['book']);
     unset($form['field_item_type'][LANGUAGE_NONE]['#title']);
     unset($form['field_item_text'][LANGUAGE_NONE][0]['value']['#title']);
     unset($form['field_item_link'][LANGUAGE_NONE][0]['#title']);
@@ -124,6 +125,8 @@ function moonmars_items_form_alter(&$form, &$form_state, $form_id) {
       '#type' => 'hidden',
       '#value' => $GLOBALS['channel_nid'],
     );
+
+//    dbg($form);
 
     // Validation handler.
 //    $form['actions']['submit']['#validate'][] = 'moonmars_items_form_validate';

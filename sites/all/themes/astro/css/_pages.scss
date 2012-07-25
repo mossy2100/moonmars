@@ -55,9 +55,28 @@
   ul, ol {
     margin-left: 10px;
   }
-}
 
-.book-navigation .menu {
-  border: none;
-  padding: 0 0 20px;
+  .book-navigation {
+    .menu {
+      border: none;
+      padding: 0 0 20px;
+    }
+
+    .page-links {
+      padding: 5px;
+    }
+  }
+
+  nav {
+    padding: 5px;
+
+    ul.links.inline {
+      margin-left: 0;
+
+      li {
+        padding: 0;
+        margin: 0 15px 0 0;
+      }
+    }
+  }
 }

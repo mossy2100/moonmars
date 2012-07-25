@@ -155,9 +155,10 @@ class Member extends User {
         $birthday_this_year->year($today->year());
         $this->age = ($current_year - $birth_year) - ($birthday_this_year <= $today ? 0 : 1);
       }
-
     }
-    return $this->age;
+
+    // Only return a value greater than 0 - some members set fake dates of birth so their ages don't show.
+    return ($this->age > 0) ? $this->age : NULL;
   }
 
   /**
