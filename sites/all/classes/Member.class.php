@@ -245,6 +245,16 @@ class Member extends User {
   }
 
   /**
+   * Get the member's Skype callto link.
+   *
+   * @return string
+   */
+  public function skypeLink() {
+    $skype = $this->field('field_skype');
+    return $skype ? "callto://$skype" : NULL;
+  }
+
+  /**
    * Generate HTML for a member's avatar tooltip.
    *
    * @return string

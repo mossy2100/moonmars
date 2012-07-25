@@ -2,15 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ff922214-f7cd-4eef-9f30-177ba578dd26" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_text/js/autotrim.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/classes/Channel.class.php" afterPath="$PROJECT_DIR$/sites/all/classes/Channel.class.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars/moonmars.module" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars/moonmars.module" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/js/moonmars-channels.js" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/js/moonmars-channels.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_groups/moonmars_groups.module" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_groups/moonmars_groups.module" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/moonmars_members.module" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/moonmars_members.module" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-node-channel.inc" afterPath="$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-node-channel.inc" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/templates/user-profile.tpl.php" afterPath="$PROJECT_DIR$/sites/all/themes/astro/templates/user-profile.tpl.php" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/classes/Member.class.php" afterPath="$PROJECT_DIR$/sites/all/classes/Member.class.php" />
     </list>
     <ignored path="moonmars.com.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -36,18 +28,6 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="Channel.class.php" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/sites/all/classes/Channel.class.php">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="572" column="103" selection-start="17785" selection-end="17785" vertical-scroll-proportion="-14.125">
-              <folding>
-                <marker date="1343170827000" expanded="true" signature="17020:17123" placeholder="..." />
-                <marker date="1343170827000" expanded="true" signature="17648:17805" placeholder="..." />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="moonmars-channels.js" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/js/moonmars-channels.js">
           <provider selected="true" editor-type-id="text-editor">
@@ -123,11 +103,23 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="preprocess-node-channel.inc" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="preprocess-node-channel.inc" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-node-channel.inc">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="22" column="74" selection-start="599" selection-end="599" vertical-scroll-proportion="0.37185928">
+            <state line="22" column="74" selection-start="599" selection-end="599" vertical-scroll-proportion="-9.25">
               <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Member.class.php" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/sites/all/classes/Member.class.php">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="253" column="0" selection-start="7091" selection-end="7091" vertical-scroll-proportion="0.7236181">
+              <folding>
+                <element signature="e#6#52#0" expanded="true" />
+                <marker date="1343175917000" expanded="true" signature="8442:8493" placeholder="..." />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -147,7 +139,6 @@
       <list>
         <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/moonmars_channels.module" />
         <option value="$PROJECT_DIR$/sites/all/themes/astro/templates/node--channel.tpl.php" />
-        <option value="$PROJECT_DIR$/sites/all/classes/Member.class.php" />
         <option value="$PROJECT_DIR$/sites/all/themes/astro/css/_views.scss" />
         <option value="$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-node-item.inc" />
         <option value="$PROJECT_DIR$/sites/all/themes/astro/css/_channels.scss" />
@@ -161,6 +152,7 @@
         <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/js/moonmars-channels.js" />
         <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_text/js/autotrim.js" />
         <option value="$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-node-channel.inc" />
+        <option value="$PROJECT_DIR$/sites/all/classes/Member.class.php" />
       </list>
     </option>
   </component>
@@ -1025,13 +1017,6 @@
     <breakpoint-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="jar://$APPLICATION_HOME_DIR$/plugins/php/lib/php.jar!/com/jetbrains/php/lang/psi/stubs/data/standard_1.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="86" column="9" selection-start="2336" selection-end="2336" vertical-scroll-proportion="-8.916667">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/libraries/star/php/strings.php">
       <provider selected="true" editor-type-id="text-editor">
         <state line="390" column="2" selection-start="9118" selection-end="9118" vertical-scroll-proportion="-4.24">
@@ -1057,8 +1042,8 @@
       <provider selected="true" editor-type-id="text-editor">
         <state line="572" column="103" selection-start="17785" selection-end="17785" vertical-scroll-proportion="-14.125">
           <folding>
-            <marker date="1343170827000" expanded="true" signature="17020:17123" placeholder="..." />
-            <marker date="1343170827000" expanded="true" signature="17648:17805" placeholder="..." />
+            <marker date="1343170827000" expanded="true" signature="-1:-1" placeholder="..." />
+            <marker date="1343170827000" expanded="true" signature="-1:-1" placeholder="..." />
           </folding>
         </state>
       </provider>
@@ -1138,8 +1123,18 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-node-channel.inc">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="22" column="74" selection-start="599" selection-end="599" vertical-scroll-proportion="0.37185928">
+        <state line="22" column="74" selection-start="599" selection-end="599" vertical-scroll-proportion="-9.25">
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/classes/Member.class.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="253" column="0" selection-start="7091" selection-end="7091" vertical-scroll-proportion="0.7236181">
+          <folding>
+            <element signature="e#6#52#0" expanded="true" />
+            <marker date="1343175917000" expanded="true" signature="8442:8493" placeholder="..." />
+          </folding>
         </state>
       </provider>
     </entry>
