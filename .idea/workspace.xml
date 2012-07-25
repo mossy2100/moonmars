@@ -2,13 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ff922214-f7cd-4eef-9f30-177ba578dd26" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/js/profile-filter.js" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/themes/astro/css/_profile.scss" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/classes/Channel.class.php" afterPath="$PROJECT_DIR$/sites/all/classes/Channel.class.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/classes/Member.class.php" afterPath="$PROJECT_DIR$/sites/all/classes/Member.class.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/css/_blocks.scss" afterPath="$PROJECT_DIR$/sites/all/themes/astro/css/_blocks.scss" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/css/_channels.scss" afterPath="$PROJECT_DIR$/sites/all/themes/astro/css/_channels.scss" />
     </list>
     <ignored path="moonmars.com.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -94,9 +88,9 @@
       <file leaf-file-name="Channel.class.php" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/sites/all/classes/Channel.class.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="604" column="5" selection-start="18952" selection-end="18952" vertical-scroll-proportion="0.64041096">
+            <state line="601" column="0" selection-start="18732" selection-end="18732" vertical-scroll-proportion="0.56335616">
               <folding>
-                <marker date="1343183037000" expanded="true" signature="17020:17123" placeholder="..." />
+                <marker date="1343183528000" expanded="true" signature="17020:17123" placeholder="..." />
               </folding>
             </state>
           </provider>
@@ -915,9 +909,9 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/classes/Channel.class.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="604" column="5" selection-start="18952" selection-end="18952" vertical-scroll-proportion="0.64041096">
+        <state line="601" column="0" selection-start="18732" selection-end="18732" vertical-scroll-proportion="0.56335616">
           <folding>
-            <marker date="1343183037000" expanded="true" signature="17020:17123" placeholder="..." />
+            <marker date="1343183528000" expanded="true" signature="17020:17123" placeholder="..." />
           </folding>
         </state>
       </provider>
