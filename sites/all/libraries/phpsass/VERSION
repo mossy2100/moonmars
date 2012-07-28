@@ -1,3 +1,5 @@
+Version 201207271000 - Fixed scale-color function (attrib: Steve Jones)
+Version 201207262300 - Various issue fixes, better testing framework
 Version 201206291700 - Fixed some tests, minor changes to string and import handling
 Version 201203071100 - Hotfix to functions, overhauled evaluation method to be less rubbish
 Version 201203061130 - Added min/max functions, fix to lists (evaluation instead of just lexing of values)

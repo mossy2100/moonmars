@@ -67,13 +67,15 @@ class SassMediaNode extends SassNode {
     $rule = clone $this->parent;
     $rule->root = $node->root;
     $rule->children = $this->children;
-    
+
     $try = $rule->parse($context);
     if (is_array($try)) {
       $rule->children = $try;
-    } else if (is_object($try) && method_exists($try, 'render')) {
-      $rule = $try;
     }
+    // Tests were failing with this, but I'm not sure if we cover every case.
+    //else if (is_object($try) && method_exists($try, 'render')) {
+    //  $rule = $try;
+    //}
 
     $node->children = array(new SassString($rule->render()));
 
