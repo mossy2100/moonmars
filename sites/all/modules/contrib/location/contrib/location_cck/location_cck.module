@@ -162,17 +162,16 @@ function location_cck_field_insert($entity_type, $entity, $field, $instance, $la
       );
       location_save_locations($items, $criteria);
     }
-  }else{
-    if (!empty($items)) {
-      list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
-      // Store instances of locations by field name and vid.
-      $criteria = array(
-        'genid' => 'field:' . $field['field_name'] . ':' . $entity_type . ':' . $id,
-        'vid' => $vid ? $vid : $id,
-        'nid' => $id,
-      );
-      location_save_locations($items, $criteria);
-    }
+  }
+  elseif (!empty($items)) {
+    list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
+    // Store instances of locations by field name and vid.
+    $criteria = array(
+      'genid' => 'field:' . $field['field_name'] . ':' . $entity_type . ':' . $id,
+      'vid' => $vid ? $vid : $id,
+      'nid' => $id,
+    );
+    location_save_locations($items, $criteria);
   }
 }
 
@@ -190,17 +189,16 @@ function location_cck_field_update($entity_type, $entity, $field, $instance, $la
       );
       location_save_locations($items, $criteria);
     }
-  }else{
-    if (!empty($items)) {
-      list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
-      // Store instances of locations by field name and vid.
-      $criteria = array(
-        'genid' => 'field:' . $field['field_name'] . ':' . $entity_type . ':' . $id,
-        'vid' => $vid ? $vid : $id,
-        'nid' => $id,
-      );
-      location_save_locations($items, $criteria);
-    }
+  }
+  elseif (!empty($items)) {
+    list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
+    // Store instances of locations by field name and vid.
+    $criteria = array(
+      'genid' => 'field:' . $field['field_name'] . ':' . $entity_type . ':' . $id,
+      'vid' => $vid ? $vid : $id,
+      'nid' => $id,
+    );
+    location_save_locations($items, $criteria);
   }
 }
 
@@ -221,7 +219,8 @@ function location_cck_field_delete($entity_type, $entity, $field, $instance, $la
       $locs = array();
       location_save_locations($locs, array('genid' => $genid));
     }
-  }else {
+  }
+  else {
     list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
     $genid = 'field:' . $field['field_name'] . ':' . $entity_type . ':' . $id;
     $locs = array();
@@ -237,7 +236,8 @@ function location_cck_field_delete_revision($entity_type, $entity, $field, $inst
     $genid = 'cck:' . $field['field_name'] . ':' . $entity->vid;
     $locs = array();
     location_save_locations($locs, array('genid' => $genid));
-  } else {
+  }
+  else {
     list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
     $genid = 'field:' . $field['field_name'] . ':' . $entity_type . ':' . $id;
     $locs = array();
@@ -256,19 +256,19 @@ function location_cck_field_validate($entity_type, $entity, $field, $instance, $
  * Implement hook_field_load().
  */
 function location_cck_field_load($entity_type, $entities, $field, $instances, $langcode, &$items, $age) {
-    foreach ($entities as $id => $entity) {
-      foreach ($items[$id] as $delta => $item) {
-        $location = array();
-        // Load the location if it exists.
-        // If we are previewing a new node it will not.
-        if (!empty($item['lid'])) {
-          $location = location_load_location($item['lid']);
-        }
-        // Combine the item with the location loaded from the database.
-        // This will allow $item to display in the case of previewing a node.
-        $items[$id][$delta] = array_merge($location, $item);
+  foreach ($entities as $id => $entity) {
+    foreach ($items[$id] as $delta => $item) {
+      $location = array();
+      // Load the location if it exists.
+      // If we are previewing a new node it will not.
+      if (!empty($item['lid'])) {
+        $location = location_load_location($item['lid']);
       }
+      // Combine the item with the location loaded from the database.
+      // This will allow $item to display in the case of previewing a node.
+      $items[$id][$delta] = array_merge($location, $item);
     }
+  }
 }
 
 /**
