@@ -17,6 +17,6 @@ function astro_alpha_preprocess_user_profile(&$vars) {
 
   // Get the profile member's channel:
   $channel = $profile_member->channel();
-  $vars['channel'] = $channel;
   $channel->load();
+  $vars['channel'] = $channel;
 }

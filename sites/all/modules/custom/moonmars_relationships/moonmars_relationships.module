@@ -16,10 +16,10 @@
  * @param null|int $limit
  * @return array
  */
-function moonmars_relationships_get_relationships($relationship_type, $entity_type0 = NULL, $entity_id0 = NULL, $entity_type1 = NULL, $entity_id1 = NULL, $offset = NULL, $limit = NULL) {
+function moonmars_relationships_get_relationships($relationship_type, $entity_type0 = NULL, $entity_id0 = NULL, $entity_type1 = NULL, $entity_id1 = NULL, $offset = NULL, $limit = NULL, $orderByField = NULL, $orderByDirection = NULL) {
   // Look for a relationship record:
   $q = db_select('view_relationship', 'vr')
-    ->fields('vr');
+    ->fields('vr', array('rid'));
 
   // Add WHERE clause:
   $q->condition('relation_type', $relationship_type);
@@ -42,15 +42,19 @@ function moonmars_relationships_get_relationships($relationship_type, $entity_ty
   }
 
   // Add ORDER BY clause:
-  $q->orderBy('changed', 'DESC');
-
-//  dbg_query($q);
+  if ($orderByField === NULL) {
+    $orderByField = 'changed';
+  }
+  if ($orderByDirection === NULL) {
+    $orderByDirection = 'DESC';
+  }
+  $q->orderBy($orderByField, $orderByDirection);
 
   // Get the relationships:
   $rs = $q->execute();
   $results = array();
   foreach ($rs as $rec) {
-    $results[] = $rec;
+    $results[] = Relation::create($rec->rid);
   }
   return $results;
 }
@@ -86,38 +90,6 @@ function moonmars_relationships_get_entity_ids($relationship_type, $entity_type0
 }
 
 /**
- * Create a new relationship.
- *
- * @param string $relationship_type
- * @param string $entity_type0
- * @param int $entity_id0
- * @param string $entity_type1
- * @param int $entity_id1
- * @param bool $save
- * @return stdClass
- */
-function moonmars_relationships_create_relationship($relationship_type, $entity_type0, $entity_id0, $entity_type1, $entity_id1, $save = FALSE) {
-  $end_points = array(
-    array(
-      'entity_type' => $entity_type0,
-      'entity_id'   => $entity_id0,
-    ),
-    array(
-      'entity_type' => $entity_type1,
-      'entity_id'   => $entity_id1,
-    ),
-  );
-  $relation = relation_create($relationship_type, $end_points);
-
-  // Save if requested:
-  if ($save) {
-    $relation->rid = relation_save($relation);
-  }
-
-  return $relation;
-}
-
-/**
  * Update or create a relationship.
  *
  * @param string $relationship_type
@@ -129,15 +101,18 @@ function moonmars_relationships_create_relationship($relationship_type, $entity_
 function moonmars_relationships_update_relationship($relationship_type, $entity_type0, $entity_id0, $entity_type1, $entity_id1) {
   // See if the relationship already exists:
   $rels = moonmars_relationships_get_relationships($relationship_type, $entity_type0, $entity_id0, $entity_type1, $entity_id1);
+
   if ($rels) {
     // Update the relationship. We really just want to update the changed timestamp, so let's just load and save it.
-    return relation_save(relation_load($rels[0]->rid));
+    $rels[0]->load();
+    $rels[0]->save();
   }
   else {
     // Create a new relationship:
-    $rel = moonmars_relationships_create_relationship($relationship_type, $entity_type0, $entity_id0, $entity_type1, $entity_id1, TRUE);
-    return $rel->rid;
+    $relation = Relation::createNewBinary($relationship_type, $entity_type0, $entity_id0, $entity_type1, $entity_id1, TRUE);
   }
+
+  return $relation;
 }
 
 /**
@@ -151,7 +126,7 @@ function moonmars_relationships_update_relationship($relationship_type, $entity_
  * @return bool
  *   TRUE on success, FALSE on failure
  */
-function moonmars_relationships_delete_relationships($relationship_type, $entity_type0, $entity_id0, $entity_type1, $entity_id1) {
+function moonmars_relationships_delete_relationships($relationship_type, $entity_type0 = NULL, $entity_id0 = NULL, $entity_type1 = NULL, $entity_id1 = NULL) {
   // Get the relationships:
   $rels = moonmars_relationships_get_relationships($relationship_type, $entity_type0, $entity_id0, $entity_type1, $entity_id1);
 
@@ -162,7 +137,7 @@ function moonmars_relationships_delete_relationships($relationship_type, $entity
 
   // Delete the relationships:
   foreach ($rels as $rel) {
-    relation_delete($rel->rid);
+    relation_delete($rel->rid());
   }
 
   return TRUE;

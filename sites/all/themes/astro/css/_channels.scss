@@ -408,3 +408,10 @@ article.group {
     padding-bottom: 10px;
   }
 }
+
+#profile-flag {
+  position: relative;
+  z-index: 1;
+  left: -33px;
+  top: -22px;
+}

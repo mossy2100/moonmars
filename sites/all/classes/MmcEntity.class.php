@@ -58,7 +58,7 @@ class MmcEntity {
     $channel->save();
 
     // Create the relationship between the entity and the relationship:
-    moonmars_relationships_create_relationship('has_channel', $entity_type, $entity_id, 'node', $channel->nid(), TRUE);
+    Relation::createNewBinary('has_channel', $entity_type, $entity_id, 'node', $channel->nid(), TRUE);
 
     // Update the channel's alias and title:
     $channel->updateAliasAndTitle();
@@ -80,7 +80,7 @@ class MmcEntity {
     $rels = moonmars_relationships_get_relationships('has_channel', $entity_type, $entity_id, 'node', NULL);
 
     if (!empty($rels)) {
-      return Channel::create($rels[0]->entity_id1);
+      return Channel::create($rels[0]->entityId(LANGUAGE_NONE, 1));
     }
 
     // If the entity has no channel, and $create is TRUE, create the channel now:

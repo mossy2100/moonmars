@@ -12,7 +12,7 @@
         <div class='who_where_when_posted'>
           <?php
           // Who, where and when the item was posted:
-          echo $poster->tooltipLink() . " $original_channel_string $created_datetime";
+          echo $poster->tooltipLink() . " $item_channel_string $created_datetime";
           ?>
         </div>
 

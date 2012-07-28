@@ -329,6 +329,41 @@ class Member extends User {
   }
 
   /**
+   * Renders a Moon or Mars or Both icon, with a flag on top.
+   *
+   * @return string
+   */
+  public function moonOrMarsWithFlag() {
+    $moon_or_mars = $this->field('field_moon_or_mars');
+    $country = $this->field('field_user_location', LANGUAGE_NONE, 0, 'country');
+
+    // If the user doesn't have a picture, use a default icon:
+    $icon = $this->field('field_moon_or_mars');
+    if (!$icon) {
+      $icon = 'both';
+    }
+    $image = array(
+      'style_name' => 'icon-40x40',
+      'path'       => "avatars/870x870/$icon-870x870.jpg",
+      'alt'        => $this->entity->name,
+      'attributes' => array('class' => array('avatar-icon')),
+    );
+
+    // Remember the HTML in the property so we don't have to theme the image again:
+    $html = theme('image_style', $image);
+
+    // See if the flag exists for the member's country:
+    if ($country) {
+      $path = "/" . drupal_get_path('theme', 'astro') . "/images/flag-icons/$country.png";
+      if (file_exists(DRUPAL_ROOT . $path)) {
+        $html .= "<img id='profile-flag' src='$path'>";
+      }
+    }
+
+    return $html;
+  }
+
+  /**
    * Get/set a member's level.
    *
    * @return string|bool
@@ -481,22 +516,22 @@ class Member extends User {
    *
    * @return array
    */
-  public function followers($offset = NULL, $limit = NULL) {
+  public function followers($limit = NULL) {
     // Get the group's members in reverse order of that in which they joined.
-    $q = db_select('view_member_has_follower', 'v')
-      ->fields('v', array('follower_uid'))
-      ->condition('member_uid', $this->uid())
+    $q = db_select('view_channel_has_subscriber', 'v')
+      ->fields('v', array('subscriber_uid'))
+      ->condition('channel_nid', $this->channel()->nid())
       ->orderBy('created', 'DESC');
 
     // Set a limit if specified:
-    if ($offset !== NULL && $limit !== NULL) {
-      $q->range($offset, $limit);
+    if ($limit !== NULL) {
+      $q->range(0, $limit);
     }
 
     $rs = $q->execute();
     $followers = array();
     foreach ($rs as $rec) {
-      $followers[] = self::create($rec->follower_uid);
+      $followers[] = self::create($rec->subscriber_uid);
     }
 
     return $followers;
@@ -508,50 +543,47 @@ class Member extends User {
    * @return int
    */
   public function followerCount() {
-    $q = db_select('view_member_has_follower', 'v')
-      ->fields('v', array('follower_uid'))
-      ->condition('member_uid', $this->uid());
+    $q = db_select('view_channel_has_subscriber', 'v')
+      ->fields('v', array('subscriber_uid'))
+      ->condition('channel_nid', $this->channel()->nid());
     $rs = $q->execute();
     return $rs->rowCount();
   }
 
   /**
    * Get a member's followees (i.e. other members that the member follows).
+   * @todo This method could be tightened up by querying the database directly.
    *
    * @return array
    */
-  public function followees($offset = NULL, $limit = NULL) {
-    // Get the group's members in reverse order of that in which they joined.
-    $q = db_select('view_member_has_follower', 'v')
-      ->fields('v', array('member_uid'))
-      ->condition('follower_uid', $this->uid())
-      ->orderBy('created', 'DESC');
+  public function followees($limit = NULL) {
+    // Get the channels that this member is subscribed to:
+    $channels = $this->subscribedChannels();
 
-    // Set a limit if specified:
-    if ($offset !== NULL && $limit !== NULL) {
-      $q->range($offset, $limit);
-    }
-
-    $rs = $q->execute();
+    // Filter for member channels:
     $followees = array();
-    foreach ($rs as $rec) {
-      $followees[] = self::create($rec->member_uid);
-    }
+    foreach ($channels as $channel) {
+      $parent_entity = $channel->parentEntity();
+      if ($parent_entity instanceof Member) {
+        $followees[] = $parent_entity;
 
+        // Limit to specified count:
+        if ($limit !== NULL && count($followees) == $limit) {
+          break;
+        }
+      }
+    }
     return $followees;
   }
 
   /**
    * Get the number of followees that a member has.
+   * @todo This method could be tightened up by querying the database directly.
    *
    * @return int
    */
   public function followeeCount() {
-    $q = db_select('view_member_has_follower', 'v')
-      ->fields('v', array('member_uid'))
-      ->condition('follower_uid', $this->uid());
-    $rs = $q->execute();
-    return $rs->rowCount();
+    return count($this->followees());
   }
 
   /**
@@ -560,8 +592,7 @@ class Member extends User {
    * @param Member $member
    */
   public function follows(Member $member) {
-    $rels = moonmars_relationships_get_relationships('has_follower', 'user', $member->uid(), 'user', $this->uid());
-    return !empty($rels);
+    return $member->channel()->hasSubscriber($this);
   }
 
   /**
@@ -570,11 +601,11 @@ class Member extends User {
    * @param Member $member
    */
   public function follow(Member $member) {
-    // Create the follow relationship:
-    moonmars_relationships_update_relationship('has_follower', 'user', $member->uid(), 'user', $this->uid());
+    $this->subscribe($member->channel(), TRUE);
+//    $this->subscribe($member->channel(), $this->defaultEmailNotification());
 
-    // Post system message to the member's channel:
-    $this->channel()->postSystemMessage('@' . $this->name() . " followed @" . $member->name());
+    // Notify the other member:
+//    $member->notify('@' . $this->name() . " followed @" . $member->name()));
   }
 
   /**
@@ -583,8 +614,7 @@ class Member extends User {
    * @param Member $member
    */
   public function unfollow(Member $member) {
-    // Remove the follow relationship:
-    moonmars_relationships_delete_relationships('has_follower', 'user', $member->uid(), 'user', $this->uid());
+    $this->unsubscribe($member->channel());
   }
 
   // Group-related methods. 
@@ -598,8 +628,8 @@ class Member extends User {
     // Create the membership relationship:
     moonmars_relationships_update_relationship('has_member', 'node', $group->nid(), 'user', $this->uid());
 
-    // Post system message to the member's channel:
-    $this->channel()->postSystemMessage("@" . $this->name() . " joined [" . $group->channel()->title() . "]");
+    // Post system message to the group:
+    $group->notify("@" . $this->name() . " joined [" . $group->channel()->title() . "]");
   }
 
   /**
@@ -612,6 +642,70 @@ class Member extends User {
     moonmars_relationships_delete_relationships('has_member', 'node', $group->nid(), 'user', $this->uid());
   }
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Subscription-related methods.
+
+  /**
+   * Get the channels that the member is subscribed to.
+   *
+   * @return array
+   */
+  public function subscribedChannels() {
+    $rels = moonmars_relationships_get_relationships('has_subscriber', 'node', NULL, 'user', $this->uid());
+
+    $channels = array();
+    if ($rels) {
+      foreach ($rels as $rel) {
+        $channel_nid = $rel->field('endpoints', LANGUAGE_NONE, 0, 'entity_id');
+        $channels[] = Channel::create($channel_nid);
+      }
+    }
+
+    return $channels;
+  }
+
+  /**
+   * Subscribe member to a channel.
+   *
+   * @param Channel $channel
+   * @param bool $email_notification
+   * @return Member
+   */
+  public function subscribe(Channel $channel, $email_notification = TRUE) {
+    // See if the relationship already exists:
+    $rels = moonmars_relationships_get_relationships('has_subscriber', 'node', $channel->nid(), 'user', $this->uid());
+
+    // If the relationship doesn't exist, create it now:
+    if (!$rels) {
+      $rel = Relation::createNewBinary('has_subscriber', 'node', $channel->nid(), 'user', $this->uid(), FALSE);
+      $update = TRUE;
+    }
+    else {
+      // Update the relationship if the email_notification field has changed:
+      $rel = $rels[0];
+      $update = ((int) $rel->field('field_email_notification')) != ((int) $email_notification);
+    }
+
+    // Update the email_notification field:
+    if ($update) {
+      $rel->field('field_email_notification', LANGUAGE_NONE, 0, 'value', (int) $email_notification);
+      $rel->save();
+    }
+
+    return $this;
+  }
+
+  /**
+   * Unsubscribe member from a channel.
+   *
+   * @param Channel $channel
+   * @return Member
+   */
+  public function unsubscribe(Channel $channel) {
+    moonmars_relationships_delete_relationships('has_subscriber', 'node', $channel->nid(), 'user', $this->uid());
+    return $this;
+  }
+
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Notification methods.
 
@@ -620,12 +714,35 @@ class Member extends User {
    *
    * @param $message
    */
-  public function notify($subject, $message){
-    $params = array(
-      'subject' => "[moonmars.com] $subject",
-      'body'    => $message,
-    );
-    drupal_mail('moonmars_members', 'notification', $this->mail(), language_default(), $params);
+  public function notify($subject, $channel = NULL, $item = NULL) {
+
+    // Create the notification node:
+    $notification = Notification::create();
+    $notification->uid($this->uid());
+    $notification->title($subject);
+    $notification->save();
+
+    // If the member wants an email, send it:
+    $send_email = $channel && $this->emailNotification($channel);
+    if ($send_email) {
+      $body = ($item instanceof Item) ? $item->emailRender() : '';
+      $params = array(
+        'subject' => "[moonmars.com] $subject",
+        'body'    => $body,
+      );
+      drupal_mail('moonmars_members', 'notification', $this->mail(), language_default(), $params);
+    }
+  }
+
+  /**
+   * Check if the member wants an email notification from this channel.
+   */
+  public function emailNotification($channel) {
+    $rels = moonmars_relationships_get_relationships('has_subscriber', 'node', $channel->nid(), 'user', $this->uid());
+    if (!$rels) {
+      return FALSE;
+    }
+    return (bool) $rels[0]->field('field_email_notification');
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -694,13 +811,13 @@ class Member extends User {
     }
 
     // A member can delete any item posted in their channel.
-    if (Channel::equals($this->channel(), $item->originalChannel())) {
+    if (Channel::equals($this->channel(), $item->channel())) {
       return TRUE;
     }
 
     // A group administrator can delete any item from a group.
     // (This rule will also apply to events and projects when implemented.)
-//    $parent_entity = $original_channel->parentEntity();
+//    $parent_entity = $channel->parentEntity();
 //    if ($parent_entity instanceof Group && $parent_entity->hasAdmin($this)) {
 //      return TRUE;
 //    }
@@ -708,23 +825,22 @@ class Member extends User {
     return FALSE;
   }
 
-  /**
-   * Check if the member can remove an item from the specified channel
-   * (which is not necessarily the channel where the item was originally posted).
-   *
-   * @param Item $item
-   * @param Channel $channel
-   * @return bool
-   */
-  public function canRemoveItem(Item $item, Channel $channel) {
-    // Check the item and channel are valid:
-    if (!$item->valid() || !$item->published() || !$channel->valid()) {
-      return FALSE;
-    }
-
-    // Members can remove any item from their own channel that they can't delete.
-    return Channel::equals($channel, $this->channel()) && !$this->canDeleteItem($item);
-  }
+//  /**
+//   * Check if the member can remove an item from the channel
+//   *
+//   * @param Item $item
+//   * @param Channel $channel
+//   * @return bool
+//   */
+//  public function canRemoveItem(Item $item, Channel $channel) {
+//    // Check the item and channel are valid:
+//    if (!$item->valid() || !$item->published() || !$channel->valid()) {
+//      return FALSE;
+//    }
+//
+//    // Members can remove any item from their own channel.
+//    return Channel::equals($channel, $this->channel());
+//  }
 
   /**
    * Check if the member can post a comment on an item.
@@ -739,15 +855,18 @@ class Member extends User {
     }
 
     // Get the channel where the item was originally posted:
-    $original_channel = $item->originalChannel();
-    if (!$original_channel) {
+    $channel = $item->channel();
+    if (!$channel) {
       return FALSE;
     }
 
-    // Get the parent entity of the original channel:
-    $parent_entity = $original_channel->parentEntity();
+    // Get the parent entity of the item's channel:
+    $parent_entity = $channel->parentEntity();
+    if (!$parent_entity) {
+      return FALSE;
+    }
 
-    // If originally posted in a member channel:
+    // If item posted in a member channel:
     if ($parent_entity instanceof Member) {
       // Members can post comments in each other's channels.
       return TRUE;
@@ -813,7 +932,7 @@ class Member extends User {
     }
 
     // Members can delete comments made on items posted in their channel.
-    if (Channel::equals($comment->item()->originalChannel(), $this->channel())) {
+    if (Channel::equals($comment->item()->channel(), $this->channel())) {
       return TRUE;
     }
 

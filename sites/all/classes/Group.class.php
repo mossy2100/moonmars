@@ -220,4 +220,19 @@ class Group extends Node {
     return $this->field('field_group_mode');
   }
 
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Notification methods.
+
+  /***
+   * Send a notification message to a member.
+   *
+   * @param $message
+   */
+  public function notify($subject, $message) {
+    $members = $this->members();
+    foreach ($members as $member) {
+      $member->notify($subject, $message, $this->channel());
+    }
+  }
+
 }

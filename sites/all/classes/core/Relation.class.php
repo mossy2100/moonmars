@@ -101,6 +101,44 @@ class Relation extends EntityBase {
   }
 
   /**
+   * Create a new binary relation.
+   *
+   * @static
+   * @param string $relationship_type
+   * @param string $entity_type0
+   * @param int $entity_id0
+   * @param string $entity_type1
+   * @param int $entity_id1
+   * @param bool $save
+   * @return Relation
+   */
+  public static function createNewBinary($relationship_type, $entity_type0, $entity_id0, $entity_type1, $entity_id1, $save = FALSE) {
+    $endpoints = array(
+      array(
+        'entity_type' => $entity_type0,
+        'entity_id'   => $entity_id0,
+      ),
+      array(
+        'entity_type' => $entity_type1,
+        'entity_id'   => $entity_id1,
+      ),
+    );
+
+    // Create the relation entity:
+    $rel_entity = relation_create($relationship_type, $endpoints);
+
+    // Create the Relation object:
+    $relation = Relation::create($rel_entity);
+
+    // Save if requested:
+    if ($save) {
+      $relation->save();
+    }
+
+    return $relation;
+  }
+
+  /**
    * Delete a relation.
    */
   public function delete() {
@@ -213,6 +251,42 @@ class Relation extends EntityBase {
    */
   public function creator() {
     return User::create($this->uid());
+  }
+
+  /**
+   * Get an endpoint.
+   *
+   * @param string $lang
+   * @param int $delta
+   * @return array
+   */
+  public function endpoint($lang, $delta) {
+    $this->load();
+    return isset($this->entity->endpoints[$lang][$delta]) ? $this->entity->endpoints[$lang][$delta] : NULL;
+  }
+
+  /**
+   * Get an entity type.
+   *
+   * @param string $lang
+   * @param int $delta
+   * @return string
+   */
+  public function entityType($lang, $delta) {
+    $this->load();
+    return isset($this->entity->endpoints[$lang][$delta]['entity_type']) ? $this->entity->endpoints[$lang][$delta]['entity_type'] : NULL;
+  }
+
+  /**
+   * Get an entity id.
+   *
+   * @param string $lang
+   * @param int $delta
+   * @return int
+   */
+  public function entityId($lang, $delta) {
+    $this->load();
+    return isset($this->entity->endpoints[$lang][$delta]['entity_id']) ? ((int) $this->entity->endpoints[$lang][$delta]['entity_id']) : NULL;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

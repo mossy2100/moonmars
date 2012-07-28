@@ -7,7 +7,7 @@ function moonmars_init() {
   // Activate debugging:
   dbg_on();
 
-//  relation_delete(518);
+  relation_delete(788);
 
 }
 

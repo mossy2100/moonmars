@@ -527,7 +527,7 @@ abstract class XEntityBase {
    * If $autoload is TRUE (default) and the corresponding field hasn't been
    * loaded from the database yet, do it now.
    *
-   * If the field's value hasn'tbeen copied to the property yet, do that now as
+   * If the field's value hasn't been copied to the property yet, do that now as
    * well.
    *
    * The reason why a reference is returned instead of just the value is to make

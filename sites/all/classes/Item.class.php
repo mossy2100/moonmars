@@ -10,11 +10,11 @@ class Item extends Node {
   const nodeType = 'item';
 
   /**
-   * The channel where the item was originally posted.
+   * The channel where the item was posted.
    *
    * @var Channel
    */
-  protected $originalChannel;
+  protected $channel;
 
   /**
    * Constructor.
@@ -27,28 +27,21 @@ class Item extends Node {
   // Get and set methods.
 
   /**
-   * Get the channel where this item was originally posted.
+   * Get the channel where this item was posted.
    *
    * @return Channel
    */
-  public function originalChannel() {
-    if (!isset($this->originalChannel)) {
+  public function channel() {
+    if (!isset($this->channel)) {
 
-      // Look up the original channel:
-      $original_channel = db_select('view_item_original_channel', 'v')
-        ->fields('v', array('channel_nid', 'channel_title'))
-        ->condition('item_nid', $this->nid())
-        ->execute()
-        ->fetch();
+      $rels = moonmars_relationships_get_relationships('has_item', 'node', NULL, 'node', $this->nid());
 
-      if ($original_channel) {
-        // Create the Channel object and store in the originalChannel property:
-        $this->originalChannel = Channel::create($original_channel->channel_nid);
-        $this->originalChannel->title($original_channel->channel_title);
+      if ($rels) {
+        $this->channel = Channel::create($rels[0]->entityId(LANGUAGE_NONE, 0));
       }
     }
 
-    return $this->originalChannel;
+    return $this->channel;
   }
 
   /**
@@ -89,8 +82,6 @@ class Item extends Node {
       ->field('field_item_system', LANGUAGE_NONE, 0, 'value', 1)
       ->save();
   }
-
-
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Render methods.

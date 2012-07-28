@@ -6,8 +6,13 @@
     // Check and uncheck functions
 
     // Check the selected elements:
-    check: function () {
-      return this.attr('checked', 'checked');
+    check: function (checkedState) {
+      if (checkedState === false) {
+        return this.uncheck();
+      }
+      else {
+        return this.attr('checked', 'checked');
+      }
     },
 
     // Uncheck all the selected elements:
@@ -34,8 +39,13 @@
     },
 
     // Enable all the selected elements:
-    enable: function () {
-      return this.removeAttr('disabled');
+    enable: function (enabledState) {
+      if (enabledState === false) {
+        return this.disable();
+      }
+      else {
+        return this.removeAttr('disabled');
+      }
     },
 
     // Returns whether or not the element is enabled:

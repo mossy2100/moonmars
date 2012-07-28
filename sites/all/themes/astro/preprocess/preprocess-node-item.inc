@@ -44,22 +44,22 @@ function astro_alpha_preprocess_node_item(&$vars) {
   // Get the poster's avatar:
   $vars['avatar'] = $email_mode ? $poster->avatar() : $poster->avatarTooltip();
 
-  // Get the item's original channel:
-  $original_channel = $item->originalChannel();
-  $vars['original_channel'] = $original_channel;
+  // Get the item's channel:
+  $item_channel = $item->channel();
+  $vars['channel'] = $item_channel;
 
   // Original channel string:
-  if ($current_channel && Channel::equals($current_channel, $original_channel)) {
-    $vars['original_channel_string'] = '';
-//    $vars['original_channel_string'] = 'in this channel';
+  if ($current_channel && Channel::equals($current_channel, $item_channel)) {
+    $vars['item_channel_string'] = '';
+//    $vars['item_channel_string'] = 'in this channel';
   }
-  elseif ($current_channel && Channel::equals($original_channel, $poster->channel())) {
-    $vars['original_channel_string'] = 'in their channel';
+  elseif ($current_channel && Channel::equals($item_channel, $poster->channel())) {
+    $vars['item_channel_string'] = 'in their channel';
   }
-  elseif ($original_channel) {
-    $vars['original_channel_string'] = 'in ' . l($original_channel->title(), $original_channel->parentEntity()->alias());
+  elseif ($item_channel) {
+    $vars['item_channel_string'] = 'in ' . l($item_channel->title(), $item_channel->parentEntity()->alias());
   }
-  $vars['original_channel_string'] = "<span class='original_channel'>{$vars['original_channel_string']}</span>";
+  $vars['item_channel_string'] = "<span class='item_channel'>{$vars['item_channel_string']}</span>";
 
   // Format the post datetime:
   $vars['created_datetime'] = astro_format_about_how_long_ago($node->created);
@@ -97,10 +97,10 @@ function astro_alpha_preprocess_node_item(&$vars) {
       $links .= "<li class='item-delete'><a href='javascript:deleteItem($item_nid)'>delete</a></li>";
     }
 
-    // remove link:
-    if ($current_channel && $current_member->canRemoveItem($item, $current_channel)) {
-      $links .= "<li class='item-remove'><a href='javascript:removeItem($item_nid)'>remove</a></li>";
-    }
+//    // remove link:
+//    if ($current_channel && $current_member->canRemoveItem($item, $current_channel)) {
+//      $links .= "<li class='item-remove'><a href='javascript:removeItem($item_nid)'>remove</a></li>";
+//    }
 
     // edit link:
     if ($current_member->canEditItem($item)) {
