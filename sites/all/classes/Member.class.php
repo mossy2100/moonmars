@@ -842,25 +842,25 @@ class Member extends User {
     $notification->field('field_notification_summary', LANGUAGE_NONE, 0, 'value', $notification_summary);
     $notification->save();
 
-    // Create relationship between notification and actor:
-    if ($actor) {
-      Relation::createNewBinary('about_member', 'node', $notification->nid(), 'user', $actor->uid());
-    }
-
-    // Create relationship between notification and channel:
-    if ($channel) {
-      Relation::createNewBinary('about_channel', 'node', $notification->nid(), 'node', $channel->nid());
-    }
-
-    // Create relationship between notification and item:
-    if ($item) {
-      Relation::createNewBinary('about_item', 'node', $notification->nid(), 'node', $item->nid());
-    }
-
-    // Create relationship between notification and comment:
-    if ($comment) {
-      Relation::createNewBinary('about_comment', 'node', $notification->nid(), 'comment', $comment->cid());
-    }
+//    // Create relationship between notification and actor:
+//    if ($actor) {
+//      Relation::createNewBinary('about_member', 'node', $notification->nid(), 'user', $actor->uid());
+//    }
+//
+//    // Create relationship between notification and channel:
+//    if ($channel) {
+//      Relation::createNewBinary('about_channel', 'node', $notification->nid(), 'node', $channel->nid());
+//    }
+//
+//    // Create relationship between notification and item:
+//    if ($item) {
+//      Relation::createNewBinary('about_item', 'node', $notification->nid(), 'node', $item->nid());
+//    }
+//
+//    // Create relationship between notification and comment:
+//    if ($comment) {
+//      Relation::createNewBinary('about_comment', 'node', $notification->nid(), 'comment', $comment->cid());
+//    }
 
     // If the member wants an email, send it:
     $send_email = $this->wantsEmailNotification($channel);
