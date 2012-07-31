@@ -259,33 +259,31 @@ class Relation extends EntityBase {
    * @param int $delta
    * @return array
    */
-  public function endpoint($lang, $delta) {
+  public function endpoint($delta, $lang = LANGUAGE_NONE) {
     $this->load();
     return isset($this->entity->endpoints[$lang][$delta]) ? $this->entity->endpoints[$lang][$delta] : NULL;
   }
 
   /**
-   * Get an entity type.
+   * Get an endpoint entity type.
    *
    * @param string $lang
    * @param int $delta
    * @return string
    */
-  public function entityType($lang, $delta) {
-    $this->load();
-    return isset($this->entity->endpoints[$lang][$delta]['entity_type']) ? $this->entity->endpoints[$lang][$delta]['entity_type'] : NULL;
+  public function endpointEntityType($delta, $lang = LANGUAGE_NONE) {
+    return $this->field('endpoints', $lang, $delta, 'entity_type');
   }
 
   /**
-   * Get an entity id.
+   * Get an endpoint entity id.
    *
    * @param string $lang
    * @param int $delta
    * @return int
    */
-  public function entityId($lang, $delta) {
-    $this->load();
-    return isset($this->entity->endpoints[$lang][$delta]['entity_id']) ? ((int) $this->entity->endpoints[$lang][$delta]['entity_id']) : NULL;
+  public function endpointEntityId($delta, $lang = LANGUAGE_NONE) {
+    return $this->field('endpoints', $lang, $delta, 'entity_id');
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

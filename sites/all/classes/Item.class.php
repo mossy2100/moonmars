@@ -37,7 +37,7 @@ class Item extends Node {
       $rels = moonmars_relationships_get_relationships('has_item', 'node', NULL, 'node', $this->nid());
 
       if ($rels) {
-        $this->channel = Channel::create($rels[0]->entityId(LANGUAGE_NONE, 0));
+        $this->channel = Channel::create($rels[0]->endpointEntityId(0));
       }
     }
 
@@ -70,10 +70,11 @@ class Item extends Node {
    * Render an item.
    *
    * @param bool $include_comments
+   * @param string $view_mode
    * @return string
    */
-  public function render($include_comments = TRUE) {
-    return self::renderMultiple(array($this), $include_comments);
+  public function render($include_comments = TRUE, $view_mode = 'full') {
+    return self::renderMultiple(array($this), $include_comments, $view_mode);
   }
 
   /**
@@ -84,12 +85,12 @@ class Item extends Node {
    * @param bool $include_comments
    * @return string
    */
-  public static function renderMultiple(array $items, $include_comments = TRUE) {
+  public static function renderMultiple(array $items, $include_comments = TRUE, $view_mode = 'full') {
     // Render the items:
     $node_views = array();
     foreach ($items as $item) {
       $node = $item->node();
-      $node_view = node_view($node);
+      $node_view = node_view($node, $view_mode);
       if ($include_comments) {
         $node_view['comments'] = comment_node_page_additions($node);
       }

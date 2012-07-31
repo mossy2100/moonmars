@@ -81,7 +81,7 @@ class Channel extends Node {
       $rels = moonmars_relationships_get_relationships('has_channel', NULL, NULL, 'node', $this->nid());
 
       if (!empty($rels)) {
-        $endpoint = $rels[0]->endpoint(LANGUAGE_NONE, 0);
+        $endpoint = $rels[0]->endpoint(0);
         $this->parentEntity = MmcEntity::getEntity($endpoint['entity_type'], $endpoint['entity_id']);
       }
     }
@@ -240,7 +240,7 @@ class Channel extends Node {
       $rel = $rels[0];
 
       // Check the item wasn't posted in a different channel; if so, it's an error:
-      $item_channel_nid = $rel->entityId(LANGUAGE_NONE, 0);
+      $item_channel_nid = $rel->endpointEntityId(0);
       if ($item_channel_nid != $this_channel_nid) {
         trigger_error("Item has already been posted in another channel.", E_USER_WARNING);
         return FALSE;

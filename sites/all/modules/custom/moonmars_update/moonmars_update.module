@@ -17,8 +17,8 @@ function moonmars_update_subscriber_relationships() {
   // Convert all has_follower relationships to has_subscriber:
   $rels = moonmars_relationships_get_relationships('has_follower');
   foreach ($rels as $rel) {
-    $member   = Member::create($rel->entityId(LANGUAGE_NONE, 0));
-    $follower = Member::create($rel->entityId(LANGUAGE_NONE, 1));
+    $member   = Member::create($rel->endpointEntityId(0));
+    $follower = Member::create($rel->endpointEntityId(1));
 
     // Create the has_subscriber relationship:
     moonmars_relationships_update_relationship('has_subscriber', 'node', $member->channel()->nid(), 'user', $follower->uid());
@@ -31,8 +31,8 @@ function moonmars_update_subscriber_relationships() {
   // Convert all has_member relationships to has_subscriber:
   $rels = moonmars_relationships_get_relationships('has_member');
   foreach ($rels as $rel) {
-    $group = Group::create($rel->entityId(LANGUAGE_NONE, 0));
-    $follower = Member::create($rel->entityId(LANGUAGE_NONE, 1));
+    $group    = Group::create($rel->endpointEntityId(0));
+    $follower = Member::create($rel->endpointEntityId(1));
 
     // Create the has_subscriber relationship:
     moonmars_relationships_update_relationship('has_subscriber', 'node', $group->channel()->nid(), 'user', $follower->uid());

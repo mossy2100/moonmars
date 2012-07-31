@@ -80,7 +80,7 @@ class MmcEntity {
     $rels = moonmars_relationships_get_relationships('has_channel', $entity_type, $entity_id, 'node', NULL);
 
     if (!empty($rels)) {
-      return Channel::create($rels[0]->entityId(LANGUAGE_NONE, 1));
+      return Channel::create($rels[0]->endpointEntityId(1));
     }
 
     // If the entity has no channel, and $create is TRUE, create the channel now:

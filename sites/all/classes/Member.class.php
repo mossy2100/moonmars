@@ -746,8 +746,7 @@ class Member extends User {
     $channels = array();
     if ($rels) {
       foreach ($rels as $rel) {
-        $channel_nid = $rel->field('endpoints', LANGUAGE_NONE, 0, 'entity_id');
-        $channels[] = Channel::create($channel_nid);
+        $channels[] = Channel::create($rel->endpointEntityId(0));
       }
     }
 
