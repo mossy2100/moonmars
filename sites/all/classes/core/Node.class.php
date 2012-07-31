@@ -133,13 +133,13 @@ class Node extends EntityBase {
       return $this;
     }
 
-    // Check we have a nid:
+    // Default result:
+    $node = FALSE;
+
+    // If we have a nid, try to load the node:
     if (isset($this->entity->nid) && $this->entity->nid) {
+      // Load by nid. Drupal caching will prevent reloading of the same node.
       $node = node_load($this->entity->nid);
-    }
-    else {
-      // Can't load the node:
-      return $this;
     }
 
     // Set the valid flag:
@@ -149,10 +149,9 @@ class Node extends EntityBase {
     if ($node) {
       $this->entity = $node;
       $this->loaded = TRUE;
-      return $this;
     }
 
-    trigger_error("Could not load node." . (isset($this->entity->nid) ? (" nid: " . $this->entity->nid) : ''), E_USER_WARNING);
+    return $this;
   }
 
   /**

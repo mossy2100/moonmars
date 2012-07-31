@@ -80,7 +80,7 @@ class Relation extends EntityBase {
       $relation = $relation_param;
 
       // Get the object from the cache if possible:
-      if ($relation->rid && self::inCache($relation->rid)) {
+      if (isset($relation->rid) && $relation->rid && self::inCache($relation->rid)) {
         $relation_obj = self::getFromCache($relation->rid);
       }
       else {
@@ -162,8 +162,8 @@ class Relation extends EntityBase {
     // Default result:
     $relation = FALSE;
 
-    // Try to load the relation:
-    if (isset($this->entity->rid) && $this->entity->rid > 0) {
+    // If we have a rid, try to load the relation:
+    if (isset($this->entity->rid) && $this->entity->rid) {
       // Load by rid. Drupal caching will prevent reloading of the same relation.
       $relation = relation_load($this->entity->rid);
     }
@@ -175,10 +175,9 @@ class Relation extends EntityBase {
     if ($relation) {
       $this->entity = $relation;
       $this->loaded = TRUE;
-      return $this;
     }
 
-    trigger_error("Could not load relation", E_USER_WARNING);
+    return $this;
   }
 
   /**
@@ -211,7 +210,7 @@ class Relation extends EntityBase {
   public function rid($rid = NULL) {
     if ($rid === NULL) {
       // Get the rid:
-      return $this->entity->rid;
+      return isset($this->entity->rid) ? $this->entity->rid : NULL;
     }
     else {
       // Set the rid:

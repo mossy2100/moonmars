@@ -1,6 +1,6 @@
 <article<?php echo $attributes; ?> xmlns="http://www.w3.org/1999/html">
 
-  <div class='post-article-body'>
+  <div class='post-article-body <?php echo $highlight; ?>'>
     <div class='user-picture'>
       <?php echo $avatar; ?>
     </div>

@@ -39,6 +39,11 @@ function moonmars_members_menu() {
     'access callback' => 'user_is_logged_in',
     'type' => MENU_NORMAL_ITEM
   );
+  $items['activity'] = array(
+    'page callback' => 'moonmars_members_activity_redirect',
+    'access callback' => 'user_is_logged_in',
+    'type' => MENU_NORMAL_ITEM
+  );
   $items['user/%/follow'] = array(
     'page callback'    => 'moonmars_members_follow',
     'page arguments'   => array(1),
@@ -54,6 +59,18 @@ function moonmars_members_menu() {
   $items['ajax/username-check'] = array(
     'page callback'    => 'moonmars_members_ajax_username_check',
     'access callback'  => TRUE,
+    'type'             => MENU_CALLBACK,
+  );
+  $items['user/%/notifications'] = array(
+    'page callback'    => 'moonmars_members_notifications',
+    'page arguments'   => array(1),
+    'access callback'  => 'user_is_logged_in',
+    'type'             => MENU_CALLBACK,
+  );
+  $items['user/%/activity'] = array(
+    'page callback'    => 'moonmars_members_activity',
+    'page arguments'   => array(1),
+    'access callback'  => 'user_is_logged_in',
     'type'             => MENU_CALLBACK,
   );
   return $items;
@@ -448,6 +465,9 @@ function moonmars_members_menu_block() {
 
     // Edit subscriptions:
     $html .= "<li>" . l('Subscriptions', $profile_member->alias() . '/subscriptions') . "</li>";
+
+    // View notifications:
+    $html .= "<li>" . l('Notifications', $profile_member->alias() . '/notifications') . "</li>";
   }
   else {
     // Links for when you're on someone else's profile.
@@ -608,8 +628,45 @@ function moonmars_members_mail($key, &$message, $params) {
   switch ($key) {
     case 'notification':
       $message['subject'] = $params['subject'];
-      $message['body'][] = $params['body'];
+      $message['body'][] = $params['summary'];
+//      $message['body'][] = $params['message'];
       $message['headers']['Content-Type'] = "text/html; charset='utf-8';";
       break;
   }
+}
+
+/**
+ * List a member's notifications.
+ *
+ * @return string
+ */
+function moonmars_members_notifications($uid) {
+  // Make sure the user is looking at their own notifications and not someone else's.
+  global $user;
+  if ($user->uid != $uid) {
+    drupal_access_denied();
+  }
+
+  drupal_set_title('Your Notifications');
+  return views_embed_view('notifications', 'page', $uid);
+}
+
+/**
+ * Show the items from channels the member is following.
+ *
+ * @return string
+ */
+function moonmars_members_activity($uid) {
+  // Make sure the user is looking at their own activity and not someone else's.
+  global $user;
+  if ($user->uid != $uid) {
+    drupal_access_denied();
+  }
+
+  drupal_set_title('Activity');
+  Member::currentMember()->channel()->render();
+}
+
+function moonmars_members_activity_redirect() {
+  drupal_goto(Member::currentMember()->alias() . '/activity');
 }

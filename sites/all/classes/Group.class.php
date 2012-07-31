@@ -48,6 +48,17 @@ class Group extends Node {
     return 'Group: ' . $this->title();
   }
 
+  /**
+   * Get a link to the group using the channel the title.
+   * Note, this produces the same result as Channel::parentEntityLink(), but sometimes you have the group object
+   * rather than the channel object.
+   *
+   * @return string
+   */
+  public function channelTitleLink() {
+    return $this->link($this->channelTitle());
+  }
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Logo stuff.
 
@@ -224,14 +235,18 @@ class Group extends Node {
   // Notification methods.
 
   /***
-   * Send a notification message to a member.
+   * Send a notification message to all the members of a group.
    *
    * @param $message
+   * @param Member $actor
+   * @param Channel $channel
+   * @param Item $item
+   * @param ItemComment $comment
    */
-  public function notify($subject, $message) {
+  public function notify($message, Member $actor = NULL, Channel $channel = NULL, Item $item = NULL, ItemComment $comment = NULL) {
     $members = $this->members();
     foreach ($members as $member) {
-      $member->notify($subject, $message, $this->channel());
+      $member->notify($message, $actor, $channel, $item, $comment);
     }
   }
 

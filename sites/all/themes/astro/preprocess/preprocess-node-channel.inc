@@ -41,6 +41,11 @@ function astro_alpha_preprocess_node_channel(&$vars) {
   $entity = $channel->parentEntity();
 
   // Render the items.
-  // For a member, we don't just want items in their channel, but also the channels they're subscribed to.
-  $vars['items'] = ($entity instanceof Member) ? $entity->renderItems() : $channel->renderItems();
+  if ($entity instanceof Member && alias_arg(2) == 'activity') {
+    // Member's activity channel:
+    $vars['items'] = $entity->renderActivityItems();
+  }
+  else {
+    $vars['items'] = $channel->renderItems();
+  }
 }

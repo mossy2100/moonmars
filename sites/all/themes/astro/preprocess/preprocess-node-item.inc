@@ -16,10 +16,6 @@ function astro_alpha_preprocess_node_item(&$vars) {
   // Get the node:
   $node = $vars['node'];
 
-  // Are we in email mode?
-  $email_mode = isset($_SESSION['email_mode']) && $_SESSION['email_mode'];
-  $vars['email_mode'] = $email_mode;
-
   // Create the Item object:
   $item = Item::create($node);
   $vars['item'] = $item;
@@ -42,7 +38,7 @@ function astro_alpha_preprocess_node_item(&$vars) {
   $vars['poster'] = $poster;
 
   // Get the poster's avatar:
-  $vars['avatar'] = $email_mode ? $poster->avatar() : $poster->avatarTooltip();
+  $vars['avatar'] = $poster->avatarTooltip();
 
   // Get the item's channel:
   $item_channel = $item->channel();
@@ -89,7 +85,7 @@ function astro_alpha_preprocess_node_item(&$vars) {
 
   // Links for edit/remove/delete item:
   $links = '';
-  if (user_is_logged_in() && !$email_mode) {
+  if (user_is_logged_in()) {
     // These links are in right-to-left order because they're floated right:
 
     // delete link:

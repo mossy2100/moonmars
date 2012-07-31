@@ -49,3 +49,26 @@
     }
   }
 }
+
+.view-notifications {
+  table {
+
+    thead {
+      display: none;
+    }
+
+    tr {
+      td {
+        border: none;
+
+        &.views-field-created {
+          padding: 5px 5px 5px 0;
+        }
+
+        &.views-field-field-notification-summary {
+          padding: 5px 0;
+        }
+      }
+    }
+  }
+}

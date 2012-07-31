@@ -354,6 +354,11 @@ article.comment {
   .post-article-body {
     background-color: $blue5;
     border-color: $blue4;
+
+    &.highlight {
+      background-color: $red5;
+      border-color: $red4;
+    }
   }
 
   &.comment-unpublished {

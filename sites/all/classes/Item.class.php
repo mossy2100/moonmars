@@ -118,4 +118,38 @@ class Item extends Node {
     return render($node_views);
   }
 
+  /**
+   * Render an item for an email.
+   *
+   * @param ItemComment $comment
+   *   The comment to highlight, if that's what the notification is about.
+   */
+  public function emailRender(Member $recipient, ItemComment $comment = NULL) {
+
+    // Item link:
+    $message = "<p>" . $this->link("Read or post comments") . "</p>\n";
+
+    // Comment by email instructions:
+    $can_post_comment = $recipient->canPostComment($this);
+    if ($can_post_comment) {
+      $message .= "<hr>\n";
+      $message .= "<p>Scroll down to the bottom of this message to post a new comment by email.</p>";
+    }
+
+    // The item with comments:
+    $message .= "<hr>\n";
+    $message .= $this->render();
+
+    // Comment by email:
+    if ($can_post_comment) {
+      $message .= "<hr>\n";
+      $message .= "<p>To post a comment by email, enter your comment between the tags below, and click <em>Reply</em> in your email client:</p>\n";
+      $message .= "[BEGIN COMMENT]<br>";
+      $message .= "<br><br><br>";
+      $message .= "[END COMMENT]<br>";
+    }
+
+    return $message;
+  }
+
 }

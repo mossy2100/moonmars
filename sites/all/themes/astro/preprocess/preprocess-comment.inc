@@ -14,17 +14,8 @@ function astro_alpha_preprocess_comment(&$vars) {
   // Format the comment created datetime:
   $vars['created_datetime'] = astro_format_about_how_long_ago($vars['elements']['#comment']->created);
 
-  // Are we in email mode?
-  $email_mode = isset($_SESSION['email_mode']) && $_SESSION['email_mode'];
-  $vars['email_mode'] = $email_mode;
-
-  // Set styles for email mode:
-  if ($email_mode) {
-    $vars['attributes']['style'] = "margin: 10px 0;";
-  }
-
   // Get the poster's avatar:
-  $vars['avatar'] = $email_mode ? $poster->avatar() : $poster->avatarTooltip();
+  $vars['avatar'] = $poster->avatarTooltip();
 
   // Get the comment's score:
 //  $vars['score'] = isset($vars['elements']['#comment']->field_score[LANGUAGE_NONE][0]['value']) ? $vars['elements']['#comment']->field_score[LANGUAGE_NONE][0]['value'] : 0;
@@ -54,7 +45,7 @@ function astro_alpha_preprocess_comment(&$vars) {
 
   // Generate links for editing and deleting comment:
   $links = '';
-  if (user_is_logged_in() && !$email_mode) {
+  if (user_is_logged_in()) {
 
     // delete link:
     if ($current_member->canDeleteComment($item_comment)) {
@@ -77,7 +68,7 @@ function astro_alpha_preprocess_comment(&$vars) {
   $vars['links'] = $links;
 
   // Add a form for editing the comment if the user is allowed to edit it:
-  if ($current_member && $current_member->canEditComment($item_comment) && !$email_mode) {
+  if ($current_member && $current_member->canEditComment($item_comment)) {
 //    dbg($vars['content']['comment_body'][0]['#markup']);
     $vars['edit_comment_form'] = "
       <form class='comment-form edit-comment-form'>
@@ -89,5 +80,8 @@ function astro_alpha_preprocess_comment(&$vars) {
       </form>
     ";
   }
+
+  // Highlight class:
+  $vars['highlight'] = (isset($_GET['cid']) && $item_comment->cid() == $_GET['cid']) ? 'highlight' : '';
 
 }

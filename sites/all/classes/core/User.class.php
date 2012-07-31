@@ -83,7 +83,7 @@ class User extends EntityBase {
       $user = $user_param;
 
       // Get the User object:
-      if ($user->uid && self::inCache($user->uid)) {
+      if (isset($user->uid) && $user->uid && self::inCache($user->uid)) {
         $user_obj = self::getFromCache($user->uid);
       }
       else {
@@ -124,22 +124,21 @@ class User extends EntityBase {
       return $this;
     }
 
-    // Try to load the user:
-    if (isset($this->entity->uid) && $this->entity->uid > 0) {
+    // Default result:
+    $user = FALSE;
+
+    // If we have a uid, try to load the user:
+    if (isset($this->entity->uid) && $this->entity->uid) {
       // Load by uid. Drupal caching will prevent reloading of the same user.
       $user = user_load($this->entity->uid);
     }
-    elseif (isset($this->entity->name) && $this->entity->name != '') {
+    elseif (isset($this->entity->name) && $this->entity->name) {
       // Load by name:
       $user = user_load_by_name($this->entity->name);
     }
-    elseif (isset($this->entity->mail) && $this->entity->mail != '') {
+    elseif (isset($this->entity->mail) && $this->entity->mail) {
       // Load by mail:
       $user = user_load_by_mail($this->entity->mail);
-    }
-    else {
-      // Can't load the user:
-      return $this;
     }
 
     // Set the valid flag:
@@ -149,10 +148,9 @@ class User extends EntityBase {
     if ($user) {
       $this->entity = $user;
       $this->loaded = TRUE;
-      return $this;
     }
 
-    trigger_error("Could not load user", E_USER_WARNING);
+    return $this;
   }
 
   /**
@@ -224,9 +222,12 @@ class User extends EntityBase {
 
   /**
    * Get a link to the user's profile.
+   *
+   * @return string
    */
-  public function link($include_at = FALSE) {
-    return l(($include_at ? '@' : '') . $this->name(), $this->alias());
+  public function link($label = NULL) {
+    $label = ($label === NULL) ? $this->name() : $label;
+    return l($label, $this->alias());
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

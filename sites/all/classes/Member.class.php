@@ -54,6 +54,14 @@ class Member extends User {
   // Get and set methods.
 
   /**
+   * Get a link to the user's profile.
+   */
+  public function link($label = NULL, $include_at = FALSE) {
+    $label = ($include_at ? '@' : '') . (($label === NULL) ? $this->name() : $label);
+    return l($label, $this->alias());
+  }
+
+  /**
    * Get the member's full name.
    */
   public function fullName() {
@@ -192,6 +200,66 @@ class Member extends User {
   }
 
   /**
+   * Create a planet-flag icon for this member.
+   *
+   * @return string
+   */
+  public function planetFlagIcon() {
+    require_once DRUPAL_ROOT . '/modules/system/image.gd.inc';
+
+    $moon_or_mars = $this->field('field_moon_or_mars');
+    $location = $this->location();
+    $country_code = $location['country_code'] ? strtolower($location['country_code']) : NULL;
+    $filename = implode('-', array_filter(array($moon_or_mars, $country_code))) . '.png';
+    $files_dir = drupal_realpath("public://");
+
+    // Check if this planet-flag icon already exists:
+    $path = "$files_dir/planet-flag-icons/$filename";
+    if (!file_exists($path)) {
+
+      // Load the 40x40 planet icon:
+      $planet = new stdClass;
+      $planet->source = "$files_dir/styles/icon-40x40/public/avatars/870x870/$moon_or_mars-870x870.jpg";
+      $planet->info['extension'] = 'jpg';
+      image_gd_load($planet);
+
+      // Paste the flag on it:
+      if ($country_code) {
+
+        // Get the path to the flag icon and check if it exists:
+        $flag_path = DRUPAL_ROOT . '/' . drupal_get_path('theme', 'astro') . "/images/flag-icons/$country_code.png";
+        if (file_exists($flag_path)) {
+
+          // Load the flag icon:
+          $flag = new stdClass;
+          $flag->source = $flag_path;
+          $flag->info['extension'] = 'png';
+          image_gd_load($flag);
+
+          // Get width and height of the flag:
+          $info = getimagesize($flag_path);
+
+          // Paste the flag onto the planet:
+          imagecopy($planet->resource, $flag->resource, 7, 7, 0, 0, $info[0], $info[1]);
+        }
+      }
+
+      // Save the planet-flag icon.
+      image_gd_save($planet, $path);
+    }
+
+    if ($path) {
+      return array(
+        'path' => $path,
+        'url' => str_replace(DRUPAL_ROOT, '', $path),
+        'uri' => str_replace($files_dir, 'public:/', $path),
+      );
+    }
+
+    return FALSE;
+  }
+
+  /**
    * Generate HTML for a member avatar.
    *
    * @return string
@@ -202,32 +270,40 @@ class Member extends User {
       // Make sure the user is loaded:
       $this->load();
 
+      $html = NULL;
+
       // If the user has a picture, use it:
       if (isset($this->entity->picture)) {
+
         // If we just have the fid, load the file:
         if (is_uint($this->entity->picture)) {
           $this->entity->picture = file_load($this->entity->picture);
         }
-        $icon_path = $this->entity->picture->uri;
-      }
-      else {
-        // If the user doesn't have a picture, use a default icon:
-        $icon = $this->field('field_moon_or_mars');
-        if (!$icon) {
-          $icon = 'both';
+
+        // Check the file exists:
+        $path = drupal_realpath($this->entity->picture->uri);
+        if (file_exists($path)) {
+
+          // Render the icon:
+          $image = array(
+            'style_name' => 'icon-40x40',
+            'path'       => $this->entity->picture->uri,
+            'alt'        => $this->entity->name,
+            'attributes' => array('class' => array('avatar-icon')),
+          );
+          $html = theme('image_style', $image);
+
         }
-        $icon_path = "avatars/870x870/$icon-870x870.jpg";
       }
 
-      $image = array(
-        'style_name' => 'icon-40x40',
-        'path'       => $icon_path,
-        'alt'        => $this->entity->name,
-        'attributes' => array('class' => array('avatar-icon')),
-      );
+      if (!$html) {
+        // If the user doesn't have a picture, use a default icon:
+        $planet_flag = $this->planetFlagIcon();
+        $html = "<img class='avatar-icon' typeof='foaf:Image' src='{$planet_flag['url']}' width='40' height='40' alt='" . $this->name() . "'>";
+      }
 
       // Remember the HTML in the property so we don't have to theme the image again:
-      $this->avatar = theme('image_style', $image);
+      $this->avatar = $html;
     }
 
     return $this->avatar;
@@ -604,8 +680,9 @@ class Member extends User {
     $this->subscribe($member->channel(), TRUE);
 //    $this->subscribe($member->channel(), $this->defaultEmailNotification());
 
-    // Notify the other member:
-//    $member->notify('@' . $this->name() . " followed @" . $member->name()));
+    // Notify the followee:
+    $message = $this->link() . " subscribed to " . $member->link("your channel");
+    $member->notify($message, $this, $member->channel());
   }
 
   /**
@@ -615,8 +692,13 @@ class Member extends User {
    */
   public function unfollow(Member $member) {
     $this->unsubscribe($member->channel());
+
+    // Notify the followee:
+    $message = $this->link() . " unsubscribed from " . $member->link("your channel");
+    $member->notify($message, $this, $member->channel());
   }
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Group-related methods. 
 
   /**
@@ -629,7 +711,8 @@ class Member extends User {
     moonmars_relationships_update_relationship('has_member', 'node', $group->nid(), 'user', $this->uid());
 
     // Post system message to the group:
-    $group->notify("@" . $this->name() . " joined [" . $group->channel()->title() . "]");
+    $message = $this->link() . " joined " . $group->channelTitleLink();
+    $group->notify($message, $this, $group->channel());
   }
 
   /**
@@ -709,40 +792,67 @@ class Member extends User {
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Notification methods.
 
-  /***
-   * Send a notification message to a member.
-   *
-   * @param $message
-   */
-  public function notify($subject, $channel = NULL, $item = NULL) {
-
-    // Create the notification node:
-    $notification = Notification::create();
-    $notification->uid($this->uid());
-    $notification->title($subject);
-    $notification->save();
-
-    // If the member wants an email, send it:
-    $send_email = $channel && $this->emailNotification($channel);
-    if ($send_email) {
-      $body = ($item instanceof Item) ? $item->emailRender() : '';
-      $params = array(
-        'subject' => "[moonmars.com] $subject",
-        'body'    => $body,
-      );
-      drupal_mail('moonmars_members', 'notification', $this->mail(), language_default(), $params);
-    }
-  }
-
   /**
    * Check if the member wants an email notification from this channel.
    */
-  public function emailNotification($channel) {
+  public function wantsEmailNotification($channel) {
     $rels = moonmars_relationships_get_relationships('has_subscriber', 'node', $channel->nid(), 'user', $this->uid());
     if (!$rels) {
       return FALSE;
     }
     return (bool) $rels[0]->field('field_email_notification');
+  }
+
+  /***
+   * Send a notification message to a member.
+   *
+   * @param string $summary
+   * @param Member $actor
+   * @param Channel $channel
+   * @param Item $item
+   * @param ItemComment $comment
+   */
+  public function notify($summary, Member $actor = NULL, Channel $channel = NULL, Item $item = NULL, ItemComment $comment = NULL) {
+
+    $subject = strip_tags($summary);
+
+    // Create the notification node:
+    $notification = Notification::create();
+    $notification->uid($this->uid());
+    $notification->title($subject);
+    $notification->field('field_notification_summary', LANGUAGE_NONE, 0, 'value', $summary);
+    $notification->save();
+
+    // Create relationship between notification and actor:
+    if ($actor) {
+      Relation::createNewBinary('about_member', 'node', $notification->nid(), 'user', $actor->uid());
+    }
+
+    // Create relationship between notification and channel:
+    if ($channel) {
+      Relation::createNewBinary('about_channel', 'node', $notification->nid(), 'node', $channel->nid());
+    }
+
+    // Create relationship between notification and item:
+    if ($item) {
+      Relation::createNewBinary('about_item', 'node', $notification->nid(), 'node', $item->nid());
+    }
+
+    // Create relationship between notification and comment:
+    if ($comment) {
+      Relation::createNewBinary('about_comment', 'node', $notification->nid(), 'comment', $comment->cid());
+    }
+
+    // If the member wants an email, send it:
+    $send_email = $this->wantsEmailNotification($channel);
+    if ($send_email) {
+      $params = array(
+        'subject' => "[moonmars.com] $subject",
+        'summary' => $summary,
+//        'message' => $message,
+      );
+      drupal_mail('moonmars_members', 'notification', $this->mail(), language_default(), $params);
+    }
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1013,6 +1123,41 @@ class Member extends User {
   }
 
   /**
+   * Get items from the channels the member is subscribed to.
+   *
+   * @param int $offset
+   * @param int $limit
+   * @return array
+   */
+  public function activityItems($offset = NULL, $limit = NULL) {
+    $sql = "
+      SELECT vci.item_nid
+      FROM view_channel_has_item vci
+      WHERE vci.item_status = 1
+        AND vci.channel_nid IN (SELECT vcs.channel_nid FROM view_channel_has_subscriber vcs WHERE vcs.subscriber_uid = :member_uid)
+      ORDER BY vci.changed DESC";
+    $params = array(
+      ':members_channel_nid' => $this->channel()->nid(),
+    );
+
+    // Add the offset and limit if specified:
+    if ($offset !== NULL && $limit !== NULL) {
+      $offset = (int) $offset;
+      $limit = (int) $limit;
+      $sql .= " LIMIT $offset, $limit";
+    }
+
+    // Get the items:
+    $rs = db_query($sql, $params);
+    $items = array();
+    foreach ($rs as $rec) {
+      $items[] = Item::create($rec->item_nid);
+    }
+
+    return $items;
+  }
+
+  /**
    * Get the total number of items in the member's profile channel.
    *
    * @return array
@@ -1034,6 +1179,25 @@ class Member extends User {
 
     // Get the items from this channel:
     $items = $this->items($page * Channel::pageSize, Channel::pageSize);
+
+    // Get the total item count:
+    $total_n_items = $this->itemCount();
+
+    // Render the page of items:
+    return Channel::renderItemsPage($items, $total_n_items);
+  }
+
+  /**
+   * Render items for a member's profile.
+   *
+   * @return string
+   */
+  public function renderActivityItems() {
+    // Get the page number:
+    $page = isset($_GET['page']) ? ((int) $_GET['page']) : 0;
+
+    // Get the items from this channel:
+    $items = $this->activityItems($page * Channel::pageSize, Channel::pageSize);
 
     // Get the total item count:
     $total_n_items = $this->itemCount();

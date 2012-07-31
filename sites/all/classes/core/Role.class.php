@@ -79,20 +79,27 @@ class Role {
    * @return Role
    */
   public function load() {
+    // Avoid reloading:
     if ($this->loaded) {
       return $this;
     }
-    $role = NULL;
+
+    // Default result:
+    $role = FALSE;
+
+    // If we have a rid, try to load the role:
     if ($this->rid) {
       $role = role_load($this->rid);
     }
     elseif ($this->name) {
       $role = role_load($this->name);
     }
+
     if ($role) {
       $this->rid = $role['rid'];
       $this->name = $role['name'];
     }
+
     return $this;
   }
 

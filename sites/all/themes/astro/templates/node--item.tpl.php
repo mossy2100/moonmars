@@ -72,45 +72,43 @@
 
     <!-- new comment form -->
     <?php
-    if (!$email_mode) {
-      if ($current_member && $current_member->canPostComment($item)) {
-        // Show the post comment form:
-        ?>
-        <article class="new-comment-form-article comment comment-new comment-by-viewer clearfix" data-nid="<?php echo $node->nid; ?>">
-          <div class='post-article-body'>
-            <div class='user-picture'>
-              <?php echo $current_member->avatarTooltip(); ?>
-            </div>
-            <div class='post-content-wrapper'>
-              <div class='post-content'>
+    if ($current_member && $current_member->canPostComment($item)) {
+      // Show the post comment form:
+      ?>
+      <article class="new-comment-form-article comment comment-new comment-by-viewer clearfix" data-nid="<?php echo $node->nid; ?>">
+        <div class='post-article-body'>
+          <div class='user-picture'>
+            <?php echo $current_member->avatarTooltip(); ?>
+          </div>
+          <div class='post-content-wrapper'>
+            <div class='post-content'>
 
-                <div class='who_where_when_posted'>
-                  <?php echo $current_member->tooltipLink(); ?>
-                </div>
-
-                <form class='comment-form new-comment-form clearfix'>
-                  <textarea class='new-comment-textarea'></textarea>
-                  <div class='comment-buttons'>
-                    <input data-nid='<?php echo $node->nid; ?>' class='form-button new-comment-button' type='button' value='Post'>
-                  </div>
-                  <div class='comment-description'>Write something to share.</div>
-                </form>
+              <div class='who_where_when_posted'>
+                <?php echo $current_member->tooltipLink(); ?>
               </div>
+
+              <form class='comment-form new-comment-form clearfix'>
+                <textarea class='new-comment-textarea'></textarea>
+                <div class='comment-buttons'>
+                  <input data-nid='<?php echo $node->nid; ?>' class='form-button new-comment-button' type='button' value='Post'>
+                </div>
+                <div class='comment-description'>Write something to share.</div>
+              </form>
             </div>
           </div>
-        </article>
-        <?php
-      }
-      elseif (!$current_member && isset($parent_entity) && ($parent_entity instanceof Group) && $parent_entity->mode() == 'open') {
-        // Tell the user they can comment if they login or register:
-        ?>
-        <p class='comment-instruction'>
-          <a href='/login?destination=<?php echo $parent_entity->alias(); ?>'>Login</a> or
-          <a href='/register?destination=<?php echo $parent_entity->alias(); ?>'>register</a>
-          to <!-- rate and --> post comments.
-        </p>
-        <?php
-      }
+        </div>
+      </article>
+      <?php
+    }
+    elseif (!$current_member && isset($parent_entity) && ($parent_entity instanceof Group) && $parent_entity->mode() == 'open') {
+      // Tell the user they can comment if they login or register:
+      ?>
+      <p class='comment-instruction'>
+        <a href='/login?destination=<?php echo $parent_entity->alias(); ?>'>Login</a> or
+        <a href='/register?destination=<?php echo $parent_entity->alias(); ?>'>register</a>
+        to <!-- rate and --> post comments.
+      </p>
+      <?php
     }
     ?>
 

@@ -55,13 +55,28 @@ class Comment extends EntityBase {
     if (is_null($comment_param)) {
       // Create new comment:
       $comment_obj = new $class;
-      // Assume published:
+
+      // Default status to published:
       $comment_obj->entity->status = 1;
-      return $comment_obj;
+
+      // Default language to none:
+      $comment_obj->entity->language = LANGUAGE_NONE;
+
+      // Default to current user:
+      if (user_is_logged_in()) {
+        global $user;
+        $comment_obj->entity->uid = $user->uid;
+        $comment_obj->entity->name = $user->name;
+        $comment_obj->entity->mail = $user->mail;
+      }
+
+      // The comment is valid without a cid:
+      $comment_obj->valid = TRUE;
     }
     elseif (is_uint($comment_param)) {
       // cid provided:
       $cid = $comment_param;
+
       // Only create the new comment if not already in the cache:
       if (self::inCache($cid)) {
         return self::getFromCache($cid);
@@ -69,31 +84,34 @@ class Comment extends EntityBase {
       else {
         // Create new comment:
         $comment_obj = new $class;
+
         // Set the cid:
         $comment_obj->entity->cid = $cid;
-        // Put the new comment in the cache:
-        $comment_obj->addToCache();
-        return $comment_obj;
       }
     }
     elseif (is_object($comment_param)) {
       // Drupal comment object provided:
       $comment = $comment_param;
+
       // Get the User object:
-      if ($comment->cid && self::inCache($comment->cid)) {
+      if (isset($comment->cid) && $comment->cid && self::inCache($comment->cid)) {
         $comment_obj = self::getFromCache($comment->cid);
       }
       else {
         $comment_obj = new $class;
       }
+
+      // Reference the provided entity object:
       $comment_obj->entity = $comment;
-      // Add to cache:
+    }
+
+    // If we have a comment object, add to cache and return:
+    if (isset($comment_obj)) {
       $comment_obj->addToCache();
       return $comment_obj;
     }
-    else {
-      trigger_error("Invalid parameter to Comment::create()", E_USER_ERROR);
-    }
+
+    trigger_error("Invalid parameter to Comment::create()", E_USER_ERROR);
   }
 
   /**
@@ -120,8 +138,8 @@ class Comment extends EntityBase {
     // Default result:
     $comment = FALSE;
 
-    // Try to load the comment:
-    if (isset($this->entity->cid) && $this->entity->cid > 0) {
+    // If we have a cid, try to load the comment:
+    if (isset($this->entity->cid) && $this->entity->cid) {
       // Load by cid. Drupal caching will prevent reloading of the same comment.
       $comment = comment_load($this->entity->cid);
     }
@@ -133,10 +151,9 @@ class Comment extends EntityBase {
     if ($comment) {
       $this->entity = $comment;
       $this->loaded = TRUE;
-      return $this;
     }
 
-    trigger_error("Could not load comment", E_USER_WARNING);
+    return $this;
   }
 
   /**

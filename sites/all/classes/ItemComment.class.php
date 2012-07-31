@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * Comments posted on items.
+ */
 class ItemComment extends Comment {
 
   /**
@@ -28,6 +31,17 @@ class ItemComment extends Comment {
    */
   public function text($text = NULL) {
     return $this->field('comment_body', LANGUAGE_NONE, 0, 'value', $text);
+  }
+
+  /**
+   * Get a link to the comment, which is really a link to the item with the comment highlighted.
+   *
+   * @param null|string $text
+   */
+  public function link($label = NULL) {
+    $label = ($label === NULL) ? $this->subject() : $label;
+    $cid = $this->cid();
+    return l($label, $this->item()->alias(), array('query' => array('cid' => $cid), 'fragment' => "comment-$cid"));
   }
 
 }
