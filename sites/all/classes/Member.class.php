@@ -866,8 +866,8 @@ class Member extends User {
     if ($send_email) {
       $params = array(
         'subject' => "[moonmars.com] $subject",
-        'summary' => "<p style='margin: 0 0 10px;'>$summary</p>",
-        'text'    => "<p style='margin: 0; color: #919191;'>$text</p>",
+        'summary' => "<p style='margin: 0 0 10px; color: #919191;'>$summary</p>",
+        'text'    => "<p style='margin: 0;'>$text</p>",
       );
       drupal_mail('moonmars_members', 'notification', $this->mail(), language_default(), $params);
     }

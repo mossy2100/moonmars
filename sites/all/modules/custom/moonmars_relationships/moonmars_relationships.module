@@ -60,36 +60,6 @@ function moonmars_relationships_get_relationships($relationship_type, $entity_ty
 }
 
 /**
- * Get the entity ids of relationships matching parameters.
- *
- * @param string $relationship_type
- * @param string $entity_type0
- *   Use NULL to match all.
- * @param int $entity_id0
- *   Use NULL to match all.
- * @param string $entity_type1
- *   Use NULL to match all.
- * @param int $entity_id1
- *   Use NULL to match all.
- * @param null|int $offset
- * @param null|int $limit
- * @return array
- */
-function moonmars_relationships_get_entity_ids($relationship_type, $entity_type0, $entity_id0, $entity_type1, $entity_id1, $offset = NULL, $limit = NULL) {
-  $rels = moonmars_relationships_get_relationships($relationship_type, $entity_type0, $entity_id0, $entity_type1, $entity_id1, $offset, $limit);
-  $ids = array();
-  foreach ($rels as $rel) {
-    if ($entity_id0 === NULL && $entity_type0 == $rel->entity_type0) {
-      $ids[] = $rel->entity_id0;
-    }
-    elseif ($entity_id1 === NULL && $entity_type1 == $rel->entity_type1) {
-      $ids[] = $rel->entity_id1;
-    }
-  }
-  return $ids;
-}
-
-/**
  * Update or create a relationship.
  *
  * @param string $relationship_type
