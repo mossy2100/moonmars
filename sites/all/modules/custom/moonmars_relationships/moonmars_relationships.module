@@ -104,15 +104,16 @@ function moonmars_relationships_update_relationship($relationship_type, $entity_
 
   if ($rels) {
     // Update the relationship. We really just want to update the changed timestamp, so let's just load and save it.
-    $rels[0]->load();
-    $rels[0]->save();
+    $rel = $rels[0];
+    $rel->load();
+    $rel->save();
   }
   else {
     // Create a new relationship:
-    $relation = Relation::createNewBinary($relationship_type, $entity_type0, $entity_id0, $entity_type1, $entity_id1, TRUE);
+    $rel = Relation::createNewBinary($relationship_type, $entity_type0, $entity_id0, $entity_type1, $entity_id1, TRUE);
   }
 
-  return $relation;
+  return $rel;
 }
 
 /**
