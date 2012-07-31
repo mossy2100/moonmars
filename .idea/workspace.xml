@@ -3,8 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="ff922214-f7cd-4eef-9f30-177ba578dd26" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/classes/Member.class.php" afterPath="$PROJECT_DIR$/sites/all/classes/Member.class.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_relationships/moonmars_relationships.module" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_relationships/moonmars_relationships.module" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/css/_views.scss" afterPath="$PROJECT_DIR$/sites/all/themes/astro/css/_views.scss" />
     </list>
     <ignored path="moonmars.com.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -68,13 +66,24 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Member.class.php" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="Member.class.php" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sites/all/classes/Member.class.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="869" column="42" selection-start="24728" selection-end="24728" vertical-scroll-proportion="0.40924656">
+            <state line="767" column="0" selection-start="21250" selection-end="21250" vertical-scroll-proportion="-10.583333">
               <folding>
                 <element signature="e#6#52#0" expanded="true" />
-                <marker date="1343774931000" expanded="true" signature="11033:11084" placeholder="..." />
+                <marker date="1343775446000" expanded="true" signature="11033:11084" placeholder="..." />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="moonmars_channels.module" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/moonmars_channels.module">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="211" column="0" selection-start="5894" selection-end="5894" vertical-scroll-proportion="0.56335616">
+              <folding>
+                <marker date="1343775460000" expanded="true" signature="5148:5216" placeholder="..." />
               </folding>
             </state>
           </provider>
@@ -116,15 +125,6 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Node.class.php" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/sites/all/classes/core/Node.class.php">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="310" column="50" selection-start="6531" selection-end="6552" vertical-scroll-proportion="-15.791667">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
     </leaf>
   </component>
   <component name="FindManager">
@@ -138,7 +138,6 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-comment.inc" />
         <option value="$PROJECT_DIR$/sites/all/themes/astro/templates/comment.tpl.php" />
         <option value="$PROJECT_DIR$/sites/all/themes/astro/css/_channels.scss" />
         <option value="$PROJECT_DIR$/sites/all/themes/astro/templates/node--channel.tpl.php" />
@@ -154,6 +153,7 @@
         <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_relationships/moonmars_relationships.module" />
         <option value="$PROJECT_DIR$/sites/all/themes/astro/css/_views.scss" />
         <option value="$PROJECT_DIR$/sites/all/classes/Member.class.php" />
+        <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/moonmars_channels.module" />
       </list>
     </option>
   </component>
@@ -818,15 +818,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/moonmars_channels.module">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="147" column="51" selection-start="3507" selection-end="3520" vertical-scroll-proportion="0.32068965">
-          <folding>
-            <marker date="1343424360000" expanded="true" signature="-1:-1" placeholder="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/sql/views.sql">
       <provider selected="true" editor-type-id="text-editor">
         <state line="28" column="24" selection-start="0" selection-end="4852" vertical-scroll-proportion="0.6763285">
@@ -922,10 +913,19 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/classes/Member.class.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="869" column="42" selection-start="24728" selection-end="24728" vertical-scroll-proportion="0.40924656">
+        <state line="767" column="0" selection-start="21250" selection-end="21250" vertical-scroll-proportion="-10.583333">
           <folding>
             <element signature="e#6#52#0" expanded="true" />
-            <marker date="1343774931000" expanded="true" signature="11033:11084" placeholder="..." />
+            <marker date="1343775446000" expanded="true" signature="11033:11084" placeholder="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/moonmars_channels.module">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="211" column="0" selection-start="5894" selection-end="5894" vertical-scroll-proportion="0.56335616">
+          <folding>
+            <marker date="1343775460000" expanded="true" signature="5148:5216" placeholder="..." />
           </folding>
         </state>
       </provider>

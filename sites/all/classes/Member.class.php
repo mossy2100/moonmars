@@ -760,12 +760,12 @@ class Member extends User {
    * @param bool $email_notification
    * @return Member
    */
-  public function subscribe(Channel $channel) {
+  public function subscribe(Channel $channel, $email_notification = NULL) {
     // See if the relationship already exists:
     $rels = moonmars_relationships_get_relationships('has_subscriber', 'node', $channel->nid(), 'user', $this->uid());
 
 //    $email_notification = $this->defaultEmailNotification();
-    $email_notification = TRUE;
+    $email_notification = ($email_notification === NULL) ? TRUE : $email_notification;
 
     // If the relationship doesn't exist, create it now:
     if (!$rels) {
