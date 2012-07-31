@@ -18,8 +18,15 @@ require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'node') . '/node.page
   <div<?php print $content_attributes; ?>>
 
     <?php
+    if ($viewing_activity) {
+      ?>
+      <p>The all new Activity page! This is basically the same as the Home page on Facebook or Twitter, and shows
+      items from all the channels you're subscribed to, ordered by which has changed most recently.</p>
+      <?php
+    }
+
     // If the logged-in member can post items in this channel, show the new item form.
-    if ($current_member && $current_member->canPostItem($channel)) {
+    if (!$viewing_activity && $current_member && $current_member->canPostItem($channel)) {
       ?>
       <div class='post-form-wrapper'>
         <h2>Share something</h2>

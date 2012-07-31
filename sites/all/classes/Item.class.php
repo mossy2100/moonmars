@@ -64,26 +64,6 @@ class Item extends Node {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // System messages.
-
-  /**
-   * Create a system message.
-   *
-   * @param string $text
-   * @param Channel $channel
-   */
-  public static function createSystemMessage($text) {
-    return self::create()
-      ->setProperties(array(
-        'uid'   => MOONMARS_SYSTEM_UID,
-        'title' => moonmars_text_trim($text),
-      ))
-      ->field('field_item_text',   LANGUAGE_NONE, 0, 'value', $text)
-      ->field('field_item_system', LANGUAGE_NONE, 0, 'value', 1)
-      ->save();
-  }
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Render methods.
 
   /**

@@ -677,12 +677,12 @@ class Member extends User {
    * @param Member $member
    */
   public function follow(Member $member) {
-    $this->subscribe($member->channel(), TRUE);
-//    $this->subscribe($member->channel(), $this->defaultEmailNotification());
+    // Subscribe to the member's channel:
+    $this->subscribe($member->channel());
 
     // Notify the followee:
-    $message = $this->link() . " subscribed to " . $member->link("your channel");
-    $member->notify($message, $this, $member->channel());
+    $summary = $this->link() . " subscribed to " . $member->link("your channel");
+    $member->notify($summary, NULL, $this, $member->channel());
   }
 
   /**
@@ -691,11 +691,12 @@ class Member extends User {
    * @param Member $member
    */
   public function unfollow(Member $member) {
+    // Unsubscribe from the member's channel:
     $this->unsubscribe($member->channel());
 
     // Notify the followee:
-    $message = $this->link() . " unsubscribed from " . $member->link("your channel");
-    $member->notify($message, $this, $member->channel());
+    $summary = $this->link() . " unsubscribed from " . $member->link("your channel");
+    $member->notify($summary, NULL, $this, $member->channel());
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -710,9 +711,12 @@ class Member extends User {
     // Create the membership relationship:
     moonmars_relationships_update_relationship('has_member', 'node', $group->nid(), 'user', $this->uid());
 
+    // Subscribe the member to the group channel:
+    $this->subscribe($group->channel());
+
     // Post system message to the group:
-    $message = $this->link() . " joined " . $group->channelTitleLink();
-    $group->notify($message, $this, $group->channel());
+    $summary = $this->link() . " joined " . $group->channelTitleLink();
+    $group->notify($summary, NULL, $this, $group->channel());
   }
 
   /**
@@ -723,6 +727,9 @@ class Member extends User {
   public function leaveGroup(Group $group) {
     // Delete the membership relationship:
     moonmars_relationships_delete_relationships('has_member', 'node', $group->nid(), 'user', $this->uid());
+
+    // Unsubscribe the member from the group channel:
+    $this->unsubscribe($group->channel());
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -754,9 +761,12 @@ class Member extends User {
    * @param bool $email_notification
    * @return Member
    */
-  public function subscribe(Channel $channel, $email_notification = TRUE) {
+  public function subscribe(Channel $channel) {
     // See if the relationship already exists:
     $rels = moonmars_relationships_get_relationships('has_subscriber', 'node', $channel->nid(), 'user', $this->uid());
+
+//    $email_notification = $this->defaultEmailNotification();
+    $email_notification = TRUE;
 
     // If the relationship doesn't exist, create it now:
     if (!$rels) {
@@ -807,20 +817,29 @@ class Member extends User {
    * Send a notification message to a member.
    *
    * @param string $summary
+   * @param string $text
    * @param Member $actor
    * @param Channel $channel
    * @param Item $item
    * @param ItemComment $comment
    */
-  public function notify($summary, Member $actor = NULL, Channel $channel = NULL, Item $item = NULL, ItemComment $comment = NULL) {
+  public function notify($summary, $text = NULL, Member $actor = NULL, Channel $channel = NULL, Item $item = NULL, ItemComment $comment = NULL) {
 
     $subject = strip_tags($summary);
 
     // Create the notification node:
+    $notification_summary = "
+      <p class='notification-summary'>
+        $summary
+      </p>
+      <p class='notification-teaser'>
+       " . moonmars_text_trim($text, 100) . "
+      </p>
+    ";
     $notification = Notification::create();
     $notification->uid($this->uid());
     $notification->title($subject);
-    $notification->field('field_notification_summary', LANGUAGE_NONE, 0, 'value', $summary);
+    $notification->field('field_notification_summary', LANGUAGE_NONE, 0, 'value', $notification_summary);
     $notification->save();
 
     // Create relationship between notification and actor:
@@ -848,8 +867,8 @@ class Member extends User {
     if ($send_email) {
       $params = array(
         'subject' => "[moonmars.com] $subject",
-        'summary' => $summary,
-//        'message' => $message,
+        'summary' => "<p style='margin: 0 0 10px;'>$summary</p>",
+        'text'    => "<p style='margin: 0; color: #919191;'>$text</p>",
       );
       drupal_mail('moonmars_members', 'notification', $this->mail(), language_default(), $params);
     }
@@ -1136,8 +1155,9 @@ class Member extends User {
       WHERE vci.item_status = 1
         AND vci.channel_nid IN (SELECT vcs.channel_nid FROM view_channel_has_subscriber vcs WHERE vcs.subscriber_uid = :member_uid)
       ORDER BY vci.changed DESC";
+
     $params = array(
-      ':members_channel_nid' => $this->channel()->nid(),
+      ':member_uid' => $this->uid(),
     );
 
     // Add the offset and limit if specified:

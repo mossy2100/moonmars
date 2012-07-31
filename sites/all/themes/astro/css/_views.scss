@@ -68,7 +68,33 @@
         &.views-field-field-notification-summary {
           padding: 5px 0;
         }
+
+        p {
+          margin: 0;
+        }
+
+        .notification-teaser {
+          color: $grey3;
+        }
       }
+    }
+  }
+}
+
+.region-sidebar-first {
+  .view-notifications {
+
+    .views-row {
+      margin: 10px 0;
+    }
+
+    .views-field-created {
+      font-size: 11px;
+      color: $grey3;
+    }
+
+    .view-all-notifications {
+      text-align: right;
     }
   }
 }

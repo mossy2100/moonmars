@@ -40,8 +40,12 @@ function astro_alpha_preprocess_node_channel(&$vars) {
   // Get the parent entity:
   $entity = $channel->parentEntity();
 
+  // Are we viewing the member's activity stream?
+  $viewing_activity = ($entity instanceof Member) && (alias_arg(2) == 'activity');
+  $vars['viewing_activity'] = $viewing_activity;
+
   // Render the items.
-  if ($entity instanceof Member && alias_arg(2) == 'activity') {
+  if ($viewing_activity) {
     // Member's activity channel:
     $vars['items'] = $entity->renderActivityItems();
   }

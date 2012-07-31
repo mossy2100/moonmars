@@ -237,16 +237,20 @@ class Group extends Node {
   /***
    * Send a notification message to all the members of a group.
    *
-   * @param $message
+   * @param string $summary
+   * @param string $text
    * @param Member $actor
    * @param Channel $channel
    * @param Item $item
    * @param ItemComment $comment
    */
-  public function notify($message, Member $actor = NULL, Channel $channel = NULL, Item $item = NULL, ItemComment $comment = NULL) {
+  public function notify($summary, $text = NULL, Member $actor = NULL, Channel $channel = NULL, Item $item = NULL, ItemComment $comment = NULL) {
     $members = $this->members();
     foreach ($members as $member) {
-      $member->notify($message, $actor, $channel, $item, $comment);
+      // Notify everyone in the group except the actor:
+      if (!Member::equals($member, $actor)) {
+        $member->notify($summary, $text, $actor, $channel, $item, $comment);
+      }
     }
   }
 

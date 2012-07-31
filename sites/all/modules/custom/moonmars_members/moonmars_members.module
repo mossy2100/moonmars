@@ -6,11 +6,6 @@
 define('MOONMARS_USERNAME_DESCRIPTION', "Usernames may only contain letters, digits, hyphens and underscores (a-z, A-Z, 0-9, -_), and must be between 1 and 60 characters in length.");
 
 /**
- * The user id of the system user, which owns system messages.
- */
-define('MOONMARS_SYSTEM_UID', 167);
-
-/**
  * Implements hook_init().
  */
 function moonmars_members_init() {
@@ -67,12 +62,12 @@ function moonmars_members_menu() {
     'access callback'  => 'user_is_logged_in',
     'type'             => MENU_CALLBACK,
   );
-  $items['user/%/activity'] = array(
-    'page callback'    => 'moonmars_members_activity',
-    'page arguments'   => array(1),
-    'access callback'  => 'user_is_logged_in',
-    'type'             => MENU_CALLBACK,
-  );
+//  $items['user/%/activity'] = array(
+//    'page callback'    => 'moonmars_members_activity',
+//    'page arguments'   => array(1),
+//    'access callback'  => 'user_is_logged_in',
+//    'type'             => MENU_CALLBACK,
+//  );
   return $items;
 }
 
@@ -463,6 +458,12 @@ function moonmars_members_menu_block() {
   if ($own_profile) {
     // Links for when you're on your own profile.
 
+    // Activity:
+    $html .= "<li>" . l('Activity', $profile_member->alias() . '/activity') . "</li>";
+
+    // Profile:
+    $html .= "<li>" . l('Profile', $profile_member->alias()) . "</li>";
+
     // Edit subscriptions:
     $html .= "<li>" . l('Subscriptions', $profile_member->alias() . '/subscriptions') . "</li>";
 
@@ -629,7 +630,7 @@ function moonmars_members_mail($key, &$message, $params) {
     case 'notification':
       $message['subject'] = $params['subject'];
       $message['body'][] = $params['summary'];
-//      $message['body'][] = $params['message'];
+      $message['body'][] = $params['text'];
       $message['headers']['Content-Type'] = "text/html; charset='utf-8';";
       break;
   }
@@ -651,22 +652,25 @@ function moonmars_members_notifications($uid) {
   return views_embed_view('notifications', 'page', $uid);
 }
 
+///**
+// * Show the items from channels the member is following.
+// *
+// * @return string
+// */
+//function moonmars_members_activity($uid) {
+//  // Make sure the user is looking at their own activity and not someone else's.
+//  global $user;
+//  if ($user->uid != $uid) {
+//    drupal_access_denied();
+//  }
+//
+//  drupal_set_title('Activity');
+//  Member::currentMember()->channel()->render();
+//}
+
 /**
- * Show the items from channels the member is following.
- *
- * @return string
+ * Display the member's activity.
  */
-function moonmars_members_activity($uid) {
-  // Make sure the user is looking at their own activity and not someone else's.
-  global $user;
-  if ($user->uid != $uid) {
-    drupal_access_denied();
-  }
-
-  drupal_set_title('Activity');
-  Member::currentMember()->channel()->render();
-}
-
 function moonmars_members_activity_redirect() {
   drupal_goto(Member::currentMember()->alias() . '/activity');
 }
