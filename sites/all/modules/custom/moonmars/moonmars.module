@@ -29,7 +29,7 @@ function moonmars_menu() {
  */
 function moonmars_home() {
   if (user_is_logged_in()) {
-    drupal_goto('profile');
+    drupal_goto('activity');
   }
   else {
     drupal_goto('news');
