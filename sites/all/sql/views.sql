@@ -11,7 +11,9 @@ AS select
    n0.status as channel_status,
    fde1.endpoints_entity_id AS item_nid,
    n1.title as item_title,
-   n1.status as item_status
+   n1.status as item_status,
+   n1.created as item_created,
+   n1.changed as item_changed
 from
   relation r
   left join field_data_endpoints fde0 on (r.rid = fde0.entity_id) and (fde0.endpoints_r_index = 0)

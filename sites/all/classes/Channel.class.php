@@ -182,9 +182,11 @@ class Channel extends Node {
    *
    * @param int $offset
    * @param int $limit
+   * @param string $order_by_field
+   * @param string $order_by_direction
    * @return array
    */
-  public function items($offset = NULL, $limit = NULL) {
+  public function items($offset = NULL, $limit = NULL, $order_by_field = 'changed', $order_by_direction = 'DESC') {
     // Look for relationship records:
     $q = db_select('view_channel_has_item', 'vci')
       ->fields('vci', array('item_nid'))
@@ -197,7 +199,7 @@ class Channel extends Node {
     }
 
     // Add ORDER BY clause:
-    $q->orderBy('changed', 'DESC');
+    $q->orderBy($order_by_field, $order_by_direction);
 
     // Get the items:
     $rs = $q->execute();
@@ -577,7 +579,8 @@ class Channel extends Node {
     $page = isset($_GET['page']) ? ((int) $_GET['page']) : 0;
 
     // Get the items from this channel:
-    $items = $this->items($page * self::pageSize, self::pageSize);
+    $order_by_field = ($this->nid() == MOONMARS_NEWS_CHANNEL_NID) ? 'item_changed' : 'changed';
+    $items = $this->items($page * self::pageSize, self::pageSize, $order_by_field);
 
     // Get the total item count:
     $total_n_items = $this->itemCount();
