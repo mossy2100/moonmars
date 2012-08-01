@@ -1009,6 +1009,11 @@ class Member extends User {
 //      }
     }
     elseif ($parent_entity instanceof Group) {
+      // Anyone can post comments in the News channel:
+      if ($channel->nid() == MOONMARS_NEWS_CHANNEL_NID) {
+        return TRUE;
+      }
+
       // If posted in a group channel, the member can comment on it if they are a member of the group:
       return $parent_entity->hasMember($this);
     }

@@ -66,22 +66,22 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Member.class.php" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="Member.class.php" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/sites/all/classes/Member.class.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="767" column="0" selection-start="21250" selection-end="21250" vertical-scroll-proportion="-10.583333">
+            <state line="1011" column="20" selection-start="29056" selection-end="29056" vertical-scroll-proportion="0.81182796">
               <folding>
                 <element signature="e#6#52#0" expanded="true" />
-                <marker date="1343775446000" expanded="true" signature="11033:11084" placeholder="..." />
+                <marker date="1343778544000" expanded="true" signature="11033:11084" placeholder="..." />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="moonmars_channels.module" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="moonmars_channels.module" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/moonmars_channels.module">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="211" column="0" selection-start="5894" selection-end="5894" vertical-scroll-proportion="0.56335616">
+            <state line="3" column="33" selection-start="65" selection-end="90" vertical-scroll-proportion="-1.875">
               <folding>
                 <marker date="1343775460000" expanded="true" signature="5148:5216" placeholder="..." />
               </folding>
@@ -152,8 +152,8 @@
         <option value="$PROJECT_DIR$/sites/all/classes/Item.class.php" />
         <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_relationships/moonmars_relationships.module" />
         <option value="$PROJECT_DIR$/sites/all/themes/astro/css/_views.scss" />
-        <option value="$PROJECT_DIR$/sites/all/classes/Member.class.php" />
         <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/moonmars_channels.module" />
+        <option value="$PROJECT_DIR$/sites/all/classes/Member.class.php" />
       </list>
     </option>
   </component>
@@ -911,21 +911,21 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/classes/Member.class.php">
+    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/moonmars_channels.module">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="767" column="0" selection-start="21250" selection-end="21250" vertical-scroll-proportion="-10.583333">
+        <state line="3" column="33" selection-start="65" selection-end="90" vertical-scroll-proportion="-1.875">
           <folding>
-            <element signature="e#6#52#0" expanded="true" />
-            <marker date="1343775446000" expanded="true" signature="11033:11084" placeholder="..." />
+            <marker date="1343775460000" expanded="true" signature="5148:5216" placeholder="..." />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/moonmars_channels.module">
+    <entry file="file://$PROJECT_DIR$/sites/all/classes/Member.class.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="211" column="0" selection-start="5894" selection-end="5894" vertical-scroll-proportion="0.56335616">
+        <state line="1011" column="20" selection-start="29056" selection-end="29056" vertical-scroll-proportion="0.81182796">
           <folding>
-            <marker date="1343775460000" expanded="true" signature="5148:5216" placeholder="..." />
+            <element signature="e#6#52#0" expanded="true" />
+            <marker date="1343778544000" expanded="true" signature="11033:11084" placeholder="..." />
           </folding>
         </state>
       </provider>
