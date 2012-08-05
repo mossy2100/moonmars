@@ -65,7 +65,7 @@ class Group extends Node {
    * @param string $description
    * @return mixed
    */
-  public function description($description) {
+  public function description($description = NULL) {
     return $this->field('field_description', LANGUAGE_NONE, 0, 'value', $description);
   }
 

@@ -1,9 +1,13 @@
-form {
+@mixin form-style {
   background-color: $grey5;
   border: solid 1px $grey4;
   @include border-radius(3px);
   padding: 10px;
   margin-bottom: 20px;
+}
+
+form {
+  @include form-style;
 
   div.form-item label,
   span.fieldset-legend {
@@ -408,3 +412,20 @@ form {
     //margin-bottom:
   }
 }
+
+////////////////////////////
+// Groups search form
+form#moonmars-groups-search-form {
+  background: none;
+  border: none;
+  padding: 0;
+
+  fieldset {
+    @include form-style;
+
+    .fieldset-wrapper {
+      padding: 0;
+    }
+  }
+}
+
