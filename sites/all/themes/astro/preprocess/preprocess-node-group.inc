@@ -23,5 +23,5 @@ function astro_alpha_preprocess_node_group(&$vars) {
   $vars['channel'] = $channel;
 
   // Get the group description:
-  $vars['description'] = isset($node->field_description[LANGUAGE_NONE][0]['value']) ? $node->field_description[LANGUAGE_NONE][0]['value'] : '';
+  $vars['description'] = $group->description();
 }

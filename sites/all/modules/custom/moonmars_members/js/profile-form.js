@@ -1,8 +1,5 @@
 var $ = jQuery;
 
-//var provinceRequestWaiting = false;
-//var timezoneRequestWaiting = false;
-
 $(function() {
   // Move some form fields that I can't move via hook_form_alter.
   $('#edit-mimemail').insertAfter('#edit-contact');
@@ -15,30 +12,36 @@ $(function() {
   // Remove the "delete location" checkbox:
 //  $('.form-item-field-user-location-und-0-delete-location').remove();
 
-  // Update timezone when country changed.
-  $('#edit-field-user-location-und-0-country').change(function() {
-//    timezoneRequestWaiting = true;
-    $.get('/ajax/geo/country-timezone', {country_code: $(this).val()}, function(data, textStatus, jqXHR) {
-      data = JSON.parse(data);
-//      debug(data);
-      if (data.timezone.timezoneid !== undefined) {
-        // Set the timezone:
-        $('#edit-timezone--2').val(data.timezone.timezoneid);
-        // Default the city name to the capital:
-        $('#edit-field-user-location-und-0-city').val(data.capital.name);
-      }
-      else {
-        $('#edit-timezone--2').val('UTC');
-      }
-//      timezoneRequestWaiting = false;
-    });
-  });
+  // Get the initial values of timezone and capital:
+  var tz = $('#edit-timezone--2').val();
+  var capital = $('#edit-field-user-location-und-0-city').val();
 
-//  $('#edit-field-user-location-und-0-province-selector').bind('beginAjax', function() {
-//    provinceRequestWaiting = true;
-//  });
-//  $('#edit-field-user-location-und-0-province-selector').bind('endAjax', function() {
-//    provinceRequestWaiting = false;
-//  });
+  // If the timezone or capital city isn't set, then set one or both of them automatically when the country is selected:
+  if (!tz || tz == 'UTC' || !capital) {
+
+    // Update timezone and/or capital when country changed.
+    $('#edit-field-user-location-und-0-country').change(
+      function() {
+        // Make the AJAX request:
+        $.get('/ajax/geo/country-timezone', {country_code: $(this).val()},
+          function(data, textStatus, jqXHR) {
+            data = JSON.parse(data);
+
+            // Set the timezone if one was found and if not set already:
+            if (data.timezone.timezoneid && (!tz || tz == 'UTC')) {
+              $('#edit-timezone--2').val(data.timezone.timezoneid);
+            }
+
+            // Set the capital city name if one was found and if not set already:
+            if (data.capital.name && !capital) {
+              $('#edit-field-user-location-und-0-city').val(data.capital.name);
+            }
+
+          }
+        );
+
+      }
+    );
+  }
 
 });

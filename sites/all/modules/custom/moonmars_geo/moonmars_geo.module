@@ -175,16 +175,19 @@ function moonmars_geo_lookup_country_timezone($country_code) {
   if ($capital) {
     $result = new stdClass;
     $result->capital = $capital;
+
     // Get the timezone for the capital:
     $timezone = moonmars_geo_lookup_timezone($capital->lat, $capital->lng);
     if ($timezone) {
       $result->timezone = $timezone;
     }
+
     // Get the state/province for the capital:
 //    $province = moonmars_geo_lookup_province($capital->lat, $capital->lng);
 //    if ($province) {
 //      $result->province = $province;
 //    }
+
   }
   return $result ?: FALSE;
 }

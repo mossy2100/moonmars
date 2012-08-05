@@ -64,6 +64,25 @@ from
 where r.relation_type = 'has_channel';
 
 
+CREATE or replace view view_group
+AS select
+   n.nid,
+   n.title,
+   n.status,
+   n.uid,
+   n.created,
+   n.changed,
+   fd.field_description_value as description,
+   fgt.field_group_type_value as group_type,
+   fs.field_scale_tid as scale
+from
+  node n
+  left join field_data_field_description fd on n.nid = fd.entity_id
+  left join field_data_field_group_type fgt on n.nid = fgt.entity_id
+  left join field_data_field_scale fs on n.nid = fs.entity_id
+where type = 'group'
+
+
 CREATE or replace view view_group_has_member
 AS select
    r.rid AS rid,

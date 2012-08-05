@@ -24,7 +24,7 @@ class Group extends Node {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Get and set methods.
+  // Get/set
 
   /**
    * Get the group's channel.
@@ -59,8 +59,18 @@ class Group extends Node {
     return $this->link($this->channelTitle());
   }
 
+  /**
+   * Get/set the description.
+   *
+   * @param string $description
+   * @return mixed
+   */
+  public function description($description) {
+    return $this->field('field_description', LANGUAGE_NONE, 0, 'value', $description);
+  }
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Logo stuff.
+  // Logo
 
   /**
    * Get the group's logo.
@@ -91,7 +101,7 @@ class Group extends Node {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Membership-related methods.
+  // Membership
 
   /**
    * Get the members of the group.
@@ -198,14 +208,14 @@ class Group extends Node {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Rendering methods.
+  // Rendering
 
   public function renderLinks() {
     return $this->channel()->renderLinks();
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Debugging.
+  // Debugging
 
   /**
    * Debugging function.
@@ -220,7 +230,7 @@ class Group extends Node {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Permissions.
+  // Permissions
 
   /**
    * Get the mode for the group.
@@ -232,7 +242,7 @@ class Group extends Node {
   }
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Notification methods.
+  // Notification
 
   /***
    * Send a notification message to all the members of a group.
@@ -253,5 +263,47 @@ class Group extends Node {
       }
     }
   }
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Search
+
+  /**
+   * Search groups.
+   *
+   * @static
+   * @param array $params
+   */
+  public static function search($params) {
+
+    $q = db_select('view_group', 'vg')
+      ->fields('vg', array('nid'));
+
+    // Search by text:
+    if (isset($params['text'])) {
+      $q->condition(
+        db_or()->condition('title', $params['text'], 'LIKE')
+               ->condition('description', $params['text'], 'LIKE')
+      );
+    }
+
+    // Search type:
+    if (isset($params['types'])) {
+      $q->condition('type', $params['types']);
+    }
+
+    // Search scale:
+    if (isset($params['scale'])) {
+      $q->condition('scale', $params['scale']);
+    }
+
+    // Get the results:
+    $rs = $q->execute();
+    $results = array();
+    foreach ($rs as $rec) {
+      $results[] = $rec->nid;
+    }
+    return $results;
+  }
+
 
 }

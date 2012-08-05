@@ -63,12 +63,14 @@ function astro_alpha_preprocess_node_item(&$vars) {
 // Calculate the score for the item:
 //      $vars['score'] = mt_rand(-20, 9999);
 
-// Remove unpublished comments. Why are they even there?
-//      foreach ($vars['content']['comments']['comments'] as $key => $value) {
-//        if (is_numeric($key) && !$value['#comment']->status) {
-//          unset($vars['content']['comments']['comments'][$key]);
-//        }
-//      }
+  // Remove unpublished comments.
+  if (isset($vars['content']['comments']['comments'])) {
+    foreach ($vars['content']['comments']['comments'] as $key => $value) {
+      if (is_numeric($key) && !$value['#comment']->status) {
+        unset($vars['content']['comments']['comments'][$key]);
+      }
+    }
+  }
 
   // Render comments:
   $vars['comments'] = render($vars['content']['comments']);

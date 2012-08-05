@@ -867,7 +867,7 @@ class Member extends User {
       $params = array(
         'subject' => "[moonmars.com] $subject",
         'summary' => "<p style='margin: 0 0 10px; color: #919191;'>$summary</p>",
-        'text'    => "<p style='margin: 0;'>$text</p>",
+        'text'    => "<p style='margin: 0;'>" . moonmars_text_filter($text) . "</p>",
       );
       drupal_mail('moonmars_members', 'notification', $this->mail(), language_default(), $params);
     }
@@ -1159,6 +1159,38 @@ class Member extends User {
       WHERE vci.item_status = 1
         AND vci.channel_nid IN (SELECT vcs.channel_nid FROM view_channel_has_subscriber vcs WHERE vcs.subscriber_uid = :member_uid)
       ORDER BY vci.changed DESC";
+
+    // We're interested in items:
+    // - posted in groups the user is a member of
+    // - posted by other members the member is following
+
+    // Q: What if the followee has posted something in a closed group? The challenge here is that we need to know
+    // whether the member has view access to the group at the database level, and this is probably impractical.
+    // A: One solution would be to get the item_nids of all items that the user could potentially see, then filter
+    // using permission function. However, this may become inefficient over time.
+    // A: Another solution would be to not include items that followees post in groups that follower is not a member of,
+    // but only things they post in their own channel. This would be much easier.
+
+//    $sql = "
+//      SELECT vci.item_nid
+//      FROM view_channel_has_item vci
+//      WHERE vci.item_status = 1
+//        AND (
+//          vci.channel_nid IN (
+//            SELECT vcs.channel_nid
+//            FROM view_entity_has_channel vec
+//              LEFT JOIN view_group_has_member vgm ON vec.entity_type = 'node' and vec.entity_id = vgm.group_nid
+//            WHERE vgm.member_uid = :member_uid
+//          )
+//          OR
+//          vci.channel_nid IN (
+//            SELECT vcs.channel_nid
+//            FROM view_entity_has_channel vec
+//              LEFT JOIN view_member_has_follower vmf ON vec.entity_type = 'user' AND vec.entity_id = vmf.member_uid
+//            WHERE vmf.follower_uid = :member_uid
+//          )
+//        )
+//      ORDER BY vci.changed DESC";
 
     $params = array(
       ':member_uid' => $this->uid(),

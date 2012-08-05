@@ -55,6 +55,9 @@ function moonmars_text_scan($text) {
     }
   }
 
+  // Insert break tags:
+  $text2 = nl2br($text2);
+
   return array(
     'filtered_text' => $text2,
     'members' => $members,
