@@ -2,10 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ff922214-f7cd-4eef-9f30-177ba578dd26" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/classes/Group.class.php" afterPath="$PROJECT_DIR$/sites/all/classes/Group.class.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_groups/moonmars_groups.module" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_groups/moonmars_groups.module" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/css/_forms.scss" afterPath="$PROJECT_DIR$/sites/all/themes/astro/css/_forms.scss" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/css/_views.scss" afterPath="$PROJECT_DIR$/sites/all/themes/astro/css/_views.scss" />
     </list>
     <ignored path="moonmars.com.iws" />
@@ -44,7 +40,7 @@
       <file leaf-file-name="_views.scss" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/_views.scss">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="36" column="0" selection-start="548" selection-end="548" vertical-scroll-proportion="0.5092593">
+            <state line="33" column="0" selection-start="502" selection-end="502" vertical-scroll-proportion="0.47839507">
               <folding />
             </state>
           </provider>
@@ -1012,7 +1008,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/_views.scss">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="36" column="0" selection-start="548" selection-end="548" vertical-scroll-proportion="0.5092593">
+        <state line="33" column="0" selection-start="502" selection-end="502" vertical-scroll-proportion="0.47839507">
           <folding />
         </state>
       </provider>

@@ -27,25 +27,31 @@
     .views-exposed-widgets {
       margin: 0;
 
+      input,
+      select {
+        box-sizing: border-box;
+        height: 24px;
+      }
+
+      #edit-title,
+      #edit-field-group-type-value {
+        width: 130px;
+      }
+
+      .views-exposed-widget {
+        padding-right: 5px;
+      }
+
       label {
         line-height: 12px;
         height: 12px;
         margin-bottom: 3px;
       }
 
-      #edit-title-wrapper {
-
-      }
-
       #edit-submit-groups {
         margin-top: 15px;
       }
 
-      input,
-      select {
-        box-sizing: border-box;
-        height: 24px;
-      }
     }
   }
 }
