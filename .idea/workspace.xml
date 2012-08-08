@@ -2,18 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ff922214-f7cd-4eef-9f30-177ba578dd26" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_groups/js/group-search.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/classes/Group.class.php" afterPath="$PROJECT_DIR$/sites/all/classes/Group.class.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/libraries/star/php/arrays.php" afterPath="$PROJECT_DIR$/sites/all/libraries/star/php/arrays.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/dbg/dbg.module" afterPath="$PROJECT_DIR$/sites/all/modules/custom/dbg/dbg.module" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_groups/moonmars_groups.module" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_groups/moonmars_groups.module" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/moonmars_members.module" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/moonmars_members.module" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/sql/views.sql" afterPath="$PROJECT_DIR$/sites/all/sql/views.sql" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/css/_blocks.scss" afterPath="$PROJECT_DIR$/sites/all/themes/astro/css/_blocks.scss" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/css/_forms.scss" afterPath="$PROJECT_DIR$/sites/all/themes/astro/css/_forms.scss" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/css/_nav.scss" afterPath="$PROJECT_DIR$/sites/all/themes/astro/css/_nav.scss" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/css/global.scss" afterPath="$PROJECT_DIR$/sites/all/themes/astro/css/global.scss" />
     </list>
     <ignored path="moonmars.com.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -42,9 +31,9 @@
       <file leaf-file-name="moonmars_groups.module" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_groups/moonmars_groups.module">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="486" column="0" selection-start="12533" selection-end="12533" vertical-scroll-proportion="0.35892856">
+            <state line="542" column="0" selection-start="14428" selection-end="14428" vertical-scroll-proportion="0.4125">
               <folding>
-                <marker date="1344396839000" expanded="true" signature="5297:5333" placeholder="..." />
+                <marker date="1344398514000" expanded="true" signature="5297:5333" placeholder="..." />
               </folding>
             </state>
           </provider>
@@ -112,7 +101,7 @@
       <file leaf-file-name="views.sql" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sites/all/sql/views.sql">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="89" column="0" selection-start="2953" selection-end="2953" vertical-scroll-proportion="0.0">
+            <state line="88" column="0" selection-start="2219" selection-end="2952" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -1166,11 +1155,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/sql/views.sql">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="89" column="0" selection-start="2953" selection-end="2953" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/classes/Group.class.php">
       <provider selected="true" editor-type-id="text-editor">
         <state line="291" column="0" selection-start="6573" selection-end="6573" vertical-scroll-proportion="0.0">
@@ -1232,11 +1216,18 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/sql/views.sql">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="88" column="0" selection-start="2219" selection-end="2952" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_groups/moonmars_groups.module">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="486" column="0" selection-start="12533" selection-end="12533" vertical-scroll-proportion="0.35892856">
+        <state line="542" column="0" selection-start="14428" selection-end="14428" vertical-scroll-proportion="0.4125">
           <folding>
-            <marker date="1344396839000" expanded="true" signature="5297:5333" placeholder="..." />
+            <marker date="1344398514000" expanded="true" signature="5297:5333" placeholder="..." />
           </folding>
         </state>
       </provider>

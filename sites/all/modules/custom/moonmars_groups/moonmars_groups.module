@@ -536,11 +536,11 @@ function moonmars_groups_search_form() {
 //  dpm($_SESSION['group_search']['page'], "Setting page to");
 
   // Clamp the page number:
-  $n_pages = ceil(count($_SESSION['group_search']['results']) / MOONMARS_GROUP_SEARCH_PAGE_SIZE);
+  $n_pages = isset($_SESSION['group_search']['results']) ? (ceil(count($_SESSION['group_search']['results']) / MOONMARS_GROUP_SEARCH_PAGE_SIZE)) : 0;
   if ($_SESSION['group_search']['page'] < 0) {
     $_SESSION['group_search']['page'] = 0;
   }
-  elseif ($_SESSION['group_search']['page'] >= $n_pages) {
+  elseif ($n_pages && $_SESSION['group_search']['page'] >= $n_pages) {
     $_SESSION['group_search']['page'] = $n_pages - 1;
   }
 
