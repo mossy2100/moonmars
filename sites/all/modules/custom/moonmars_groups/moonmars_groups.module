@@ -747,9 +747,10 @@ function theme_moonmars_groups_search_form($vars) {
       );
   }
 
-  $html .= "<p>" . format_plural(count($_SESSION['group_search']['results']), "1 group matches", "@count groups match") . " your search.</p>";
+  $n_groups = isset($_SESSION['group_search']['results']) ? count($_SESSION['group_search']['results']) : 0;
+  $html .= "<p>" . format_plural($n_groups, "1 group matches", "@count groups match") . " your search.</p>";
 
-  if ($_SESSION['group_search']['results']) {
+  if (isset($_SESSION['group_search']['results']) && $_SESSION['group_search']['results']) {
 
     // Search results:
     $types = Group::types();
