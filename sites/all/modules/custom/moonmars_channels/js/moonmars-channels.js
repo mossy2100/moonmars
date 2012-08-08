@@ -23,20 +23,20 @@ function initChannel() {
     setupCommentBehaviour(this);
   });
 
-  // Setup new comment form behaviour:
-  $('article.new-comment-form-article').each(function () {
-    setupPostButton(this);
-  });
-
   // Setup rating button behaviours:
 //  setupRatings();
+
+  ///////////////////////////////////////////////////////////////////////////////////////
+  // New item form
 
   // Tidy up and setup behaviours for the new item form:
   itemTypeSelected();
   $('#edit-field-item-type-und input:radio').click(itemTypeSelected);
   $('#edit-path').remove();
-//  $('#field-item-text-add-more-wrapper textarea').autoresize();
   $('#item-node-form span.form-required').remove();
+
+  // Make the textarea in the new item form elastic.
+  $('form.node-item-form textarea').elastic();
 
   // Setup client-side validation for Post button:
   $('#item-node-form #edit-submit--3').click(function () {
@@ -46,6 +46,8 @@ function initChannel() {
       return false;
     }
   });
+
+  ///////////////////////////////////////////////////////////////////////////////////////
 
   // Hack - remove pagers from beneath comments in channels:
   $('article.node-item #comments .item-list').remove();
@@ -66,10 +68,7 @@ function collapsePost(postArticle, autoCollapse) {
     autoCollapse = true;
   }
 
-  // Add autogrow for textareas. This needs to be done before hiding anything, otherwise the sizing doesn't work right:
-//  postArticle.find('textarea').eq(0).autoresize();
-
-  // Have to hide the textarea after calling autoresize.
+  // Hide the textarea for editing the comment:
   postArticle.find('.edit-comment-form').eq(0).hide();
 
   // Determine what to hide:
@@ -137,6 +136,13 @@ function removePost(post) {
  */
 function setupItemBehaviour(itemArticle, autoCollapse) {
   itemArticle = $(itemArticle);
+
+  // Make the new comment textarea elastic:
+  var newCommentFormArticle = itemArticle.find('article.new-comment-form-article');
+  newCommentFormArticle.find('form.new-comment-form textarea').elastic();
+
+  // Setup new comment form behaviour:
+  setupPostButton(newCommentFormArticle);
 
 //  // Setup behaviour for edit link:
 //  itemArticle.find('.links li.item-edit a').click(
@@ -284,6 +290,7 @@ function removeItemReturn(data, textStatus, jqXHR) {
 function itemTypeSelected() {
   var itemType = $('#edit-field-item-type-und input:radio:checked').val();
   switch (itemType) {
+
     case 'text':
       $('#edit-field-item-link').hide();
       $('#edit-field-item-image').hide();
@@ -404,8 +411,16 @@ function editComment(cid) {
   commentArticle.find('.field-name-comment-body').hide();
   commentArticle.find('.post-controls').hide();
 
-  // Show the edit comment form:
+  // Show the edit comment form.
   commentArticle.find('.edit-comment-form').show();
+
+  // Make the textarea elastic the first time it gets shown.
+  var textarea = commentArticle.find('.edit-comment-form textarea');
+  var isElastic = textarea.attr('data-is-elastic');
+  if (!isElastic) {
+    textarea.elastic();
+    textarea.attr('data-is-elastic', 1);
+  }
 
   // ??
 //  commentArticle.find('.post-content-wrapper').css('height', 'auto');
@@ -527,7 +542,7 @@ function postCommentReturn(data, textStatus, jqXHR) {
     var nodeArticle = $('#node-item-' + data.item_nid);
 
     // Remove the uploading icon from the new comment textarea:
-    nodeArticle.find('.new-comment-form-article textarea').removeAttr('disabled').removeClass('uploading').val(''); //.autoresize();
+    nodeArticle.find('.new-comment-form-article textarea').removeAttr('disabled').removeClass('uploading').val('').height(36);
 
     // Create new comment article:
     var commentArticle = $(data.html);
