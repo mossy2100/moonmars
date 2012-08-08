@@ -3,12 +3,7 @@
 /**
  * Number of groups to show per page in a group search.
  */
-const MOONMARS_GROUP_SEARCH_PAGE_SIZE = 5;
-
-/**
- * Default value for 'mine' parameter in group search.
- */
-const MOONMARS_GROUP_SEARCH_MINE_EITHER = 2;
+const MOONMARS_GROUP_SEARCH_PAGE_SIZE = 20;
 
 /**
  * Implements hook_menu().

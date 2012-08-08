@@ -31,9 +31,9 @@
       <file leaf-file-name="moonmars_groups.module" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_groups/moonmars_groups.module">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="752" column="0" selection-start="20547" selection-end="20547" vertical-scroll-proportion="0.49285713">
+            <state line="5" column="42" selection-start="113" selection-end="113" vertical-scroll-proportion="0.13392857">
               <folding>
-                <marker date="1344398639000" expanded="true" signature="5297:5333" placeholder="..." />
+                <marker date="1344398808000" expanded="true" signature="5189:5225" placeholder="..." />
               </folding>
             </state>
           </provider>
@@ -1225,9 +1225,9 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_groups/moonmars_groups.module">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="752" column="0" selection-start="20547" selection-end="20547" vertical-scroll-proportion="0.49285713">
+        <state line="5" column="42" selection-start="113" selection-end="113" vertical-scroll-proportion="0.13392857">
           <folding>
-            <marker date="1344398639000" expanded="true" signature="5297:5333" placeholder="..." />
+            <marker date="1344398808000" expanded="true" signature="5189:5225" placeholder="..." />
           </folding>
         </state>
       </provider>
