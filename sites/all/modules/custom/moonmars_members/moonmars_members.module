@@ -512,7 +512,10 @@ function moonmars_members_groups_block() {
   $group_count = $member->groupCount();
 
   // Generate HTML:
-  return moonmars_groups_render_block($groups, $group_count);
+  $view_all_link = l('View all', 'groups', array('query' => array('member' => $member->name())));
+  $html = moonmars_groups_render_block($groups, $group_count, $view_all_link);
+
+  return $html;
 }
 
 /**

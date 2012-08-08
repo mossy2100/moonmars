@@ -141,7 +141,6 @@ function dbg_sql($query, $target = 'default') {
     $placeholder = ":db_{$statement_type}_placeholder_";
     $n = 0;
     foreach ($fields as $key => $value) {
-      //dpm($value);
       $replacement = is_numeric($value) ? $value : $connection->quote($value);
       $query_string = str_replace($placeholder . $n, $replacement, $query_string);
       $n++;
@@ -150,18 +149,21 @@ function dbg_sql($query, $target = 'default') {
 
   // Replace condition placeholders:
   if ($statement_type == 'select') {
-    $conditions = $query_array['where']['conditions'];
+    foreach ($query_array['where']['arguments'] as $placeholder => $value) {
+      $replacement = is_numeric($value) ? $value : $connection->quote($value);
+      $query_string = str_replace($placeholder, $replacement, $query_string);
+    }
   }
   else {
     $conditions = $query_array['condition']['conditions'];
-  }
-  foreach ($conditions as $n => $info) {
-    if (!is_int($n)) {
-      continue;
+    foreach ($conditions as $n => $info) {
+      if (!is_int($n)) {
+        continue;
+      }
+      $value = $info['value'];
+      $replacement = is_numeric($value) ? $value : $connection->quote($value);
+      $query_string = str_replace(':db_condition_placeholder_' . $n, $replacement, $query_string);
     }
-    $value = $info['value'];
-    $replacement = is_numeric($value) ? $value : $connection->quote($value);
-    $query_string = str_replace(':db_condition_placeholder_' . $n, $replacement, $query_string);
   }
 
   return $query_string;

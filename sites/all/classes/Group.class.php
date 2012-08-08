@@ -10,11 +10,25 @@ class Group extends Node {
   const nodeType = 'group';
 
   /**
+   * The group types.
+   *
+   * @var array
+   */
+  protected static $types;
+
+  /**
    * The group's channel.
    *
    * @var string
    */
   protected $channel;
+
+  /**
+   * HTML for the group's icon.
+   *
+   * @var string
+   */
+  protected $icon;
 
   /**
    * Constructor.
@@ -100,6 +114,68 @@ class Group extends Node {
     return '';
   }
 
+  /**
+   * Generate HTML for a group icon.
+   *
+   * @return string
+   */
+  public function icon() {
+    if (!$this->icon) {
+
+      $html = '';
+      $logo = $this->logo();
+
+      if (isset($logo['uri'])) {
+        // Render the icon:
+        $image = array(
+          'style_name' => 'sidebar-logo-90-wide',
+          'path'       => $logo['uri'],
+          'alt'        => $this->title(),
+          'attributes' => array('class' => array('group-icon')),
+        );
+        $html = theme('image_style', $image);
+      }
+
+      // Remember the HTML in the property so we don't have to theme the image again:
+      $this->icon = $html;
+    }
+
+    return $this->icon;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Group types
+
+  /**
+   * Get/set the group type.
+   *
+   * @param string $type
+   * @return mixed|Node|string
+   */
+  public function type($type = NULL) {
+    return $this->field('field_group_type', LANGUAGE_NONE, 0, 'value', $type);
+  }
+
+  /**
+   * Get the group types.
+   *
+   * @static
+   * @return array
+   */
+  public static function types() {
+    if (!isset(self::$types)) {
+      $rec = db_select('field_config', 'fc')
+        ->fields('fc', array('data'))
+        ->condition('field_name', 'field_group_type')
+        ->execute()
+        ->fetch();
+      $data = unserialize($rec->data);
+      self::$types = $data['settings']['allowed_values'];
+    }
+
+    return self::$types;
+  }
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Membership
 
@@ -171,17 +247,19 @@ class Group extends Node {
   }
 
   /**
-   * Get the newest groups created.
+   * Get the top groups.
    *
    * @static
-   * @param $n
+   * @param int $n
+   * @param string $order_by_field
+   * @param string $order_by_direction
+   * @return array
    */
-  public static function newest($n) {
-    $rs = db_select('node', 'n')
-      ->fields('n', array('nid'))
-      ->condition('type', 'group')
+  public static function top($n, $order_by_field, $order_by_direction = 'DESC') {
+    $rs = db_select('view_group', 'vg')
+      ->fields('vg', array('nid'))
       ->condition('status', 1)
-      ->orderBy('created', 'DESC')
+      ->orderBy($order_by_field, $order_by_direction)
       ->range(0, $n)
       ->execute();
 
@@ -190,6 +268,26 @@ class Group extends Node {
       $groups[] = Group::create($rec->nid);
     }
     return $groups;
+  }
+
+  /**
+   * Get the newest groups.
+   *
+   * @static
+   * @param $n
+   */
+  public static function newest($n) {
+    return self::top($n, 'created');
+  }
+
+  /**
+   * Get the biggest groups.
+   *
+   * @static
+   * @param $n
+   */
+  public static function biggest($n) {
+    return self::top($n, 'member_count');
   }
 
   /**
@@ -263,47 +361,5 @@ class Group extends Node {
       }
     }
   }
-
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Search
-
-  /**
-   * Search groups.
-   *
-   * @static
-   * @param array $params
-   */
-  public static function search($params) {
-
-    $q = db_select('view_group', 'vg')
-      ->fields('vg', array('nid'));
-
-    // Search by text:
-    if (isset($params['text'])) {
-      $q->condition(
-        db_or()->condition('title', $params['text'], 'LIKE')
-               ->condition('description', $params['text'], 'LIKE')
-      );
-    }
-
-    // Search type:
-    if (isset($params['types'])) {
-      $q->condition('type', $params['types']);
-    }
-
-    // Search scale:
-    if (isset($params['scale'])) {
-      $q->condition('scale', $params['scale']);
-    }
-
-    // Get the results:
-    $rs = $q->execute();
-    $results = array();
-    foreach ($rs as $rec) {
-      $results[] = $rec->nid;
-    }
-    return $results;
-  }
-
 
 }

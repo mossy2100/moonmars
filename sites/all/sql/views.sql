@@ -74,13 +74,18 @@ AS select
    n.changed,
    fd.field_description_value as description,
    fgt.field_group_type_value as group_type,
-   fs.field_scale_tid as scale
+   fs.field_scale_tid as scale_tid,
+   ttd.name as scale_name,
+   if (sum(vgm.member_status) is NULL, 0, sum(vgm.member_status)) as member_count
 from
   node n
   left join field_data_field_description fd on n.nid = fd.entity_id
   left join field_data_field_group_type fgt on n.nid = fgt.entity_id
   left join field_data_field_scale fs on n.nid = fs.entity_id
+  left join taxonomy_term_data ttd on fs.field_scale_tid = ttd.tid
+  left join view_group_has_member vgm on n.nid = vgm.group_nid
 where type = 'group'
+group by n.nid
 
 
 CREATE or replace view view_group_has_member

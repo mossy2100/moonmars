@@ -1,6 +1,16 @@
 <?php
 
 /**
+ * Number of groups to show per page in a group search.
+ */
+const MOONMARS_GROUP_SEARCH_PAGE_SIZE = 5;
+
+/**
+ * Default value for 'mine' parameter in group search.
+ */
+const MOONMARS_GROUP_SEARCH_MINE_EITHER = 2;
+
+/**
  * Implements hook_menu().
  */
 function moonmars_groups_menu() {
@@ -17,12 +27,12 @@ function moonmars_groups_menu() {
     'access callback'  => TRUE,
     'type'             => MENU_CALLBACK,
   );
-//  $items['groups'] = array(
-//    'page callback'    => 'drupal_get_form',
-//    'page arguments'   => array('moonmars_groups_search_form'),
-//    'access callback'  => TRUE,
-//    'type'             => MENU_CALLBACK,
-//  );
+  $items['groups'] = array(
+    'page callback'    => 'drupal_get_form',
+    'page arguments'   => array('moonmars_groups_search_form'),
+    'access callback'  => TRUE,
+    'type'             => MENU_CALLBACK,
+  );
   return $items;
 }
 
@@ -160,21 +170,22 @@ function moonmars_groups_leave($group_nid) {
  *   The total number of groups (could be larger than the array count).
  * @return string
  */
-function moonmars_groups_render_block($groups, $group_count = NULL) {
-  $html = '';
+function moonmars_groups_render_block($groups, $group_count = NULL, $view_all_link = NULL) {
+  $html = "<div class='groups-block'>\n";
 
   // Group count:
   if ($group_count !== NULL) {
-    $html = "<div class='group-count'>\n";
+    $html .= "<div class='group-count'>\n";
     $html .= format_plural($group_count, '1 group', '@count groups');
     $html .= "</div>";
   }
 
-  // groups:
-  $html .= "<ul class='member-groups clearfix'>\n";
+  // Groups:
+  $html .= "<ul class='group-list clearfix'>\n";
+
   // Avatars for most recent groups:
   foreach ($groups as $group) {
-    $html .= "<li class='member-group'>\n";
+    $html .= "<li class='group-icon'>\n";
 
     // Render a link to the group, with logo if present:
     $title = $group->title();
@@ -187,9 +198,15 @@ function moonmars_groups_render_block($groups, $group_count = NULL) {
   $html .= "</ul>\n";
 
   // View all groups link:
-//  $html .= "<div class='view-all-groups-link'>\n";
-//  $html .= l('View all', drupal_get_path_alias("user/$member_uid") . '/groups');
-//  $html .= "</div>";
+  if ($view_all_link) {
+    $html .= "
+      <div class='view-all-groups-link'>
+        $view_all_link
+      </div>
+    ";
+  }
+
+  $html .= "</div>";
 
   return $html;
 }
@@ -205,14 +222,22 @@ function moonmars_groups_block_info() {
     'info' => t('Group menu'),
     'cache' => DRUPAL_CACHE_PER_USER,
   );
+
   $blocks['group-members'] = array(
     'info' => t('Group members'),
     'cache' => DRUPAL_CACHE_PER_PAGE,
   );
+
   $blocks['newest-groups'] = array(
     'info' => t('Newest groups'),
     'cache' => DRUPAL_CACHE_PER_PAGE,
   );
+
+  $blocks['biggest-groups'] = array(
+    'info' => t('Biggest groups'),
+    'cache' => DRUPAL_CACHE_PER_PAGE,
+  );
+
   return $blocks;
 }
 
@@ -236,6 +261,11 @@ function moonmars_groups_block_view($delta = '') {
       $block['subject'] = 'Newest groups';
       $block['content'] = moonmars_groups_newest_groups_block();
       break;
+
+//    case 'biggest-groups':
+//      $block['subject'] = 'Biggest groups';
+//      $block['content'] = moonmars_groups_biggest_groups_block();
+//      break;
   }
   return $block;
 }
@@ -278,7 +308,7 @@ function moonmars_groups_menu_block() {
     $html .= "<li>" . l('Join group', $group->alias() . '/join') . "</li>";
   }
 
-  // Editing social links:
+  // Editing links:
   if ($group->hasAdmin($current_member)) {
     $html .= "<li>" . l('Edit profile', $group->editAlias()) . "</li>";
     $html .= "<li>" . l('Edit links', $group->channel()->editAlias()) . "</li>";
@@ -325,12 +355,144 @@ function moonmars_groups_newest_groups_block() {
   // Generate HTML:
   $html = moonmars_groups_render_block($groups);
 
-  // View all groups link:
-  $html .= "<div class='view-all-groups-link'>\n";
-  $html .= l('View all', 'groups');
-  $html .= "</div>";
+  return $html;
+}
+
+/**
+ * Generate HTML for the biggest groups.
+ *
+ * @return string
+ */
+function moonmars_groups_biggest_groups_block() {
+  // Get the biggest 4 groups:
+  $groups = Group::biggest(4);
+
+  // Generate HTML:
+  $html = moonmars_groups_render_block($groups);
 
   return $html;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Search
+
+/**
+ * Search groups.
+ *
+ * @param array $params
+ * @return array
+ */
+function moonmars_groups_search($params = array()) {
+//  dpm($params, 'moonmars_groups_search params');
+
+  // Reset the search params:
+  $_SESSION['group_search']['params'] = array();
+
+  // Create the search query:
+  $q = db_select('view_group', 'vg')
+    ->fields('vg', array('nid'));
+
+  // Text:
+  if (isset($params['text'])) {
+    $text = trim($params['text']);
+    if ($text) {
+      $or = db_or()->condition('title', "%$text%", 'LIKE')->condition('description', "%$text%", 'LIKE');
+      $q->condition($or);
+      $_SESSION['group_search']['params']['text'] = $text;
+    }
+  }
+
+  // Group types:
+  if (isset($params['type'])) {
+    $selected_types = array();
+
+    if (is_array($params['type'])) {
+      // Types selected as checkboxes on form:
+      foreach ($params['type'] as $type => $selected) {
+        if ($selected) {
+          $selected_types[] = $type;
+        }
+      }
+    }
+    elseif (is_string($params['type'])) {
+      // Types passed as querystring param:
+      $selected_types = explode(',', $params['type']);
+    }
+
+    if ($selected_types) {
+      $q->condition('group_type', $selected_types);
+      $_SESSION['group_search']['params']['type'] = $selected_types;
+    }
+  }
+
+  // @todo change this to Region, and support selection of planet, continent, country and city
+//  // Scale:
+//  if (isset($params['scale'])) {
+//    $selected_scales = array();
+//
+//    if (is_array($params['scale'])) {
+//      // Scales selected as checkboxes on form:
+//      foreach ($params['scale'] as $scale => $selected) {
+//        if ($selected) {
+//          $selected_scales[] = $scale;
+//        }
+//      }
+//    }
+//    elseif (is_string($params['scale'])) {
+//      // Scales passed as querystring param:
+//      $selected_scales = explode(',', $params['scale']);
+//    }
+//
+//    if ($selected_scales) {
+//      $q->condition('group_scale', $selected_scales);
+//      $_SESSION['group_search']['params']['scales'] = $selected_scales;
+//    }
+//  }
+
+  // Size:
+  if (isset($params['size'])) {
+    $size = (int) $params['size'];
+    if ($size > 0) {
+      $min = $size == 1 ? 0 : pow(10, $size - 1);
+      $max = pow(10, $size) - 1;
+      $q->condition('member_count', array($min, $max), 'BETWEEN');
+      $_SESSION['group_search']['params']['size'] = $size;
+    }
+  }
+
+  // Member:
+  if (isset($params['member'])) {
+    $member = trim($params['member']);
+    if ($member) {
+
+      // Create the subquery:
+      $subquery = db_select('view_group_has_member', 'vgm')
+        ->fields('vgm', array('group_nid'))
+        ->condition('member_name', $member);
+
+      // Add the condition:
+      $is_in = isset($params['is_in']) ? ((bool) $params['is_in']) : TRUE;
+      $q->condition('nid', $subquery, $is_in ? 'IN' : 'NOT IN');
+
+      // Add the cleaned parameters to the session array:
+      $_SESSION['group_search']['params']['member'] = $member;
+      $_SESSION['group_search']['params']['is_in'] = $is_in;
+    }
+  }
+
+  // Order by title:
+  $q->orderBy('title');
+
+//  dpm_query($q);
+
+  // Get the results:
+  $rs = $q->execute();
+  $results = array();
+  foreach ($rs as $rec) {
+    $results[] = $rec->nid;
+  }
+
+  return $results;
 }
 
 /**
@@ -339,13 +501,58 @@ function moonmars_groups_newest_groups_block() {
  * @return array
  */
 function moonmars_groups_search_form() {
+//  dpm($_POST, 'POST at beginning of moonmars_groups_search_form');
 
-  // If we have no search results, or if there are querystring parameters, run the search now.
-  if (isset($_SESSION['group_search_results']) || $_GET) {
-    $_SESSION['group_search_results'] = Group::search($_GET);
+  // Search using parameters from either the POST or GET array, if either is provided.
+  $params = NULL;
+
+  if (isset($_SESSION['group_search']['redo_search']) && $_SESSION['group_search']['redo_search']) {
+    $params = $_SESSION['group_search']['params'];
+    unset($_SESSION['group_search']['redo_search']);
+//    dpm($params, "Redoing search");
+  }
+  elseif ($_POST && isset($_POST['op']) && $_POST['op'] == 'Search') {
+    $params = $_POST;
+//    dpm($params, "params = \$_POST");
+  }
+  else {
+    $params = $_GET;
+    unset($params['q']);
+    unset($params['page']);
+//    dpm($params, "params = \$_GET");
   }
 
+//  dpm($params, 'params at beginning of moonmars_groups_search_form');
+//  dpm($_SESSION['group_search'], "\$_SESSION['group_search'] at beginning of moonmars_groups_search_form");
+
+  // If we have search params then do a new search, otherwise we'll just display results from the previous search.
+  if ($params) {
+    $_SESSION['group_search']['results'] = moonmars_groups_search($params);
+//    dpm($_SESSION['group_search'], "\$_SESSION['group_search'] after search");
+  }
+
+  // Get the page number:
+  $_SESSION['group_search']['page'] = isset($_GET['page']) ? ((int) $_GET['page']) : 0;
+//  dpm($_SESSION['group_search']['page'], "Setting page to");
+
+  // Clamp the page number:
+  $n_pages = ceil(count($_SESSION['group_search']['results']) / MOONMARS_GROUP_SEARCH_PAGE_SIZE);
+  if ($_SESSION['group_search']['page'] < 0) {
+    $_SESSION['group_search']['page'] = 0;
+  }
+  elseif ($_SESSION['group_search']['page'] >= $n_pages) {
+    $_SESSION['group_search']['page'] = $n_pages - 1;
+  }
+
+  // Get the current member:
+  $current_member = Member::currentMember();
+
+  // Create the form:
   $form = array();
+
+  $form['title'] = array(
+    '#value' => "<h2>Search groups</h2>",
+  );
 
   $form['search'] = array(
     '#type' => 'fieldset',
@@ -354,46 +561,251 @@ function moonmars_groups_search_form() {
   $form['search']['text'] = array(
     '#type' => 'textfield',
     '#title' => "Name/description",
-    '#description' => "Enter part of the name or description of the group."
+    '#description' => "Enter part of the name or description of the group.",
+    '#default_value' => isset($_SESSION['group_search']['params']['text']) ? $_SESSION['group_search']['params']['text'] : '',
   );
+
   $form['search']['type'] = array(
     '#type' => 'checkboxes',
     '#title' => "Group type",
     '#description' => "Select one or more group types to search for.",
-    '#options' => array(
-      'design'  => 'Design',
-      'society' => 'Society',
-    )
+    '#options' => Group::types(),
+    '#default_value' => isset($_SESSION['group_search']['params']['type']) ? $_SESSION['group_search']['params']['type'] : array(),
   );
-//  $form['search']['scale'] = array(
-//    '#type' => 'checkboxes',
-//    '#title' => "Scale",
-//    '#description' => "Select the group scale."
-//  );
+
+  $form['search']['size'] = array(
+    '#type' => 'select',
+    '#title' => "Size",
+    '#description' => "Select the group size.",
+    '#options' => array(
+      '- Any -',
+      '0 - 9',
+      '10 - 99',
+      '100 - 999',
+      '1,000 - 9,999',
+    ),
+    '#default_value' => isset($_SESSION['group_search']['params']['size']) ? $_SESSION['group_search']['params']['size'] : 0,
+  );
+
+  $form['search']['member'] = array(
+    '#prefix' => "<div class='group-search-member'><label class='group-search-member-title'>Membership</label>",
+    '#type' => 'textfield',
+    '#title' => "Find groups that",
+    '#autocomplete_path' => 'user/autocomplete',
+    '#default_value' => isset($_SESSION['group_search']['params']['member']) ? $_SESSION['group_search']['params']['member'] : '',
+  );
+
+  $form['search']['is_in'] = array(
+    '#type' => 'radios',
+    '#options' => array(
+      1 => "is",
+      0 => "is not",
+    ),
+    '#default_value' => isset($_SESSION['group_search']['params']['is_in']) ? ((int) $_SESSION['group_search']['params']['is_in']) : 1,
+    '#suffix' => "a member of.</div>",
+  );
+
+  $form['search']['clear'] = array(
+    '#markup' => "<input type='button' class='form-button clear-button' value='Clear' onclick='clearGroupSearchForm()'>",
+  );
+
   $form['search']['submit'] = array(
     '#type'  => 'submit',
     '#value' => "Search",
   );
 
-  foreach ($_SESSION['group_search_results'] as $group_nid) {
-    $group = Group::create($group_nid);
-    $form['group'][$group->nid()] = array(
-      '#type' => 'checkbox',
-      '#title' => $group->title(),
-      '#description' => $group->description(),
-    );
+  // If we have a current member, show checkboxes for the groups so they bulk join/leave:
+  if ($current_member) {
+    for ($i = 0; $i < MOONMARS_GROUP_SEARCH_PAGE_SIZE; $i++) {
+      $n = $_SESSION['group_search']['page'] * MOONMARS_GROUP_SEARCH_PAGE_SIZE + $i;
+
+      // In case an overly high page number is passed as a querystring param:
+      if (!isset($_SESSION['group_search']['results'][$n])) {
+        break;
+      }
+
+      $group_nid = $_SESSION['group_search']['results'][$n];
+      $group = Group::create($group_nid);
+
+      // Join/leave checkbox:
+      $form['group']["member-of-group-$group_nid"] = array(
+        '#type' => 'checkbox',
+        '#default_value' => $group->hasMember($current_member),
+      );
+    }
   }
 
   $form['update'] = array(
     '#type'  => 'submit',
-    '#value' => "Update Memberships",
+    '#value' => "Update memberships",
+    '#submit' => array('moonmars_groups_search_form_update'),
   );
 
+  $form['#attached']['js'][] = drupal_get_path('module', 'moonmars_groups') . "/js/group-search.js";
+  $form['#theme'] = 'moonmars_groups_search_form';
 
   return $form;
 }
 
-function moonmars_groups_search_form_submit($form, &$form_state) {
-dpm($form_state['values']);
-  $_SESSION['group_search_results'] = Group::search($form_state['values']);
+/**
+ * Submit handler for groups search form.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function moonmars_groups_search_form_update($form, &$form_state) {
+  $current_member = Member::currentMember();
+
+  // Look for "member-of-group" checkboxes:
+  foreach ($form_state['values'] as $key => $value) {
+    if (substr($key, 0, 15) == 'member-of-group') {
+      $group_nid = (int) substr($key, 16);
+      $group = Group::create($group_nid);
+
+      if ($value && !$group->hasMember($current_member)) {
+        // If they're not a member but want to be, add them to the group:
+        $current_member->joinGroup($group);
+      }
+      elseif (!$value && $group->hasMember($current_member)) {
+        // If they're a member but don't want to be, remove them from the group:
+        $current_member->leaveGroup($group);
+      }
+
+    }
+  }
+
+  drupal_set_message("Your group memberships have been updated.");
+
+  // Set the flag to redo the search:
+  $_SESSION['group_search']['redo_search'] = TRUE;
+
+//  dpm($_SERVER);
+  // Reload the form:
+  //drupal_goto('groups');
+
+  // Go back to the page that was requested, with the querystring (which may include a page number).
+//  $url_info = parse_url($_SERVER['REQUEST_URI'], PHP_URL_QUERY);
+//
+//  $info = drupal_parse_url($_SERVER['REQUEST_URI']);
+//  dpm($info);
+
+
+  $form_state['redirect'] = array(
+    'groups',
+    array(
+      'query' => array(
+        'page' => $_SESSION['group_search']['page'],
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_theme().
+ *
+ * @return array
+ */
+function moonmars_groups_theme() {
+  return array(
+    'moonmars_groups_search_form' => array(
+      'render element' => 'form',
+    ),
+  );
+}
+
+/**
+ * Theme the group search form.
+ *
+ * @param $vars
+ * @return string
+ */
+function theme_moonmars_groups_search_form($vars) {
+  $form = $vars['form'];
+  $html = '';
+  $html .= render($form['search']);
+  $html .= "<h3>Search Results</h3>";
+
+  // Create a table of results:
+  $header = array(
+    array(
+      'data'  => 'Group',
+      'class' => array('groups-column-group'),
+    ),
+    array(
+      'data'  => 'Description',
+      'class' => array('groups-column-desc'),
+    ),
+  );
+
+  // If the user is logged in, add the member column:
+  $current_member = Member::currentMember();
+  if ($current_member) {
+    $header[] =
+      array(
+        'data'  => "<input type='checkbox' id='groups-select-all'> Member?",
+        'class' => array('groups-column-member'),
+      );
+  }
+
+  $html .= "<p>" . format_plural(count($_SESSION['group_search']['results']), "1 group matches", "@count groups match") . " your search.</p>";
+
+  if ($_SESSION['group_search']['results']) {
+
+    // Search results:
+    $types = Group::types();
+    $rows = array();
+
+    for ($i = 0; $i < MOONMARS_GROUP_SEARCH_PAGE_SIZE; $i++) {
+      $n = $_SESSION['group_search']['page'] * MOONMARS_GROUP_SEARCH_PAGE_SIZE + $i;
+
+      // In case an overly high page number is passed as a querystring param:
+      if (!isset($_SESSION['group_search']['results'][$n])) {
+        break;
+      }
+
+      $group_nid = $_SESSION['group_search']['results'][$n];
+      $group = Group::create($group_nid);
+
+      $description = "
+        Type: <span class='group-type'>" . $types[$group->type()] . "</span><br>
+        Member count: <span class='group-member-count'>" . $group->memberCount() . "</span><br>
+        <div class='group-description'>" . $group->description() . "</span>";
+
+      // Create the row:
+      $row = array(
+        array(
+          'data'  => "<div class='group-link'>" . l($group->icon() . '<br>' . $group->title(), $group->alias(), array('html' => TRUE)) . "</div>",
+          'class' => array('groups-column-group'),
+        ),
+        array(
+          'data'  => $description,
+          'class' => array('groups-column-desc'),
+        ),
+      );
+
+      // If the user is logged in, add the member column:
+      if ($current_member) {
+        $row[] = array(
+          'data'  => render($form['group']["member-of-group-$group_nid"]),
+          'class' => array('groups-column-member'),
+        );
+      }
+
+      // Add the row to the table:
+      $rows[] = $row;
+    }
+
+    // Render the table of groups:
+    $html .= theme('table', array('header' => $header, 'rows' => $rows));
+
+    // Update button:
+    $html .= drupal_render_children($form);
+
+    // Pager:
+    $total_n_groups = count($_SESSION['group_search']['results']);
+    pager_default_initialize($total_n_groups, MOONMARS_GROUP_SEARCH_PAGE_SIZE);
+    $html .= theme('pager', array('quantity' => $total_n_groups));
+  }
+
+  return $html;
 }

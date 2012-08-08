@@ -53,7 +53,6 @@
       margin: 0;
     }
   }
-
 }
 
 #region-sidebar-second {
@@ -76,24 +75,35 @@ ul.member-grid {
   }
 }
 
-ul.member-groups {
-  list-style-type: none;
-  margin: 3px 0 0;
+@mixin group-link {
+  @include border-radius(3px);
+  display: block;
+  width: 100%;
+  padding: 5px 0;
+  background-color: $grey5;
+  text-align: center;
 
-  li {
-    margin-bottom: 3px;
+  &:hover {
+    background-color: $red3;
+    color: white;
+  }
+}
 
-    a {
-      @include border-radius(3px);
-      display: block;
-      width: 100%;
-      padding: 5px 0;
-      background-color: $grey5;
-      text-align: center;
 
-      &:hover {
-        background-color: $red3;
-        color: white;
+.groups-block {
+  .view-all-groups-link {
+    text-align: right;
+  }
+
+  ul.group-list {
+    list-style-type: none;
+    margin: 3px 0 0;
+
+    li {
+      margin-bottom: 3px;
+
+      a {
+        @include group-link;
       }
     }
   }
