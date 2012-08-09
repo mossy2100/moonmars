@@ -2,17 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ff922214-f7cd-4eef-9f30-177ba578dd26" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/classes/Member.class.php" afterPath="$PROJECT_DIR$/sites/all/classes/Member.class.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/js/moonmars-channels.js" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/js/moonmars-channels.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/js/avatar-tooltips.js" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/js/avatar-tooltips.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_comments/moonmars_comments.module" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_comments/moonmars_comments.module" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_text/moonmars_text.module" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_text/moonmars_text.module" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/css/_channels.scss" afterPath="$PROJECT_DIR$/sites/all/themes/astro/css/_channels.scss" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/css/_forms.scss" afterPath="$PROJECT_DIR$/sites/all/themes/astro/css/_forms.scss" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/css/_tooltip.scss" afterPath="$PROJECT_DIR$/sites/all/themes/astro/css/_tooltip.scss" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/templates/comment-wrapper.tpl.php" afterPath="$PROJECT_DIR$/sites/all/themes/astro/templates/comment-wrapper.tpl.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/templates/comment.tpl.php" afterPath="$PROJECT_DIR$/sites/all/themes/astro/templates/comment.tpl.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/templates/node--item.tpl.php" afterPath="$PROJECT_DIR$/sites/all/themes/astro/templates/node--item.tpl.php" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-comment.inc" afterPath="$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-comment.inc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-node-item.inc" afterPath="$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-node-item.inc" />
     </list>
     <ignored path="moonmars.com.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -38,33 +32,6 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="_forms.scss" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/_forms.scss">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="540" column="0" selection-start="8242" selection-end="8242" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="colorpicker.js" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/sites/all/modules/contrib/colorfield/lib/js/colorpicker.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="17" column="27" selection-start="1294" selection-end="1294" vertical-scroll-proportion="-7.4615383">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="colorfield.module" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/sites/all/modules/contrib/colorfield/colorfield.module">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="29" column="14" selection-start="799" selection-end="799" vertical-scroll-proportion="-16.25">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="_channels.scss" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/_channels.scss">
           <provider selected="true" editor-type-id="text-editor">
@@ -74,10 +41,32 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="node--item.tpl.php" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="node--item.tpl.php" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/templates/node--item.tpl.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="94" column="0" selection-start="3480" selection-end="3480" vertical-scroll-proportion="0.2320819">
+            <state line="19" column="53" selection-start="583" selection-end="583" vertical-scroll-proportion="-11.875">
+              <folding>
+                <element signature="e#1176#2048#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="preprocess-node-item.inc" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-node-item.inc">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="84" column="68" selection-start="2802" selection-end="2802" vertical-scroll-proportion="-3.22">
+              <folding>
+                <marker date="1344553910000" expanded="true" signature="3830:3857" placeholder="..." />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="moonmars_text.module" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_text/moonmars_text.module">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="19" column="0" selection-start="613" selection-end="692" vertical-scroll-proportion="0.22370617">
               <folding />
             </state>
           </provider>
@@ -95,11 +84,11 @@
       <file leaf-file-name="preprocess-comment.inc" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-comment.inc">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="86" column="0" selection-start="3073" selection-end="3073" vertical-scroll-proportion="-20.041666">
+            <state line="37" column="91" selection-start="1528" selection-end="1528" vertical-scroll-proportion="-8.125">
               <folding>
-                <marker date="1344552389000" expanded="true" signature="2214:2245" placeholder="..." />
-                <marker date="1344552389000" expanded="true" signature="2588:2931" placeholder="..." />
-                <marker date="1344552389000" expanded="true" signature="2692:2917" placeholder="..." />
+                <marker date="1344553900000" expanded="true" signature="2220:2251" placeholder="..." />
+                <marker date="1344553900000" expanded="true" signature="2594:2937" placeholder="..." />
+                <marker date="1344553900000" expanded="true" signature="2698:2923" placeholder="..." />
               </folding>
             </state>
           </provider>
@@ -108,11 +97,20 @@
       <file leaf-file-name="Member.class.php" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sites/all/classes/Member.class.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="574" column="0" selection-start="15953" selection-end="15953" vertical-scroll-proportion="-5.012658">
+            <state line="903" column="74" selection-start="25919" selection-end="25925" vertical-scroll-proportion="-2.2405064">
               <folding>
                 <element signature="e#6#52#0" expanded="true" />
-                <marker date="1344552385000" expanded="true" signature="11146:11197" placeholder="..." />
+                <marker date="1344553875000" expanded="true" signature="11146:11197" placeholder="..." />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="moonmars_comments.module" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_comments/moonmars_comments.module">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="162" column="0" selection-start="4691" selection-end="4691" vertical-scroll-proportion="-13.291667">
+              <folding />
             </state>
           </provider>
         </entry>
@@ -151,10 +149,7 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars/moonmars.module" />
         <option value="$PROJECT_DIR$/sites/all/libraries/jquery/jquery.elastic.modified.js" />
-        <option value="$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-node-item.inc" />
-        <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_text/moonmars_text.module" />
         <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/js/avatar-tooltips.js" />
         <option value="$PROJECT_DIR$/sites/all/themes/astro/css/_tooltip.scss" />
         <option value="$PROJECT_DIR$/sites/all/themes/astro/css/_forms.scss" />
@@ -162,11 +157,14 @@
         <option value="$PROJECT_DIR$/sites/all/modules/contrib/colorfield/lib/js/colorpicker.js" />
         <option value="$PROJECT_DIR$/sites/all/themes/astro/templates/comment-wrapper.tpl.php" />
         <option value="$PROJECT_DIR$/sites/all/themes/astro/css/_channels.scss" />
-        <option value="$PROJECT_DIR$/sites/all/classes/Member.class.php" />
-        <option value="$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-comment.inc" />
         <option value="$PROJECT_DIR$/sites/all/themes/astro/templates/comment.tpl.php" />
         <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/js/moonmars-channels.js" />
         <option value="$PROJECT_DIR$/sites/all/themes/astro/templates/node--item.tpl.php" />
+        <option value="$PROJECT_DIR$/sites/all/classes/Member.class.php" />
+        <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_comments/moonmars_comments.module" />
+        <option value="$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-comment.inc" />
+        <option value="$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-node-item.inc" />
+        <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_text/moonmars_text.module" />
       </list>
     </option>
   </component>
@@ -1289,29 +1287,6 @@
     <breakpoint-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_text/moonmars_text.module">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="77" column="50" selection-start="2424" selection-end="2424" vertical-scroll-proportion="-15.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/classes/Channel.class.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="99" column="19" selection-start="2546" selection-end="2546" vertical-scroll-proportion="-9.708333">
-          <folding>
-            <marker date="1343830184000" expanded="true" signature="-1:-1" placeholder="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/js/avatar-tooltips.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="38" column="0" selection-start="1045" selection-end="1045" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/_tooltip.scss">
       <provider selected="true" editor-type-id="text-editor">
         <state line="24" column="10" selection-start="412" selection-end="412" vertical-scroll-proportion="0.0">
@@ -1361,27 +1336,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/classes/Member.class.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="574" column="0" selection-start="15953" selection-end="15953" vertical-scroll-proportion="-5.012658">
-          <folding>
-            <element signature="e#6#52#0" expanded="true" />
-            <marker date="1344552385000" expanded="true" signature="11146:11197" placeholder="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-comment.inc">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="86" column="0" selection-start="3073" selection-end="3073" vertical-scroll-proportion="-20.041666">
-          <folding>
-            <marker date="1344552389000" expanded="true" signature="2214:2245" placeholder="..." />
-            <marker date="1344552389000" expanded="true" signature="2588:2931" placeholder="..." />
-            <marker date="1344552389000" expanded="true" signature="2692:2917" placeholder="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/templates/comment-wrapper.tpl.php">
       <provider selected="true" editor-type-id="text-editor">
         <state line="43" column="0" selection-start="1732" selection-end="1732" vertical-scroll-proportion="-6.25">
@@ -1408,7 +1362,53 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/templates/node--item.tpl.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="94" column="0" selection-start="3480" selection-end="3480" vertical-scroll-proportion="0.2320819">
+        <state line="19" column="53" selection-start="583" selection-end="583" vertical-scroll-proportion="-11.875">
+          <folding>
+            <element signature="e#1176#2048#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/classes/Member.class.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="903" column="74" selection-start="25919" selection-end="25925" vertical-scroll-proportion="-2.2405064">
+          <folding>
+            <element signature="e#6#52#0" expanded="true" />
+            <marker date="1344553875000" expanded="true" signature="11146:11197" placeholder="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_comments/moonmars_comments.module">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="162" column="0" selection-start="4691" selection-end="4691" vertical-scroll-proportion="-13.291667">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-comment.inc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="37" column="91" selection-start="1528" selection-end="1528" vertical-scroll-proportion="-8.125">
+          <folding>
+            <marker date="1344553900000" expanded="true" signature="2220:2251" placeholder="..." />
+            <marker date="1344553900000" expanded="true" signature="2594:2937" placeholder="..." />
+            <marker date="1344553900000" expanded="true" signature="2698:2923" placeholder="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-node-item.inc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="84" column="68" selection-start="2802" selection-end="2802" vertical-scroll-proportion="-3.22">
+          <folding>
+            <marker date="1344553910000" expanded="true" signature="3830:3857" placeholder="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_text/moonmars_text.module">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="19" column="0" selection-start="613" selection-end="692" vertical-scroll-proportion="0.22370617">
           <folding />
         </state>
       </provider>

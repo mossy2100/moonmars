@@ -159,7 +159,7 @@ function moonmars_comments_ajax_edit() {
   // Update the comment text:
   $text = strip_tags($text);
   $item_comment->field('comment_body', LANGUAGE_NONE, 0, 'value', $text);
-  $filtered_text = moonmars_text_filter($text);
+  $filtered_text = moonmars_text_filter($text, TRUE);
 
   // Save the comment:
   // @todo maybe make these functions part of the Comment class.

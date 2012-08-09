@@ -901,7 +901,7 @@ class Member extends User {
       $params = array(
         'subject' => "[moonmars.com] $subject",
         'summary' => "<p style='margin: 0 0 10px; color: #919191;'>$summary</p>",
-        'text'    => "<p style='margin: 0;'>" . moonmars_text_filter($text) . "</p>",
+        'text'    => "<p style='margin: 0;'>" . moonmars_text_filter($text, TRUE) . "</p>",
       );
       drupal_mail('moonmars_members', 'notification', $this->mail(), language_default(), $params);
     }
