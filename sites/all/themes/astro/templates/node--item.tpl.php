@@ -77,7 +77,7 @@
       ?>
       <div id='comment-link-wrapper-<?php echo $node->nid; ?>' class='comment-link-wrapper'><a class='comment-link' href='javascript:showNewCommentForm(<?php echo $node->nid; ?>)'>comment</a></div>
       <article id="new-comment-form-article-<?php echo $node->nid; ?>" class="new-comment-form-article comment comment-new comment-by-viewer clearfix" data-nid="<?php echo $node->nid; ?>">
-        <div class='post-article-body'>
+        <div class='post-article-body' <?php echo $poster->style(); ?>>
           <div class='user-picture'>
             <?php echo $current_member->avatarTooltip(); ?>
           </div>
@@ -91,6 +91,7 @@
               <form class='comment-form new-comment-form clearfix'>
                 <textarea class='new-comment-textarea'></textarea>
                 <div class='comment-buttons'>
+                  <input data-nid='<?php echo $node->nid; ?>' class='form-button cancel-comment-button' type='button' value='Cancel'>
                   <input data-nid='<?php echo $node->nid; ?>' class='form-button new-comment-button' type='button' value='Post'>
                 </div>
                 <div class='comment-description'>Write something to share.</div>

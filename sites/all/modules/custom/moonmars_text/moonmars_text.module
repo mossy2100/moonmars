@@ -43,7 +43,7 @@ function moonmars_text_scan($text) {
       if ($user) {
         $member = Member::create($user);
         $members[$member->uid()] = $member;
-        $text2 = preg_replace("/(^|\s)(\@$name)\b/i", "$1" . $member->link(NULL, TRUE), $text2);
+        $text2 = preg_replace("/(^|\s)(\@$name)\b/i", "$1" . $member->link(NULL), $text2);
       }
     }
   }
@@ -75,7 +75,7 @@ function moonmars_text_scan($text) {
       }
 
       $channels[$channel->nid()] = $channel;
-      $parent_entity_link = $channel->parentEntityLink(TRUE);
+      $parent_entity_link = $channel->parentEntityLink();
       $text2 = str_replace("[$channel_title]", $parent_entity_link, $text2);
     }
   }

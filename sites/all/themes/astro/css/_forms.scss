@@ -313,6 +313,12 @@ form {
       margin-right: 10px;
     }
   }
+
+  .field-type-colorfield-rgb {
+    input.form-text {
+      width: 70px;
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////

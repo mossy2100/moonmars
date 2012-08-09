@@ -552,6 +552,11 @@ function setupPostButton(commentArticle) {
       }
     }
   );
+
+  commentArticle.find('.cancel-comment-button').click(function() {
+    hideNewCommentForm($(this).attr('data-nid'));
+  });
+
 }
 
 /**

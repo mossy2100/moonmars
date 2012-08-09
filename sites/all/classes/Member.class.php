@@ -367,11 +367,12 @@ class Member extends User {
       $info = implode('<br>', array_filter($info));
 
       // Remember the HTML in a property in case we need it again:
-      $this->tooltip = "
-        <div class='user-tooltip' title='Visit $username&apos;s profile'>" .
-        $this->avatar() .
-        "<div class='user-tooltip-text'>$info</div>" .
-        "</div>";
+//      $this->tooltip = "
+//        <div class='user-tooltip' title='Visit $username&apos;s profile'>" .
+//        $this->avatar() .
+//        "<div class='user-tooltip-text'>$info</div>" .
+//        "</div>";
+      $this->tooltip = "<div class='user-tooltip' title='Visit $username&apos;s profile'>$info</div>";
     }
 
     return $this->tooltip;
@@ -537,6 +538,39 @@ class Member extends User {
    */
   public function setAlias() {
     $this->alias('member/' . $this->name());
+  }
+
+  /**
+   * Get the HTML attribute for the member's comment style.
+   */
+  public function style() {
+    // Style:
+    $style = array();
+
+    $background_color = $this->field('field_background_color', LANGUAGE_NONE, 0, 'rgb');
+    if ($background_color) {
+      $style[] = "background-color: $background_color;";
+    }
+
+    $text_color = $this->field('field_text_color', LANGUAGE_NONE, 0, 'rgb');
+    if ($text_color) {
+      $style[] = "color: $text_color;";
+    }
+
+    $border_color = $this->field('field_border_color', LANGUAGE_NONE, 0, 'rgb');
+    if ($border_color) {
+      $style[] = "border-color: $border_color;";
+    }
+
+    return $style ? ("style='" . implode(' ', $style) . "'") : '';
+  }
+
+  /**
+   * Get the HTML attribute for the member's border style.
+   */
+  public function borderStyle() {
+    $border_color = $this->field('field_border_color', LANGUAGE_NONE, 0, 'rgb');
+    return $border_color ? "style='border-color: $border_color;'" : '';
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,0 +1,10 @@
+name = Color Fields
+description = A color field for attaching colors to entities
+package = Miscellaneous
+core = 7.x
+; Information added by drupal.org packaging script on 2012-07-24
+version = "7.x-1.x-dev"
+core = "7.x"
+project = "colorfield"
+datestamp = "1343131746"
+

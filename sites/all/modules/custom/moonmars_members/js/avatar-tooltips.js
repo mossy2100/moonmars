@@ -18,12 +18,13 @@ function setupTooltipBehaviour(tooltip) {
     function () {
       $('.user-tooltip', this).css('display', 'none');
     }
-  ).click(
-    // When the tooltip is clicked, go to the user's profile:
-    function () {
-      location.href = $(this).find('.avatar-link').attr('href');
-    }
   );
+//  .click(
+//    // When the tooltip is clicked, go to the user's profile:
+//    function () {
+//      location.href = $(this).find('.avatar-link').attr('href');
+//    }
+//  );
 
   // Same effect if we hover over the user name to the right of the avatar icon:
   $(tooltip).closest('.post-article-body').find('a.username').hover(

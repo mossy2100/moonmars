@@ -26,6 +26,7 @@ $ratingButtonHeight = 20px;
 
   .comment-link-wrapper {
     text-align: right;
+    padding-right: 5px;
   }
 
   article.new-comment-form-article {
@@ -57,7 +58,6 @@ article.node-item {
 }
 
 .who_where_when_posted {
-  color: $grey3;
   font-size: 11px;
   line-height: 16px;
 
@@ -372,6 +372,16 @@ article.comment {
   .unpublished {
     float: right;
     color: $grey2;
+  }
+
+  a {
+    background-color: white;
+    padding: 0 1px;
+    @include border-radius(2px);
+
+    &.avatar-link {
+      padding: 0;
+    }
   }
 }
 
