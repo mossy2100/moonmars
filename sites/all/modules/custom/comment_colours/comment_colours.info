@@ -1,0 +1,14 @@
+name = Comment colours
+core = 7.x
+package = Features
+version = 7.x-1.0
+project = comment_colours
+dependencies[] = colorfield
+dependencies[] = features
+dependencies[] = field_group
+dependencies[] = field_sql_storage
+features[features_api][] = api:1
+features[field][] = user-user-field_background_color
+features[field][] = user-user-field_border_color
+features[field][] = user-user-field_text_color
+features[field_group][] = group_colours|user|user|form
