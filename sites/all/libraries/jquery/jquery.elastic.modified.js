@@ -48,6 +48,11 @@
           return false;
         }
 
+        // SM - Check if it's already elastic:
+        if ($(this).attr('data-elastic') == 1) {
+          return;
+        }
+
         var $textarea = jQuery(this),
           $twin = jQuery('<div />').css({
             'position': 'absolute',
@@ -160,6 +165,9 @@
 
         // Run update once when elastic is initialized
         update();
+
+        // SM - Mark that this textarea is now elastic:
+        $(this).attr('data-elastic', 1);
 
       });
 

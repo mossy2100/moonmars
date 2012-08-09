@@ -139,7 +139,6 @@ function setupItemBehaviour(itemArticle, autoCollapse) {
 
   // Make the new comment textarea elastic:
   var newCommentFormArticle = itemArticle.find('article.new-comment-form-article');
-  newCommentFormArticle.find('form.new-comment-form textarea').elastic();
 
   // Setup new comment form behaviour:
   setupPostButton(newCommentFormArticle);
@@ -494,6 +493,33 @@ function deleteCommentReturn(data, textStatus, jqXHR) {
 // Posting new comments.
 
 /**
+ * Display the new comment form.
+ *
+ * @param int item_nid
+ */
+function showNewCommentForm(item_nid) {
+  // Hide the comment link:
+  $('#comment-link-wrapper-' + item_nid).hide();
+
+  // Show the new comment form and make the textarea elastic. We have to do that after it's visible because elastic()
+  // doesn't work properly if called while invisible.
+  $('#new-comment-form-article-' + item_nid).show().find('textarea').elastic();
+}
+
+/**
+ * Hide the new comment form.
+ *
+ * @param int item_nid
+ */
+function hideNewCommentForm(item_nid) {
+  // Show the comment link:
+  $('#comment-link-wrapper-' + item_nid).show();
+
+  // Hide the new comment form.
+  $('#new-comment-form-article-' + item_nid).hide();
+}
+
+/**
  * Setup behaviour for Post button for posting new comments.
  *
  * @param commentArticle
@@ -553,5 +579,8 @@ function postCommentReturn(data, textStatus, jqXHR) {
     // Attach behaviours to the new comment:
     setupCommentBehaviour(commentArticle, false);
     setupTooltipBehaviour(commentArticle.find('.tooltip'));
+
+    // Hide the new comment form:
+    hideNewCommentForm(data.item_nid);
   }
 }

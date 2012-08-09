@@ -85,7 +85,7 @@ function astro_alpha_preprocess_node_item(&$vars) {
     $vars['content']['field_item_text'][0]['#markup'] = moonmars_text_filter($vars['content']['field_item_text'][0]['#markup']);
   }
 
-  // Links for edit/remove/delete item:
+  // Links for comment/edit/remove/delete item:
   $links = '';
   if (user_is_logged_in()) {
     // These links are in right-to-left order because they're floated right:
@@ -111,10 +111,10 @@ function astro_alpha_preprocess_node_item(&$vars) {
 //    }
 
     $links = "
-          <ul class='action-links item-links clearfix'>
-            $links
-          </ul>
-        ";
+      <ul class='action-links item-links clearfix'>
+        $links
+      </ul>
+    ";
   }
   $vars['links'] = $links;
 
