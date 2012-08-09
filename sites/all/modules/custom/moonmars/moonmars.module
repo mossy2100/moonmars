@@ -21,6 +21,11 @@ function moonmars_menu() {
     'access callback' => TRUE,
     'type' => MENU_CALLBACK
   );
+  $items['admin/phpinfo'] = array(
+    'page callback' => 'moonmars_phpinfo',
+    'access arguments' => array('execute php code'),
+    'type' => MENU_CALLBACK
+  );
   return $items;
 }
 
@@ -38,8 +43,18 @@ function moonmars_home() {
 
 /**
  * Get the entity object for a node.
+ *
+ * @param $node
+ * @return mixed
  */
 function moonmars_get_entity($node) {
   $class = ucfirst($node->type);
   return $class::create($node);
+}
+
+/**
+ * Display the phpinfo.
+ */
+function moonmars_phpinfo() {
+  phpinfo();
 }
