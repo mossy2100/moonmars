@@ -9,7 +9,6 @@ class StarDateTime extends DateTime {
   // Constants
 
   // These values are based on average Gregorian calendar month and year lengths.
-
   const SECONDS_PER_MINUTE  = 60;
   const SECONDS_PER_HOUR    = 3600;
   const SECONDS_PER_DAY     = 86400;
