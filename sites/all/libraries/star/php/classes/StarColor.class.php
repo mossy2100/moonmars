@@ -381,13 +381,14 @@ class StarColor {
   public function hue($hue = NULL) {
     if ($hue === NULL) {
       // Get the hue:
-      $hsla = $this->hsla();
-      return $hsla['hue'];
+      $hsl = $this->hsl();
+      return $hsl['hue'];
     }
 
     // Set the hue:
-    $hsla = $this->hsla();
-    $this->hsla($hue, $hsla['saturation'], $hsla['lightness'], $hsla['alpha']);
+    $hue = self::normalizeDegree($hue);
+    $hsl = $this->hsl();
+    $this->hsl($hue, $hsl['saturation'], $hsl['lightness']);
     return $this;
   }
 
@@ -402,14 +403,14 @@ class StarColor {
   public function saturation($saturation = NULL) {
     if ($saturation === NULL) {
       // Get the saturation:
-      $hsla = $this->hsla();
-      return $hsla['saturation'];
+      $hsl = $this->hsl();
+      return $hsl['saturation'];
     }
 
     // Set the saturation:
     $saturation = self::normalizeFraction($saturation);
-    $hsla = $this->hsla();
-    $this->hsla($hsla['hue'], $saturation, $hsla['lightness'], $hsla['alpha']);
+    $hsl = $this->hsl();
+    $this->hsl($hsl['hue'], $saturation, $hsl['lightness']);
     return $this;
   }
 
@@ -424,14 +425,14 @@ class StarColor {
   public function lightness($lightness = NULL) {
     if ($lightness === NULL) {
       // Get the lightness:
-      $hsla = $this->hsla();
-      return $hsla['lightness'];
+      $hsl = $this->hsl();
+      return $hsl['lightness'];
     }
 
     // Set the lightness:
     $lightness = self::normalizeFraction($lightness);
-    $hsla = $this->hsla();
-    $this->hsla($hsla['hue'], $hsla['saturation'], $lightness, $hsla['alpha']);
+    $hsl = $this->hsla();
+    $this->hsl($hsl['hue'], $hsl['saturation'], $lightness);
     return $this;
   }
 
@@ -487,7 +488,9 @@ class StarColor {
     }
 
     // Set the RGB values:
-    $this->rgba($red, $green, $blue, $this->alpha());
+    $this->red($red);
+    $this->green($green);
+    $this->blue($blue);
     return $this;
   }
 
@@ -541,7 +544,8 @@ class StarColor {
     }
 
     // Set the HSL values:
-    $this->hsla($hue, $saturation, $lightness, $this->alpha());
+    $rgb = self::hsl2rgb($hue, $saturation, $lightness);
+    $this->rgb($rgb['red'], $rgb['green'], $rgb['blue']);
     return $this;
   }
 
