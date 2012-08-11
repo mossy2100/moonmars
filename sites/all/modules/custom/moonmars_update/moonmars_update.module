@@ -10,6 +10,11 @@ function moonmars_update_menu() {
     'access arguments' => array('administer relation types'),
     'type'             => MENU_CALLBACK,
   );
+  $items['named-colors'] = array(
+    'page callback'    => 'moonmars_named_colors',
+    'access callback'  => TRUE,
+    'type'             => MENU_CALLBACK,
+  );
   return $items;
 }
 
@@ -67,4 +72,17 @@ function moonmars_update_subscriber_relationships() {
     }
   }
 
+}
+
+/**
+ * Sort the color names.
+ */
+function moonmars_named_colors() {
+  $colors = StarColor::colorNames();
+  $colors2 = array();
+  foreach ($colors as $name => $hex) {
+    $colors2[strtolower($name)] = strtoupper($hex);
+  }
+  ksort($colors2);
+  dbg($colors2);
 }

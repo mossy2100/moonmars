@@ -60,6 +60,7 @@ article.node-item {
 .who_where_when_posted {
   font-size: 11px;
   line-height: 16px;
+  color: $grey3;
 
   a.username {
     font-weight: bold;
@@ -90,9 +91,12 @@ article.node-item {
     margin-top: 2px;
   }
 
+  .top-post-controls {
+    border-top: solid 1px $grey4;
+  }
+
   .post-controls {
     padding-top: 1px;
-    border-top: solid 1px $grey4;
 
     ul.action-links {
       display: block;
@@ -374,15 +378,15 @@ article.comment {
     color: $grey2;
   }
 
-  a {
-    background-color: white;
-    padding: 0 1px;
-    @include border-radius(2px);
-
-    &.avatar-link {
-      padding: 0;
-    }
-  }
+  //a {
+  //  background-color: white;
+  //  padding: 0 1px;
+  //  @include border-radius(2px);
+  //
+  //  &.avatar-link {
+  //    padding: 0;
+  //  }
+  //}
 }
 
 div.item-list {

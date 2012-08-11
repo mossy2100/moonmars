@@ -63,11 +63,17 @@ function astro_alpha_preprocess_node_item(&$vars) {
 // Calculate the score for the item:
 //      $vars['score'] = mt_rand(-20, 9999);
 
-  // Remove unpublished comments.
+  // Remove unpublished comments. Count published comments.
+  $n_comments = 0;
   if (isset($vars['content']['comments']['comments'])) {
     foreach ($vars['content']['comments']['comments'] as $key => $value) {
-      if (is_numeric($key) && !$value['#comment']->status) {
-        unset($vars['content']['comments']['comments'][$key]);
+      if (is_numeric($key)) {
+        if ($value['#comment']->status) {
+          $n_comments++;
+        }
+        else {
+          unset($vars['content']['comments']['comments'][$key]);
+        }
       }
     }
   }
@@ -86,36 +92,57 @@ function astro_alpha_preprocess_node_item(&$vars) {
   }
 
   // Links for comment/edit/remove/delete item:
-  $links = '';
-  if (user_is_logged_in()) {
+  $links1 = '';
+  $links2 = '';
+
+  if ($current_member) {
     // These links are in right-to-left order because they're floated right:
 
     // delete link:
     if ($current_member->canDeleteItem($item)) {
-      $links .= "<li class='item-delete'><a href='javascript:deleteItem($item_nid)'>delete</a></li>";
+      $links1 .= "<li class='item-delete'><a href='javascript:deleteItem($item_nid)'>delete</a></li>";
     }
 
 //    // remove link:
 //    if ($current_channel && $current_member->canRemoveItem($item, $current_channel)) {
-//      $links .= "<li class='item-remove'><a href='javascript:removeItem($item_nid)'>remove</a></li>";
+//      $links1 .= "<li class='item-remove'><a href='javascript:removeItem($item_nid)'>remove</a></li>";
 //    }
 
     // edit link:
     if ($current_member->canEditItem($item)) {
-      $links .= "<li class='item-edit'><a href='javascript:editItem($item_nid)'>edit</a></li>";
+      $links1 .= "<li class='item-edit'><a href='javascript:editItem($item_nid)'>edit</a></li>";
     }
 
 //    // view link:
 //    if (!$item_node_page) {
-//      $links .= "<li class='item-view'><a href='/" . $item->alias() . "'>view</a></li>";
+//      $links1 .= "<li class='item-view'><a href='/" . $item->alias() . "'>view</a></li>";
 //    }
 
-    $links = "
+    // comment link - show at top and bottom:
+    if ($current_member->canPostComment($item)) {
+      $links1 .= "<li class='item-comment item-comment-$item_nid'><a href='javascript:showNewCommentForm($item_nid, true)'>comment</a></li>";
+
+      // Only show the bottom comment link if there are some comments. Otherwise they can use the top one.
+      if ($n_comments) {
+        $links2 .= "<li class='item-comment item-comment-$item_nid'><a href='javascript:showNewCommentForm($item_nid, false)'>comment</a></li>";
+      }
+    }
+
+    $links1 = "
       <ul class='action-links item-links clearfix'>
-        $links
+        $links1
       </ul>
     ";
+
+    $links2 = $links2 ? "
+      <div class='post-controls bottom-post-controls-$item_nid'>
+        <ul class='action-links item-links clearfix'>
+          $links2
+        </ul>
+      </div>" : '';
   }
-  $vars['links'] = $links;
+
+  $vars['links1'] = $links1;
+  $vars['links2'] = $links2;
 
 }

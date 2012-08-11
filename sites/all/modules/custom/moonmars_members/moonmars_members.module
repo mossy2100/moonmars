@@ -94,9 +94,7 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
   $module_path = drupal_get_path('module', 'moonmars_members');
 
   switch ($form_id) {
-
     case 'user_register_form':
-
       // Add JS for the Moon or Mars field:
       $form['#attached']['js'][] = "$module_path/js/moon-or-mars.js";
       $form['#attached']['js'][] = "$module_path/js/check-username.js";
@@ -134,11 +132,9 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
 
       // Add a validation handler. Need to put this first so that our username rules get checked before Drupal core's.
       array_unshift($form['#validate'], 'moonmars_members_user_register_form_validate');
-
       break;
 
     case 'user_profile_form':
-
       // Add JS:
       $form['#attached']['js'][] = "$module_path/js/moon-or-mars.js";
       $form['#attached']['js'][] = "$module_path/js/profile-form.js";
@@ -157,6 +153,18 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
         '#attributes' => array('id' => 'uid'),
       );
 
+      // Color icons for background color:
+      $bg_color = $form['field_background_color'][LANGUAGE_NONE][0]['rgb']['#default_value'];
+      $form['field_background_color'][LANGUAGE_NONE][0]['#prefix'] = moonmars_color_icons2($bg_color);
+
+//      // Color icons for border color:
+//      $form['field_border_color'][LANGUAGE_NONE][0]['#suffix'] = moonmars_color_icons('border-color', '#96b1ff', $form['field_border_color'][LANGUAGE_NONE][0]['rgb']['#default_value']);
+unset($form['field_border_color']);
+//
+//      // Color icons for text color:
+//      $form['field_text_color'][LANGUAGE_NONE][0]['#suffix'] = moonmars_color_icons('color', '#314fa9', $form['field_text_color'][LANGUAGE_NONE][0]['rgb']['#default_value']);
+      unset($form['field_text_color']);
+
       // Add an after_build handler:
       $form['#after_build'][] = 'moonmars_members_user_profile_form_after_build';
 
@@ -165,7 +173,6 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
 
       // Add a submit handler:
       $form['#submit'][] = 'moonmars_members_user_profile_form_submit';
-
       break;
   }
 

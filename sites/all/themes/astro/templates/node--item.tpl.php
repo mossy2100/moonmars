@@ -38,7 +38,7 @@
     */
     ?>
 
-    <div class='post-controls'>
+    <div class='post-controls top-post-controls'>
       <?php
       /*
 
@@ -60,24 +60,26 @@
       ?>
 
       <?php
-      // Links for edit/delete/remove item:
-      echo $links;
+      // Top links for comment/edit/delete/remove item:
+      echo $links1;
       ?>
 
     </div> <!-- /post-controls -->
 
     <?php
+    // Comments:
     echo $comments;
+
+    // Bottom comment link:
+    echo $links2;
     ?>
 
-    <!-- new comment form -->
     <?php
-    if ($current_member && $current_member->canPostComment($item)) {
-      // Show the post comment form:
+      // New comment form:
+      if ($current_member && $current_member->canPostComment($item)) {
       ?>
-      <div id='comment-link-wrapper-<?php echo $node->nid; ?>' class='comment-link-wrapper'><a class='comment-link' href='javascript:showNewCommentForm(<?php echo $node->nid; ?>)'>comment</a></div>
       <article id="new-comment-form-article-<?php echo $node->nid; ?>" class="new-comment-form-article comment comment-new comment-by-viewer clearfix" data-nid="<?php echo $node->nid; ?>">
-        <div class='post-article-body' <?php echo $poster->style(); ?>>
+        <div class='post-article-body' <?php echo $poster->commentStyle(); ?>>
           <div class='user-picture'>
             <?php echo $current_member->avatarTooltip(); ?>
           </div>

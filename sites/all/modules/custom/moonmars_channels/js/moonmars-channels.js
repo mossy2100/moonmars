@@ -497,13 +497,23 @@ function deleteCommentReturn(data, textStatus, jqXHR) {
  *
  * @param int item_nid
  */
-function showNewCommentForm(item_nid) {
-  // Hide the comment link:
-  $('#comment-link-wrapper-' + item_nid).hide();
+function showNewCommentForm(item_nid, scrollIntoView) {
+  // Hide the comment links:
+//  $('.item-comment-' + item_nid).hide();
+  $('.bottom-post-controls-' + item_nid).hide();
 
   // Show the new comment form and make the textarea elastic. We have to do that after it's visible because elastic()
   // doesn't work properly if called while invisible.
-  $('#new-comment-form-article-' + item_nid).show().find('textarea').elastic();
+  var newCommentFormArticle = $('#new-comment-form-article-' + item_nid);
+  newCommentFormArticle.show().find('textarea').elastic();
+
+  // Scroll into view if requested:
+  if (scrollIntoView) {
+    var formTop = newCommentFormArticle.offset().top;
+    var formHeight = newCommentFormArticle.height();
+    var windowHeight = $(window).height();
+    $.scrollTo({top: formTop - ((windowHeight - formHeight) / 2), left: 0}, 1000, {easing: 'swing'});
+  }
 }
 
 /**
@@ -512,8 +522,9 @@ function showNewCommentForm(item_nid) {
  * @param int item_nid
  */
 function hideNewCommentForm(item_nid) {
-  // Show the comment link:
-  $('#comment-link-wrapper-' + item_nid).show();
+  // Show the comment links:
+//  $('.item-comment-' + item_nid).show();
+  $('.bottom-post-controls-' + item_nid).show();
 
   // Hide the new comment form.
   $('#new-comment-form-article-' + item_nid).hide();

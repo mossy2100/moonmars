@@ -50,7 +50,7 @@ form {
 
   input.form-text,
   .form-textarea-wrapper textarea {
-    width: 300px;
+    width: 278px;
   }
 
   .field-name-field-event-price {
@@ -70,17 +70,21 @@ form {
 
     .description {
       font-size: 11px;
-      padding: 5px 0;
+      padding: 3px 0;
       color: $grey3;
     }
 
+    & > label {
+      padding: 3px 0;
+    }
+
     div.link-field-column {
-      width: 285px;
+      width: 263px;
 
       .link-field-title,
       .link-field-url {
         input.form-text {
-          width: 285px;
+          width: 263px;
         }
       }
 
@@ -232,7 +236,7 @@ form {
 
   .form-type-password-confirm {
     .form-type-password {
-      width: 300px;
+      width: 278px;
     }
   }
 
@@ -242,7 +246,7 @@ form {
   }
 
   .password-suggestions {
-    width: 290px;
+    width: 268px;
     padding: 4px;
     margin-bottom: 0;
 
@@ -286,7 +290,7 @@ form {
   #edit-field-user-location-und-0-country,
   #edit-field-user-location-und-0-province-selector,
   #edit-timezone--2 {
-    width: 300px;
+    width: 278px;
   }
 
   #edit-field-user-location {

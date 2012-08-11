@@ -10,6 +10,7 @@ function astro_alpha_preprocess_page(&$vars) {
 //  drupal_add_js('sites/all/libraries/jquery/jquery.dimensions.js');
   drupal_add_js('sites/all/libraries/jquery/jquery.boolAttr.js');
   drupal_add_js('sites/all/libraries/jquery/jquery.elastic.modified.js');
+  drupal_add_js('sites/all/libraries/jquery/jquery.scrollTo-1.4.2.js');
 
   // Star library strings:
   drupal_add_js('/sites/all/libraries/star/js/strings.js');

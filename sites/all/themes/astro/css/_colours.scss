@@ -24,3 +24,43 @@ $grey6: #d2d2d2;
 $grey7: #e2e2e2;
 
 $green3: LimeGreen;
+
+
+.color-icons {
+  width: 264px;
+  padding: 6px;
+  background-color: white;
+  border: solid 1px $blue4;
+  @include border-radius(3px);
+}
+
+.color-icon {
+  width: 24px;
+  height: 20px;
+  padding: 4px;
+  margin: 0;
+  text-align: center;
+  line-height: 20px;
+  border: solid 1px black;
+  @include border-radius(3px);
+  cursor: pointer;
+}
+
+.color-icon-wrapper {
+  padding: 3px;
+  margin: 1px;
+  width: 34px;
+  float: left;
+  border: solid 1px white;
+  @include border-radius(6px);
+
+  &.selected {
+    background-color: $grey5;
+    border-color: $grey5;
+  }
+
+  &:hover {
+    background-color: $grey5;
+    border-color: $grey5;
+  }
+}

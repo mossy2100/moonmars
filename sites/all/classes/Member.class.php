@@ -400,7 +400,7 @@ class Member extends User {
   public function tooltipLink() {
     $attr = array(
       'class' => array('username'),
-      'title' => 'Visit ' . $this->name() . '&apos;s profile.'
+      'title' => 'Visit ' . $this->name() . "'s profile."
     );
     return l($this->name(), $this->alias(), array('attributes' => $attr));
   }
@@ -541,36 +541,62 @@ class Member extends User {
   }
 
   /**
-   * Get the HTML attribute for the member's comment style.
+   * Get the comment background color.
+   *
+   * @return StarColor
    */
-  public function style() {
-    // Style:
-    $style = array();
+  public function commentBackgroundColor() {
+    $bg_color = $this->field('field_background_color', LANGUAGE_NONE, 0, 'rgb');
 
-    $background_color = $this->field('field_background_color', LANGUAGE_NONE, 0, 'rgb');
-    if ($background_color) {
-      $style[] = "background-color: $background_color;";
+    if (StarColor::isHexString($bg_color)) {
+      $bg_color = new StarColor($bg_color);
+      // Reset the saturation and lightness:
+      $bg_color->saturation(0.95);
+      $bg_color->lightness(0.95);
+    }
+    else {
+      // Default to blue:
+      $bg_color = new StarColor(220, 0.95, 0.95, TRUE);
     }
 
-    $text_color = $this->field('field_text_color', LANGUAGE_NONE, 0, 'rgb');
-    if ($text_color) {
-      $style[] = "color: $text_color;";
-    }
-
-    $border_color = $this->field('field_border_color', LANGUAGE_NONE, 0, 'rgb');
-    if ($border_color) {
-      $style[] = "border-color: $border_color;";
-    }
-
-    return $style ? ("style='" . implode(' ', $style) . "'") : '';
+    return $bg_color;
   }
 
   /**
-   * Get the HTML attribute for the member's border style.
+   * Get the comment border color.
+   *
+   * @return StarColor
    */
-  public function borderStyle() {
-    $border_color = $this->field('field_border_color', LANGUAGE_NONE, 0, 'rgb');
-    return $border_color ? "style='border-color: $border_color;'" : '';
+  public function commentBorderColor() {
+    $border_color = clone $this->commentBackgroundColor();
+    $border_color->saturation(0.8);
+    $border_color->lightness(0.8);
+    return $border_color;
+  }
+
+  /**
+   * Get the HTML attribute for the member's comment style.
+   */
+  public function commentStyle() {
+    // Style:
+    $style = array();
+
+//    $text_color = clone $bg_color;
+//    $text_color->saturation(0.4);
+//    $text_color->lightness(0.4);
+//    $style[] = "color: " . $text_color->hex() . ";";
+
+    $style[] = "background-color: " . $this->commentBackgroundColor()->hex() . ";";
+    $style[] = "border-color: " . $this->commentBorderColor()->hex() . ";";
+
+    return "style='" . implode(' ', $style) . "'";
+  }
+
+  /**
+   * Get the HTML attribute for the member's comment border style.
+   */
+  public function commentBorderStyle() {
+    return "style='border-color: " . $this->commentBorderColor()->hex() . ";'";
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

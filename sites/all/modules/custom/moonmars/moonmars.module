@@ -6,9 +6,6 @@
 function moonmars_init() {
   // Activate debugging:
   dbg_on();
-
-  relation_delete(788);
-
 }
 
 /**
@@ -24,6 +21,11 @@ function moonmars_menu() {
   $items['admin/phpinfo'] = array(
     'page callback' => 'moonmars_phpinfo',
     'access arguments' => array('execute php code'),
+    'type' => MENU_CALLBACK
+  );
+  $items['colors'] = array(
+    'page callback' => 'moonmars_colors',
+    'access callback' => TRUE,
     'type' => MENU_CALLBACK
   );
   return $items;
@@ -57,4 +59,130 @@ function moonmars_get_entity($node) {
  */
 function moonmars_phpinfo() {
   phpinfo();
+}
+
+/**
+ * Generate color palette for use in forms.
+ */
+function moonmars_color_icons($property, $original_color, $current_color) {
+
+  $original_color = new StarColor($original_color);
+//  dbg($original_color->hslaString());
+
+  if (!StarColor::isHexString($current_color)) {
+    $current_color = $original_color;
+  }
+  else {
+    $current_color = new StarColor($current_color);
+    // Make the saturation and lightness match the original color:
+    $current_color->saturation($original_color->saturation());
+    $current_color->lightness($original_color->lightness());
+  }
+
+  // Find the closest hue in our palette:
+  $hue = round($current_color->hue() / 20) * 20;
+  if ($hue == 360) {
+    $hue = 0;
+  }
+
+  $html = "<div class='color-icons'>";
+
+  for ($hue2 = 0; $hue2 < 360; $hue2 += 20) {
+    $current_color->hue($hue2);
+
+    if ($hue2 % 120 == 0) {
+      $html .= "<div class='clearfix'>";
+    }
+
+    $html .= "
+      <div class='color-icon-wrapper " . ($hue == $hue2 ? 'selected' : '') . "'>
+        <div class='color-icon' style='$property: ". $current_color->hex() . ";'>$hue2</div>
+      </div>";
+
+    if (($hue2 + 20) % 120 == 0) {
+      $html .= "</div>";
+    }
+  }
+
+  $html .= "</div>";
+
+  return $html;
+}
+
+/**
+ * Generate color palette for use in forms.
+ */
+function moonmars_color_icons2($bg_color) {
+//  $orig_bg_color = new StarColor('#e4ebff');
+  $bg_saturation = 0.95;
+  $bg_lightness = 0.95;
+
+//  $orig_border_color = new StarColor('#96b1ff');
+  $border_saturation = 0.8;
+  $border_lightness = 0.8;
+
+  $text_saturation = 0.4;
+  $text_lightness = 0.4;
+
+//  $orig_text_color = new StarColor('#314fa9');
+
+  $default_hue = 220;
+
+  if (!StarColor::isHexString($bg_color)) {
+    $bg_color = new StarColor($default_hue, $bg_saturation, $bg_lightness);
+  }
+  else {
+    $bg_color = new StarColor($bg_color);
+  }
+
+  // Make the saturation and lightness match the original color:
+  $bg_color->saturation($bg_saturation);
+  $bg_color->lightness($bg_lightness);
+
+  // Find the closest hue in our palette:
+  $hue = round($bg_color->hue() / 20) * 20;
+  if ($hue == 360) {
+    $hue = 0;
+  }
+
+  // Make the border color match the background color:
+  $border_color = new StarColor($hue, $border_saturation, $border_lightness, TRUE);
+  $text_color = new StarColor($hue, $text_saturation, $text_lightness, TRUE);
+
+  $html = "<div class='color-icons'>";
+  $n_colors = 18;
+  $diff = 360 / $n_colors;
+
+  for ($n = 0; $n < $n_colors; $n++) {
+    $hue2 = $n * $diff;
+
+    $bg_color->hue($hue2);
+    $border_color->hue($hue2);
+    $text_color->hue($hue2);
+
+    if ($n % 6 == 0) {
+      $html .= "<div class='clearfix'>";
+    }
+
+//    $html .= "
+//      <div class='color-icon-wrapper " . ($hue2 == $hue ? 'selected' : '') . "'>
+//        <div class='color-icon' style='background-color: " . $bg_color->hex() . "; border-color: " . $border_color->hex() . "; color: " . $text_color->hex() . ";'>" . ($n + 1) . "</div>
+//      </div>";
+    $html .= "
+      <div class='color-icon-wrapper " . ($hue2 == $hue ? 'selected' : '') . "'>
+        <div class='color-icon' style='background-color: " . $bg_color->hex() . "; border-color: " . $border_color->hex() . ";'>" . ($n + 1) . "</div>
+      </div>";
+
+    if (($n + 1) % 6 == 0) {
+      $html .= "</div>";
+    }
+  }
+
+  if (($n + 1) % 6 != 0) {
+    $html .= "</div>";
+  }
+
+  $html .= "</div>";
+
+  return $html;
 }

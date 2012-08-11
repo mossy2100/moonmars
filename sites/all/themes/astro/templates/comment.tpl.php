@@ -1,6 +1,6 @@
 <article<?php echo $attributes; ?> xmlns="http://www.w3.org/1999/html">
 
-  <div class='post-article-body <?php echo $highlight; ?>' <?php echo $poster->style(); ?>>
+  <div class='post-article-body <?php echo $highlight; ?>' <?php echo $poster->commentStyle(); ?>>
     <div class='user-picture'>
       <?php echo $avatar; ?>
     </div>
@@ -39,7 +39,7 @@
     </div> <!-- /score-more-wrapper -->
     */ ?>
 
-    <div class='post-controls' <?php echo $poster->borderStyle(); ?>>
+    <div class='post-controls top-post-controls' <?php echo $poster->commentBorderStyle(); ?>>
       <?php /*
       <?php if (user_is_logged_in()) { ?>
         <div class='rating-buttons'>
