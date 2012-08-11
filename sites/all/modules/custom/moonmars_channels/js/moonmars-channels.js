@@ -497,23 +497,43 @@ function deleteCommentReturn(data, textStatus, jqXHR) {
  *
  * @param int item_nid
  */
-function showNewCommentForm(item_nid, scrollIntoView) {
-  // Hide the comment links:
-//  $('.item-comment-' + item_nid).hide();
-  $('.bottom-post-controls-' + item_nid).hide();
-
-  // Show the new comment form and make the textarea elastic. We have to do that after it's visible because elastic()
-  // doesn't work properly if called while invisible.
+function showNewCommentForm(item_nid) {
+  // Get the new comment form:
   var newCommentFormArticle = $('#new-comment-form-article-' + item_nid);
-  newCommentFormArticle.show().find('textarea').elastic();
 
-  // Scroll into view if requested:
-  if (scrollIntoView) {
-    var formTop = newCommentFormArticle.offset().top;
-    var formHeight = newCommentFormArticle.height();
-    var windowHeight = $(window).height();
-    $.scrollTo({top: formTop - ((windowHeight - formHeight) / 2), left: 0}, 1000, {easing: 'swing'});
-  }
+  // Get the initial height of the new comment area:
+  var bottomLinks = $('.bottom-post-controls-' + item_nid);
+  var initialHeight = bottomLinks.length ? bottomLinks.height() : 0;
+
+  // Hide the comment links:
+  bottomLinks.hide();
+
+  // Initialise the form prior to animation:
+  newCommentFormArticle.css({height: initialHeight, opacity: 0, overflow: 'hidden'}).show();
+
+  // Make the textarea elastic once it's visible.
+  // The elastic() method currently doesn't work if called on an invisible textarea.
+  newCommentFormArticle.find('textarea').elastic();
+
+  // Get the height of the visible part of the form, now that it's shown:
+  var height = newCommentFormArticle.find('.post-article-body').outerHeight() + 2;
+
+  // Animate the display of the form:
+  newCommentFormArticle.animate({
+    height: height,
+    opacity: 1
+  }, 500);
+
+  // Simultaneously scroll into view:
+  var formTop = newCommentFormArticle.offset().top;
+  var formHeight = newCommentFormArticle.height();
+  var windowHeight = $(window).height();
+  $.scrollTo({top: formTop - ((windowHeight - formHeight) / 2), left: 0}, 1000, {
+    easing: 'swing',
+    onAfter: function() {
+      newCommentFormArticle.find('textarea').focus();
+    }
+  });
 }
 
 /**
@@ -522,12 +542,24 @@ function showNewCommentForm(item_nid, scrollIntoView) {
  * @param int item_nid
  */
 function hideNewCommentForm(item_nid) {
-  // Show the comment links:
-//  $('.item-comment-' + item_nid).show();
-  $('.bottom-post-controls-' + item_nid).show();
+  // Get the new comment form:
+  var newCommentFormArticle = $('#new-comment-form-article-' + item_nid);
 
-  // Hide the new comment form.
-  $('#new-comment-form-article-' + item_nid).hide();
+  // Get the final height of the new comment area:
+  var bottomLinks = $('.bottom-post-controls-' + item_nid);
+  var finalHeight = bottomLinks.length ? bottomLinks.height() : 0;
+
+  // Animate and hide it.
+  newCommentFormArticle.animate({
+    height: finalHeight,
+    opacity: 0
+  }, 500, function() {
+    // Hide the new comment form:
+    $(this).hide();
+
+    // Show the comment link, if there is one:
+    bottomLinks.show();
+  });
 }
 
 /**

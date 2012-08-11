@@ -120,11 +120,11 @@ function astro_alpha_preprocess_node_item(&$vars) {
 
     // comment link - show at top and bottom:
     if ($current_member->canPostComment($item)) {
-      $links1 .= "<li class='item-comment item-comment-$item_nid'><a href='javascript:showNewCommentForm($item_nid, true)'>comment</a></li>";
+      $links1 .= "<li class='item-comment item-comment-$item_nid'><a href='javascript:showNewCommentForm($item_nid)'>comment</a></li>";
 
       // Only show the bottom comment link if there are some comments. Otherwise they can use the top one.
       if ($n_comments) {
-        $links2 .= "<li class='item-comment item-comment-$item_nid'><a href='javascript:showNewCommentForm($item_nid, false)'>comment</a></li>";
+        $links2 .= "<li class='item-comment item-comment-$item_nid'><a href='javascript:showNewCommentForm($item_nid)'>comment</a></li>";
       }
     }
 
