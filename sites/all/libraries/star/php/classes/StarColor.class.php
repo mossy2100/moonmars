@@ -736,7 +736,7 @@ class StarColor {
       $n_chars = 8;
     }
     else {
-      $value = $this->value >> 8;
+      $value = ($this->value >> 8) & 0xFFFFFF;
       $n_chars = 6;
     }
     return ($include_hash ? '#' : '') . str_pad(strtoupper(dechex($value)), $n_chars, '0', STR_PAD_LEFT);
