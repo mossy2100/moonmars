@@ -121,23 +121,19 @@ function moonmars_color_icons2($bg_color_hex) {
   $border_saturation = 0.8;
   $border_lightness = 0.8;
 
+//  $orig_text_color = new StarColor('#314fa9');
 //  $text_saturation = 0.4;
 //  $text_lightness = 0.4;
-
-//  $orig_text_color = new StarColor('#314fa9');
 
   $default_hue = 220;
 
   if (StarColor::isHexString($bg_color_hex)) {
     $bg_color = new StarColor($bg_color_hex);
     // Set the saturation and lightness:
-    dbg($bg_color->toArray(), "created new color from hex string $bg_color_hex - before setting hsl");
     $bg_color->hsl($bg_color->hue(), $bg_saturation, $bg_lightness);
-    dbg($bg_color->toArray(), "created new color from hex string $bg_color_hex - after setting hsl");
   }
   else {
     $bg_color = new StarColor($default_hue, $bg_saturation, $bg_lightness, TRUE);
-    dbg($bg_color->toArray(), "created new color from default");
   }
 
   // Create the border color with the desired saturation and lightness:
@@ -157,16 +153,10 @@ function moonmars_color_icons2($bg_color_hex) {
   for ($n = 0; $n < $n_colors; $n++) {
     $hue2 = $n * $diff;
 
-//    dpm($bg_color->toArray(), 'bg_color before setting hue');
-//    dpm($border_color->toArray(), 'border_color before setting hue');
-
     // Set the hue of the style colors:
     $bg_color->hue($hue2);
     $border_color->hue($hue2);
 //    $text_color->hue($hue2);
-
-//    dpm($bg_color->toArray(), 'bg_color after setting hue');
-//    dpm($border_color->toArray(), 'border_color after setting hue');
 
     if ($n % 6 == 0) {
       $html .= "<div class='clearfix'>";
