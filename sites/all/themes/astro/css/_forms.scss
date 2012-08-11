@@ -338,15 +338,16 @@ form {
 
 #edit-field-moon-or-mars {
   margin: 15px 0;
+  width: 276px;
 
   #edit-field-moon-or-mars-und {
-    height: 110px;
+    height: 104px;
     margin: 0;
 
     div.form-item {
       float: left;
-      width: 92px;
-      margin: 0 8px 0 0;
+      width: 88px;
+      margin: 0 2px;
 
       &:last-child {
         margin-right: 0;
@@ -356,25 +357,21 @@ form {
         display: block;
         width: 80px;
         height: 15px;
-        padding: 85px 5px 5px;
-        margin: 5px 0 0 0;
+        padding: 84px 4px 4px;
+        margin: 0;
         background-repeat: no-repeat;
-        background-position: 5px 5px;
+        background-position: 4px 4px;
         text-align: center;
-        background-color: white;
-        border: solid 1px $grey4;
-        @include border-radius(3px);
+        @include border-radius(4px);
 
         &.selected {
           color: white;
-          background-color: $blue3;
-          border-color: $blue3;
+          background-color: $grey4;
         }
 
         &:hover {
           color: white;
-          background-color: $red3;
-          border-color: $red3;
+          background-color: $blue4;
         }
       }
 

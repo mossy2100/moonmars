@@ -501,6 +501,11 @@ function showNewCommentForm(item_nid) {
   // Get the new comment form:
   var newCommentFormArticle = $('#new-comment-form-article-' + item_nid);
 
+  if (newCommentFormArticle.css('display') == 'block') {
+    // New comment form is already displayed, do nothing:
+    return;
+  }
+
   // Get the initial height of the new comment area:
   var bottomLinks = $('.bottom-post-controls-' + item_nid);
   var initialHeight = bottomLinks.length ? bottomLinks.height() : 0;
@@ -516,13 +521,16 @@ function showNewCommentForm(item_nid) {
   newCommentFormArticle.find('textarea').elastic();
 
   // Get the height of the visible part of the form, now that it's shown:
-  var height = newCommentFormArticle.find('.post-article-body').outerHeight() + 2;
+  var height = newCommentFormArticle.find('.post-article-body').outerHeight();
 
   // Animate the display of the form:
   newCommentFormArticle.animate({
     height: height,
     opacity: 1
-  }, 333);
+  }, 333, function() {
+    // Now set the height to auto, so it grows automatically with the textarea:
+    newCommentFormArticle.height('auto');
+  });
 
   // Simultaneously scroll into view:
   var formTop = newCommentFormArticle.offset().top;

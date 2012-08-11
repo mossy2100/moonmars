@@ -159,11 +159,17 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
 
 //      // Color icons for border color:
 //      $form['field_border_color'][LANGUAGE_NONE][0]['#suffix'] = moonmars_color_icons('border-color', '#96b1ff', $form['field_border_color'][LANGUAGE_NONE][0]['rgb']['#default_value']);
-unset($form['field_border_color']);
+      unset($form['field_border_color']);
 //
 //      // Color icons for text color:
 //      $form['field_text_color'][LANGUAGE_NONE][0]['#suffix'] = moonmars_color_icons('color', '#314fa9', $form['field_text_color'][LANGUAGE_NONE][0]['rgb']['#default_value']);
       unset($form['field_text_color']);
+
+      // Embed the links.
+//      require_once drupal_get_path('module', 'node') . '/node.pages.inc';
+//      $profile_member = Member::create($form['#user']->uid);
+//      $form2 = node_page_edit($profile_member->channel()->node());
+//      $form['links'] = $form2;
 
       // Add an after_build handler:
       $form['#after_build'][] = 'moonmars_members_user_profile_form_after_build';

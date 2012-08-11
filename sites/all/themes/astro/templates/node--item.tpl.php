@@ -79,7 +79,7 @@
       if ($current_member && $current_member->canPostComment($item)) {
       ?>
       <article id="new-comment-form-article-<?php echo $node->nid; ?>" class="new-comment-form-article comment comment-new comment-by-viewer clearfix" data-nid="<?php echo $node->nid; ?>">
-        <div class='post-article-body' <?php echo $poster->commentStyle(); ?>>
+        <div class='post-article-body' <?php echo $current_member->commentStyle(); ?>>
           <div class='user-picture'>
             <?php echo $current_member->avatarTooltip(); ?>
           </div>
