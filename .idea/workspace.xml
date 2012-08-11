@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="ff922214-f7cd-4eef-9f30-177ba578dd26" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/libraries/star/php/classes/StarColor.class.php" afterPath="$PROJECT_DIR$/sites/all/libraries/star/php/classes/StarColor.class.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars/moonmars.module" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars/moonmars.module" />
     </list>
     <ignored path="moonmars.com.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -50,7 +49,7 @@
       <file leaf-file-name="StarColor.class.php" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/sites/all/libraries/star/php/classes/StarColor.class.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="295" column="22" selection-start="8922" selection-end="8923" vertical-scroll-proportion="0.5654102">
+            <state line="305" column="12" selection-start="9139" selection-end="9139" vertical-scroll-proportion="0.21618626">
               <folding />
             </state>
           </provider>
@@ -1364,7 +1363,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/libraries/star/php/classes/StarColor.class.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="295" column="22" selection-start="8922" selection-end="8923" vertical-scroll-proportion="0.5654102">
+        <state line="305" column="12" selection-start="9139" selection-end="9139" vertical-scroll-proportion="0.21618626">
           <folding />
         </state>
       </provider>

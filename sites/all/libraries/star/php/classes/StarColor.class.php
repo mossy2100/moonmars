@@ -303,7 +303,7 @@ class StarColor {
   public function red($red = NULL) {
     if ($red === NULL) {
       // Get the red value:
-      return ($this->value & 0xFF000000) >> 24;
+      return ($this->value >> 24) & 0xFF;
     }
 
     // Set the red value:
@@ -324,7 +324,7 @@ class StarColor {
   public function green($green = NULL) {
     if ($green === NULL) {
       // Get the green value:
-      return ($this->value & 0x00FF0000) >> 16;
+      return ($this->value >> 16) & 0xFF;
     }
 
     // Set the green value:
@@ -345,7 +345,7 @@ class StarColor {
   public function blue($blue = NULL) {
     if ($blue === NULL) {
       // Get the blue value:
-      return ($this->value & 0x0000FF00) >> 8;
+      return ($this->value >> 8) & 0xFF;
     }
 
     // Set the blue value:
@@ -366,7 +366,7 @@ class StarColor {
   public function alpha($alpha = NULL) {
     if ($alpha === NULL) {
       // Get the alpha value as a fraction in the range 0.0..1.0:
-      return ($this->value & 0x000000FF) / 255;
+      return ($this->value & 0xFF) / 255;
     }
 
     // Set the alpha value:
