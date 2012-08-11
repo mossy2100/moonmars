@@ -120,7 +120,7 @@ function removePost(post) {
     marginBottom: 0,
     paddingTop: 0,
     paddingBottom: 0
-  }, 500, function() {
+  }, 333, function() {
     $(this).remove();
   });
 }
@@ -522,13 +522,13 @@ function showNewCommentForm(item_nid) {
   newCommentFormArticle.animate({
     height: height,
     opacity: 1
-  }, 500);
+  }, 333);
 
   // Simultaneously scroll into view:
   var formTop = newCommentFormArticle.offset().top;
   var formHeight = newCommentFormArticle.height();
   var windowHeight = $(window).height();
-  $.scrollTo({top: formTop - ((windowHeight - formHeight) / 2), left: 0}, 1000, {
+  $.scrollTo({top: formTop - ((windowHeight - formHeight) / 2), left: 0}, 333, {
     easing: 'swing',
     onAfter: function() {
       newCommentFormArticle.find('textarea').focus();
@@ -553,7 +553,7 @@ function hideNewCommentForm(item_nid) {
   newCommentFormArticle.animate({
     height: finalHeight,
     opacity: 0
-  }, 500, function() {
+  }, 333, function() {
     // Hide the new comment form:
     $(this).hide();
 

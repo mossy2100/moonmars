@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ff922214-f7cd-4eef-9f30-177ba578dd26" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/js/moonmars-channels.js" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/js/moonmars-channels.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-node-item.inc" afterPath="$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-node-item.inc" />
     </list>
     <ignored path="moonmars.com.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -33,7 +31,7 @@
       <file leaf-file-name="moonmars-channels.js" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/js/moonmars-channels.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="562" column="0" selection-start="16979" selection-end="16979" vertical-scroll-proportion="1.9405941">
+            <state line="530" column="77" selection-start="16214" selection-end="16214" vertical-scroll-proportion="0.30858085">
               <folding />
             </state>
           </provider>
@@ -1330,7 +1328,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/js/moonmars-channels.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="562" column="0" selection-start="16979" selection-end="16979" vertical-scroll-proportion="1.9405941">
+        <state line="530" column="77" selection-start="16214" selection-end="16214" vertical-scroll-proportion="0.30858085">
           <folding />
         </state>
       </provider>
