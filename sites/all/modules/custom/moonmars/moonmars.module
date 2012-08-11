@@ -121,8 +121,8 @@ function moonmars_color_icons2($bg_color) {
   $border_saturation = 0.8;
   $border_lightness = 0.8;
 
-  $text_saturation = 0.4;
-  $text_lightness = 0.4;
+//  $text_saturation = 0.4;
+//  $text_lightness = 0.4;
 
 //  $orig_text_color = new StarColor('#314fa9');
 
@@ -147,7 +147,7 @@ function moonmars_color_icons2($bg_color) {
 
   // Make the border color match the background color:
   $border_color = new StarColor($hue, $border_saturation, $border_lightness, TRUE);
-  $text_color = new StarColor($hue, $text_saturation, $text_lightness, TRUE);
+//  $text_color = new StarColor($hue, $text_saturation, $text_lightness, TRUE);
 
   $html = "<div class='color-icons'>";
   $n_colors = 18;
@@ -158,7 +158,7 @@ function moonmars_color_icons2($bg_color) {
 
     $bg_color->hue($hue2);
     $border_color->hue($hue2);
-    $text_color->hue($hue2);
+//    $text_color->hue($hue2);
 
     if ($n % 6 == 0) {
       $html .= "<div class='clearfix'>";
@@ -168,6 +168,7 @@ function moonmars_color_icons2($bg_color) {
 //      <div class='color-icon-wrapper " . ($hue2 == $hue ? 'selected' : '') . "'>
 //        <div class='color-icon' style='background-color: " . $bg_color->hex() . "; border-color: " . $border_color->hex() . "; color: " . $text_color->hex() . ";'>" . ($n + 1) . "</div>
 //      </div>";
+
     $html .= "
       <div class='color-icon-wrapper " . ($hue2 == $hue ? 'selected' : '') . "'>
         <div class='color-icon' style='background-color: " . $bg_color->hex() . "; border-color: " . $border_color->hex() . ";'>" . ($n + 1) . "</div>
