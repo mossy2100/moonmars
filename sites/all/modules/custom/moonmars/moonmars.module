@@ -131,8 +131,7 @@ function moonmars_color_icons2($bg_color_hex) {
   if (StarColor::isHexString($bg_color_hex)) {
     $bg_color = new StarColor($bg_color_hex);
     // Set the saturation and lightness:
-    $bg_color->saturation($bg_saturation);
-    $bg_color->lightness($bg_lightness);
+    $bg_color->hsl($bg_color->hue(), $bg_saturation, $bg_lightness);
     dbg($bg_color->hsla(), "created new color from hex string $bg_color_hex");
   }
   else {
