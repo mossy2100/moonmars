@@ -112,7 +112,7 @@ function moonmars_color_icons($property, $original_color, $current_color) {
 /**
  * Generate color palette for use in forms.
  */
-function moonmars_color_icons2($bg_color) {
+function moonmars_color_icons2($bg_color_hex) {
 //  $orig_bg_color = new StarColor('#e4ebff');
   $bg_saturation = 0.97;
   $bg_lightness = 0.97;
@@ -128,14 +128,16 @@ function moonmars_color_icons2($bg_color) {
 
   $default_hue = 220;
 
-  if (StarColor::isHexString($bg_color)) {
-    $bg_color = new StarColor($bg_color);
+  if (StarColor::isHexString($bg_color_hex)) {
+    $bg_color = new StarColor($bg_color_hex);
     // Set the saturation and lightness:
     $bg_color->saturation($bg_saturation);
     $bg_color->lightness($bg_lightness);
+    dbg($bg_color->hsla(), "created new color from hex string $bg_color_hex");
   }
   else {
     $bg_color = new StarColor($default_hue, $bg_saturation, $bg_lightness, TRUE);
+    dbg($bg_color->hsla(), "created new color from default");
   }
 
   // Create the border color with the desired saturation and lightness:
