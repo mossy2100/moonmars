@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ff922214-f7cd-4eef-9f30-177ba578dd26" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/libraries/star/php/classes/StarColor.class.php" afterPath="$PROJECT_DIR$/sites/all/libraries/star/php/classes/StarColor.class.php" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars/moonmars.module" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars/moonmars.module" />
     </list>
     <ignored path="moonmars.com.iws" />
@@ -46,11 +47,23 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="StarColor.class.php" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="StarColor.class.php" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/sites/all/libraries/star/php/classes/StarColor.class.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="393" column="0" selection-start="11055" selection-end="11055" vertical-scroll-proportion="-3.227848">
+            <state line="295" column="22" selection-start="8922" selection-end="8923" vertical-scroll-proportion="0.5654102">
               <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="moonmars_members.module" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/moonmars_members.module">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="287" column="1" selection-start="11331" selection-end="11331" vertical-scroll-proportion="-12.25">
+              <folding>
+                <marker date="1344658870000" expanded="true" signature="3276:4863" placeholder="..." />
+                <marker date="1344658870000" expanded="true" signature="3416:4854" placeholder="..." />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -58,7 +71,7 @@
       <file leaf-file-name="profile-form.js" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/js/profile-form.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="51" column="68" selection-start="1962" selection-end="1962" vertical-scroll-proportion="0.0">
+            <state line="51" column="33" selection-start="1927" selection-end="1927" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -73,10 +86,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="moonmars.module" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="moonmars.module" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars/moonmars.module">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="133" column="19" selection-start="2901" selection-end="2901" vertical-scroll-proportion="0.1995731">
+            <state line="161" column="0" selection-start="3836" selection-end="3972" vertical-scroll-proportion="-12.166667">
               <folding />
             </state>
           </provider>
@@ -109,8 +122,8 @@
         <option value="$PROJECT_DIR$/sites/all/themes/astro/css/_channels.scss" />
         <option value="$PROJECT_DIR$/sites/all/libraries/star/php/classes/StarDateTime.class.php" />
         <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/js/profile-form.js" />
-        <option value="$PROJECT_DIR$/sites/all/libraries/star/php/classes/StarColor.class.php" />
         <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars/moonmars.module" />
+        <option value="$PROJECT_DIR$/sites/all/libraries/star/php/classes/StarColor.class.php" />
       </list>
     </option>
   </component>
@@ -1280,16 +1293,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/moonmars_members.module">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="159" column="40" selection-start="6259" selection-end="6259" vertical-scroll-proportion="280.375">
-          <folding>
-            <marker date="1344658870000" expanded="true" signature="-1:-1" placeholder="..." />
-            <marker date="1344658870000" expanded="true" signature="-1:-1" placeholder="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/classes/Member.class.php">
       <provider selected="true" editor-type-id="text-editor">
         <state line="574" column="0" selection-start="15769" selection-end="15769" vertical-scroll-proportion="-27.375">
@@ -1303,13 +1306,6 @@
     <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/_forms.scss">
       <provider selected="true" editor-type-id="text-editor">
         <state line="252" column="18" selection-start="3760" selection-end="3760" vertical-scroll-proportion="0.032700423">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/js/moonmars-channels.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="296" column="44" selection-start="8701" selection-end="8701" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
@@ -1328,13 +1324,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/js/profile-form.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="51" column="68" selection-start="1962" selection-end="1962" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/libraries/star/php/classes/Set.class.php">
       <provider selected="true" editor-type-id="text-editor">
         <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
@@ -1342,16 +1331,40 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/libraries/star/php/classes/StarColor.class.php">
+    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/moonmars_members.module">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="393" column="0" selection-start="11055" selection-end="11055" vertical-scroll-proportion="-3.227848">
+        <state line="287" column="1" selection-start="11331" selection-end="11331" vertical-scroll-proportion="-12.25">
+          <folding>
+            <marker date="1344658870000" expanded="true" signature="3276:4863" placeholder="..." />
+            <marker date="1344658870000" expanded="true" signature="3416:4854" placeholder="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/js/profile-form.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="51" column="33" selection-start="1927" selection-end="1927" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/js/moonmars-channels.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="296" column="44" selection-start="8701" selection-end="8701" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars/moonmars.module">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="133" column="19" selection-start="2901" selection-end="2901" vertical-scroll-proportion="0.1995731">
+        <state line="161" column="0" selection-start="3836" selection-end="3972" vertical-scroll-proportion="-12.166667">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/libraries/star/php/classes/StarColor.class.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="295" column="22" selection-start="8922" selection-end="8923" vertical-scroll-proportion="0.5654102">
           <folding />
         </state>
       </provider>

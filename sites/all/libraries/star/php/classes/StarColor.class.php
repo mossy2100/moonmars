@@ -104,7 +104,8 @@ class StarColor {
    *   new StarColor(120, '80%', '30%', '75%', TRUE);
    *
    * CSS :
-   *   new StarColor('rgb(120, 180, 255)');
+   *   new StarColor('rgb(100, 200, 150)');
+   *   new StarColor('rgba(100, 200, 150, 0.75)');
    *   new StarColor('rgb(30%, 90%, 12%)');
    *   new StarColor('rgba(30%, 90%, 12%, 0.75)');
    *   new StarColor('hsl(120, 59%, 72%)');
@@ -213,7 +214,7 @@ class StarColor {
       }
 
       if (is_array($param1)) {
-        // RGB array.
+        // RGB or RGBA array.
         $red    = isset($param1['red'])   ? $param1['red']   : 0;
         $green  = isset($param1['green']) ? $param1['green'] : 0;
         $blue   = isset($param1['blue'])  ? $param1['blue']  : 0;
@@ -223,7 +224,7 @@ class StarColor {
       }
 
       if ($param1 instanceof StarColor) {
-        // Copy the object.
+        // Copy the object, taking into account the alpha parameter if provided:
         $rgba = $param1->rgba();
         $this->rgba($rgba['red'], $rgba['green'], $rgba['blue'], $rgba['alpha'] * $alpha);
         return;
@@ -287,6 +288,7 @@ class StarColor {
 
     // Set the value. Convert to 32-bit int:
     $this->value = ((int) $value) & 0xFFFFFFFF;
+
     return $this;
   }
 
@@ -307,6 +309,7 @@ class StarColor {
     // Set the red value:
     $red = self::normalizeByte($red);
     $this->value = ($this->value & 0x00FFFFFF) | ($red << 24);
+
     return $this;
   }
 
@@ -327,6 +330,7 @@ class StarColor {
     // Set the green value:
     $green = self::normalizeByte($green);
     $this->value = ($this->value & 0xFF00FFFF) | ($green << 16);
+
     return $this;
   }
 
@@ -347,6 +351,7 @@ class StarColor {
     // Set the blue value:
     $blue = self::normalizeByte($blue);
     $this->value = ($this->value & 0xFFFF00FF) | ($blue << 8);
+
     return $this;
   }
 
@@ -367,6 +372,7 @@ class StarColor {
     // Set the alpha value:
     $alpha = self::normalizeFractionByte($alpha);
     $this->value = ($this->value & 0xFFFFFF00) | $alpha;
+
     return $this;
   }
 
@@ -389,6 +395,7 @@ class StarColor {
     $hue = self::normalizeDegree($hue);
     $hsl = $this->hsl();
     $this->hsl($hue, $hsl['saturation'], $hsl['lightness']);
+
     return $this;
   }
 
@@ -411,6 +418,7 @@ class StarColor {
     $saturation = self::normalizeFraction($saturation);
     $hsl = $this->hsl();
     $this->hsl($hsl['hue'], $saturation, $hsl['lightness']);
+
     return $this;
   }
 
@@ -433,6 +441,7 @@ class StarColor {
     $lightness = self::normalizeFraction($lightness);
     $hsl = $this->hsla();
     $this->hsl($hsl['hue'], $hsl['saturation'], $lightness);
+
     return $this;
   }
 
@@ -463,6 +472,7 @@ class StarColor {
     $this->green($green);
     $this->blue($blue);
     $this->alpha($alpha);
+
     return $this;
   }
 
@@ -491,6 +501,7 @@ class StarColor {
     $this->red($red);
     $this->green($green);
     $this->blue($blue);
+
     return $this;
   }
 
@@ -520,6 +531,7 @@ class StarColor {
     // Set the HSLA values:
     $rgb = self::hsl2rgb($hue, $saturation, $lightness);
     $this->rgba($rgb['red'], $rgb['green'], $rgb['blue'], $alpha);
+
     return $this;
   }
 
@@ -546,6 +558,7 @@ class StarColor {
     // Set the HSL values:
     $rgb = self::hsl2rgb($hue, $saturation, $lightness);
     $this->rgb($rgb['red'], $rgb['green'], $rgb['blue']);
+
     return $this;
   }
 
@@ -737,6 +750,23 @@ class StarColor {
    */
   public function __toString() {
     return $this->hex(TRUE, TRUE);
+  }
+
+  /**
+   * Get the color as an informative array, with:
+   *   red
+   *   green
+   *   blue
+   *   alpha
+   *   hue
+   *   saturation
+   *   lightness
+   *   hex
+   *
+   * @return array
+   */
+  public function toArray() {
+    return array_merge($this->rgba(), $this->hsl(), array('hex' => $this->hex()));
   }
 
   /////////////////////////////////////////////////////////////////////////
