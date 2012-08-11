@@ -226,7 +226,7 @@ form {
   #edit-current-pass,
   #edit-pass-pass1,
   #edit-pass-pass2 {
-    width: 130px;
+    width: 110px;
     margin-bottom: 0;
   }
 
@@ -241,8 +241,16 @@ form {
   }
 
   .password-strength,
-  .password-confirm {
+  div.password-confirm {
     width: 160px;
+  }
+
+  .password-strength {
+    margin-top: 22px;
+  }
+
+  div.password-confirm {
+    margin-top: 25px;
   }
 
   .password-suggestions {

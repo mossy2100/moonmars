@@ -550,14 +550,15 @@ class Member extends User {
 
     if (StarColor::isHexString($bg_color)) {
       $bg_color = new StarColor($bg_color);
-      // Reset the saturation and lightness:
-      $bg_color->saturation(0.95);
-      $bg_color->lightness(0.95);
     }
     else {
       // Default to blue:
-      $bg_color = new StarColor(220, 0.95, 0.95, TRUE);
+      $bg_color = new StarColor(220, 0.97, 0.97, TRUE);
     }
+
+    // Reset the saturation and lightness:
+    $bg_color->saturation(0.97);
+    $bg_color->lightness(0.97);
 
     return $bg_color;
   }

@@ -114,8 +114,8 @@ function moonmars_color_icons($property, $original_color, $current_color) {
  */
 function moonmars_color_icons2($bg_color) {
 //  $orig_bg_color = new StarColor('#e4ebff');
-  $bg_saturation = 0.95;
-  $bg_lightness = 0.95;
+  $bg_saturation = 0.97;
+  $bg_lightness = 0.97;
 
 //  $orig_border_color = new StarColor('#96b1ff');
   $border_saturation = 0.8;
@@ -128,16 +128,15 @@ function moonmars_color_icons2($bg_color) {
 
   $default_hue = 220;
 
-  if (!StarColor::isHexString($bg_color)) {
-    $bg_color = new StarColor($default_hue, $bg_saturation, $bg_lightness);
+  if (StarColor::isHexString($bg_color)) {
+    $bg_color = new StarColor($bg_color);
+    // Set the saturation and lightness:
+    $bg_color->saturation($bg_saturation);
+    $bg_color->lightness($bg_lightness);
   }
   else {
-    $bg_color = new StarColor($bg_color);
+    $bg_color = new StarColor($default_hue, $bg_saturation, $bg_lightness, TRUE);
   }
-
-  // Make the saturation and lightness match the original color:
-  $bg_color->saturation($bg_saturation);
-  $bg_color->lightness($bg_lightness);
 
   // Find the closest hue in our palette:
   $hue = round($bg_color->hue() / 20) * 20;
@@ -157,6 +156,7 @@ function moonmars_color_icons2($bg_color) {
     $hue2 = $n * $diff;
 
     $bg_color->hue($hue2);
+
     $border_color->hue($hue2);
 //    $text_color->hue($hue2);
 
@@ -171,7 +171,7 @@ function moonmars_color_icons2($bg_color) {
 
     $html .= "
       <div class='color-icon-wrapper " . ($hue2 == $hue ? 'selected' : '') . "'>
-        <div class='color-icon' style='background-color: " . $bg_color->hex() . "; border-color: " . $border_color->hex() . ";'>" . ($n + 1) . "</div>
+        <div class='color-icon' style='background-color: " . $bg_color->hex() . "; border-color: " . $border_color->hex() . ";'></div>
       </div>";
 
     if (($n + 1) % 6 == 0) {

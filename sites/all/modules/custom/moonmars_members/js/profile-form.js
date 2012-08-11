@@ -48,10 +48,11 @@ $(function() {
   // Colors:
 
   $('#edit-field-background-color-und-0-rgb').hide();
+  $('.colorpicker').remove();
   $('#field-background-color-add-more-wrapper').insertAfter('.form-item-field-background-color-und-0-rgb label');
 
-
   updateColors();
+
   $('.color-icon').click(function() {
     $(this).closest('.color-icons').find('.color-icon-wrapper').removeClass('selected');
     $(this).closest('.color-icon-wrapper').addClass('selected');
@@ -75,22 +76,24 @@ function rgb2hex(rgb) {
 
 // Update colors:
 function updateColors() {
+  // Get the selected color:
   var selectedBackgroundColor = $('#edit-field-background-color .color-icon-wrapper.selected .color-icon').css('background-color');
-  selectedBackgroundColor = selectedBackgroundColor ? rgb2hex(selectedBackgroundColor) : '';
-  $('#edit-field-background-color-und-0-rgb').val(selectedBackgroundColor);
 
-  var selectedTextColor = $('#edit-field-text-color .color-icon-wrapper.selected .color-icon').css('color');
-  var selectedBorderColor = $('#edit-field-border-color .color-icon-wrapper.selected .color-icon').css('border-color');
+  // Set the value of the hidden field:
+  $('#edit-field-background-color-und-0-rgb').val(rgb2hex(selectedBackgroundColor));
+
+//  var selectedTextColor = $('#edit-field-text-color .color-icon-wrapper.selected .color-icon').css('color');
+//  var selectedBorderColor = $('#edit-field-border-color .color-icon-wrapper.selected .color-icon').css('border-color');
 //  alert('selected background color = ' + selectedBackgroundColor + '\n' +
 //    'selected text color = ' + selectedTextColor + '\n' +
 //    'selected border color = ' + selectedBorderColor + '\n');
 
-  // Set the background color of the text and border color selectors to match the selected background color:
-  $('#edit-field-text-color .color-icon, #edit-field-border-color .color-icon').css('background-color', selectedBackgroundColor);
-
-  // Set the text color of the background and border color selectors to match the selected text color:
-  $('#edit-field-background-color .color-icon, #edit-field-border-color .color-icon').css('color', selectedTextColor);
-
-  // Set the border color of the background and text color selectors to match the selected border color:
-  $('#edit-field-background-color .color-icon, #edit-field-text-color .color-icon').css('border-color', selectedBorderColor);
+//  // Set the background color of the text and border color selectors to match the selected background color:
+//  $('#edit-field-text-color .color-icon, #edit-field-border-color .color-icon').css('background-color', selectedBackgroundColor);
+//
+//  // Set the text color of the background and border color selectors to match the selected text color:
+//  $('#edit-field-background-color .color-icon, #edit-field-border-color .color-icon').css('color', selectedTextColor);
+//
+//  // Set the border color of the background and text color selectors to match the selected border color:
+//  $('#edit-field-background-color .color-icon, #edit-field-text-color .color-icon').css('border-color', selectedBorderColor);
 }
