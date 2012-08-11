@@ -159,7 +159,7 @@ class StarColor {
 
         // Check for color name:
         if (self::isColorName($param1)) {
-          $rgb = self::hex2rgb(self::name2hex($param1));
+          $rgb = self::hex2rgb(self::colorName2hex($param1));
           $this->rgba($rgb['red'], $rgb['green'], $rgb['blue'], $alpha);
           return;
         }
@@ -284,10 +284,10 @@ class StarColor {
       // Get the value:
       return $this->value;
     }
-    else {
-      // Set the value. Convert to 32-bit int:
-      $this->value = ((int) $value) & 0xFFFFFFFF;
-    }
+
+    // Set the value. Convert to 32-bit int:
+    $this->value = ((int) $value) & 0xFFFFFFFF;
+    return $this;
   }
 
   /**
@@ -303,11 +303,11 @@ class StarColor {
       // Get the red value:
       return ($this->value & 0xFF000000) >> 24;
     }
-    else {
-      // Set the red value:
-      $red = self::normalizeByte($red);
-      $this->value = ($this->value & 0x00FFFFFF) | ($red << 24);
-    }
+
+    // Set the red value:
+    $red = self::normalizeByte($red);
+    $this->value = ($this->value & 0x00FFFFFF) | ($red << 24);
+    return $this;
   }
 
   /**
@@ -323,11 +323,11 @@ class StarColor {
       // Get the green value:
       return ($this->value & 0x00FF0000) >> 16;
     }
-    else {
-      // Set the green value:
-      $green = self::normalizeByte($green);
-      $this->value = ($this->value & 0xFF00FFFF) | ($green << 16);
-    }
+
+    // Set the green value:
+    $green = self::normalizeByte($green);
+    $this->value = ($this->value & 0xFF00FFFF) | ($green << 16);
+    return $this;
   }
 
   /**
@@ -343,11 +343,11 @@ class StarColor {
       // Get the blue value:
       return ($this->value & 0x0000FF00) >> 8;
     }
-    else {
-      // Set the blue value:
-      $blue = self::normalizeByte($blue);
-      $this->value = ($this->value & 0xFFFF00FF) | ($blue << 8);
-    }
+
+    // Set the blue value:
+    $blue = self::normalizeByte($blue);
+    $this->value = ($this->value & 0xFFFF00FF) | ($blue << 8);
+    return $this;
   }
 
   /**
@@ -363,11 +363,11 @@ class StarColor {
       // Get the alpha value as a fraction in the range 0.0..1.0:
       return ($this->value & 0x000000FF) / 255;
     }
-    else {
-      // Set the alpha value:
-      $alpha = self::normalizeFractionByte($alpha);
-      $this->value = ($this->value & 0xFFFFFF00) | $alpha;
-    }
+
+    // Set the alpha value:
+    $alpha = self::normalizeFractionByte($alpha);
+    $this->value = ($this->value & 0xFFFFFF00) | $alpha;
+    return $this;
   }
 
   /**
@@ -384,11 +384,11 @@ class StarColor {
       $hsla = $this->hsla();
       return $hsla['hue'];
     }
-    else {
-      // Set the hue:
-      $hsla = $this->hsla();
-      $this->hsla($hue, $hsla['saturation'], $hsla['lightness'], $hsla['alpha']);
-    }
+
+    // Set the hue:
+    $hsla = $this->hsla();
+    $this->hsla($hue, $hsla['saturation'], $hsla['lightness'], $hsla['alpha']);
+    return $this;
   }
 
   /**
@@ -405,12 +405,12 @@ class StarColor {
       $hsla = $this->hsla();
       return $hsla['saturation'];
     }
-    else {
-      // Set the saturation:
-      $saturation = self::normalizeFraction($saturation);
-      $hsla = $this->hsla();
-      $this->hsla($hsla['hue'], $saturation, $hsla['lightness'], $hsla['alpha']);
-    }
+
+    // Set the saturation:
+    $saturation = self::normalizeFraction($saturation);
+    $hsla = $this->hsla();
+    $this->hsla($hsla['hue'], $saturation, $hsla['lightness'], $hsla['alpha']);
+    return $this;
   }
 
   /**
@@ -427,12 +427,12 @@ class StarColor {
       $hsla = $this->hsla();
       return $hsla['lightness'];
     }
-    else {
-      // Set the lightness:
-      $lightness = self::normalizeFraction($lightness);
-      $hsla = $this->hsla();
-      $this->hsla($hsla['hue'], $hsla['saturation'], $lightness, $hsla['alpha']);
-    }
+
+    // Set the lightness:
+    $lightness = self::normalizeFraction($lightness);
+    $hsla = $this->hsla();
+    $this->hsla($hsla['hue'], $hsla['saturation'], $lightness, $hsla['alpha']);
+    return $this;
   }
 
   ///////////////////////////////////////////////////////////////////////////
@@ -456,13 +456,13 @@ class StarColor {
       // Get the RGBA values:
       return array_merge($this->rgb(), array('alpha' => $this->alpha()));
     }
-    else {
-      // Set the RGBA values:
-      $this->red($red);
-      $this->green($green);
-      $this->blue($blue);
-      $this->alpha($alpha);
-    }
+
+    // Set the RGBA values:
+    $this->red($red);
+    $this->green($green);
+    $this->blue($blue);
+    $this->alpha($alpha);
+    return $this;
   }
 
   /**
@@ -485,10 +485,10 @@ class StarColor {
         'blue'  => $this->blue(),
       );
     }
-    else {
-      // Set the RGB values:
-      $this->rgba($red, $green, $blue, $this->alpha());
-    }
+
+    // Set the RGB values:
+    $this->rgba($red, $green, $blue, $this->alpha());
+    return $this;
   }
 
   /**
@@ -513,11 +513,11 @@ class StarColor {
       // Get the HSLA values:
       return array_merge($this->hsl(), array('alpha' => $this->alpha()));
     }
-    else {
-      // Set the HSLA values:
-      $rgb = self::hsl2rgb($hue, $saturation, $lightness);
-      $this->rgba($rgb['red'], $rgb['green'], $rgb['blue'], $alpha);
-    }
+
+    // Set the HSLA values:
+    $rgb = self::hsl2rgb($hue, $saturation, $lightness);
+    $this->rgba($rgb['red'], $rgb['green'], $rgb['blue'], $alpha);
+    return $this;
   }
 
   /**
@@ -539,10 +539,10 @@ class StarColor {
       // Get the HSL values:
       return self::rgb2hsl($this->red(), $this->green(), $this->blue());
     }
-    else {
-      // Set the HSL values:
-      $this->hsla($hue, $saturation, $lightness, $this->alpha());
-    }
+
+    // Set the HSL values:
+    $this->hsla($hue, $saturation, $lightness, $this->alpha());
+    return $this;
   }
 
   ///////////////////////////////////////////////////////////////////////////
@@ -625,8 +625,6 @@ class StarColor {
    * For formulas:
    * @see http://www.w3.org/TR/2003/REC-SVG11-20030114/masking.html#SimpleAlphaBlending
    * @see http://en.wikipedia.org/wiki/Alpha_compositing#Alpha_blending
-   *
-   * @todo test this method
    *
    * @param int|string|StarColor $top_color
    * @param int|string|StarColor $bottom_color
@@ -1250,7 +1248,20 @@ class StarColor {
    * @return bool
    */
   public static function isColorName($name) {
+    $name = strtolower($name);
     return isset(self::$colorNames[$name]);
+  }
+
+  /**
+   * Convert a color name to a 6-digit hex value.
+   *
+   * @static
+   * @param $name
+   * @return bool
+   */
+  private static function colorName2hex($name) {
+    $name = strtolower($name);
+    return isset(self::$colorNames[$name]) ? self::$colorNames[$name] : FALSE;
   }
 
 }

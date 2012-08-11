@@ -2,11 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ff922214-f7cd-4eef-9f30-177ba578dd26" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/classes/Member.class.php" afterPath="$PROJECT_DIR$/sites/all/classes/Member.class.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars/moonmars.module" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars/moonmars.module" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/js/profile-form.js" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/js/profile-form.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/css/_forms.scss" afterPath="$PROJECT_DIR$/sites/all/themes/astro/css/_forms.scss" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/libraries/star/php/classes/StarColor.class.php" afterPath="$PROJECT_DIR$/sites/all/libraries/star/php/classes/StarColor.class.php" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/css/_channels.scss" afterPath="$PROJECT_DIR$/sites/all/themes/astro/css/_channels.scss" />
     </list>
     <ignored path="moonmars.com.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -32,61 +29,28 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="profile-form.js" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/js/profile-form.js">
+      <file leaf-file-name="moonmars-channels.js" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/js/moonmars-channels.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="50" column="26" selection-start="1886" selection-end="1886" vertical-scroll-proportion="0.0">
+            <state line="296" column="44" selection-start="8701" selection-end="8701" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Member.class.php" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/sites/all/classes/Member.class.php">
+      <file leaf-file-name="_channels.scss" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/_channels.scss">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="574" column="0" selection-start="15769" selection-end="15769" vertical-scroll-proportion="-27.375">
-              <folding>
-                <element signature="e#6#52#0" expanded="true" />
-                <marker date="1344662053000" expanded="true" signature="11146:11197" placeholder="..." />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="moonmars_members.module" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/moonmars_members.module">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="159" column="40" selection-start="6259" selection-end="6259" vertical-scroll-proportion="280.375">
-              <folding>
-                <marker date="1344658870000" expanded="true" signature="3276:4863" placeholder="..." />
-                <marker date="1344658870000" expanded="true" signature="3416:4854" placeholder="..." />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="moonmars.module" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars/moonmars.module">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="173" column="128" selection-start="4241" selection-end="4241" vertical-scroll-proportion="-25.291666">
+            <state line="305" column="32" selection-start="5090" selection-end="5090" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="_forms.scss" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/_forms.scss">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="252" column="18" selection-start="3760" selection-end="3760" vertical-scroll-proportion="0.032700423">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="StarColor.class.php" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="StarColor.class.php" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/sites/all/libraries/star/php/classes/StarColor.class.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="703" column="23" selection-start="19457" selection-end="19458" vertical-scroll-proportion="-6.76">
+            <state line="1253" column="0" selection-start="34938" selection-end="34938" vertical-scroll-proportion="0.9497207">
               <folding />
             </state>
           </provider>
@@ -112,15 +76,15 @@
         <option value="$PROJECT_DIR$/sites/all/themes/astro/css/_colours.scss" />
         <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/moonmars_members.module" />
         <option value="$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-node-item.inc" />
-        <option value="$PROJECT_DIR$/sites/all/themes/astro/css/_channels.scss" />
         <option value="$PROJECT_DIR$/sites/all/themes/astro/templates/node--item.tpl.php" />
         <option value="$PROJECT_DIR$/sites/all/themes/astro/templates/comment.tpl.php" />
         <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/js/moonmars-channels.js" />
-        <option value="$PROJECT_DIR$/sites/all/libraries/star/php/classes/StarColor.class.php" />
         <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/js/profile-form.js" />
         <option value="$PROJECT_DIR$/sites/all/classes/Member.class.php" />
         <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars/moonmars.module" />
         <option value="$PROJECT_DIR$/sites/all/themes/astro/css/_forms.scss" />
+        <option value="$PROJECT_DIR$/sites/all/themes/astro/css/_channels.scss" />
+        <option value="$PROJECT_DIR$/sites/all/libraries/star/php/classes/StarColor.class.php" />
       </list>
     </option>
   </component>
@@ -1167,6 +1131,7 @@
       <window_info id="Data Sources" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32977587" sideWeight="0.67132866" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32932934" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32867134" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2054429" sideWeight="0.67132866" order="4" side_tool="true" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21077909" sideWeight="0.67132866" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -1177,7 +1142,6 @@
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32867134" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
@@ -1297,23 +1261,9 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/js/moonmars-channels.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="518" column="3" selection-start="15776" selection-end="15776" vertical-scroll-proportion="0.39297125">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/templates/node--item.tpl.php">
       <provider selected="true" editor-type-id="text-editor">
         <state line="83" column="44" selection-start="2779" selection-end="2779" vertical-scroll-proportion="0.2575928">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/_channels.scss">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="84" column="3" selection-start="1288" selection-end="1288" vertical-scroll-proportion="0.27742615">
           <folding />
         </state>
       </provider>
@@ -1322,16 +1272,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state line="159" column="40" selection-start="6259" selection-end="6259" vertical-scroll-proportion="280.375">
           <folding>
-            <marker date="1344658870000" expanded="true" signature="3276:4863" placeholder="..." />
-            <marker date="1344658870000" expanded="true" signature="3416:4854" placeholder="..." />
+            <marker date="1344658870000" expanded="true" signature="-1:-1" placeholder="..." />
+            <marker date="1344658870000" expanded="true" signature="-1:-1" placeholder="..." />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/libraries/star/php/classes/StarColor.class.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="703" column="23" selection-start="19457" selection-end="19458" vertical-scroll-proportion="-6.76">
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1347,7 +1290,7 @@
         <state line="574" column="0" selection-start="15769" selection-end="15769" vertical-scroll-proportion="-27.375">
           <folding>
             <element signature="e#6#52#0" expanded="true" />
-            <marker date="1344662053000" expanded="true" signature="11146:11197" placeholder="..." />
+            <marker date="1344662053000" expanded="true" signature="-1:-1" placeholder="..." />
           </folding>
         </state>
       </provider>
@@ -1362,6 +1305,27 @@
     <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/_forms.scss">
       <provider selected="true" editor-type-id="text-editor">
         <state line="252" column="18" selection-start="3760" selection-end="3760" vertical-scroll-proportion="0.032700423">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/js/moonmars-channels.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="296" column="44" selection-start="8701" selection-end="8701" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/_channels.scss">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="305" column="32" selection-start="5090" selection-end="5090" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/libraries/star/php/classes/StarColor.class.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="1253" column="0" selection-start="34938" selection-end="34938" vertical-scroll-proportion="0.9497207">
           <folding />
         </state>
       </provider>

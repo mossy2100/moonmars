@@ -303,6 +303,14 @@ form.node-item-form {
     margin-bottom: 0;
   }
 
+  // All these hidden initially:
+  #edit-field-item-link,
+  #edit-field-item-image,
+  #edit-field-item-video,
+  #edit-field-item-document {
+    display: none;
+  }
+
   #field-item-link-add-more-wrapper {
     .form-type-textfield {
       margin: 0;
