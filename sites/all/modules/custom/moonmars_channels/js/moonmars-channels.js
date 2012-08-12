@@ -549,7 +549,7 @@ function showNewCommentForm(item_nid) {
  *
  * @param int item_nid
  */
-function hideNewCommentForm(item_nid) {
+function hideNewCommentForm(item_nid, animate) {
   // Get the new comment form:
   var newCommentFormArticle = $('#new-comment-form-article-' + item_nid);
 
@@ -557,17 +557,23 @@ function hideNewCommentForm(item_nid) {
   var bottomLinks = $('.bottom-post-controls-' + item_nid);
   var finalHeight = bottomLinks.length ? bottomLinks.height() : 0;
 
-  // Animate and hide it.
-  newCommentFormArticle.animate({
-    height: finalHeight,
-    opacity: 0
-  }, 333, function() {
+  function _hideNewCommentForm() {
     // Hide the new comment form:
-    $(this).hide();
-
+    newCommentFormArticle.hide();
     // Show the comment link, if there is one:
     bottomLinks.show();
-  });
+  }
+
+  if (animate === true || animate === undefined) {
+    // Animate and hide it.
+    newCommentFormArticle.animate({
+      height: finalHeight,
+      opacity: 0
+    }, 333, _hideNewCommentForm);
+  }
+  else {
+    _hideNewCommentForm();
+  }
 }
 
 /**
@@ -632,11 +638,11 @@ function postCommentReturn(data, textStatus, jqXHR) {
     // Insert comment into DOM:
     nodeArticle.find('#comments').append(commentArticle);
 
+    // Hide the new comment form:
+    hideNewCommentForm(data.item_nid, false);
+
     // Attach behaviours to the new comment:
     setupCommentBehaviour(commentArticle, false);
     setupTooltipBehaviour(commentArticle.find('.tooltip'));
-
-    // Hide the new comment form:
-    hideNewCommentForm(data.item_nid);
   }
 }
