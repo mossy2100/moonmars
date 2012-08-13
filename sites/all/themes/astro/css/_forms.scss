@@ -1,13 +1,20 @@
-@mixin form-style {
+@mixin blank-form-style {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-bottom: 20px;
+}
+
+@mixin grey-form-style {
   background-color: $grey5;
   border: solid 1px $grey4;
   @include border-radius(3px);
   padding: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 form {
-  @include form-style;
+  @include grey-form-style;
 
   div.form-item label,
   span.fieldset-legend {
@@ -15,6 +22,7 @@ form {
   }
 
   fieldset {
+    margin-bottom: 15px;
 
     legend {
       color: $red1;
@@ -129,10 +137,6 @@ form {
     }
   }
 
-  .form-item:first-child {
-    margin-top: 0;
-  }
-
   & > div > div#edit-actions {
     margin-bottom: 0;
   }
@@ -187,21 +191,163 @@ form {
 ///////////////////////////////////////
 // User registration and profile forms
 
+#user-profile-form {
+  @include blank-form-style;
+
+  fieldset {
+    legend {
+      color: black;
+      top: -5px;
+    }
+
+    .fieldset-wrapper {
+      @include grey-form-style;
+    }
+
+    fieldset {
+      // Hide the appearance of nested fieldsets:
+      .fieldset-wrapper {
+        border: 0;
+        padding: 0;
+      }
+
+      legend {
+        display: none;
+      }
+    }
+  }
+}
+
+#user-register-form {
+  fieldset {
+    .fieldset-wrapper {
+      padding: 0;
+    }
+
+    legend {
+      display: none;
+    }
+  }
+}
+
 #user-register-form,
 #user-profile-form {
-  margin-bottom: 20px;
-
-  & > div > div,
-  & > div > fieldset,
-  #edit-account > div {
-    margin: 15px 0;
-  }
-
+  // Fieldsets:
   #edit-account {
     margin-top: 0;
 
     .form-item-name {
       margin-top: 0;
+    }
+
+    .form-item-status {
+      margin-bottom: 0;
+    }
+
+    #edit-current-pass,
+    #edit-pass-pass1,
+    #edit-pass-pass2 {
+      width: 110px;
+      margin-bottom: 0;
+    }
+
+    .form-item-pass-pass2 {
+      margin-bottom: 3px;
+    }
+
+    .form-type-password-confirm {
+      .form-type-password {
+        width: 278px;
+      }
+    }
+
+    .password-strength,
+    div.password-confirm {
+      width: 160px;
+    }
+
+    .password-strength {
+      margin-top: 22px;
+    }
+
+    div.password-confirm {
+      margin-top: 25px;
+    }
+
+    .password-suggestions {
+      width: 268px;
+      padding: 4px;
+      margin-bottom: 0;
+
+      ul {
+        margin-left: 20px;
+      }
+    }
+  }
+
+  #user_user_form_group_personal {
+    #edit-picture {
+      .user-picture {
+        float: left;
+        margin-right: 10px;
+      }
+
+      legend {
+        display: block;
+        font-size: 12px;
+        top: 0;
+        padding: 3px 0;
+      }
+
+      .form-item-picture-delete {
+        margin-top: 0;
+      }
+    }
+
+    .field-type-datetime {
+      .form-type-date-popup {
+        margin: 0;
+      }
+
+      .form-item-field-date-of-birth-und-0-value-date {
+        .description {
+          padding-bottom: 0;
+        }
+      }
+    }
+  }
+
+  #edit-field-user-location {
+    .form-item-field-user-location-und-0-country {
+      margin-top: 0;
+    }
+
+    .location .form-item input {
+      margin-bottom: 0;
+    }
+
+    .form-item-timezone {
+      margin-bottom: 0;
+    }
+  }
+
+  #edit-links {
+    .form-item-field-website-und-0-url {
+      margin-top: 0;
+    }
+
+    .form-item-field-wikipedia-link-und-0-url {
+      margin-bottom: 0;
+    }
+  }
+
+  #user_user_form_group_preferences {
+    .form-item-contact {
+      margin-top: 0;
+    }
+
+    .form-item-field-background-color-und-0-rgb {
+      margin-bottom: 0;
     }
   }
 
@@ -223,75 +369,8 @@ form {
     margin: 10px 0 15px;
   }
 
-  #edit-current-pass,
-  #edit-pass-pass1,
-  #edit-pass-pass2 {
-    width: 110px;
-    margin-bottom: 0;
-  }
-
-  .form-item-pass-pass2 {
-    margin-bottom: 3px;
-  }
-
-  .form-type-password-confirm {
-    .form-type-password {
-      width: 278px;
-    }
-  }
-
-  .password-strength,
-  div.password-confirm {
-    width: 160px;
-  }
-
-  .password-strength {
-    margin-top: 22px;
-  }
-
-  div.password-confirm {
-    margin-top: 25px;
-  }
-
-  .password-suggestions {
-    width: 268px;
-    padding: 4px;
-    margin-bottom: 0;
-
-    ul {
-      margin-left: 20px;
-    }
-  }
-
-  fieldset {
-    padding: 0;
-    margin: 0;
-    border: none;
-
-    legend,
-    .fieldset-description {
-      display: none;
-    }
-
-    .fieldset-wrapper {
-      padding: 0;
-    }
-  }
-
   .description {
     margin-left: 0;
-  }
-
-  .field-type-datetime {
-    .form-type-date-popup {
-      margin: 0;
-    }
-
-    .form-item-field-date-of-birth-und-0-value-date {
-      .description {
-        padding-bottom: 0;
-      }
-    }
   }
 
   .location .form-item input,
@@ -301,35 +380,8 @@ form {
     width: 278px;
   }
 
-  #edit-field-user-location {
-    .location .form-item input {
-      margin-bottom: 0;
-    }
-
-    .form-item-field-user-location-und-0-country {
-      margin-top: 0;
-    }
-
-    .form-item-field-user-location-und-0-city {
-      margin-bottom: 0;
-    }
-  }
-
   #edit-field-mobile-phone-und-0-value {
     width: 150px;
-  }
-
-  #edit-picture {
-    .user-picture {
-      float: left;
-      margin-right: 10px;
-    }
-  }
-
-  .field-type-colorfield-rgb {
-    input.form-text {
-      width: 70px;
-    }
   }
 }
 
@@ -337,8 +389,11 @@ form {
 // Moon or Mars field (register form and profile form)
 
 #edit-field-moon-or-mars {
-  margin: 15px 0;
   width: 276px;
+
+  .form-item-field-moon-or-mars-und {
+    margin: 0;
+  }
 
   #edit-field-moon-or-mars-und {
     height: 104px;
@@ -359,19 +414,23 @@ form {
         height: 15px;
         padding: 84px 4px 4px;
         margin: 0;
+        //background-color: $grey4;
         background-repeat: no-repeat;
         background-position: 4px 4px;
         text-align: center;
+        border: solid 1px $grey5;
         @include border-radius(4px);
 
         &.selected {
-          color: white;
-          background-color: $grey4;
+          //color: white;
+          border-color: $blue4;
+          background-color: white;
         }
 
         &:hover {
-          color: white;
-          background-color: $blue4;
+          //color: white;
+          border-color: $blue4;
+          background-color: white;
         }
       }
 
@@ -390,16 +449,19 @@ form {
     width: 100%;
   }
 
-  .form-actions {
-    display: block;
-    text-align: right;
+}
 
-    .form-submit {
-      margin-top: 3px;
-      margin-right: 0;
-    }
+////////////////////////////////////
+// Form buttons. This style is to be tested everywhere to make sure it works.
+
+.form-actions {
+  display: block;
+  text-align: right;
+
+  .form-submit {
+    margin-top: 3px;
+    margin-right: 0;
   }
-
 }
 
 ////////////////////////////////////
@@ -432,12 +494,10 @@ form {
 // Groups search form
 
 form#moonmars-groups-search-form {
-  background: none;
-  border: none;
-  padding: 0;
+  @include blank-form-style;
 
   fieldset {
-    @include form-style;
+    @include grey-form-style;
 
     .fieldset-wrapper {
       padding: 0;

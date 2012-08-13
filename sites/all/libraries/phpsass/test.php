@@ -78,6 +78,9 @@
 
       $diff = exec('diff -ibwB /tmp/scss_test_0 /tmp/scss_test_1', $out);
       if (count($out)) {
+        if (isset($_GET['full'])) {
+          $out[] = $result;
+        }
         return implode("\n", $out);
       } else {
         return TRUE;

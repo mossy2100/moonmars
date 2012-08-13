@@ -618,6 +618,7 @@ class Channel extends Node {
       'linkedin'  => 'LinkedIn',
       'google'    => 'Google+',
       'youtube'   => 'YouTube',
+      'flickr'    => 'Flickr',
       'wikipedia' => 'Wikipedia'
     );
 

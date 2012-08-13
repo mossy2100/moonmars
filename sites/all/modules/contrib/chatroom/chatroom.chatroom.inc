@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Chatroom class definition.
+ */
+
+/**
  * Represents a chatroom.
  */
 class Chatroom {

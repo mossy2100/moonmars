@@ -37,6 +37,11 @@ class SassRootNode extends SassNode {
   public $extenders = array();
 
   /**
+   * Extend_parent - for resolving extends across imported files.
+   */
+  public $extend_parent = null;
+
+  /**
    * Root SassNode constructor.
    * @param SassParser Sass parser
    * @return SassNode
@@ -81,11 +86,17 @@ class SassRootNode extends SassNode {
   }
 
   public function extend($extendee, $selectors) {
+    if ($this->extend_parent && method_exists($this->extend_parent, 'extend')) {
+      return $this->extend_parent->extend($extendee, $selectors);
+    }
     $this->extenders[$extendee] = (isset($this->extenders[$extendee])
       ? array_merge($this->extenders[$extendee], $selectors) : $selectors);
   }
 
   public function getExtenders() {
+    if ($this->extend_parent && method_exists($this->extend_parent, 'getExtenders')) {
+      return $this->extend_parent->getExtenders();
+    }
     return $this->extenders;
   }
 

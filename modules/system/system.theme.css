@@ -211,7 +211,7 @@ body div.tabledrag-changed-warning {
  * @see tableselect.js
 */
 tr.selected td {
-  /*background: #ffc;*/
+  background: #ffc;
 }
 td.checkbox,
 th.checkbox {

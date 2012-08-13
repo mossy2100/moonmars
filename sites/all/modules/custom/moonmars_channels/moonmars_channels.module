@@ -84,39 +84,39 @@ function moonmars_channels_is_embedded_channel_page() {
   return FALSE;
 }
 
-/**
- * Implements hook_form_alter().
- */
-function moonmars_channels_form_alter(&$form, &$form_state, $form_id) {
-  global $user;
-
-  switch ($form_id) {
-    case 'channel_node_form':
-      $channel = Channel::create($form['#node']);
-
-      // Update the title:
-      drupal_set_title("Edit links for " . $channel->parentEntityName());
-
-      // Hide the channel title field:
-      unset($form['title']);
-
-      // Submit handler:
-      $form['actions']['submit']['#submit'][] = 'moonmars_channels_channel_node_form_submit';
-
-      break;
-  }
-}
-
-/**
- * Submit handler for channel_node_form.
- *
- * @param $form
- * @param $form_state
- */
-function moonmars_channels_channel_node_form_submit($form, &$form_state) {
-  $channel = Channel::create($form['#node']);
-  $form_state['redirect'] = $channel->parentEntity()->alias();
-}
+///**
+// * Implements hook_form_alter().
+// */
+//function moonmars_channels_form_alter(&$form, &$form_state, $form_id) {
+//  global $user;
+//
+//  switch ($form_id) {
+//    case 'channel_node_form':
+//      $channel = Channel::create($form['#node']);
+//
+//      // Update the title:
+//      drupal_set_title("Edit links for " . $channel->parentEntityName());
+//
+//      // Hide the channel title field:
+//      unset($form['title']);
+//
+//      // Submit handler:
+//      $form['actions']['submit']['#submit'][] = 'moonmars_channels_channel_node_form_submit';
+//
+//      break;
+//  }
+//}
+//
+///**
+// * Submit handler for channel_node_form.
+// *
+// * @param $form
+// * @param $form_state
+// */
+//function moonmars_channels_channel_node_form_submit($form, &$form_state) {
+//  $channel = Channel::create($form['#node']);
+//  $form_state['redirect'] = $channel->parentEntity()->alias();
+//}
 
 /**
  * Reorder the channels by title.

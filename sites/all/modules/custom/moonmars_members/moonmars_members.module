@@ -87,6 +87,24 @@ function moonmars_members_levels() {
 }
 
 /**
+ * Get the link fields.
+ *
+ * @return array
+ */
+function moonmars_members_link_fields() {
+  return array(
+    'field_website',
+    'field_facebook_link',
+    'field_linkedin_link',
+    'field_twitter_link',
+    'field_google_link',
+    'field_youtube_link',
+    'field_flickr_link',
+    'field_wikipedia_link',
+  );
+}
+
+/**
  * Implements hook_form_alter().
  */
 function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
@@ -98,11 +116,20 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
       // Add JS for the Moon or Mars field:
       $form['#attached']['js'][] = "$module_path/js/moon-or-mars.js";
       $form['#attached']['js'][] = "$module_path/js/check-username.js";
+      $form['#attached']['js'][] = "$module_path/js/register-form.js";
+
+      // Change the title:
+      drupal_set_title("Join moonmars.com!");
 
       // Update username field description re valid characters:
       $form['account']['name']['#description'] = MOONMARS_USERNAME_DESCRIPTION;
 
-      // Add rules fields:
+      // Remove location fieldset description, and province and city fields:
+      unset($form['field_user_location'][LANGUAGE_NONE][0]['#description']);
+      $form['field_user_location'][LANGUAGE_NONE][0]['#location_settings']['form']['fields']['province']['collect'] = 0;
+      $form['field_user_location'][LANGUAGE_NONE][0]['#location_settings']['form']['fields']['city']['collect'] = 0;
+
+      // Site rules:
       $form['rules'] = array(
         '#markup' => "
   <div id='site-rules'>
@@ -130,8 +157,12 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
         '#required' => TRUE,
       );
 
+      // Add an after_build handler:
+      $form['#after_build'][] = 'moonmars_members_user_register_form_after_build';
+
       // Add a validation handler. Need to put this first so that our username rules get checked before Drupal core's.
       array_unshift($form['#validate'], 'moonmars_members_user_register_form_validate');
+
       break;
 
     case 'user_profile_form':
@@ -142,8 +173,10 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
 
       // Update username field description re valid characters:
       $form['account']['name']['#description'] = MOONMARS_USERNAME_DESCRIPTION;
+      $form['account']['#type'] = 'fieldset';
+      $form['account']['#title'] = "Account details";
 
-      // Remove the grippie from the bio textarea:
+      // Remove the resize handle from the bio textarea:
       $form['field_bio'][LANGUAGE_NONE][0]['value']['#resizable'] = FALSE;
 
       // Hidden field to contain the uid:
@@ -165,11 +198,22 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
 //      $form['field_text_color'][LANGUAGE_NONE][0]['#suffix'] = moonmars_color_icons('color', '#314fa9', $form['field_text_color'][LANGUAGE_NONE][0]['rgb']['#default_value']);
       unset($form['field_text_color']);
 
-      // Embed the links.
-//      require_once drupal_get_path('module', 'node') . '/node.pages.inc';
-//      $profile_member = Member::create($form['#user']->uid);
-//      $form2 = node_page_edit($profile_member->channel()->node());
-//      $form['links'] = $form2;
+      // Embed the channel links.
+      require_once drupal_get_path('module', 'node') . '/node.pages.inc';
+      $profile_member = Member::create($form['#user']->uid);
+      $form2 = drupal_get_form('channel_node_form', $profile_member->channel()->node());
+      $form['links'] = array(
+        '#type' => 'fieldset',
+        '#title' => 'Links',
+      );
+      $weight = 0;
+      $link_fields = moonmars_members_link_fields();
+      foreach ($link_fields as $link_field) {
+        $form['links'][$link_field] = $form2[$link_field][LANGUAGE_NONE][0]['url'];
+        $form['links'][$link_field]['#title'] = $form2[$link_field][LANGUAGE_NONE][0]['#title'];
+        $form['links'][$link_field]['#description'] = str_replace('the member/group/etc. has', 'you have', $form2[$link_field][LANGUAGE_NONE][0]['#description']);
+        $form['links'][$link_field]['#weight'] = $weight++;
+      }
 
       // Add an after_build handler:
       $form['#after_build'][] = 'moonmars_members_user_profile_form_after_build';
@@ -183,31 +227,39 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
   }
 
   // Order the fields. This should work the same for both forms.
-  if ($form_id ==  'user_register_form' || $form_id ==  'user_register_form') {
+  if ($form_id == 'user_register_form' || $form_id == 'user_profile_form') {
     $weight = 0;
-    $form['account']['#weight'] = ++$weight;
-    $form['account']['name']['#weight'] = ++$weight;
-    $form['account']['mail']['#weight'] = ++$weight;
-    $form['account']['current_pass']['#weight'] = ++$weight;
-    $form['account']['pass']['#weight'] = ++$weight;
-    $form['account']['roles']['#weight'] = ++$weight;
-    $form['account']['status']['#weight'] = ++$weight;
-    $form['account']['notify']['#weight'] = ++$weight;
-    $form['field_first_name']['#weight'] = ++$weight;
-    $form['field_last_name']['#weight'] = ++$weight;
-    $form['picture']['#weight'] = ++$weight;
-    $form['field_moon_or_mars']['#weight'] = ++$weight;
-    $form['field_date_of_birth']['#weight'] = ++$weight;
-    $form['field_gender']['#weight'] = ++$weight;
-    $form['field_user_location']['#weight'] = ++$weight;
-    $form['timezone']['#weight'] = ++$weight;
-    $form['field_mobile_phone']['#weight'] = ++$weight;
-    $form['field_skype']['#weight'] = ++$weight;
-    $form['field_bio']['#weight'] = ++$weight;
-    $form['signature']['#weight'] = ++$weight;
-    $form['contact']['#weight'] = ++$weight;
-    $form['rules']['#weight'] = ++$weight;
-    $form['rules-cb']['#weight'] = ++$weight;
+
+    $form['account']['#weight'] = $weight++;
+    $form['account']['name']['#weight'] = $weight++;
+    $form['account']['mail']['#weight'] = $weight++;
+    $form['account']['current_pass']['#weight'] = $weight++;
+    $form['account']['pass']['#weight'] = $weight++;
+    $form['account']['roles']['#weight'] = $weight++;
+    $form['account']['status']['#weight'] = $weight++;
+    $form['account']['notify']['#weight'] = $weight++;
+
+    $form['#fieldgroups']['group_personal']->weight = $weight++;
+    $form['picture']['#weight'] = $weight++;
+    $form['field_first_name']['#weight'] = $weight++;
+    $form['field_last_name']['#weight'] = $weight++;
+    $form['field_date_of_birth']['#weight'] = $weight++;
+    $form['field_gender']['#weight'] = $weight++;
+    $form['field_mobile_phone']['#weight'] = $weight++;
+    $form['field_skype']['#weight'] = $weight++;
+    $form['field_bio']['#weight'] = $weight++;
+    $form['field_moon_or_mars']['#weight'] = $weight++;
+
+    $form['field_user_location']['#weight'] = $weight++;
+    $form['timezone']['#weight'] = $weight++;
+
+    $form['links']['#weight'] = $weight++;
+
+    $form['#fieldgroups']['group_preferences']->weight = $weight++;
+    $form['signature']['#weight'] = $weight++;
+    $form['contact']['#weight'] = $weight++;
+    $form['rules']['#weight'] = $weight++;
+    $form['rules-cb']['#weight'] = $weight++;
 
     //      $keys = array_keys($form);
 //      foreach ($form as $key => $value) {
@@ -251,6 +303,24 @@ function moonmars_members_user_register_form_validate($form, &$form_state) {
 }
 
 /**
+ * After_build handler for the user register form.
+ *
+ * @param array $form
+ * @return array
+ */
+function moonmars_members_user_register_form_after_build($form) {
+  // Remove AJAX from the country selector:
+//  unset($form['field_user_location'][LANGUAGE_NONE][0]['country']['#ajax']);
+//  $form['field_user_location'][LANGUAGE_NONE][0]['country']['#attributes']['class'] = array_diff($form['field_user_location'][LANGUAGE_NONE][0]['country']['#attributes']['class'], array('location_auto_country'));
+//  $form['field_user_location'][LANGUAGE_NONE][0]['country']['#process'] = array_diff($form['field_user_location'][LANGUAGE_NONE][0]['country']['#process'], array('ajax_process_form'));
+//  $form['field_user_location'][LANGUAGE_NONE][0]['country']['#ajax_processed'] = FALSE;
+  // This was the only change needed, but let's not delete the other lines yet just in case.
+  unset($form['field_user_location'][LANGUAGE_NONE][0]['country']['#attached']['js'][0]['data']['ajax']);
+
+  return $form;
+}
+
+  /**
  * After_build handler for the user account/profile form.
  *
  * @param array $form
@@ -266,11 +336,14 @@ function moonmars_members_user_profile_form_after_build($form) {
     }
   }
 
-  // Add some descriptions to the location fields:
+  // Make some changes to the location fields that we can't do in hook_form_alter().
+  unset($form['field_user_location'][LANGUAGE_NONE][0]['#description']);
   $form['field_user_location'][LANGUAGE_NONE][0]['country']['#description'] = "Select your country";
   $form['field_user_location'][LANGUAGE_NONE][0]['province']['#description'] = "Select your state or province";
   $form['field_user_location'][LANGUAGE_NONE][0]['city']['#description'] = "Enter your city";
   unset($form['field_user_location'][LANGUAGE_NONE][0]['delete_location']);
+  $form['field_user_location'][LANGUAGE_NONE][0]['timezone'] = $form['timezone']['timezone'];
+  unset($form['timezone']);
 
   return $form;
 }
@@ -288,8 +361,20 @@ function moonmars_members_user_profile_form_validate($form, &$form_state) {
  * Submit handler for the user account/profile form.
  */
 function moonmars_members_user_profile_form_submit($form, &$form_state) {
-  // Go back to the user's profile:
+  // Get the member whose profile is being updated:
   $member = Member::create($form['#user']);
+
+  // Update the channel links:
+  $channel = $member->channel();
+  $link_fields = moonmars_members_link_fields();
+  foreach ($link_fields as $link_field) {
+    // We have to inspect $_POST instead of $form_state['values'], because Drupal removes the submitted values for the
+    // links as they came from another form.
+    $channel->field($link_field, LANGUAGE_NONE, 0, 'url', $_POST[$link_field][LANGUAGE_NONE][0]['url']);
+  }
+  $channel->save();
+
+  // Go back to the user's profile:
   $form_state['redirect'] = $member->alias();
 }
 

@@ -136,7 +136,10 @@ Drupal.chatroom.getPreviousMessages = function(cid, cmid, limit) {
 
 Drupal.chatroom.updateUserList = function(message) {
   if ($('#chatroom-user-' + message.cid + '-' + message.uid).length == 0) {
-    $('#chatroom-irc-user-list-' + message.cid).append('<li id="chatroom-user-' + message.cid + '-' + message.uid + '"><a href="/user/' + message.uid + '">' + message.name + '</a></li>');
+    var userHtml = '<li style="display: none;" id="chatroom-user-'
+                   + message.cid + '-' + message.uid + '"><a href="/user/'
+                   + message.uid + '">' + message.name + '</a></li>';
+    $(userHtml).hide().appendTo($('#chatroom-irc-user-list-' + message.cid)).show('normal');
   }
 }
 
@@ -177,7 +180,9 @@ Drupal.Nodejs.contentChannelNotificationCallbacks.chatroom = {
     if (message.data.type == 'disconnect') {
       var cid = message.channel.replace(/^chatroom_/, '');
       if ($('#chatroom-user-' + cid + '-' + message.data.uid).length == 1) {
-        $('#chatroom-user-' + cid + '-' + message.data.uid).remove();
+        $('#chatroom-user-' + cid + '-' + message.data.uid).hide('normal', function () {
+          $('#chatroom-user-' + cid + '-' + message.data.uid).remove();
+        });
       }
     }
   }

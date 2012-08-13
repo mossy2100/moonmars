@@ -1,3 +1,4 @@
+Version 201207301030 - Fix to issue 28, extending from included files
 Version 201207271000 - Fixed scale-color function (attrib: Steve Jones)
 Version 201207262300 - Various issue fixes, better testing framework
 Version 201206291700 - Fixed some tests, minor changes to string and import handling

@@ -72,6 +72,7 @@ class SassImportNode extends SassNode {
             $tree->children = array();
           } else {
             $tree = new SassRootNode($this->parser);
+            $tree->extend_parent = $this->parent;
           }
 
           foreach ($files as $subfile) {

@@ -153,7 +153,7 @@ function chatroom_field_widget_form(&$form, &$form_state, $field, $instance, $la
       $format_options = array();
       foreach ($formats as $format) {
         $format_options[$format->format] = $format->name;
-     }
+      }
       $gin_form['chatroom']['chatroom_format'] = array(
         '#type' => 'select',
         '#title' => t('Message output format'),
@@ -190,7 +190,21 @@ function chatroom_field_insert($entity_type, $entity, $field, $instance, $langco
     $chatroom->set('title', $item['chatroom']['chatroom_title']);
     $chatroom->set('public', $item['chatroom']['chatroom_public']);
     $chatroom->set('uid', $user->uid);
-    $chatroom->set('allowedRids', array($item['chatroom']['chatroom_roles']));
+    $allowed_rids = array();
+    foreach ($item['chatroom']['chatroom_read_only_roles'] as $rid) {
+      $allowed_rids[$rid] = (object) array(
+        'rid' => $rid,
+        'read_only' => 1,
+      );
+    }
+    // Just overwrite any read-only values for the same role.
+    foreach ($item['chatroom']['chatroom_write_roles'] as $rid) {
+      $allowed_rids[$rid] = (object) array(
+        'rid' => $rid,
+        'read_only' => 0,
+      );
+    }
+    $chatroom->set('allowedRids', $allowed_rids);
     if (isset($item['chatroom']['chatroom_format'])) {
       $chatroom->set('format', $item['chatroom']['chatroom_format']);
     }
@@ -227,7 +241,6 @@ function chatroom_field_update($entity_type, $entity, $field, $instance, $langco
         'read_only' => 0,
       );
     }
-    AD::ffs($allowed_rids);
     $chatroom->set('allowedRids', $allowed_rids);
     if (isset($item['chatroom']['chatroom_format'])) {
       $chatroom->set('format', $item['chatroom']['chatroom_format']);
@@ -378,7 +391,7 @@ function chatroom_menu() {
     'title' => 'Post a message to the given chatroom',
     'page callback' => 'chatroom_post_message',
     'page arguments' => array(3),
-    'access callback' => array('chatroom_user_has_access'),
+    'access callback' => 'chatroom_user_has_access',
     'access arguments' => array(3, 'write'),
     'type' => MENU_CALLBACK,
   );
@@ -386,7 +399,7 @@ function chatroom_menu() {
     'title' => 'Get previous chat messages.',
     'page callback' => 'chatroom_previous_messages',
     'page arguments' => array(1, 4, 5),
-    'access callback' => array('chatroom_user_has_access'),
+    'access callback' => 'chatroom_user_has_access',
     'access arguments' => array(1, 'read'),
     'type' => MENU_CALLBACK,
   );
@@ -410,7 +423,7 @@ function chatroom_add_chat_ajax() {
   if (!isset($chatroom_data['allowedUids']) || !is_array($chatroom_data['allowedUids'])) {
     $chatroom_data['allowedUids'] = array($chatroom_data['uid']);
   }
-  else if (!in_array($chatroom_data['uid'], $chatroom_data['allowedUids'])) {
+  elseif (!in_array($chatroom_data['uid'], $chatroom_data['allowedUids'])) {
     $chatroom_data['allowedUids'][] = $chatroom_data['uid'];
   }
 
@@ -657,36 +670,6 @@ function chatroom_get_user_timezone_offset() {
 }
 
 /**
- * Implements hook_chatroom_commands().
- */
-function chatroom_chatroom_commands() {
-  return array(
-    'msg' => array(
-      'callback' => 'chatroom_command_msg_user',
-    ),
-  );
-}
-
-/**
- * Respond to a command to send a message to a specific user in a chat.
- *
- * @param mixed $command
- * @param mixed $chatroom
- * @return boolean
- */
-function chatroom_command_msg_user($command, $chatroom) {
-  global $user;
-
-  // The second arg is the message, so if there isn't one, just bail.
-  if (count($command->args) < 2) {
-    return FALSE;
-  }
-
-  // TODO: write the implementation.
-  return FALSE;
-}
-
-/**
  * Try to load a user from a command argument.
  *
  * @param mixed $command_arg
@@ -727,7 +710,7 @@ function chatroom_call_command($message, $chatroom) {
  * @return array
  */
 function chatroom_parse_command($message) {
-  $command = new StdClass();
+  $command = new stdClass();
   $command->args = array();
   $command->name = FALSE;
   $prefix = variable_get('chatroom_command_prefix', '/');
@@ -749,7 +732,7 @@ function chatroom_parse_command($message) {
  */
 function chatroom_get_message_type($message) {
   $prefix = variable_get('chatroom_command_prefix', '/');
-  if (substr($message, 0, strlen($prefix)) == $prefix) {
+  if (drupal_substr($message, 0, drupal_strlen($prefix)) == $prefix) {
     return 'command';
   }
   return 'message';
