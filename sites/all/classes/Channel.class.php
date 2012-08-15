@@ -598,35 +598,26 @@ class Channel extends Node {
     $html = '';
     $entity = $this->parentEntity();
 
-    // Official website:
-    $url = $this->field('field_website', LANGUAGE_NONE, 0, 'url');
-    if ($url) {
-      $title = htmlspecialchars("Visit " . (($entity instanceof Member) ? ($entity->name() . "'s official website") : ("the official website of " . $entity->title())), ENT_QUOTES);
-      $html .= "
-        <p class='official-website'>
-          Official website:<br>
-          <a href='$url' target='_blank' title='$title' class='autotrim'>" . rtrim(trimhttp($url), '/') . "</a>
-        </p>\n";
-    }
+//    // Official website:
+//    $url = $this->field('field_website', LANGUAGE_NONE, 0, 'url');
+//    if ($url) {
+//      $title = htmlspecialchars("Visit " . (($entity instanceof Member) ? ($entity->name() . "'s official website") : ("the official website of " . $entity->title())), ENT_QUOTES);
+//      $html .= "
+//        <p class='official-website'>
+//          Official website:<br>
+//          <a href='$url' target='_blank' title='$title' class='autotrim'>" . rtrim(trimhttp($url), '/') . "</a>
+//        </p>\n";
+//    }
 
     // Social links:
     $social_links = '';
-
-    $social_sites = array(
-      'facebook'  => 'facebook',
-      'twitter'   => 'twitter',
-      'linkedin'  => 'LinkedIn',
-      'google'    => 'Google+',
-      'youtube'   => 'YouTube',
-      'flickr'    => 'Flickr',
-      'wikipedia' => 'Wikipedia'
-    );
-
-    foreach ($social_sites as $social_site => $social_site_name) {
-      $field = "field_{$social_site}_link";
-      $url = $this->field($field, LANGUAGE_NONE, 0, 'url');
+    $social_link_fields = moonmars_members_social_links();
+    foreach ($social_link_fields as $social_site => $info) {
+      $link_field = $info['field'];
+      $url = $this->field($link_field, LANGUAGE_NONE, 0, 'url');
       if ($url) {
-        $title = htmlspecialchars("Visit " . (($entity instanceof Member) ? ($entity->name() . "'s") : ("the " . $entity->title())) . " $social_site_name page", ENT_QUOTES);
+        $title = "Visit " . (($entity instanceof Member) ? $entity->name() : $entity->title()) . "'s " . $info['description'];
+        $title = htmlspecialchars($title, ENT_QUOTES);
         $social_links .= "<a class='social-link social-link-{$social_site}' href='$url' target='_blank' title='$title'></a>\n";
       }
     }

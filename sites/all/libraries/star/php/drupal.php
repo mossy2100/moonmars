@@ -22,6 +22,15 @@ function alias_arg_count() {
 }
 
 /**
+ * Return the last argument in the alias.
+ *
+ * @return string
+ */
+function last_alias_arg() {
+  return alias_arg(alias_arg_count() - 1);
+}
+
+/**
  * Return the number of arguments in the path.
  * @return int
  */

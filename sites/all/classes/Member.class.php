@@ -776,8 +776,8 @@ class Member extends User {
     $this->subscribe($group->channel());
 
     // Post system message to the group:
-    $summary = $this->link() . " joined " . $group->channelTitleLink();
-    $group->notify($summary, NULL, $this, $group->channel());
+//    $summary = $this->link() . " joined " . $group->channelTitleLink();
+//    $group->notifyAdmins($summary, NULL, $this, $group->channel());
   }
 
   /**

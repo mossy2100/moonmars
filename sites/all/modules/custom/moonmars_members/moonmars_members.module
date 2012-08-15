@@ -87,20 +87,66 @@ function moonmars_members_levels() {
 }
 
 /**
- * Get the link fields.
+ * Get the social link fields.
  *
  * @return array
  */
-function moonmars_members_link_fields() {
+function moonmars_members_social_links() {
   return array(
-    'field_website',
-    'field_facebook_link',
-    'field_linkedin_link',
-    'field_twitter_link',
-    'field_google_link',
-    'field_youtube_link',
-    'field_flickr_link',
-    'field_wikipedia_link',
+    'website'   => array(
+      'name'        => 'Website',
+      'field'       => 'field_website',
+      'domain'      => '',
+      'description' => 'official website',
+    ),
+    'facebook'  => array(
+      'name'        => 'Facebook',
+      'field'       => 'field_facebook_link',
+      'domain'      => 'facebook.com',
+      'description' => 'Facebook profile',
+    ),
+    'linkedin'  => array(
+      'name'        => 'LinkedIn',
+      'field'       => 'field_linkedin_link',
+      'domain'      => 'linkedin.com',
+      'description' => 'LinkedIn profile',
+    ),
+    'twitter'   => array(
+      'name'        => 'Twitter',
+      'field'       => 'field_twitter_link',
+      'domain'      => 'twitter.com',
+      'description' => 'Twitter profile',
+    ),
+    'meetup'    => array(
+      'name'        => 'Meetup',
+      'field'       => 'field_meetup_link',
+      'domain'      => 'meetup.com',
+      'description' => 'Meetup profile',
+    ),
+    'google'    => array(
+      'name'        => 'Google+',
+      'field'       => 'field_google_link',
+      'domain'      => 'plus.google.com',
+      'description' => 'Google+ profile',
+    ),
+    'youtube'   => array(
+      'name'        => 'YouTube',
+      'field'       => 'field_youtube_link',
+      'domain'      => 'youtube.com',
+      'description' => 'YouTube channel',
+    ),
+    'flickr'    => array(
+      'name'        => 'Flickr',
+      'field'       => 'field_flickr_link',
+      'domain'      => 'flickr.com',
+      'description' => 'Flickr profile',
+    ),
+    'wikipedia' => array(
+      'name'        => 'Wikipedia',
+      'field'       => 'field_wikipedia_link',
+      'domain'      => 'wikipedia.org',
+      'description' => 'Wikipedia entry',
+    ),
   );
 }
 
@@ -207,8 +253,10 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
         '#title' => 'Links',
       );
       $weight = 0;
-      $link_fields = moonmars_members_link_fields();
-      foreach ($link_fields as $link_field) {
+
+      $social_links = moonmars_members_social_links();
+      foreach ($social_links as $info) {
+        $link_field = $info['field'];
         $form['links'][$link_field] = $form2[$link_field][LANGUAGE_NONE][0]['url'];
         $form['links'][$link_field]['#title'] = $form2[$link_field][LANGUAGE_NONE][0]['#title'];
         $form['links'][$link_field]['#description'] = str_replace('the member/group/etc. has', 'you have', $form2[$link_field][LANGUAGE_NONE][0]['#description']);
@@ -364,14 +412,18 @@ function moonmars_members_user_profile_form_submit($form, &$form_state) {
   // Get the member whose profile is being updated:
   $member = Member::create($form['#user']);
 
-  // Update the channel links:
+  // Update the channel's links:
   $channel = $member->channel();
-  $link_fields = moonmars_members_link_fields();
-  foreach ($link_fields as $link_field) {
-    // We have to inspect $_POST instead of $form_state['values'], because Drupal removes the submitted values for the
-    // links as they came from another form.
+
+  // We have to inspect $_POST instead of $form_state['values'], because Drupal removes the submitted values for the
+  // links, presumably because they came from another form.
+  $link_fields = moonmars_members_social_links();
+  foreach ($link_fields as $info) {
+    $link_field = $info['field'];
     $channel->field($link_field, LANGUAGE_NONE, 0, 'url', $_POST[$link_field][LANGUAGE_NONE][0]['url']);
   }
+
+  // Save the channel:
   $channel->save();
 
   // Go back to the user's profile:
@@ -597,12 +649,15 @@ function moonmars_members_menu_block() {
  * @return string
  */
 function moonmars_members_groups_block() {
-  // Get the member's uid from the URL:
-  $member_uid = (int) arg(1);
+  // Get the member from the URL:
+  $entity = MmcEntity::getEntityFromUrl();
+  $member = ($entity instanceof Member) ? $entity : (($entity instanceof Channel) ? $entity->parentEntity() : FALSE);
+  if (!($member instanceof Member)) {
+    return '';
+  }
 
   // Get the latest 4 groups that the member joined.
   // (Might change this to the biggest or most active or most popular groups that the member is in.)
-  $member = Member::create($member_uid);
   $groups = $member->groups(0, 4);
   $group_count = $member->groupCount();
 
@@ -619,8 +674,12 @@ function moonmars_members_groups_block() {
  * @return string
  */
 function moonmars_members_followers_block() {
-  // Whose profile are we on:
-  $member = Member::create(arg(1));
+  // Get the member from the URL:
+  $entity = MmcEntity::getEntityFromUrl();
+  $member = ($entity instanceof Member) ? $entity : (($entity instanceof Channel) ? $entity->parentEntity() : FALSE);
+  if (!($member instanceof Member)) {
+    return '';
+  }
 
   // Get the latest 12 followers:
   $followers = $member->followers(12);
@@ -637,8 +696,12 @@ function moonmars_members_followers_block() {
  * @return string
  */
 function moonmars_members_followees_block() {
-  // Whose profile are we on:
-  $member = Member::create(arg(1));
+  // Get the member from the URL:
+  $entity = MmcEntity::getEntityFromUrl();
+  $member = ($entity instanceof Member) ? $entity : (($entity instanceof Channel) ? $entity->parentEntity() : FALSE);
+  if (!($member instanceof Member)) {
+    return '';
+  }
 
   // Get the latest 12 followees:
   $followees = $member->followees(12);

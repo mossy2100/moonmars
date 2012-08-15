@@ -231,20 +231,64 @@ class Group extends Node {
     return (bool) $rels;
   }
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Admins
+
+  /**
+   * Get the admins of the group.
+   *
+   * @return array
+   */
+  public function admins() {
+    // Get the group's admins in reverse order of that in which they joined.
+    $q = db_select('view_group_has_member', 'v')
+      ->fields('v', array('admin_uid'))
+      ->condition('group_nid', $this->nid())
+      ->condition('is_admin', 1)
+      ->orderBy('created', 'DESC');
+
+    $rs = $q->execute();
+    $admins = array();
+    foreach ($rs as $rec) {
+      $admins[] = Member::create($rec->admin_uid);
+    }
+
+    return $admins;
+  }
+
+  /**
+   * Get the number of admins in a group.
+   *
+   * @return int
+   */
+  public function adminCount() {
+    $q = db_select('view_group_has_member', 'v')
+      ->fields('v', array('rid'))
+      ->condition('group_nid', $this->nid())
+      ->condition('is_admin', 1);
+    $rs = $q->execute();
+    return $rs->rowCount();
+  }
+
   /**
    * Check if a user is an admin of the group.
-   *
-   * @todo Implement has_admin relationship
    *
    * @param Member $member
    * @return bool
    */
   public function hasAdmin(Member $member) {
-    return $member->uid() == 1;
+    // Superuser is admin of every group:
+    if ($member->uid() == 1) {
+      return TRUE;
+    }
 
-//    $rels = moonmars_relationships_get_relationships('has_admin', 'node', $this->nid(), 'user', $member->uid());
-//    return (bool) $rels;
+    // Check if the user is a member of the group, and if they're also an admin.
+    $rels = moonmars_relationships_get_relationships('has_member', 'node', $this->nid(), 'user', $member->uid());
+    return $rels ? ((bool) $rels[0]->field('field_is_admin')) : FALSE;
   }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Select sets of groups
 
   /**
    * Get the top groups.
@@ -352,12 +396,32 @@ class Group extends Node {
    * @param Item $item
    * @param ItemComment $comment
    */
-  public function notify($summary, $text = NULL, Member $actor = NULL, Channel $channel = NULL, Item $item = NULL, ItemComment $comment = NULL) {
+  public function notifyMembers($summary, $text = NULL, Member $actor = NULL, Channel $channel = NULL, Item $item = NULL, ItemComment $comment = NULL) {
     $members = $this->members();
     foreach ($members as $member) {
       // Notify everyone in the group except the actor:
       if (!Member::equals($member, $actor)) {
         $member->notify($summary, $text, $actor, $channel, $item, $comment);
+      }
+    }
+  }
+
+  /***
+   * Send a notification message to all the admins of a group.
+   *
+   * @param string $summary
+   * @param string $text
+   * @param Member $actor
+   * @param Channel $channel
+   * @param Item $item
+   * @param ItemComment $comment
+   */
+  public function notifyAdmins($summary, $text = NULL, Member $actor = NULL, Channel $channel = NULL, Item $item = NULL, ItemComment $comment = NULL) {
+    $admins = $this->admins();
+    foreach ($admins as $admin) {
+      // Notify all admins except the actor:
+      if (!Member::equals($admin, $actor)) {
+        $admin->notify($summary, $text, $actor, $channel, $item, $comment);
       }
     }
   }

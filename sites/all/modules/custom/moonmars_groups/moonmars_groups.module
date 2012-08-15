@@ -31,7 +31,21 @@ function moonmars_groups_menu() {
   return $items;
 }
 
+
 /**
+ * Implements hook_form_alter().
+ */
+function moonmars_groups_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'group_node_form') {
+    $form['#attached']['js'][] = drupal_get_path('module', 'moonmars_groups') . '/js/group-edit-form.js';
+
+//    dbg($form);
+
+  }
+
+}
+
+  /**
  * Checks if this is a group page.
  * This function can probably be improved by using native Drupal/context variables.
  *
@@ -279,9 +293,12 @@ function moonmars_groups_menu_block() {
     return "<p>To join this group, first <a href='user/register'>register an account</a>.</p>";
   }
 
-  // Get the group:
-  $group_nid = (int) arg(1);
-  $group = Group::create($group_nid);
+  // Get the group from the URL:
+  $entity = MmcEntity::getEntityFromUrl();
+  $group = ($entity instanceof Group) ? $entity : (($entity instanceof Channel) ? $entity->parentEntity() : FALSE);
+  if (!($group instanceof Group)) {
+    return '';
+  }
 
   // Get the current member:
   $current_member = Member::currentMember();
@@ -324,9 +341,12 @@ function moonmars_groups_menu_block() {
  * @return string
  */
 function moonmars_groups_members_block() {
-  // Get the group nid from the URL:
-  $group_nid = (int) arg(1);
-  $group = Group::create($group_nid);
+  // Get the group from the URL:
+  $entity = MmcEntity::getEntityFromUrl();
+  $group = ($entity instanceof Group) ? $entity : (($entity instanceof Channel) ? $entity->parentEntity() : FALSE);
+  if (!($group instanceof Group)) {
+    return '';
+  }
 
   // Get the latest 12 group members:
   $members = $group->members(0, 12);
@@ -344,8 +364,8 @@ function moonmars_groups_members_block() {
  * @return string
  */
 function moonmars_groups_newest_groups_block() {
-  // Get the newest 4 groups:
-  $groups = Group::newest(4);
+  // Get the newest groups:
+  $groups = Group::newest(10);
 
   // Generate HTML:
   $html = moonmars_groups_render_block($groups);

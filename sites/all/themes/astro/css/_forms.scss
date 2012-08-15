@@ -76,12 +76,6 @@ form {
   .form-item {
     margin: 15px 0;
 
-    .description {
-      font-size: 11px;
-      padding: 3px 0;
-      color: $grey3;
-    }
-
     & > label {
       padding: 3px 0;
     }
@@ -100,11 +94,15 @@ form {
         margin-right: 10px;
       }
     }
+  }
 
+  .description {
+    font-size: 11px;
+    padding: 3px 0;
+    color: $grey3;
   }
 
   .form-type-radios {
-
     div.form-radios {
       margin-bottom: 2px;
 
@@ -139,6 +137,14 @@ form {
 
   & > div > div#edit-actions {
     margin-bottom: 0;
+  }
+
+  .vertical-tabs {
+    margin: 0;
+  }
+
+  .wysiwyg-toggle-wrapper {
+    display: none;
   }
 }
 

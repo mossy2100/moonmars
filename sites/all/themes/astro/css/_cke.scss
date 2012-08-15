@@ -1,0 +1,50 @@
+#cke_edit-field-description-und-0-value {
+  padding: 0;
+  border: none;
+
+  .cke_wrapper {
+    padding: 0;
+    background: none;
+  }
+
+  table {
+    &.cke_editor {
+      margin-bottom: 0;
+      width: 100%;
+    }
+
+    tr td {
+      padding: 0;
+      border: none;
+
+      &.cke_contents {
+        border: solid 1px $blue4;
+        @include border-radius(3px);
+      }
+
+      &#cke_bottom_edit-field-description-und-0-value {
+        display: none;
+      }
+
+      .cke_toolbox_collapser {
+        display: none;
+      }
+    }
+
+    iframe {
+      body {
+        min-width: 0;
+      }
+    }
+  }
+}
+
+.text-format-wrapper {
+  .description {
+    margin-top: 0;
+  }
+
+  .filter-wrapper {
+    display: none;
+  }
+}

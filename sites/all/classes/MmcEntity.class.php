@@ -37,6 +37,16 @@ class MmcEntity {
   }
 
   /**
+   * Get the entity from the URL.
+   *
+   * @static
+   * @return bool
+   */
+  public static function getEntityFromUrl() {
+    return self::getEntity(arg(0), arg(1));
+  }
+
+  /**
    * Creates a new channel for an entity.
    *
    * @param string $entity_type

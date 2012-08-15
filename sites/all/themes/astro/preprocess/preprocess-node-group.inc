@@ -6,7 +6,6 @@
  * @param $vars
  */
 function astro_alpha_preprocess_node_group(&$vars) {
-
   // Get the current logged-in member:
   $current_member = Member::currentMember();
   $vars['current_member'] = $current_member;
