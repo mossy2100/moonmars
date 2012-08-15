@@ -22,7 +22,7 @@ form {
   }
 
   fieldset {
-    margin-bottom: 15px;
+    margin-bottom: 25px;
 
     legend {
       color: $red1;
@@ -53,7 +53,10 @@ form {
     padding: 2px;
     border: solid 1px $blue4;
     @include border-radius(3px);
-    //resize: none;
+  }
+
+  textarea {
+    resize: none;
   }
 
   input.form-text,
@@ -94,6 +97,14 @@ form {
         margin-right: 10px;
       }
     }
+  }
+
+  & > div > .form-item:first-child {
+    margin-top: 0;
+  }
+
+  & > div > .form-item:last-child {
+    margin-bottom: 0;
   }
 
   .description {
@@ -208,13 +219,19 @@ form {
 
     .fieldset-wrapper {
       @include grey-form-style;
+      margin-bottom: 0;
     }
 
+    // Hide the appearance of nested fieldsets:
     fieldset {
-      // Hide the appearance of nested fieldsets:
+      border: 0;
+      padding: 0;
+      margin: 0;
+
       .fieldset-wrapper {
         border: 0;
         padding: 0;
+        margin: 0;
       }
 
       legend {
@@ -293,6 +310,16 @@ form {
 
   #user_user_form_group_personal {
     #edit-picture {
+      margin-bottom: 0;
+
+      .form-item-files-picture-upload {
+        margin: 0;
+
+        label {
+          display: none;
+        }
+      }
+
       .user-picture {
         float: left;
         margin-right: 10px;
@@ -348,7 +375,9 @@ form {
   }
 
   #user_user_form_group_preferences {
-    .form-item-contact {
+    margin-bottom: 10px;
+
+    .form-item {
       margin-top: 0;
     }
 
@@ -388,6 +417,10 @@ form {
 
   #edit-field-mobile-phone-und-0-value {
     width: 150px;
+  }
+
+  #edit-actions {
+    margin-top: 0;
   }
 }
 
@@ -448,6 +481,26 @@ form {
 }
 
 ////////////////////////////////////
+// Channel node form
+#channel-node-form {
+  .form-item {
+    margin-top: 0;
+  }
+
+  .field-type-link-field {
+    label {
+      line-height: 25px;
+      margin-bottom: 3px;
+    }
+  }
+
+  .social-link-icon {
+    @include border-radius(3px);
+  }
+}
+
+
+////////////////////////////////////
 // Search form in right sidebar
 
 #search-block-form {
@@ -465,8 +518,7 @@ form {
   text-align: right;
 
   .form-submit {
-    margin-top: 3px;
-    margin-right: 0;
+    margin: 3px 0 0 5px;
   }
 }
 
@@ -517,9 +569,13 @@ form#moonmars-groups-search-form {
       padding-top: 2px;
     }
 
-    #edit-text {
-      width: 278px;
-      box-sizing: border-box;
+    .form-item-text {
+      margin-top: 0;
+
+      #edit-text {
+        width: 278px;
+        box-sizing: border-box;
+      }
     }
 
     .form-type-checkbox,

@@ -32,6 +32,32 @@ function moonmars_menu() {
 }
 
 /**
+ * Remove resize handles from any textareas.
+ *
+ * @param $element
+ */
+function moonmars_remove_resize_handles(&$element) {
+  if (is_array($element)) {
+    foreach ($element as $key => $value) {
+      if ($key == '#type' && $value == 'textarea') {
+        $element['#resizable'] = FALSE;
+      }
+      elseif (is_array($value)) {
+        moonmars_remove_resize_handles($element[$key]);
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function moonmars_form_alter(&$form, &$form_state, $form_id) {
+  // Remove the resize handle from any textareas:
+  moonmars_remove_resize_handles($form);
+}
+
+/**
  * Redirect the user to the appropriate default start page.
  */
 function moonmars_home() {

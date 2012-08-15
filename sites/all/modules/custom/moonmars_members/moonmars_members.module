@@ -87,70 +87,6 @@ function moonmars_members_levels() {
 }
 
 /**
- * Get the social link fields.
- *
- * @return array
- */
-function moonmars_members_social_links() {
-  return array(
-    'website'   => array(
-      'name'        => 'Website',
-      'field'       => 'field_website',
-      'domain'      => '',
-      'description' => 'official website',
-    ),
-    'facebook'  => array(
-      'name'        => 'Facebook',
-      'field'       => 'field_facebook_link',
-      'domain'      => 'facebook.com',
-      'description' => 'Facebook profile',
-    ),
-    'linkedin'  => array(
-      'name'        => 'LinkedIn',
-      'field'       => 'field_linkedin_link',
-      'domain'      => 'linkedin.com',
-      'description' => 'LinkedIn profile',
-    ),
-    'twitter'   => array(
-      'name'        => 'Twitter',
-      'field'       => 'field_twitter_link',
-      'domain'      => 'twitter.com',
-      'description' => 'Twitter profile',
-    ),
-    'meetup'    => array(
-      'name'        => 'Meetup',
-      'field'       => 'field_meetup_link',
-      'domain'      => 'meetup.com',
-      'description' => 'Meetup profile',
-    ),
-    'google'    => array(
-      'name'        => 'Google+',
-      'field'       => 'field_google_link',
-      'domain'      => 'plus.google.com',
-      'description' => 'Google+ profile',
-    ),
-    'youtube'   => array(
-      'name'        => 'YouTube',
-      'field'       => 'field_youtube_link',
-      'domain'      => 'youtube.com',
-      'description' => 'YouTube channel',
-    ),
-    'flickr'    => array(
-      'name'        => 'Flickr',
-      'field'       => 'field_flickr_link',
-      'domain'      => 'flickr.com',
-      'description' => 'Flickr profile',
-    ),
-    'wikipedia' => array(
-      'name'        => 'Wikipedia',
-      'field'       => 'field_wikipedia_link',
-      'domain'      => 'wikipedia.org',
-      'description' => 'Wikipedia entry',
-    ),
-  );
-}
-
-/**
  * Implements hook_form_alter().
  */
 function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
@@ -222,9 +158,6 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
       $form['account']['#type'] = 'fieldset';
       $form['account']['#title'] = "Account details";
 
-      // Remove the resize handle from the bio textarea:
-      $form['field_bio'][LANGUAGE_NONE][0]['value']['#resizable'] = FALSE;
-
       // Hidden field to contain the uid:
       $form['uid'] = array(
         '#type' => 'hidden',
@@ -244,24 +177,24 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
 //      $form['field_text_color'][LANGUAGE_NONE][0]['#suffix'] = moonmars_color_icons('color', '#314fa9', $form['field_text_color'][LANGUAGE_NONE][0]['rgb']['#default_value']);
       unset($form['field_text_color']);
 
-      // Embed the channel links.
-      require_once drupal_get_path('module', 'node') . '/node.pages.inc';
-      $profile_member = Member::create($form['#user']->uid);
-      $form2 = drupal_get_form('channel_node_form', $profile_member->channel()->node());
-      $form['links'] = array(
-        '#type' => 'fieldset',
-        '#title' => 'Links',
-      );
-      $weight = 0;
-
-      $social_links = moonmars_members_social_links();
-      foreach ($social_links as $info) {
-        $link_field = $info['field'];
-        $form['links'][$link_field] = $form2[$link_field][LANGUAGE_NONE][0]['url'];
-        $form['links'][$link_field]['#title'] = $form2[$link_field][LANGUAGE_NONE][0]['#title'];
-        $form['links'][$link_field]['#description'] = str_replace('the member/group/etc. has', 'you have', $form2[$link_field][LANGUAGE_NONE][0]['#description']);
-        $form['links'][$link_field]['#weight'] = $weight++;
-      }
+//      // Embed the channel links.
+//      require_once drupal_get_path('module', 'node') . '/node.pages.inc';
+//      $profile_member = Member::create($form['#user']->uid);
+//      $form2 = drupal_get_form('channel_node_form', $profile_member->channel()->node());
+//      $form['links'] = array(
+//        '#type' => 'fieldset',
+//        '#title' => 'Links',
+//      );
+//      $weight = 0;
+//
+//      $social_links = moonmars_channels_social_links();
+//      foreach ($social_links as $info) {
+//        $link_field = $info['field'];
+//        $form['links'][$link_field] = $form2[$link_field][LANGUAGE_NONE][0]['url'];
+//        $form['links'][$link_field]['#title'] = $form2[$link_field][LANGUAGE_NONE][0]['#title'];
+//        $form['links'][$link_field]['#description'] = str_replace('the member/group/etc. has', 'you have', $form2[$link_field][LANGUAGE_NONE][0]['#description']);
+//        $form['links'][$link_field]['#weight'] = $weight++;
+//      }
 
       // Add an after_build handler:
       $form['#after_build'][] = 'moonmars_members_user_profile_form_after_build';
@@ -301,7 +234,7 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
     $form['field_user_location']['#weight'] = $weight++;
     $form['timezone']['#weight'] = $weight++;
 
-    $form['links']['#weight'] = $weight++;
+//    $form['links']['#weight'] = $weight++;
 
     $form['#fieldgroups']['group_preferences']->weight = $weight++;
     $form['signature']['#weight'] = $weight++;
@@ -412,19 +345,19 @@ function moonmars_members_user_profile_form_submit($form, &$form_state) {
   // Get the member whose profile is being updated:
   $member = Member::create($form['#user']);
 
-  // Update the channel's links:
-  $channel = $member->channel();
-
-  // We have to inspect $_POST instead of $form_state['values'], because Drupal removes the submitted values for the
-  // links, presumably because they came from another form.
-  $link_fields = moonmars_members_social_links();
-  foreach ($link_fields as $info) {
-    $link_field = $info['field'];
-    $channel->field($link_field, LANGUAGE_NONE, 0, 'url', $_POST[$link_field][LANGUAGE_NONE][0]['url']);
-  }
-
-  // Save the channel:
-  $channel->save();
+//  // Update the channel's links:
+//  $channel = $member->channel();
+//
+//  // We have to inspect $_POST instead of $form_state['values'], because Drupal removes the submitted values for the
+//  // links, presumably because they came from another form.
+//  $link_fields = moonmars_channels_social_links();
+//  foreach ($link_fields as $info) {
+//    $link_field = $info['field'];
+//    $channel->field($link_field, LANGUAGE_NONE, 0, 'url', $_POST[$link_field][LANGUAGE_NONE][0]['url']);
+//  }
+//
+//  // Save the channel:
+//  $channel->save();
 
   // Go back to the user's profile:
   $form_state['redirect'] = $member->alias();
@@ -625,10 +558,10 @@ function moonmars_members_menu_block() {
 
     // Follow/unfollow link:
     if ($current_member->follows($profile_member)) {
-      $follow_link = l('Unsubscribe', $profile_member->alias() . '/unfollow');
+      $follow_link = l('Unfollow', $profile_member->alias() . '/unfollow');
     }
     else {
-      $follow_link = l('Subscribe', $profile_member->alias() . '/follow');
+      $follow_link = l('Follow', $profile_member->alias() . '/follow');
     }
     $html .= "<li>$follow_link</li>";
   }
@@ -637,6 +570,9 @@ function moonmars_members_menu_block() {
   if ($own_profile || user_access('administer users', $user)) {
     // Edit profile link:
     $html .= "<li>" . l('Edit profile', $profile_member->editAlias()) . "</li>";
+
+    // Edit links:
+    $html .= "<li>" . l('Edit links', $profile_member->channel()->editAlias()) . "</li>";
   }
 
   $html .= "</ul>";

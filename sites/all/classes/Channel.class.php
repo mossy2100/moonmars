@@ -611,7 +611,7 @@ class Channel extends Node {
 
     // Social links:
     $social_links = '';
-    $social_link_fields = moonmars_members_social_links();
+    $social_link_fields = moonmars_channels_social_links();
     foreach ($social_link_fields as $social_site => $info) {
       $link_field = $info['field'];
       $url = $this->field($link_field, LANGUAGE_NONE, 0, 'url');

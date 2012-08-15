@@ -117,7 +117,6 @@ function moonmars_items_form_alter(&$form, &$form_state, $form_id) {
 
     // Make the textarea non-resizable and only 2 rows high. We will use the autoresize() plugin on the client. When it's working.
     $form['field_item_text']['#wysiwyg'] = FALSE;
-    $form['field_item_text'][LANGUAGE_NONE][0]['value']['#resizable'] = FALSE;
     $form['field_item_text'][LANGUAGE_NONE][0]['value']['#rows'] = 2;
 
     // Add a hidden field to carry the channel nid:

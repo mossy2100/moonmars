@@ -35,9 +35,6 @@ function initChannel() {
   $('#edit-path').remove();
   $('#item-node-form span.form-required').remove();
 
-  // Make the textarea in the new item form elastic.
-  $('form.node-item-form textarea').elastic();
-
   // Setup client-side validation for Post button:
   $('#item-node-form #edit-submit--3').click(function () {
     var itemText = $('#edit-field-item-text-und-0-value').val();
@@ -137,7 +134,6 @@ function removePost(post) {
 function setupItemBehaviour(itemArticle, autoCollapse) {
   itemArticle = $(itemArticle);
 
-  // Make the new comment textarea elastic:
   var newCommentFormArticle = itemArticle.find('article.new-comment-form-article');
 
   // Setup new comment form behaviour:
@@ -413,13 +409,9 @@ function editComment(cid) {
   // Show the edit comment form.
   commentArticle.find('.edit-comment-form').show();
 
-  // Make the textarea elastic the first time it gets shown.
-  var textarea = commentArticle.find('.edit-comment-form textarea');
-  var isElastic = textarea.attr('data-is-elastic');
-  if (!isElastic) {
-    textarea.elastic();
-    textarea.attr('data-is-elastic', 1);
-  }
+  // Reset the textarea height when it gets shown.
+  // elastic() will already have been called once on this textarea, creating the twin div.
+  commentArticle.find('.edit-comment-form textarea').elastic();
 
   // ??
 //  commentArticle.find('.post-content-wrapper').css('height', 'auto');
@@ -516,8 +508,8 @@ function showNewCommentForm(item_nid) {
   // Initialise the form prior to animation:
   newCommentFormArticle.css({height: initialHeight, opacity: 0, overflow: 'hidden'}).show();
 
-  // Make the textarea elastic once it's visible.
-  // The elastic() method currently doesn't work if called on an invisible textarea.
+  // Reset the textarea height when it's made visible.
+  // elastic() will already have been called once on this textarea, creating the twin div.
   newCommentFormArticle.find('textarea').elastic();
 
   // Get the height of the visible part of the form, now that it's shown:
