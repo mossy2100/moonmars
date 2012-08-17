@@ -50,6 +50,10 @@ function moonmars_channels_form_alter(&$form, &$form_state, $form_id) {
       }
     }
 
+    // Remove buttons we don't want:
+    unset($form['actions']['delete']);
+    unset($form['actions']['preview']);
+
     // Submit handler:
     $form['actions']['submit']['#submit'][] = 'moonmars_channels_channel_node_form_submit';
   }
@@ -139,6 +143,12 @@ function moonmars_channels_social_links() {
       'field'       => 'field_wikipedia_link',
       'domain'      => 'wikipedia.org',
       'description' => 'Wikipedia entry',
+    ),
+    'academia'   => array(
+      'name'        => 'Academia',
+      'field'       => 'field_academia_link',
+      'domain'      => 'academia.edu',
+      'description' => 'Academia profile',
     ),
   );
 }

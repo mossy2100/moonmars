@@ -37,7 +37,7 @@ function moonmars_groups_menu() {
  */
 function moonmars_groups_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'group_node_form') {
-//    $form['#attached']['js'][] = drupal_get_path('module', 'moonmars_groups') . '/js/group-edit-form.js';
+    $form['#attached']['js'][] = drupal_get_path('module', 'moonmars_groups') . '/js/group-edit-form.js';
 
 //    dbg($form);
 

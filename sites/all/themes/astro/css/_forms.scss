@@ -422,63 +422,62 @@ form {
   #edit-actions {
     margin-top: 0;
   }
-}
 
-////////////////////////////////////////////////////////////////////////
-// Moon or Mars field (register form and profile form)
 
-#edit-field-moon-or-mars {
-  width: 276px;
+  #edit-field-moon-or-mars {
+    width: 276px;
 
-  .form-item-field-moon-or-mars-und {
-    margin: 0;
-  }
+    .form-item-field-moon-or-mars-und {
+      margin: 0;
+    }
 
-  #edit-field-moon-or-mars-und {
-    height: 104px;
-    margin: 0;
+    #edit-field-moon-or-mars-und {
+      height: 104px;
+      margin: 0;
 
-    div.form-item {
-      float: left;
-      width: 88px;
-      margin: 0 2px;
+      div.form-item {
+        float: left;
+        width: 88px;
+        margin: 0 2px;
 
-      &:last-child {
-        margin-right: 0;
-      }
-
-      label {
-        display: block;
-        width: 80px;
-        height: 15px;
-        padding: 84px 4px 4px;
-        margin: 0;
-        //background-color: $grey4;
-        background-repeat: no-repeat;
-        background-position: 4px 4px;
-        text-align: center;
-        border: solid 1px $grey5;
-        @include border-radius(4px);
-
-        &.selected {
-          //color: white;
-          border-color: $blue4;
-          background-color: white;
+        &:last-child {
+          margin-right: 0;
         }
 
-        &:hover {
-          //color: white;
-          border-color: $blue4;
-          background-color: white;
-        }
-      }
+        label {
+          display: block;
+          width: 80px;
+          height: 15px;
+          padding: 84px 4px 4px;
+          margin: 0;
+          background-repeat: no-repeat;
+          background-position: 4px 4px;
+          text-align: center;
+          background-color: $grey4;
+          border: solid 1px $grey4;
+          @include border-radius(4px);
 
-      input {
-        display: none;
+          &.selected {
+            border-color: $blue4;
+            background-color: $blue4;
+          }
+
+          &:hover {
+            border-color: $red4;
+            background-color: $red4;
+          }
+        }
+
+        input {
+          display: none;
+        }
       }
     }
   }
 }
+
+////////////////////////////////////////////////////////////////////////
+// Moon or Mars field (register form and profile form)
 
 ////////////////////////////////////
 // Channel node form

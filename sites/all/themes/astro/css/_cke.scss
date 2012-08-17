@@ -1,39 +1,35 @@
-#cke_edit-field-description-und-0-value {
-  padding: 0;
-  border: none;
-
-  .cke_wrapper {
+.form-textarea-wrapper {
+  span.cke_skin_kama {
     padding: 0;
-    background: none;
-  }
+    border: none;
 
-  table {
-    &.cke_editor {
+    .cke_wrapper {
+      padding: 0;
+      background: none;
+    }
+
+    table.cke_editor {
       margin-bottom: 0;
       width: 100%;
-    }
 
-    tr td {
-      padding: 0;
-      border: none;
+      tr {
+        td {
+          padding: 0;
+          border: none;
 
-      &.cke_contents {
-        border: solid 1px $blue4;
-        @include border-radius(3px);
-      }
+          &#cke_bottom_edit-field-description-und-0-value {
+            display: none;
+          }
 
-      &#cke_bottom_edit-field-description-und-0-value {
-        display: none;
-      }
+          .cke_toolbox_collapser {
+            display: none;
+          }
 
-      .cke_toolbox_collapser {
-        display: none;
-      }
-    }
-
-    iframe {
-      body {
-        min-width: 0;
+          &.cke_contents {
+            border: solid 1px $blue4;
+            @include border-radius(3px);
+          }
+        }
       }
     }
   }

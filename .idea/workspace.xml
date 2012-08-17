@@ -2,21 +2,18 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ff922214-f7cd-4eef-9f30-177ba578dd26" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/sites/all/libraries/jquery/jquery.CKEditor.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/sites/all/themes/astro/css/wysiwyg.css" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/images/social-icons/website-25x25.png" afterPath="$PROJECT_DIR$/sites/all/themes/astro/images/social-icons/website-25x25.png" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/classes/Channel.class.php" afterPath="$PROJECT_DIR$/sites/all/classes/Channel.class.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/libraries/jquery/jquery.elastic.modified.js" afterPath="$PROJECT_DIR$/sites/all/libraries/jquery/jquery.elastic.modified.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars/moonmars.module" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars/moonmars.module" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/js/moonmars-channels.js" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/js/moonmars-channels.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/libraries/jquery/jquery.dimensions.js" afterPath="$PROJECT_DIR$/sites/all/libraries/jquery/jquery.dimensions.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/moonmars_channels.module" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/moonmars_channels.module" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_comments/moonmars_comments.module" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_comments/moonmars_comments.module" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_groups/js/group-edit-form.js" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_groups/js/group-edit-form.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_groups/moonmars_groups.module" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_groups/moonmars_groups.module" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_items/moonmars_items.module" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_items/moonmars_items.module" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/moonmars_members.module" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/moonmars_members.module" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/css/_channels.scss" afterPath="$PROJECT_DIR$/sites/all/themes/astro/css/_channels.scss" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/css/_blocks.scss" afterPath="$PROJECT_DIR$/sites/all/themes/astro/css/_blocks.scss" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/css/_cke.scss" afterPath="$PROJECT_DIR$/sites/all/themes/astro/css/_cke.scss" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/css/_forms.scss" afterPath="$PROJECT_DIR$/sites/all/themes/astro/css/_forms.scss" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/css/_nav.scss" afterPath="$PROJECT_DIR$/sites/all/themes/astro/css/_nav.scss" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/js/astro.js" afterPath="$PROJECT_DIR$/sites/all/themes/astro/js/astro.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-page.inc" afterPath="$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-page.inc" />
     </list>
     <ignored path="moonmars.com.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -41,17 +38,7 @@
     <favorites_list name="moonmars.com" />
   </component>
   <component name="FileEditorManager">
-    <leaf>
-      <file leaf-file-name="group-edit-form.js" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_groups/js/group-edit-form.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="8" column="0" selection-start="143" selection-end="143" vertical-scroll-proportion="0.18604651">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-    </leaf>
+    <leaf />
   </component>
   <component name="FindManager">
     <FindUsagesManager>
@@ -64,22 +51,22 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/sites/all/themes/astro/css/_blocks.scss" />
-        <option value="$PROJECT_DIR$/sites/all/classes/Channel.class.php" />
-        <option value="$PROJECT_DIR$/sites/all/themes/astro/css/_nav.scss" />
-        <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/moonmars_channels.module" />
-        <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_groups/moonmars_groups.module" />
-        <option value="$PROJECT_DIR$/sites/all/themes/astro/js/astro.js" />
-        <option value="$PROJECT_DIR$/sites/all/themes/astro/css/_forms.scss" />
-        <option value="$PROJECT_DIR$/sites/all/themes/astro/css/_channels.scss" />
-        <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars/moonmars.module" />
-        <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/moonmars_members.module" />
-        <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_comments/moonmars_comments.module" />
         <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_items/moonmars_items.module" />
         <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/js/moonmars-channels.js" />
         <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/js/profile-form.js" />
         <option value="$PROJECT_DIR$/sites/all/libraries/jquery/jquery.elastic.modified.js" />
+        <option value="$PROJECT_DIR$/sites/all/themes/astro/css/_forms.scss" />
+        <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_groups/moonmars_groups.module" />
+        <option value="$PROJECT_DIR$/sites/all/themes/astro/css/_cke.scss" />
+        <option value="$PROJECT_DIR$/sites/all/themes/astro/css/wysiwyg.scss" />
+        <option value="$PROJECT_DIR$/sites/all/themes/astro/css/wysiwyg.css" />
+        <option value="$PROJECT_DIR$/sites/all/libraries/jquery/jquery.ckeditorGet.js" />
+        <option value="$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-page.inc" />
+        <option value="$PROJECT_DIR$/sites/all/libraries/jquery/jquery.dimensions.js" />
+        <option value="$PROJECT_DIR$/sites/all/libraries/jquery/jquery.CKEditor.js" />
         <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_groups/js/group-edit-form.js" />
+        <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/moonmars_channels.module" />
+        <option value="$PROJECT_DIR$/sites/all/themes/astro/css/_blocks.scss" />
       </list>
     </option>
   </component>
@@ -201,479 +188,7 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="themes" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="moonmars.com" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="www" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="sites" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="all" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="themes" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="astro" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="moonmars.com" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="www" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="sites" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="all" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="themes" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="astro" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="preprocess" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="moonmars.com" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="www" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="sites" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="all" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="themes" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="astro" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="js" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="moonmars.com" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="www" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="sites" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="all" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="themes" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="astro" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="css" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="moonmars.com" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="www" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="sites" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="all" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
               <option name="myItemId" value="modules" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="custom" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="moonmars.com" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="www" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="sites" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="all" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="modules" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="custom" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="moonmars_members" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="moonmars.com" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="www" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="sites" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="all" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="modules" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="custom" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="moonmars_members" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="js" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="moonmars.com" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="www" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="sites" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="all" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="modules" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="custom" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="moonmars_items" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="moonmars.com" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="www" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="sites" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="all" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="modules" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="custom" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="moonmars_groups" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="moonmars.com" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="www" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="sites" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="all" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="modules" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="custom" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="moonmars_groups" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="js" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="moonmars.com" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="www" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="sites" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="all" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="modules" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="custom" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="moonmars_channels" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="moonmars.com" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="www" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="sites" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="all" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="modules" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="custom" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="moonmars_channels" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="js" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="moonmars.com" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="www" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="sites" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="all" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="modules" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="custom" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="moonmars" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="moonmars.com" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="www" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="sites" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="all" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="modules" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="custom" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="moonmars" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="js" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="moonmars.com" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="www" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="sites" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="all" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="modules" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="moonmars.com" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="www" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="sites" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="all" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="libraries" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -806,12 +321,12 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="22" width="1920" height="1122" extended-state="0" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="Data Sources" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32977587" sideWeight="0.67132866" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32932934" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32867134" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32867134" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2054429" sideWeight="0.67132866" order="4" side_tool="true" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21077909" sideWeight="0.67132866" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -882,121 +397,118 @@
     <breakpoint-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/_nav.scss">
+    <entry file="file://$PROJECT_DIR$/sites/all/modules/contrib/devel/jquery-1.4.4-uncompressed.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="94" column="18" selection-start="1518" selection-end="1518" vertical-scroll-proportion="0.0">
+        <state line="7129" column="20" selection-start="181710" selection-end="181711" vertical-scroll-proportion="0.652459">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/libraries/jquery/jquery-1.7.2.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="6945" column="2" selection-start="186206" selection-end="186206" vertical-scroll-proportion="0.3327869">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/astro-alpha-default.scss">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/astro-alpha-default-narrow.scss">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="3" column="37" selection-start="314" selection-end="314" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/_cke.scss">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="28" column="37" selection-start="528" selection-end="528" vertical-scroll-proportion="0.6511628">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/_colours.scss">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="6" column="15" selection-start="187" selection-end="193" vertical-scroll-proportion="0.13953489">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/wysiwyg.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="24" column="17" selection-start="388" selection-end="388" vertical-scroll-proportion="0.55813956">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/libraries/ckeditor/ckeditor.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/astro-alpha-default-normal.scss">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-page.inc">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="11" column="51" selection-start="554" selection-end="554" vertical-scroll-proportion="0.2754591">
+        <state line="15" column="0" selection-start="714" selection-end="714" vertical-scroll-proportion="0.36231884">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_groups/moonmars_groups.module">
+    <entry file="file://$PROJECT_DIR$/sites/all/libraries/jquery/jquery.CKEditor.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="41" column="17" selection-start="1113" selection-end="1113" vertical-scroll-proportion="0.43928573">
-          <folding>
-            <marker date="1345069729000" expanded="true" signature="-1:-1" placeholder="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-node-channel.inc">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="18" column="0" selection-start="373" selection-end="373" vertical-scroll-proportion="-1.25">
+        <state line="11" column="0" selection-start="281" selection-end="281" vertical-scroll-proportion="0.26655897">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/moonmars_channels.module">
+    <entry file="file://$PROJECT_DIR$/sites/all/libraries/jquery/jquery.dimensions.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="33" column="26" selection-start="975" selection-end="975" vertical-scroll-proportion="-9.375">
-          <folding>
-            <marker date="1345069123000" expanded="true" signature="-1:-1" placeholder="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/_channels.scss">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="156" column="4" selection-start="2644" selection-end="2644" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/_forms.scss">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="64" column="3" selection-start="1012" selection-end="1012" vertical-scroll-proportion="-11.115385">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars/moonmars.module">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="42" column="39" selection-start="930" selection-end="930" vertical-scroll-proportion="-10.625">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/moonmars_members.module">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="160" column="0" selection-start="6408" selection-end="6408" vertical-scroll-proportion="-0.88235295">
-          <folding>
-            <marker date="1345070390000" expanded="true" signature="-1:-1" placeholder="..." />
-            <marker date="1345070390000" expanded="true" signature="-1:-1" placeholder="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_comments/moonmars_comments.module">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="32" column="33" selection-start="950" selection-end="950" vertical-scroll-proportion="-8.625">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_items/moonmars_items.module">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="48" column="7" selection-start="1282" selection-end="1282" vertical-scroll-proportion="-13.92">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/libraries/jquery/jquery.elastic.modified.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="160" column="37" selection-start="5363" selection-end="5363" vertical-scroll-proportion="0.43493152">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/js/astro.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="10" column="19" selection-start="180" selection-end="180" vertical-scroll-proportion="0.24077046">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_members/js/profile-form.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="13" column="0" selection-start="608" selection-end="608" vertical-scroll-proportion="0.28410915">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/js/moonmars-channels.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="412" column="12" selection-start="12418" selection-end="12425" vertical-scroll-proportion="0.34488449">
+        <state line="59" column="0" selection-start="1700" selection-end="1700" vertical-scroll-proportion="-0.9915254">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_groups/js/group-edit-form.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="8" column="0" selection-start="143" selection-end="143" vertical-scroll-proportion="0.18604651">
+        <state line="37" column="1" selection-start="919" selection-end="919" vertical-scroll-proportion="-7.4545455">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/moonmars_channels.module">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="150" column="0" selection-start="4666" selection-end="4666" vertical-scroll-proportion="-21.916666">
+          <folding>
+            <marker date="1345161675000" expanded="true" signature="-1:-1" placeholder="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_channels/js/moonmars-channels.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="52" column="12" selection-start="1445" selection-end="1445" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/_blocks.scss">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="226" column="4" selection-start="3863" selection-end="3863" vertical-scroll-proportion="0.6576271">
           <folding />
         </state>
       </provider>
