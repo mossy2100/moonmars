@@ -1,9 +1,11 @@
 <?php
 /**
  * Static entity-related methods.
- * This could perhaps be implemented as a trait that could be given to Member, Group, Event, etc.
+ *
+ * @todo If we move to PHP 5.4 this could be implemented as a trait to be attached to Member, Group, Event, etc.
+ * At the moment this class isn't connected to those ones, other than conceptually. Hence only static methods.
  */
-class MmcEntity {
+class MoonMarsEntity {
 
   /**
    * Gets an EntityBase-derived object from a Drupal entity.
@@ -18,19 +20,41 @@ class MmcEntity {
         return Member::create($entity);
 
       case 'node':
-        // Get the node type.
+        // Get the node type:
         $type = is_uint($entity) ? node_get_type($entity) : $entity->type;
 
-        // If a valid node type, create the object:
-        if (in_array($type, moonmars_channels_node_types())) {
-          $class = ucfirst($type);
+        // Get the node class:
+        $class = ucfirst($type);
 
+        // If the node class exists, instantiate:
+        if (class_exists($class)) {
           // Note I create the object using $entity instead of reloading the node (which would be another way of getting
           // the type), to prevent the node we just loaded from clobbering the one we have in memory.
-          // My caching mechanism works better than Drupal's, unfortunately.
+          // My caching mechanism is better than Drupal's, unfortunately.
           return $class::create($entity);
         }
-        break;
+
+        // Fall back to base Node class:
+        return Node::create($entity);
+
+      case 'comment':
+        // Get the cid:
+        $cid = is_uint($entity) ? $entity : $entity->cid;
+
+        // Get the comment's node type.
+        $type = comment_get_node_type($cid);
+
+        // Get the comment class:
+        $class = ucfirst($type) . 'Comment';
+
+        // If the comment class exists, instantiate.
+        // This will capture ItemComment and potential other future comment classes such as ArticleComment.
+        if (class_exists($class)) {
+          return $class::create($entity);
+        }
+
+        // Fall back to base Comment class:
+        return Comment::create($entity);
     }
 
     return FALSE;
@@ -68,7 +92,7 @@ class MmcEntity {
     $channel->save();
 
     // Create the relationship between the entity and the relationship:
-    Relation::createNewBinary('has_channel', $entity_type, $entity_id, 'node', $channel->nid(), TRUE);
+    Relation::createNewBinary('has_channel', $entity_type, $entity_id, 'node', $channel->nid());
 
     // Update the channel's alias and title:
     $channel->updateAliasAndTitle();
@@ -87,7 +111,7 @@ class MmcEntity {
    */
   public static function getEntityChannel($entity_type, $entity_id, $create = TRUE) {
     // Check if the entity already has a channel:
-    $rels = moonmars_relationships_get_relationships('has_channel', $entity_type, $entity_id, 'node', NULL);
+    $rels = Relation::searchBinary('has_channel', $entity_type, $entity_id, 'node', NULL);
 
     if (!empty($rels)) {
       return Channel::create($rels[0]->endpointEntityId(1));

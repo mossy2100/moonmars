@@ -161,8 +161,8 @@ function moonmars_channels_social_links() {
  */
 function moonmars_channels_entity_save($entity, $entity_type) {
   // Update the channel's alias and title in case the entity's title was changed:
-  $entity = MmcEntity::getEntity($entity_type, $entity);
-  if ($entity) {
+  $entity = MoonMarsEntity::getEntity($entity_type, $entity);
+  if ($entity && method_exists($entity, 'channel')) {
     $channel = $entity->channel();
     $channel->updateAliasAndTitle();
   }

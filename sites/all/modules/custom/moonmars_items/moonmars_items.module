@@ -16,17 +16,6 @@ function moonmars_items_menu() {
     'access callback'  => 'user_is_logged_in',
     'type'             => MENU_CALLBACK,
   );
-
-//  $items['ajax/item/rate'] = array(
-//    'page callback'    => 'moonmars_items_ajax_rate',
-//    'access callback'  => 'node_access',
-//    'access arguments' => array(
-//      'update',
-//      1
-//    ),
-//    'type'             => MENU_CALLBACK,
-//  );
-
   return $items;
 }
 
@@ -418,76 +407,10 @@ function moonmars_items_ajax_remove() {
   // All good - remove the item.
 
   // Remove the item from the current channel:
-  moonmars_relationships_delete_relationships('has_item', 'node', $current_channel->nid(), 'node', $item_nid);
+  Relation::deleteBinary('has_item', 'node', $current_channel->nid(), 'node', $item_nid);
 
   // Complete data array, encode and send:
   $data['result'] = TRUE;
-  echo json_encode($data);
-  return;
-}
-
-/**
- * AJAX callback for rating items.
- */
-function moonmars_items_ajax_rate() {
-  $item_nid = (int) $_REQUEST['item_nid'];
-  $rating = $_REQUEST['warning'];
-  global $user;
-
-  $rating_scores = moonmars_ratings_scores();
-
-  // Check we have all the necessary params:
-  if (!$item_nid || !array_key_exists($rating, $rating_scores) || !$user || !$user->uid) {
-    // Create the data array:
-    $data = array(
-      'result'    => FALSE,
-      'item_nid'  => $item_nid,
-      'rating'    => $rating,
-    );
-    // Encode and send:
-    echo json_encode($data);
-    return;
-  }
-
-  // Load the item:
-  $item = Item::create($item_nid);
-
-  // Get the current score for the item:
-  $score = (int) $item->field('field_score');
-
-  // Check if the user already rated this:
-  $rel_type = 'rated';
-  $rels = moonmars_relationships_get_relationships($rel_type, 'user', $user->uid, 'node', $item_nid);
-  if ($rels) {
-    $rel = $rels[0];
-
-    // Subtract the points for the previous rating:
-    $old_rating_score = $rel->field_rating[LANGUAGE_NONE][0]['value'] * $rel->field_multiplier[LANGUAGE_NONE][0]['value'];
-    $score -= $old_rating_score;
-
-    // Remove the old rating relationship:
-    relation_delete($rel->rid);
-  }
-
-  // Create the rating relationship:
-  Relation::createNewBinary('rated', 'user', $user->uid, 'node', $item_nid, TRUE);
-
-  // Add the points for the new rating:
-  $member = Member::currentMember();
-  $new_rating_score = $rating_scores[$rating] * $member->levelNum();
-  $score += $new_rating_score;
-
-  // Update the item's score:
-  $item->field('field_score', LANGUAGE_NONE, 0, 'value', $score);
-  $item->save();
-
-  // Complete data array, encode and send:
-  $data = array(
-    'result'   => TRUE,
-    'item_nid' => $item_nid,
-    'rating'   => $rating,
-    'score'    => $score,
-  );
   echo json_encode($data);
   return;
 }

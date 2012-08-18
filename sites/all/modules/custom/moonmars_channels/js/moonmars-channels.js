@@ -23,9 +23,6 @@ function initChannel() {
     setupCommentBehaviour(this);
   });
 
-  // Setup rating button behaviours:
-//  setupRatings();
-
   ///////////////////////////////////////////////////////////////////////////////////////
   // New item form
 
@@ -265,7 +262,7 @@ function removeItem(item_nid) {
 function removeItemReturn(data, textStatus, jqXHR) {
   // Hide the waiting icon:
   var itemArticle = $('#node-item-' + data.item_nid);
-  itemArticle.find('.post-controls .item-delete').removeClass('waiting');
+  itemArticle.find('.post-controls .item-remove').removeClass('waiting');
 
   if (!data.result) {
     alert(data.error);
@@ -326,22 +323,6 @@ function itemTypeSelected() {
       $('#field-item-text-add-more-wrapper .description').text('Enter a description of the document.');
       break;
   }
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Rating items.
-
-function setupRatings() {
-  $('.rating-button').click(function() {
-    var item_nid = $(this).closest('article').attr('data-nid');
-    var rating = $(this).attr('data-rating');
-    $.post("/ajax/rate/item", {item_nid: item_nid, rating: rating}, rateItemReturn);
-  });
-
-}
-
-function rateItemReturn(data, textStatus, jqXHR) {
-  debug(data);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -458,8 +439,11 @@ function editCommentReturn(data, textStatus, jqXHR) {
 function deleteComment(cid) {
   var result = confirm('Are you sure you want to delete this comment?\nThis action cannot be reversed.');
   if (result) {
+    // Show the waiting icon:
     var commentArticle = $('#comment-article-' + cid);
     commentArticle.find('.post-controls .comment-delete').addClass('waiting');
+
+    // Send AJAX request:
     $.post("/ajax/comment/delete", {cid: cid}, deleteCommentReturn, 'json');
   }
 }
@@ -468,9 +452,9 @@ function deleteComment(cid) {
  * Handler from when we get back from deleting a comment via AJAX.
  */
 function deleteCommentReturn(data, textStatus, jqXHR) {
-  // Remove the waiting icon:
+  // Hide the waiting icon:
   var commentArticle = $('#comment-article-' + data.cid);
-  commentArticle.find('.post-controls .comment-delete').addClass('waiting');
+  commentArticle.find('.post-controls .comment-delete').removeClass('waiting');
 
   if (!data.result) {
     alert(data.error);

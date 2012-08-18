@@ -519,7 +519,7 @@ class Member extends User {
    */
   public function channel($create = TRUE) {
     if (!isset($this->channel)) {
-      $this->channel = MmcEntity::getEntityChannel('user', $this->uid(), $create);
+      $this->channel = MoonMarsEntity::getEntityChannel('user', $this->uid(), $create);
     }
     return $this->channel;
   }
@@ -770,7 +770,7 @@ class Member extends User {
    */
   public function joinGroup(Group $group) {
     // Create the membership relationship:
-    moonmars_relationships_update_relationship('has_member', 'node', $group->nid(), 'user', $this->uid());
+    Relation::updateBinary('has_member', 'node', $group->nid(), 'user', $this->uid());
 
     // Subscribe the member to the group channel:
     $this->subscribe($group->channel());
@@ -787,7 +787,7 @@ class Member extends User {
    */
   public function leaveGroup(Group $group) {
     // Delete the membership relationship:
-    moonmars_relationships_delete_relationships('has_member', 'node', $group->nid(), 'user', $this->uid());
+    Relation::deleteBinary('has_member', 'node', $group->nid(), 'user', $this->uid());
 
     // Unsubscribe the member from the group channel:
     $this->unsubscribe($group->channel());
@@ -802,7 +802,7 @@ class Member extends User {
    * @return array
    */
   public function subscribedChannels() {
-    $rels = moonmars_relationships_get_relationships('has_subscriber', 'node', NULL, 'user', $this->uid());
+    $rels = Relation::searchBinary('has_subscriber', 'node', NULL, 'user', $this->uid());
 
     $channels = array();
     if ($rels) {
@@ -823,7 +823,7 @@ class Member extends User {
    */
   public function subscribe(Channel $channel, $email_notification = NULL) {
     // See if the relationship already exists:
-    $rels = moonmars_relationships_get_relationships('has_subscriber', 'node', $channel->nid(), 'user', $this->uid());
+    $rels = Relation::searchBinary('has_subscriber', 'node', $channel->nid(), 'user', $this->uid());
 
 //    $email_notification = $this->defaultEmailNotification();
     $email_notification = ($email_notification === NULL) ? TRUE : $email_notification;
@@ -855,7 +855,7 @@ class Member extends User {
    * @return Member
    */
   public function unsubscribe(Channel $channel) {
-    moonmars_relationships_delete_relationships('has_subscriber', 'node', $channel->nid(), 'user', $this->uid());
+    Relation::deleteBinary('has_subscriber', 'node', $channel->nid(), 'user', $this->uid());
     return $this;
   }
 
@@ -866,7 +866,7 @@ class Member extends User {
    * Check if the member wants an email notification from this channel.
    */
   public function wantsEmailNotification($channel) {
-    $rels = moonmars_relationships_get_relationships('has_subscriber', 'node', $channel->nid(), 'user', $this->uid());
+    $rels = Relation::searchBinary('has_subscriber', 'node', $channel->nid(), 'user', $this->uid());
     if (!$rels) {
       return FALSE;
     }
@@ -1145,7 +1145,7 @@ class Member extends User {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Rendering methods.
+  // Rendering
 
   public function renderLinks() {
     return $this->channel()->renderLinks();
@@ -1321,6 +1321,153 @@ class Member extends User {
 
     // Render the page of items:
     return Channel::renderItemsPage($items, $total_n_items);
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Ratings
+
+  /**
+   * Get/set this member's rating for an entity.
+   *
+   * @param string $entity_type
+   * @param int $entity_id
+   * @param int $new_rating
+   * @return int|bool
+   */
+  public function rating($entity_type, $entity_id, $new_rating = NULL) {
+    if ($new_rating === NULL) {
+      // Get this member's rating for the entity.
+      $rels = Relation::searchBinary('rates', 'user', $this->uid(), $entity_type, $entity_id);
+      if ($rels) {
+        return (int) $rels[0]->field('field_rating');
+      }
+
+      // The member hasn't rated this entity yet:
+      return FALSE;
+    }
+    else {
+      // Set this member's rating for the entity.
+
+      // Get the member's current rating for this entity:
+      $old_rating = $this->rating($entity_type, $entity_id);
+      // $old_rating will be FALSE if the member hasn't rated the entity yet.
+
+      $rating_names = moonmars_ratings_names();
+
+      // Initialise result:
+      $result = array(
+        'rater' => array(
+          'uid' => $this->uid(),
+        ),
+        'entity' => array(
+          'old_rating'      => $old_rating,
+          'old_rating_name' => $rating_names[$old_rating],
+          'new_rating'      => $new_rating,
+          'new_rating_name' => $rating_names[$new_rating],
+        ),
+      );
+
+      /////////////////////////////////////////////////////////
+      // Step 1. Update the rating relationship:
+      $rel = Relation::updateBinary('rates', 'user', $this->uid(), $entity_type, $entity_id, FALSE);
+      $rel->field('field_rating', LANGUAGE_NONE, 0, 'value', $new_rating);
+      $rel->save();
+
+      /////////////////////////////////////////////////////////
+      // Step 2. Update the entity's score.
+
+      // Get the entity:
+      $entity = MoonMarsEntity::getEntity($entity_type, $entity_id);
+
+      // Get the entity's current score:
+      $entity_old_score = (int) $entity->field('field_score');
+
+      // Update the entity's total score:
+      $entity_new_score = $entity_old_score - $old_rating + $new_rating;
+      $entity->field('field_score', LANGUAGE_NONE, 0, 'value', $entity_new_score);
+      $entity->save();
+
+      // Add to result:
+      $result['entity']['old_score'] = $entity_old_score;
+      $result['entity']['new_score'] = $entity_new_score;
+
+      /////////////////////////////////////////////////////////
+      // Step 3. Update the rater's score.
+
+      // If the rater hasn't rated this entity before, give them a point:
+      if ($old_rating === FALSE) {
+        // Get the rater's current score:
+        $rater_old_score = (int) $this->field('field_score');
+
+        // Update the rater's total score:
+        $rater_new_score = $rater_old_score + 1;
+        $this->field('field_score', LANGUAGE_NONE, 0, 'value', $rater_new_score);
+        $this->save();
+
+        // Add to result:
+        $result['rater']['old_score'] = $rater_old_score;
+        $result['rater']['new_score'] = $rater_new_score;
+      }
+
+      /////////////////////////////////////////////////////////
+      // Step 4. Update the poster's score.
+
+      // Get the entity's poster:
+      $poster = $entity->creator();
+
+      // Get the poster's current score:
+      $poster_old_score = (int) $poster->field('field_score');
+
+      // Update the poster's total score:
+      $poster_new_score = $poster_old_score - $old_rating + $new_rating;
+      $poster->field('field_score', LANGUAGE_NONE, 0, 'value', $poster_new_score);
+      $poster->save();
+
+      // Add to result:
+      $result['poster']['uid'] = $poster->uid();
+      $result['poster']['old_score'] = $poster_old_score;
+      $result['poster']['new_score'] = $poster_new_score;
+
+      /////////////////////////////////////////////////////////
+      // Step 5. Update the group's score, if applicable.
+
+      $item = NULL;
+      $group = NULL;
+
+      if ($entity instanceof ItemComment) {
+        $item = $entity->item();
+      }
+      elseif ($entity instanceof Item) {
+        $item = $entity;
+      }
+
+      if ($item) {
+        $channel = $item->channel();
+        if ($channel) {
+          $parent_entity = $channel->parentEntity();
+          if ($parent_entity && ($parent_entity instanceof Group)) {
+            $group = $parent_entity;
+          }
+        }
+      }
+
+      if ($group) {
+        // Get the group's current score:
+        $group_old_score = (int) $group->field('field_score');
+
+        // Update the group's total score:
+        $group_new_score = $group_old_score - $old_rating + $new_rating;
+        $group->field('field_score', LANGUAGE_NONE, 0, 'value', $group_new_score);
+        $group->save();
+
+        // Add to result:
+        $result['group']['nid'] = $group->nid();
+        $result['group']['old_score'] = $group_old_score;
+        $result['group']['new_score'] = $group_new_score;
+      }
+
+      return $result;
+    }
   }
 
 }

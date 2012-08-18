@@ -20,27 +20,27 @@ function moonmars_update_menu() {
 
 function moonmars_update_subscriber_relationships() {
   // Convert all has_follower relationships to has_subscriber:
-  $rels = moonmars_relationships_get_relationships('has_follower');
+  $rels = Relation::searchBinary('has_follower');
   foreach ($rels as $rel) {
     $member   = Member::create($rel->endpointEntityId(0));
     $follower = Member::create($rel->endpointEntityId(1));
 
     // Create the has_subscriber relationship:
-    moonmars_relationships_update_relationship('has_subscriber', 'node', $member->channel()->nid(), 'user', $follower->uid());
+    Relation::updateBinary('has_subscriber', 'node', $member->channel()->nid(), 'user', $follower->uid());
   }
 
   // Delete the has_follower relationship:
-  moonmars_relationships_delete_relationships('has_follower');
-  moonmars_relationships_delete_relationships('follows');
+  Relation::deleteBinary('has_follower');
+  Relation::deleteBinary('follows');
 
   // Convert all has_member relationships to has_subscriber:
-  $rels = moonmars_relationships_get_relationships('has_member');
+  $rels = Relation::searchBinary('has_member');
   foreach ($rels as $rel) {
     $group    = Group::create($rel->endpointEntityId(0));
     $follower = Member::create($rel->endpointEntityId(1));
 
     // Create the has_subscriber relationship:
-    moonmars_relationships_update_relationship('has_subscriber', 'node', $group->channel()->nid(), 'user', $follower->uid());
+    Relation::updateBinary('has_subscriber', 'node', $group->channel()->nid(), 'user', $follower->uid());
   }
 
   // Subscribe everyone to the News channel:
@@ -52,18 +52,18 @@ function moonmars_update_subscriber_relationships() {
     $member = Member::create($rec->uid);
 
     // Create the has_subscriber relationship:
-    moonmars_relationships_update_relationship('has_subscriber', 'node', MOONMARS_NEWS_CHANNEL_NID, 'user', $member->uid());
+    Relation::updateBinary('has_subscriber', 'node', MOONMARS_NEWS_CHANNEL_NID, 'user', $member->uid());
   }
 
   // Default email_notifications to TRUE in every subscription relationship.
-  $rels = moonmars_relationships_get_relationships('has_subscriber', 'node', NULL, 'user', NULL);
+  $rels = Relation::searchBinary('has_subscriber', 'node', NULL, 'user', NULL);
   foreach ($rels as $rel) {
     $rel->field('field_email_notification', LANGUAGE_NONE, 0, 'value', 1);
     $rel->save();
   }
 
   // Delete all 'has_item' relationships where copied = 1
-  $rels = moonmars_relationships_get_relationships('has_item', 'node', NULL, 'node', NULL);
+  $rels = Relation::searchBinary('has_item', 'node', NULL, 'node', NULL);
   foreach ($rels as $rel) {
     $copied = $rel->field('field_copied');
     if ($copied) {

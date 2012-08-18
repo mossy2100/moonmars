@@ -792,3 +792,28 @@ function render_comment($comment) {
     )
   );
 }
+
+/**
+ * Get the type of the node that a comment is for.
+ *
+ * @param $cid
+ * @return int
+ */
+function comment_get_node_type($cid) {
+  if (!$cid) {
+    return FALSE;
+  }
+
+  $q = db_select('comment', 'c');
+  $q->join('node', 'n', "c.nid = n.nid");
+  $rs = $q->fields('n', array('type'))
+    ->condition('cid', $cid)
+    ->execute();
+
+  if (!$rs->rowCount()) {
+    return FALSE;
+  }
+
+  $rec = $rs->fetch();
+  return $rec->type;
+}

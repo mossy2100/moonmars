@@ -225,6 +225,16 @@ class Comment extends EntityBase {
   }
 
   /**
+   * Get the node that the comment is about.
+   *
+   * @param int
+   * @return Node
+   */
+  public function node() {
+    return Node::create($this->nid());
+  }
+
+  /**
    * Get/set the uid of the user who created the comment.
    *
    * @param null|int

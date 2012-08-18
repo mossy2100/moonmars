@@ -78,11 +78,11 @@ class Channel extends Node {
     if (!isset($this->parentEntity)) {
 
       // Look up the entity_has_channel relationship:
-      $rels = moonmars_relationships_get_relationships('has_channel', NULL, NULL, 'node', $this->nid());
+      $rels = Relation::searchBinary('has_channel', NULL, NULL, 'node', $this->nid());
 
       if (!empty($rels)) {
         $endpoint = $rels[0]->endpoint(0);
-        $this->parentEntity = MmcEntity::getEntity($endpoint['entity_type'], $endpoint['entity_id']);
+        $this->parentEntity = MoonMarsEntity::getEntity($endpoint['entity_type'], $endpoint['entity_id']);
       }
     }
 
@@ -219,7 +219,7 @@ class Channel extends Node {
    * @return bool
    */
   public function hasItem(Item $item) {
-    return (bool) moonmars_relationships_get_relationships('has_item', 'node', $this->nid(), 'node', $item->nid());
+    return (bool) Relation::searchBinary('has_item', 'node', $this->nid(), 'node', $item->nid());
   }
 
   /**
@@ -231,12 +231,11 @@ class Channel extends Node {
    *   The channel_has_item relationship.
    */
   public function addItem(Item $item) {
-
     $this_channel_nid = $this->nid();
     $item_nid = $item->nid();
 
     // Check if the item is already in a channel:
-    $rels = moonmars_relationships_get_relationships('has_item', 'node', $this_channel_nid, 'node', $item_nid);
+    $rels = Relation::searchBinary('has_item', 'node', $this_channel_nid, 'node', $item_nid);
 
     if ($rels) {
       $rel = $rels[0];
@@ -253,8 +252,8 @@ class Channel extends Node {
       return $rel->save();
     }
     else {
-      // Create a new relationship without saving:
-      return Relation::createNewBinary('has_item', 'node', $this_channel_nid, 'node', $item_nid, TRUE);
+      // Create a new relationship:
+      return Relation::createNewBinary('has_item', 'node', $this_channel_nid, 'node', $item_nid);
     }
   }
 
@@ -266,7 +265,7 @@ class Channel extends Node {
    */
   public function bumpItem(Item $item) {
     $channel_nid = $this->nid();
-    $rels = moonmars_relationships_get_relationships('has_item', 'node', $channel_nid, 'node', $item->nid());
+    $rels = Relation::searchBinary('has_item', 'node', $channel_nid, 'node', $item->nid());
     if ($rels) {
       $rels[0]->load();
       $rels[0]->save();
@@ -689,7 +688,7 @@ class Channel extends Node {
    * @return bool
    */
   public function hasSubscriber(Member $member) {
-    $rels = moonmars_relationships_get_relationships('has_subscriber', 'node', $this->nid(), 'user', $member->uid());
+    $rels = Relation::searchBinary('has_subscriber', 'node', $this->nid(), 'user', $member->uid());
     return (bool) $rels;
   }
 
@@ -701,7 +700,7 @@ class Channel extends Node {
    *   or FALSE if the relationship doesn't exist.
    */
   public function getSubscriberRelationship(Member $member) {
-    $rels = moonmars_relationships_get_relationships('has_subscriber', 'node', $this->nid(), 'user', $member->uid());
+    $rels = Relation::searchBinary('has_subscriber', 'node', $this->nid(), 'user', $member->uid());
     if ($rels) {
       return Relation::create($rels[0]->rid());
     }

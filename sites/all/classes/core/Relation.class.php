@@ -101,44 +101,6 @@ class Relation extends EntityBase {
   }
 
   /**
-   * Create a new binary relation.
-   *
-   * @static
-   * @param string $relationship_type
-   * @param string $entity_type0
-   * @param int $entity_id0
-   * @param string $entity_type1
-   * @param int $entity_id1
-   * @param bool $save
-   * @return Relation
-   */
-  public static function createNewBinary($relationship_type, $entity_type0, $entity_id0, $entity_type1, $entity_id1, $save = FALSE) {
-    $endpoints = array(
-      array(
-        'entity_type' => $entity_type0,
-        'entity_id'   => $entity_id0,
-      ),
-      array(
-        'entity_type' => $entity_type1,
-        'entity_id'   => $entity_id1,
-      ),
-    );
-
-    // Create the relation entity:
-    $rel_entity = relation_create($relationship_type, $endpoints);
-
-    // Create the Relation object:
-    $relation = Relation::create($rel_entity);
-
-    // Save if requested:
-    if ($save) {
-      $relation->save();
-    }
-
-    return $relation;
-  }
-
-  /**
    * Delete a relation.
    */
   public function delete() {
@@ -314,6 +276,169 @@ class Relation extends EntityBase {
    */
   public function unpublish() {
     return $this->prop('status', 0);
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Static methods for working with binary relationships.
+
+  /**
+   * Create a new binary relation.
+   *
+   * @static
+   * @param string $relationship_type
+   * @param string $entity_type0
+   * @param int $entity_id0
+   * @param string $entity_type1
+   * @param int $entity_id1
+   * @param bool $save
+   *   Whether or not to save the relationship. Defaults to TRUE.
+   * @return Relation
+   */
+  public static function createNewBinary($relationship_type, $entity_type0, $entity_id0, $entity_type1, $entity_id1, $save = TRUE) {
+    $endpoints = array(
+      array(
+        'entity_type' => $entity_type0,
+        'entity_id'   => $entity_id0,
+      ),
+      array(
+        'entity_type' => $entity_type1,
+        'entity_id'   => $entity_id1,
+      ),
+    );
+
+    // Create the relation entity:
+    $rel_entity = relation_create($relationship_type, $endpoints);
+
+    // Create the Relation object:
+    $relation = Relation::create($rel_entity);
+
+    // Save if requested:
+    if ($save) {
+      $relation->save();
+    }
+
+    return $relation;
+  }
+
+  /**
+   * Search for relationships matching the provided parameters.
+   *
+   * @todo This method currently relies on the database view 'view_relationship', which makes it somewhat unportable.
+   *
+   * @param string $relationship_type
+   * @param string $entity_type0
+   *   Use NULL to match all.
+   * @param int $entity_id0
+   *   Use NULL to match all.
+   * @param string $entity_type1
+   *   Use NULL to match all.
+   * @param int $entity_id1
+   *   Use NULL to match all.
+   * @param null|int $offset
+   * @param null|int $limit
+   * @return array
+   */
+  public static function searchBinary($relationship_type, $entity_type0 = NULL, $entity_id0 = NULL, $entity_type1 = NULL, $entity_id1 = NULL, $offset = NULL, $limit = NULL, $orderByField = NULL, $orderByDirection = NULL) {
+    // Look for a relationship record:
+    $q = db_select('view_relationship', 'vr')
+      ->fields('vr', array('rid'));
+
+    // Add WHERE clause:
+    $q->condition('relation_type', $relationship_type);
+    if ($entity_type0 !== NULL) {
+      $q->condition('entity_type0', $entity_type0);
+    }
+    if ($entity_id0 !== NULL) {
+      $q->condition('entity_id0', $entity_id0);
+    }
+    if ($entity_type1 !== NULL) {
+      $q->condition('entity_type1', $entity_type1);
+    }
+    if ($entity_id1 !== NULL) {
+      $q->condition('entity_id1', $entity_id1);
+    }
+
+    // Add LIMIT clause:
+    if ($offset !== NULL && $limit !== NULL) {
+      $q->range($offset, $limit);
+    }
+
+    // Add ORDER BY clause:
+    if ($orderByField === NULL) {
+      $orderByField = 'changed';
+    }
+    if ($orderByDirection === NULL) {
+      $orderByDirection = 'DESC';
+    }
+    $q->orderBy($orderByField, $orderByDirection);
+
+    // Get the relationships:
+    $rs = $q->execute();
+    $results = array();
+    foreach ($rs as $rec) {
+      $results[] = Relation::create($rec->rid);
+    }
+    return $results;
+  }
+
+  /**
+   * Update or create a relationship.
+   *
+   * @param string $relationship_type
+   * @param string $entity_type0
+   * @param int $entity_id0
+   * @param string $entity_type1
+   * @param int $entity_id1
+   * @param bool $save
+   *   Whether or not to save the relationship. Defaults to TRUE.
+   */
+  public static function updateBinary($relationship_type, $entity_type0, $entity_id0, $entity_type1, $entity_id1, $save = TRUE) {
+    // See if the relationship already exists:
+    $rels = Relation::searchBinary($relationship_type, $entity_type0, $entity_id0, $entity_type1, $entity_id1);
+
+    if ($rels) {
+      // Update the relationship. We really just want to update the changed timestamp, so let's just load and save it.
+      $rel = $rels[0];
+      $rel->load();
+
+      if ($save) {
+        $rel->save();
+      }
+    }
+    else {
+      // Create a new relationship:
+      $rel = Relation::createNewBinary($relationship_type, $entity_type0, $entity_id0, $entity_type1, $entity_id1, $save);
+    }
+
+    return $rel;
+  }
+
+  /**
+   * Delete relationships.
+   *
+   * @param string $relationship_type
+   * @param string $entity_type0
+   * @param int $entity_id0
+   * @param string $entity_type1
+   * @param int $entity_id1
+   * @return bool
+   *   TRUE on success, FALSE on failure
+   */
+  public static function deleteBinary($relationship_type, $entity_type0 = NULL, $entity_id0 = NULL, $entity_type1 = NULL, $entity_id1 = NULL) {
+    // Get the relationships:
+    $rels = Relation::searchBinary($relationship_type, $entity_type0, $entity_id0, $entity_type1, $entity_id1);
+
+    // If none were found, return FALSE:
+    if (empty($rels)) {
+      return FALSE;
+    }
+
+    // Delete the relationships:
+    foreach ($rels as $rel) {
+      relation_delete($rel->rid());
+    }
+
+    return TRUE;
   }
 
 }

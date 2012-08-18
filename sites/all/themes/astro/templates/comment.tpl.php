@@ -40,19 +40,15 @@
     */ ?>
 
     <div class='post-controls top-post-controls' <?php echo $poster->commentBorderStyle(); ?>>
-      <?php if (user_is_logged_in() && 0) { ?>
-        <div class='rating-buttons'>
-          <input type='button' class='rating-button rating-button-warning' data-rating='warning' title='Warning (-2 points)'>
-          <input type='button' class='rating-button rating-button-dislike' data-rating='dislike' title='Dislike (-1 point)'>
-          <input type='button' class='rating-button rating-button-indifferent' data-rating='indifferent' title='Meh (0 points)'>
-          <input type='button' class='rating-button rating-button-like' data-rating='like' title='Like (1 point)'>
-          <input type='button' class='rating-button rating-button-favourite' data-rating='favourite' title='Favourite (2 points)'>
-        </div>
-      <?php } ?>
+      <div class='waiting'></div>
 
-<!--      <div class='post-score-wrapper'>-->
-<!--        Score: <span class='post-score'>--><?php //echo $score; ?><!--</span>-->
-<!--      </div>-->
+      <?php
+      echo $rating_buttons;
+      ?>
+
+      <div class='post-score-wrapper'>
+        Score: <span class='post-score score-comment-<?php echo $item_comment->cid(); ?>'><?php echo $score; ?></span>
+      </div>
 
       <?php if (!$item_comment->published()) { ?>
         <div class='unpublished'>unpublished</div>

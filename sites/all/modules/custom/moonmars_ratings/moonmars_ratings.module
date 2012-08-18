@@ -1,17 +1,26 @@
 <?php
 
+function moonmars_ratings_menu() {
+  $items['ajax/rate'] = array(
+    'page callback'    => 'moonmars_ratings_ajax_rate',
+    'access callback'  => TRUE,
+    'type'             => MENU_CALLBACK,
+  );
+  return $items;
+}
+
 /**
- * Return the base scores for different ratings.
+ * Return the names for different ratings.
  *
  * @return array
  */
-function moonmars_ratings_scores() {
+function moonmars_ratings_names() {
   return array(
-    'warning'     => -2,
-    'dislike'     => -1,
-    'indifferent' => 0,
-    'like'        => 1,
-    'love'        => 2,
+    -2 => 'warning',
+    -1 => 'dislike',
+     0 => 'indifferent',
+     1 => 'like',
+     2 => 'love',
   );
 }
 
@@ -21,16 +30,61 @@ function moonmars_ratings_scores() {
  * @param int $selected
  * @return string
  */
-function moonmars_ratings_buttons($selected, $entity_type, $entity_id) {
-  $html = "<div class='rating-buttons' data-entity-type='$entity_type' data-entity-id='$entity_id'>\n";
-  foreach (moonmars_ratings_scores() as $rating => $score) {
-    $title = ucfirst($rating) . " (" . format_plural($score, '1 point', '@count points') . ")";
-    $html .= "<input type='button' class='rating-button rating-button-$rating";
-    if ($score == $selected) {
-      $html .= " rating-button-selected";
+function moonmars_ratings_buttons(Member $member, $entity_type, $entity_id) {
+  $current_rating = $member->rating($entity_type, $entity_id);
+
+  $html = "<div id='rating-buttons-{$entity_type}-{$entity_id}' class='rating-buttons' data-entity-type='$entity_type' data-entity-id='$entity_id'>\n";
+
+  foreach (moonmars_ratings_names() as $rating => $rating_name) {
+    $sign = ($rating < 0 ) ? '-' : ($rating == 0 ? '' : '+');
+    $title = ucfirst($rating_name) . " ($sign" . format_plural(abs($rating), '1 point', '@count points')  . ")";
+    $html .= "<input type='button' class='rating-button rating-button-{$rating_name}";
+    // Highlight the current selection:
+    if ($current_rating !== FALSE && $rating == $current_rating) {
+      $html .= " selected";
     }
     $html .= "' data-rating='$rating' title='$title'>\n";
   }
+
   $html .= "</div>\n";
+
   return $html;
+}
+
+/**
+ * AJAX callback for rating things.
+ */
+function moonmars_ratings_ajax_rate() {
+  // Get request params:
+  $entity_type  = isset($_REQUEST['entity_type']) ? $_REQUEST['entity_type']        : NULL;
+  $entity_id    = isset($_REQUEST['entity_id'])   ? ((int) $_REQUEST['entity_id'])  : NULL;
+  $rating       = isset($_REQUEST['rating'])      ? ((int) $_REQUEST['rating'])     : NULL;
+
+  // Get the logged-in member:
+  $current_member = Member::currentMember();
+
+  // Begin the data array:
+  $data = array(
+    'entity_type' => $entity_type,
+    'entity_id'   => $entity_id,
+    'rating'      => $rating,
+  );
+
+  // Check params:
+  if (!$entity_type || !$entity_id || is_null($rating) || !array_key_exists($rating, moonmars_ratings_names()) || !$current_member) {
+    $data['result'] = FALSE;
+    $data['error'] = 'Invalid parameters';
+    echo json_encode($data);
+    return;
+  }
+
+  // Update the rating:
+  $result = $current_member->rating($entity_type, $entity_id, $rating);
+//  dbg($result);
+
+  // Update result:
+  $data['result'] = TRUE;
+  $data = array_merge($data, $result);
+  echo json_encode($data);
+  return;
 }

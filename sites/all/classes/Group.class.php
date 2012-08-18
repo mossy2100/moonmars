@@ -48,7 +48,7 @@ class Group extends Node {
    */
   public function channel($create = TRUE) {
     if (!isset($this->channel)) {
-      $this->channel = MmcEntity::getEntityChannel('node', $this->nid(), $create);
+      $this->channel = MoonMarsEntity::getEntityChannel('node', $this->nid(), $create);
     }
     return $this->channel;
   }
@@ -227,7 +227,7 @@ class Group extends Node {
    * @return bool
    */
   public function hasMember(Member $member) {
-    $rels = moonmars_relationships_get_relationships('has_member', 'node', $this->nid(), 'user', $member->uid());
+    $rels = Relation::searchBinary('has_member', 'node', $this->nid(), 'user', $member->uid());
     return (bool) $rels;
   }
 
@@ -283,7 +283,7 @@ class Group extends Node {
     }
 
     // Check if the user is a member of the group, and if they're also an admin.
-    $rels = moonmars_relationships_get_relationships('has_member', 'node', $this->nid(), 'user', $member->uid());
+    $rels = Relation::searchBinary('has_member', 'node', $this->nid(), 'user', $member->uid());
     return $rels ? ((bool) $rels[0]->field('field_is_admin')) : FALSE;
   }
 

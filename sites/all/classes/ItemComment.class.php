@@ -16,7 +16,7 @@ class ItemComment extends Comment {
 
   /**
    * Get the comment's creator.
-   * Overrides base class method, which returns User.
+   * Overrides base class method, which returns a User object.
    *
    * @return Member
    */

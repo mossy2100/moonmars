@@ -17,17 +17,14 @@ function astro_alpha_preprocess_comment(&$vars) {
   // Get the poster's avatar:
   $vars['avatar'] = $poster->avatarTooltip();
 
-  // Get the comment's score:
-//  $vars['score'] = isset($vars['elements']['#comment']->field_score[LANGUAGE_NONE][0]['value']) ? $vars['elements']['#comment']->field_score[LANGUAGE_NONE][0]['value'] : 0;
-
   if (!user_is_logged_in()) {
     $login_to_comment = &$vars['content']['links']['comment']['#links']['comment_forbidden']['title'];
     $login_to_comment = str_replace('post comments', 'post or rate comments', $login_to_comment);
   }
 
   // Set some attributes that we can use with JS:
-  $cid = $vars['elements']['#comment']->cid;
-  $nid = $vars['elements']['#node']->nid;
+  $cid = $item_comment->cid();
+  $nid = $item_comment->nid();
 
   $vars['attributes_array']['data-cid'] = $cid;
   $vars['attributes_array']['data-nid'] = $nid;
@@ -83,4 +80,12 @@ function astro_alpha_preprocess_comment(&$vars) {
 
   // Highlight class:
   $vars['highlight'] = (isset($_GET['cid']) && $item_comment->cid() == $_GET['cid']) ? 'highlight' : '';
+
+  // Score:
+  $vars['score'] = (int) $item_comment->field('field_score');
+
+  // Ratings:
+  // To rate an item, the member must be logged in, and it must have been created by someone else.
+  $can_rate = $current_member && !Member::equals($current_member, $poster);
+  $vars['rating_buttons'] = $can_rate ? moonmars_ratings_buttons($current_member, 'comment', $cid) : '';
 }

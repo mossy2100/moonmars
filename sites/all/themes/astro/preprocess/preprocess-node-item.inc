@@ -8,6 +8,7 @@
 function astro_alpha_preprocess_node_item(&$vars) {
 
   drupal_add_js(drupal_get_path('module', 'moonmars_channels') . '/js/moonmars-channels.js');
+  drupal_add_js(drupal_get_path('module', 'moonmars_ratings') . '/js/ratings.js');
 
   // Get the current logged-in member:
   $current_member = Member::currentMember();
@@ -59,9 +60,6 @@ function astro_alpha_preprocess_node_item(&$vars) {
 
   // Format the post datetime:
   $vars['created_datetime'] = astro_format_about_how_long_ago($node->created);
-
-// Calculate the score for the item:
-//      $vars['score'] = mt_rand(-20, 9999);
 
   // Remove unpublished comments. Count published comments.
   $n_comments = 0;
@@ -145,4 +143,11 @@ function astro_alpha_preprocess_node_item(&$vars) {
   $vars['links1'] = $links1;
   $vars['links2'] = $links2;
 
+  // Score:
+  $vars['score'] = (int) $item->field('field_score');
+
+  // Ratings:
+  // To rate an item, the member must be logged in, and it must have been created by someone else.
+  $can_rate = $current_member && !Member::equals($current_member, $poster);
+  $vars['rating_buttons'] = $can_rate ? moonmars_ratings_buttons($current_member, 'node', $item_nid) : '';
 }

@@ -33,8 +33,7 @@ class Item extends Node {
    */
   public function channel() {
     if (!isset($this->channel)) {
-
-      $rels = moonmars_relationships_get_relationships('has_item', 'node', NULL, 'node', $this->nid());
+      $rels = Relation::searchBinary('has_item', 'node', NULL, 'node', $this->nid());
 
       if ($rels) {
         $this->channel = Channel::create($rels[0]->endpointEntityId(0));

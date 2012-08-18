@@ -39,25 +39,15 @@
     ?>
 
     <div class='post-controls top-post-controls'>
+      <div class='waiting'></div>
 
       <?php
-      if (user_is_logged_in() && 0) {
-        ?>
-        <div class='rating-buttons'>
-          <input type='button' class='rating-button rating-button-warning' data-rating='warning' title='Warning (-2 points)'>
-          <input type='button' class='rating-button rating-button-dislike' data-rating='dislike' title='Dislike (-1 point)'>
-          <input type='button' class='rating-button rating-button-indifferent' data-rating='indifferent' title='Meh (0 points)'>
-          <input type='button' class='rating-button rating-button-like' data-rating='like' title='Like (1 point)'>
-          <input type='button' class='rating-button rating-button-favourite' data-rating='favourite' title='Favourite (2 points)'>
-        </div>
-        <?php
-      } ?>
+      echo $rating_buttons;
+      ?>
 
-      <?php /*
       <div class='post-score-wrapper'>
-        Score: <span class='post-score'><?php echo $score; ?></span>
+        Score: <span class='post-score score-node-<?php echo $item->nid(); ?>'><?php echo $score; ?></span>
       </div>
-      */ ?>
 
       <?php
       // Top links for comment/edit/delete/remove item:

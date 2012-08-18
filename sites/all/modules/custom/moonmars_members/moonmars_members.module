@@ -570,7 +570,7 @@ function moonmars_members_menu_block() {
  */
 function moonmars_members_groups_block() {
   // Get the member from the URL:
-  $entity = MmcEntity::getEntityFromUrl();
+  $entity = MoonMarsEntity::getEntityFromUrl();
   $member = ($entity instanceof Member) ? $entity : (($entity instanceof Channel) ? $entity->parentEntity() : FALSE);
   if (!($member instanceof Member)) {
     return '';
@@ -595,7 +595,7 @@ function moonmars_members_groups_block() {
  */
 function moonmars_members_followers_block() {
   // Get the member from the URL:
-  $entity = MmcEntity::getEntityFromUrl();
+  $entity = MoonMarsEntity::getEntityFromUrl();
   $member = ($entity instanceof Member) ? $entity : (($entity instanceof Channel) ? $entity->parentEntity() : FALSE);
   if (!($member instanceof Member)) {
     return '';
@@ -617,7 +617,7 @@ function moonmars_members_followers_block() {
  */
 function moonmars_members_followees_block() {
   // Get the member from the URL:
-  $entity = MmcEntity::getEntityFromUrl();
+  $entity = MoonMarsEntity::getEntityFromUrl();
   $member = ($entity instanceof Member) ? $entity : (($entity instanceof Channel) ? $entity->parentEntity() : FALSE);
   if (!($member instanceof Member)) {
     return '';
@@ -762,6 +762,6 @@ function moonmars_members_activity_redirect() {
 function moonmars_members_rating_buttons($uid) {
 //  $current_member = Member::currentMember();
 //  $profile_member = Member::create($uid);
-//  $rel = moonmars_relationships_get_relationships('rates', 'user', $current_member->uid(), 'user', $profile_member->uid());
+//  $rel = Relation::searchBinary('rates', 'user', $current_member->uid(), 'user', $profile_member->uid());
 
 }
