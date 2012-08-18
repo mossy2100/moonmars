@@ -114,12 +114,6 @@ function moonmars_channels_social_links() {
       'domain'      => 'twitter.com',
       'description' => 'Twitter profile',
     ),
-    'meetup'      => array(
-      'name'        => 'Meetup',
-      'field'       => 'field_meetup_link',
-      'domain'      => 'meetup.com',
-      'description' => 'Meetup profile',
-    ),
     'google-plus' => array(
       'name'        => 'Google+',
       'field'       => 'field_google_link',
@@ -132,17 +126,23 @@ function moonmars_channels_social_links() {
       'domain'      => 'youtube.com',
       'description' => 'YouTube channel',
     ),
+    'wikipedia'   => array(
+      'name'        => 'Wikipedia',
+      'field'       => 'field_wikipedia_link',
+      'domain'      => 'wikipedia.org',
+      'description' => 'Wikipedia entry',
+    ),
     'flickr'      => array(
       'name'        => 'Flickr',
       'field'       => 'field_flickr_link',
       'domain'      => 'flickr.com',
       'description' => 'Flickr profile',
     ),
-    'wikipedia'   => array(
-      'name'        => 'Wikipedia',
-      'field'       => 'field_wikipedia_link',
-      'domain'      => 'wikipedia.org',
-      'description' => 'Wikipedia entry',
+    'meetup'      => array(
+      'name'        => 'Meetup',
+      'field'       => 'field_meetup_link',
+      'domain'      => 'meetup.com',
+      'description' => 'Meetup profile',
     ),
     'academia'   => array(
       'name'        => 'Academia',

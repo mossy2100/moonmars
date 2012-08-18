@@ -40,8 +40,7 @@
     */ ?>
 
     <div class='post-controls top-post-controls' <?php echo $poster->commentBorderStyle(); ?>>
-      <?php /*
-      <?php if (user_is_logged_in()) { ?>
+      <?php if (user_is_logged_in() && 0) { ?>
         <div class='rating-buttons'>
           <input type='button' class='rating-button rating-button-warning' data-rating='warning' title='Warning (-2 points)'>
           <input type='button' class='rating-button rating-button-dislike' data-rating='dislike' title='Dislike (-1 point)'>
@@ -51,16 +50,13 @@
         </div>
       <?php } ?>
 
-      <div class='post-score-wrapper'>
-        Score: <span class='post-score'><?php echo $score; ?></span>
-      </div>
-      */ ?>
+<!--      <div class='post-score-wrapper'>-->
+<!--        Score: <span class='post-score'>--><?php //echo $score; ?><!--</span>-->
+<!--      </div>-->
 
-      <?php
-      if (!$item_comment->published()) {
-        echo "<div class='unpublished'>unpublished</div>";
-      }
-      ?>
+      <?php if (!$item_comment->published()) { ?>
+        <div class='unpublished'>unpublished</div>
+      <?php } ?>
 
       <?php
       // Links for edit/delete comment:

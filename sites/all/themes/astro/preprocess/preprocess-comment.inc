@@ -46,7 +46,6 @@ function astro_alpha_preprocess_comment(&$vars) {
   // Generate links for editing and deleting comment:
   $links = '';
   if (user_is_logged_in()) {
-
     // delete link:
     if ($current_member->canDeleteComment($item_comment)) {
       $links .= "<li class='comment-delete'><a href='javascript:deleteComment($cid)'>delete</a></li>";
@@ -57,6 +56,7 @@ function astro_alpha_preprocess_comment(&$vars) {
       $links .= "<li class='comment-edit'><a href='javascript:editComment($cid)'>edit</a></li>";
     }
 
+    // If we have some links create a list element:
     if ($links) {
       $links = "
         <ul class='action-links clearfix'>
@@ -83,5 +83,4 @@ function astro_alpha_preprocess_comment(&$vars) {
 
   // Highlight class:
   $vars['highlight'] = (isset($_GET['cid']) && $item_comment->cid() == $_GET['cid']) ? 'highlight' : '';
-
 }

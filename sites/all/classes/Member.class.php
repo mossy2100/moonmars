@@ -101,7 +101,7 @@ class Member extends User {
       // Get the full country name:
       require_once DRUPAL_ROOT . '/includes/locale.inc';
       $countries = country_get_list();
-      $location['country_name'] = $countries[$location['country_code']];
+      $location['country_name'] = isset($countries[$location['country_code']]) ? $countries[$location['country_code']] : '';
     }
 
     return $location;

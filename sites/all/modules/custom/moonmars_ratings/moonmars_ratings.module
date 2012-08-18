@@ -11,6 +11,26 @@ function moonmars_ratings_scores() {
     'dislike'     => -1,
     'indifferent' => 0,
     'like'        => 1,
-    'favourite'   => 2,
+    'love'        => 2,
   );
+}
+
+/**
+ * Display a set of rating buttons.
+ *
+ * @param int $selected
+ * @return string
+ */
+function moonmars_ratings_buttons($selected, $entity_type, $entity_id) {
+  $html = "<div class='rating-buttons' data-entity-type='$entity_type' data-entity-id='$entity_id'>\n";
+  foreach (moonmars_ratings_scores() as $rating => $score) {
+    $title = ucfirst($rating) . " (" . format_plural($score, '1 point', '@count points') . ")";
+    $html .= "<input type='button' class='rating-button rating-button-$rating";
+    if ($score == $selected) {
+      $html .= " rating-button-selected";
+    }
+    $html .= "' data-rating='$rating' title='$title'>\n";
+  }
+  $html .= "</div>\n";
+  return $html;
 }

@@ -239,10 +239,16 @@ form {
       }
     }
   }
+
+  .form-item-field-user-location-und-0-country {
+    margin-top: 0;
+  }
 }
 
 #user-register-form {
   fieldset {
+    margin-bottom: 0;
+
     .fieldset-wrapper {
       padding: 0;
     }
@@ -351,10 +357,6 @@ form {
   }
 
   #edit-field-user-location {
-    .form-item-field-user-location-und-0-country {
-      margin-top: 0;
-    }
-
     .location .form-item input {
       margin-bottom: 0;
     }
@@ -458,13 +460,15 @@ form {
           @include border-radius(4px);
 
           &.selected {
-            border-color: $blue4;
-            background-color: $blue4;
+            border-color: $blue3;
+            background-color: $blue3;
+            color: white;
           }
 
           &:hover {
-            border-color: $red4;
-            background-color: $red4;
+            border-color: $red3;
+            background-color: $red3;
+            color: white;
           }
         }
 

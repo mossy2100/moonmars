@@ -177,24 +177,8 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
 //      $form['field_text_color'][LANGUAGE_NONE][0]['#suffix'] = moonmars_color_icons('color', '#314fa9', $form['field_text_color'][LANGUAGE_NONE][0]['rgb']['#default_value']);
       unset($form['field_text_color']);
 
-//      // Embed the channel links.
-//      require_once drupal_get_path('module', 'node') . '/node.pages.inc';
-//      $profile_member = Member::create($form['#user']->uid);
-//      $form2 = drupal_get_form('channel_node_form', $profile_member->channel()->node());
-//      $form['links'] = array(
-//        '#type' => 'fieldset',
-//        '#title' => 'Links',
-//      );
-//      $weight = 0;
-//
-//      $social_links = moonmars_channels_social_links();
-//      foreach ($social_links as $info) {
-//        $link_field = $info['field'];
-//        $form['links'][$link_field] = $form2[$link_field][LANGUAGE_NONE][0]['url'];
-//        $form['links'][$link_field]['#title'] = $form2[$link_field][LANGUAGE_NONE][0]['#title'];
-//        $form['links'][$link_field]['#description'] = str_replace('the member/group/etc. has', 'you have', $form2[$link_field][LANGUAGE_NONE][0]['#description']);
-//        $form['links'][$link_field]['#weight'] = $weight++;
-//      }
+      // Hide the score:
+      unset($form['field_score']);
 
       // Add an after_build handler:
       $form['#after_build'][] = 'moonmars_members_user_profile_form_after_build';
@@ -770,4 +754,14 @@ function moonmars_members_notifications($uid) {
  */
 function moonmars_members_activity_redirect() {
   drupal_goto(Member::currentMember()->alias() . '/activity');
+}
+
+/**
+ * Show rating buttons for the specified member.
+ */
+function moonmars_members_rating_buttons($uid) {
+//  $current_member = Member::currentMember();
+//  $profile_member = Member::create($uid);
+//  $rel = moonmars_relationships_get_relationships('rates', 'user', $current_member->uid(), 'user', $profile_member->uid());
+
 }

@@ -40,65 +40,6 @@ function admin_menu_fix_menu() {
  */
 function admin_menu_fix_admin_menu_output_alter(&$content) {
 
-  /*
-    /////////////////////////////////////////////////////////
-    // Create new submenu for 'Add Content':
-    // Not needed now - this has since been added to admin_menu
-
-    // Find the top-level menu item called "Content":
-    $i = NULL;
-    foreach ($content['menu'] as $key => $value) {
-      if (is_array($value) && array_key_exists('#href', $value) && $value['#href'] == 'admin/content') {
-        $i = $key;
-        break;
-      }
-    }
-
-    if ($i !== NULL) {
-      $submenu = array();
-      $content_submenu_added = FALSE;
-      $j = 0;
-      $types = _node_types_build()->names;
-      foreach ($content['menu'][$i] as $key => $value) {
-
-        if (is_numeric($key)) {
-
-          if (!$content_submenu_added) {
-            // Before we add the first numeric key, insert our 'Add content' menu at $j = 0
-            $submenu[$j] = array(
-              '#title' => t('Add content'),
-              '#href' => 'node/add',
-              '#options' => array('alias' => TRUE),
-              '#weight' => $value['#weight'] - 1,
-            );
-
-            // Add the content types:
-            $m = 0;
-            foreach ($types as $type => $name) {
-              $submenu[$j][$m] = array(
-                '#title' => $name,
-                '#href' => 'node/add/' . str_replace('_', '-', $type),
-                '#options' => array('alias' => TRUE),
-                '#weight' => $m,
-              );
-              $m++;
-            }
-
-            $j++;
-            $content_submenu_added = TRUE;
-          }
-
-          // Add the submenu:
-          $submenu[$j] = $value;
-          $j++;
-        }
-        else {
-          $submenu[$key] = $value;
-        }
-      }
-      $content['menu'][$i] = $submenu;
-  */
-
   /////////////////////////////////////////////////////////
   // Add "Find content" items:
 
@@ -147,47 +88,6 @@ function admin_menu_fix_admin_menu_output_alter(&$content) {
     }
   }
 
-/*
-  /////////////////////////////////////////////////////////
-  // Fix duplicate "Menu" menu items:
-  // This seems to have been fixed as well.
-
-  // Find the top-level menu item called "Content":
-  $i = NULL;
-  foreach ($content['menu'] as $key => $value) {
-    if (is_array($value) && array_key_exists('#href', $value) && $value['#href'] == 'admin/structure') {
-      $i = $key;
-      break;
-    }
-  }
-  
-  if ($i !== NULL) {
-    
-    // Find the "Menu" section:
-    $j = NULL;
-    foreach ($content['menu'][$i] as $key => $value) {
-      if (is_array($value) && array_key_exists('#href', $value) && $value['#href'] == 'admin/structure/menu') {
-        $j = $key;
-        break;
-      }
-    }
-    
-    if ($j !== NULL) {
-      // Strip out the superfluous menu entries:
-      $submenu = array();
-      foreach ($content['menu'][$i][$j] as $key => $value) {
-        if (!(is_numeric($key) && is_array($value) && array_key_exists($value['#href'], $content['menu'][$i][$j]))) {
-          $submenu[$key] = $value;
-        }
-      }
-      
-      if (!empty($submenu)) {
-        $content['menu'][$i][$j] = $submenu;
-      }
-    }
-  }
-*/
-
   /////////////////////////////////////////////////////////
   // Copy "Configuration > People" to "People > Configuration":
 
@@ -229,34 +129,8 @@ function admin_menu_fix_admin_menu_output_alter(&$content) {
     }
   }
 
-/*
-  /////////////////////////////////////////////////////////
-  // Move 'Dashboard', 'Tasks', 'Help' and 'Advanced Help' under the 'Index' menu.
-Tasks is gone and Index is now hidden under the favicon, so we don't really need this now.
-
-  // Find the top-level menu item called "Index":
-  $i = NULL;
-  foreach ($content['menu'] as $key => $value) {
-    if (is_array($value) && array_key_exists('#href', $value) && $value['#href'] == 'admin/index') {
-      $i = $key;
-      break;
-    }
-  }
-
-  if ($i !== NULL) {
-    // We want to add these in order, so let's do a loop:
-    $paths = array('admin/dashboard', 'admin/tasks', 'admin/help', 'admin/advanced_help');
-    foreach ($paths as $path) {
-      // Look for this path in the top-level menu:
-      foreach ($content['menu'] as $key => $value) {
-        if (is_array($value) && array_key_exists('#href', $value) && $value['#href'] == $path) {
-          $content['menu'][$i][] = $value;
-          unset($content['menu'][$key]);
-        }
-      }
-    }
-  }
-*/
+  // Make user account fields easier to get to:
+  $content['menu']['admin/people']['admin/config/people/accounts/fields'] = $content['menu']['admin/people'][0]['admin/config/people/accounts']['admin/config/people/accounts/fields'];
 
   /////////////////////////////////////////////////////////
   // Move 'Advanced Help' under 'Help'.
