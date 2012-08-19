@@ -1371,6 +1371,7 @@ class Member extends User {
       // Step 1. Update the rating relationship:
       $rel = Relation::updateBinary('rates', 'user', $this->uid(), $entity_type, $entity_id, FALSE);
       $rel->field('field_rating', LANGUAGE_NONE, 0, 'value', $new_rating);
+      $rel->field('field_multiplier', LANGUAGE_NONE, 0, 'value', 1);
       $rel->save();
 
       /////////////////////////////////////////////////////////
