@@ -163,6 +163,9 @@ class Node extends EntityBase {
     // Ensure the node is loaded:
     $this->load();
 
+    // We must set the pathauto flag so any custom alias doesn't get clobbered.
+    $this->setPathauto();
+
     // Save the node:
     node_save($this->entity);
 

@@ -2,7 +2,7 @@
 /**
  * Channel class - encapsulates a channel node.
  */
-class Channel extends Node {
+class Channel extends MoonMarsNode {
 
   /**
    * The node type.

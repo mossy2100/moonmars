@@ -2,7 +2,7 @@
 /**
  * Encapsulates an item node.
  */
-class Item extends Node {
+class Item extends MoonMarsNode {
 
   /**
    * The node type.
@@ -50,16 +50,6 @@ class Item extends Node {
    */
   public function text($text = NULL) {
     return $this->field('field_item_text', LANGUAGE_NONE, 0, 'value', $text);
-  }
-
-  /**
-   * Get the item's creator.
-   * Overrides base class method, which returns User.
-   *
-   * @return Member
-   */
-  public function creator() {
-    return Member::create($this->uid());
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

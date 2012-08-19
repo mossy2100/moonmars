@@ -2,7 +2,7 @@
 /**
  * Group class.
  */
-class Group extends Node {
+class Group extends MoonMarsNode {
 
   /**
    * The node type.

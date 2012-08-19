@@ -225,6 +225,35 @@ abstract class EntityBase {
     return $this->valid;
   }
 
+  /**
+   * Set the value for the pathauto flag. This maps to the "Generate automatic URL alias" checkbox on the node edit form.
+   * This code is adapted from pathauto_field_attach_form().
+   */
+  public function setPathauto($langcode = LANGUAGE_NONE) {
+    if (!isset($this->entity->path['pathauto'])) {
+
+      $entity_type = $this->entityType();
+      list($id, $vid, $bundle) = entity_extract_ids($entity_type, $this->entity);
+
+      if (!function_exists('pathauto_create_alias')) {
+        // Pathauto is not installed, so FALSE:
+        $this->entity->path['pathauto'] = FALSE;
+      }
+      elseif (!empty($id)) {
+        module_load_include('inc', 'pathauto');
+        $uri = entity_uri($entity_type, $this->entity);
+        $path = drupal_get_path_alias($uri['path'], $langcode);
+        $pathauto_alias = pathauto_create_alias($entity_type, 'return', $uri['path'], array($entity_type => $this->entity), $bundle, $langcode);
+        $this->entity->path['pathauto'] = ($path != $uri['path'] && $path == $pathauto_alias);
+      }
+      else {
+        // Default to TRUE:
+        $this->entity->path['pathauto'] = TRUE;
+      }
+
+    }
+  }
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Caching methods.
 

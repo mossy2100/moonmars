@@ -1459,7 +1459,10 @@ class Member extends User {
         // Update the group's total score:
         $group_new_score = $group_old_score - $old_rating + $new_rating;
         $group->field('field_score', LANGUAGE_NONE, 0, 'value', $group_new_score);
+
+//        dbg($group);
         $group->save();
+//        dbg($group);
 
         // Add to result:
         $result['group']['nid'] = $group->nid();

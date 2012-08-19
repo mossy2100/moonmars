@@ -2,7 +2,7 @@
 /**
  * Encapsulates an notification node.
  */
-class Notification extends Node {
+class Notification extends MoonMarsNode {
 
   /**
    * The node type.
