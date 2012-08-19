@@ -31,7 +31,7 @@
       <div class='more-link-wrapper'>
         <a href='javascript:void(0)' class='more-link'>Read more <span class='expand-icon'>&#x25BC;</span></a>
       </div>
-      <div class='post-score-wrapper'>
+      <div class='score-wrapper'>
         Score: <span class='post-score'><?php echo $score; ?></span>
       </div>
     </div> <!-- /score-more-wrapper -->
@@ -44,8 +44,8 @@
       echo $rating_buttons;
       ?>
 
-      <div class='post-score-wrapper'>
-        Score: <span class='post-score score-node-<?php echo $item->nid(); ?>'><?php echo $score; ?></span>
+      <div class='score-wrapper'>
+        Score: <span class='score score-node-<?php echo $item->nid(); ?>'><?php echo $score; ?></span>
       </div>
 
       <?php

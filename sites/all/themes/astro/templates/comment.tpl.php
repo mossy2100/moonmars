@@ -33,7 +33,7 @@
       <div class='more-link-wrapper'>
         <a href='javascript:void(0)' class='more-link'>Read more <span class='expand-icon'>&#x25BC;</span></a>
       </div>
-      <div class='post-score-wrapper'>
+      <div class='score-wrapper'>
         Score: <span class='post-score'><?php echo $score; ?></span>
       </div>
     </div> <!-- /score-more-wrapper -->
@@ -45,8 +45,8 @@
       echo $rating_buttons;
       ?>
 
-      <div class='post-score-wrapper'>
-        Score: <span class='post-score score-comment-<?php echo $item_comment->cid(); ?>'><?php echo $score; ?></span>
+      <div class='score-wrapper'>
+        Score: <span class='score score-comment-<?php echo $item_comment->cid(); ?>'><?php echo $score; ?></span>
       </div>
 
       <?php if (!$item_comment->published()) { ?>
