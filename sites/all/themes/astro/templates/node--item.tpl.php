@@ -39,7 +39,6 @@
     ?>
 
     <div class='post-controls top-post-controls'>
-      <div class='waiting'></div>
 
       <?php
       echo $rating_buttons;

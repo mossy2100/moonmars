@@ -3,61 +3,61 @@
   float: right;
   width: 105px;
   height: $ratingButtonHeight;
-  margin: 0 0 0 5px;
-}
+  margin: 0 0 0 10px;
 
-input.rating-button {
-  display: block;
-  float: left;
-  background: url('../images/rating-icons2.png') top left;
-  width: $ratingButtonHeight;
-  height: $ratingButtonHeight;
-  padding: 0;
-  @include border-radius(3px);
-  margin: 0 0 0 1px;
+  input.rating-button {
+    display: block;
+    float: left;
+    background: url('../images/rating-icons2.png') top left;
+    width: $ratingButtonHeight;
+    height: $ratingButtonHeight;
+    padding: 0;
+    @include border-radius(3px);
+    margin: 0 0 0 1px;
 
-  &.rating-button-warning {
-    background-position: left top;
+    &.rating-button-warning {
+      background-position: left top;
 
-    &:hover,
-    &.selected {
-      background-position: left bottom;
+      &:hover,
+      &.selected {
+        background-position: left bottom;
+      }
     }
-  }
 
-  &.rating-button-dislike {
-    background-position: -20px top;
+    &.rating-button-dislike {
+      background-position: -20px top;
 
-    &:hover,
-    &.selected {
-      background-position: -20px bottom;
+      &:hover,
+      &.selected {
+        background-position: -20px bottom;
+      }
     }
-  }
 
-  &.rating-button-indifferent {
-    background-position: -40px top;
+    &.rating-button-indifferent {
+      background-position: -40px top;
 
-    &:hover,
-    &.selected {
-      background-position: -40px bottom;
+      &:hover,
+      &.selected {
+        background-position: -40px bottom;
+      }
     }
-  }
 
-  &.rating-button-like {
-    background-position: -60px top;
+    &.rating-button-like {
+      background-position: -60px top;
 
-    &:hover,
-    &.selected {
-      background-position: -60px bottom;
+      &:hover,
+      &.selected {
+        background-position: -60px bottom;
+      }
     }
-  }
 
-  &.rating-button-love {
-    background-position: -80px top;
+    &.rating-button-love {
+      background-position: -80px top;
 
-    &:hover,
-    &.selected {
-      background-position: -80px bottom;
+      &:hover,
+      &.selected {
+        background-position: -80px bottom;
+      }
     }
   }
 }

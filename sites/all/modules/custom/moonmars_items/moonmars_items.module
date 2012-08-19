@@ -66,61 +66,68 @@ function moonmars_items_menu() {
  * Implements hook_form_alter().
  */
 function moonmars_items_form_alter(&$form, &$form_state, $form_id) {
-  if ($form_id == 'item_node_form' && isset($GLOBALS['channel_nid']) && $GLOBALS['channel_nid']) {
+  if ($form_id == 'item_node_form') {
 
-    $entity_type = arg(0);
-    $entity_id = (int) arg(1);
-
-    // Set the title:
-    switch ($entity_type) {
-      case 'user':
-        $account = user_load($entity_id);
-        drupal_set_title('Member: ' . $account->name);
-        break;
-
-      case 'node':
-        $node = node_load($entity_id);
-        drupal_set_title(ucfirst($node->type) . ': ' . $node->title);
-        break;
-    }
-
-    // Hide stuff we don't want to see:
-    unset($form['title']);
+    // Hide the score:
     unset($form['field_score']);
-    unset($form['field_item_system']);
-    unset($form['additional_settings']);
-    unset($form['revision_information']);
-    unset($form['author']);
-    unset($form['comment_settings']);
-    unset($form['options']);
-    unset($form['book']);
-    unset($form['field_item_type'][LANGUAGE_NONE]['#title']);
-    unset($form['field_item_text'][LANGUAGE_NONE][0]['value']['#title']);
-    unset($form['field_item_link'][LANGUAGE_NONE][0]['#title']);
-    unset($form['field_item_image'][LANGUAGE_NONE][0]['#title']);
-    unset($form['field_item_video'][LANGUAGE_NONE][0]['fid']['#title']);
-    unset($form['field_item_document'][LANGUAGE_NONE][0]['#title']);
 
-    // Change the button label:
-    $form['actions']['submit']['#value'] = t('Post');
+    // If we're on a channel page:
+    if (isset($GLOBALS['channel_nid']) && $GLOBALS['channel_nid']) {
 
-    // Make the textarea non-resizable and only 2 rows high. We will use the autoresize() plugin on the client. When it's working.
-    $form['field_item_text']['#wysiwyg'] = FALSE;
-    $form['field_item_text'][LANGUAGE_NONE][0]['value']['#rows'] = 2;
+      $entity_type = arg(0);
+      $entity_id = (int) arg(1);
 
-    // Add a hidden field to carry the channel nid:
-    $form['channel_nid'] = array(
-      '#type' => 'hidden',
-      '#value' => $GLOBALS['channel_nid'],
-    );
+      // Set the title:
+      switch ($entity_type) {
+        case 'user':
+          $account = user_load($entity_id);
+          drupal_set_title('Member: ' . $account->name);
+          break;
 
-//    dbg($form);
+        case 'node':
+          $node = node_load($entity_id);
+          drupal_set_title(ucfirst($node->type) . ': ' . $node->title);
+          break;
+      }
 
-    // Validation handler.
-//    $form['actions']['submit']['#validate'][] = 'moonmars_items_form_validate';
+      // Hide stuff we don't want to see:
+      unset($form['title']);
+      unset($form['field_score']);
+      unset($form['field_item_system']);
+      unset($form['additional_settings']);
+      unset($form['revision_information']);
+      unset($form['author']);
+      unset($form['comment_settings']);
+      unset($form['options']);
+      unset($form['book']);
+      unset($form['field_item_type'][LANGUAGE_NONE]['#title']);
+      unset($form['field_item_text'][LANGUAGE_NONE][0]['value']['#title']);
+      unset($form['field_item_link'][LANGUAGE_NONE][0]['#title']);
+      unset($form['field_item_image'][LANGUAGE_NONE][0]['#title']);
+      unset($form['field_item_video'][LANGUAGE_NONE][0]['fid']['#title']);
+      unset($form['field_item_document'][LANGUAGE_NONE][0]['#title']);
 
-    // Submit handler.
-    $form['actions']['submit']['#submit'][] = 'moonmars_items_form_submit';
+      // Change the button label:
+      $form['actions']['submit']['#value'] = t('Post');
+
+      // Make the textarea non-resizable and only 2 rows high. We will use the autoresize() plugin on the client. When it's working.
+      $form['field_item_text']['#wysiwyg'] = FALSE;
+      $form['field_item_text'][LANGUAGE_NONE][0]['value']['#rows'] = 2;
+
+      // Add a hidden field to carry the channel nid:
+      $form['channel_nid'] = array(
+        '#type' => 'hidden',
+        '#value' => $GLOBALS['channel_nid'],
+      );
+
+  //    dbg($form);
+
+      // Validation handler.
+  //    $form['actions']['submit']['#validate'][] = 'moonmars_items_form_validate';
+
+      // Submit handler.
+      $form['actions']['submit']['#submit'][] = 'moonmars_items_form_submit';
+    }
   }
 }
 

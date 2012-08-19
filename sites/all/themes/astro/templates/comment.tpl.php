@@ -40,7 +40,6 @@
     */ ?>
 
     <div class='post-controls top-post-controls' <?php echo $poster->commentBorderStyle(); ?>>
-      <div class='waiting'></div>
 
       <?php
       echo $rating_buttons;
