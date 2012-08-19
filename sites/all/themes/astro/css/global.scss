@@ -3,6 +3,7 @@
 CSS declarations in global.css will apply site-wide. */
 
 @import "compass/css3";
+@import "compass/utilities/general/clearfix";
 
 // Compass's box-shadow seems to be broken, so let's make one:
 @mixin box-shadow2($hor_offset, $vert_offset, $blur_dist, $spread, $color) {

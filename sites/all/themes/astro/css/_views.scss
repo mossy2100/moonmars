@@ -125,3 +125,28 @@
     }
   }
 }
+
+.view-leaderboard {
+  .views-row {
+    @include clearfix;
+    margin-bottom: 1px;
+    padding: 1px 3px;
+    @include border-radius(3px);
+  }
+
+  .views-row-odd {
+    background-color: $blue5;
+  }
+
+  .views-row-even {
+    background-color: $red5;
+  }
+
+  .views-field-name {
+    float: left;
+  }
+
+  .views-field-field-score {
+    float: right;
+  }
+}
