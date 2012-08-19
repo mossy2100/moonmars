@@ -511,7 +511,7 @@ function moonmars_members_menu_block() {
   global $user;
 
   if (!user_is_logged_in()) {
-    return "<p>Please <a href='/login'>login</a> or <a href='/register'>register</a> to follow this user.</p>";
+    return "<p>Please <a href='/user/login'>login</a> or <a href='/register'>register</a> to follow this user.</p>";
   }
 
   $html = "<ul id='member-menu' class='menu'>";

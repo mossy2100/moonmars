@@ -98,8 +98,8 @@ function moonmars_groups_join($group_nid) {
 
   // Check the user is logged in:
   if (!$current_member) {
-    drupal_set_message("Please <a href='/login'>login</a> or <a href='/register'>register</a> before joining a group.");
-    drupal_goto('login', array('query' => array('destination' => "$group_alias/join")));
+    drupal_set_message("Please <a href='/user/login'>login</a> or <a href='/register'>register</a> before joining a group.");
+    drupal_goto('user/login', array('query' => array('destination' => "$group_alias/join")));
     return;
   }
 
@@ -151,8 +151,8 @@ function moonmars_groups_leave($group_nid) {
 
   // Check the user is logged in:
   if (!$current_member) {
-    drupal_set_message("You need to <a href='/user'>login</a> before leaving a group.");
-    drupal_goto('login', array('query' => array('destination' => "$group_alias/join")));
+    drupal_set_message("You need to <a href='/user/login'>login</a> before leaving a group.");
+    drupal_goto('user/login', array('query' => array('destination' => "$group_alias/join")));
     return;
   }
 
@@ -306,7 +306,7 @@ function moonmars_groups_menu_block() {
 
   // If the user isn't logged in, no menu:
   if (!$current_member) {
-    return "<p><a href='/login'>Login</a> or <a href='/register'>register</a> to join this group.</p>";
+    return "<p><a href='/user/login'>Login</a> or <a href='/register'>register</a> to join this group.</p>";
   }
 
   // Check if they're a member of the group:

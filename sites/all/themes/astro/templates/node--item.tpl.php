@@ -97,7 +97,7 @@
       // Tell the user they can comment if they login or register:
       ?>
       <p class='comment-instruction'>
-        <a href='/login?destination=<?php echo $parent_entity->alias(); ?>'>Login</a> or
+        <a href='/user/login?destination=<?php echo $parent_entity->alias(); ?>'>Login</a> or
         <a href='/register?destination=<?php echo $parent_entity->alias(); ?>'>register</a>
         to <!-- rate and --> post comments.
       </p>
