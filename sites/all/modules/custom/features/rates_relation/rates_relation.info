@@ -1,0 +1,8 @@
+name = Rates relation
+core = 7.x
+package = Features
+dependencies[] = ctools
+dependencies[] = relation
+features[ctools][] = relation:relation_type_default:1
+features[features_api][] = api:1
+features[relation_type][] = rates

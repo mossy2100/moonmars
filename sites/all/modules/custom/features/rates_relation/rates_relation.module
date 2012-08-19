@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Rates relation feature.
+ */
+
+include_once 'rates_relation.features.inc';
