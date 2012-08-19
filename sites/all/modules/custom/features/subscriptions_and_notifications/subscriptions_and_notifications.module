@@ -1,7 +1,0 @@
-<?php
-/**
- * @file
- * Code for the Subscriptions and notifications feature.
- */
-
-include_once 'subscriptions_and_notifications.features.inc';
