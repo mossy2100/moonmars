@@ -31,7 +31,7 @@ function astro_alpha_preprocess_comment(&$vars) {
   $vars['attributes_array']['id'] = "comment-article-$cid";
 
   // Add links for urls, mentions and tags to the comment text:
-  $comment_text = $vars['content']['comment_body'][0]['#markup'];
+  $comment_text = html_entity_decode($vars['content']['comment_body'][0]['#markup']);
   $vars['content']['comment_body'][0]['#markup'] = moonmars_text_filter($comment_text, TRUE);
 
   // Get the current member:

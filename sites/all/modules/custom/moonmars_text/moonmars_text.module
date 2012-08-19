@@ -1,6 +1,26 @@
 <?php
 
 /**
+ * Return an array of supported emoticons.
+ *
+ * @return array
+ */
+function moonmars_text_emoticons() {
+  return array(
+    'big-smile' => ':D',
+    'heart'     => '&lt;3',
+    'kiss'      => ':*',
+    'meh'       => ':|',
+    'raspberry' => ':p',
+    'sad'       => ':(',
+    'smile'     => ':)',
+    'surprise'  => ':o',
+    'uncertain' => ':/',
+    'wink'      => ';)',
+  );
+}
+
+/**
  * Scans a piece of text (item or comment) for @ references to members, and converts these to links.
  *
  * @param $text
@@ -15,25 +35,6 @@ function moonmars_text_scan($text, $nl2br = FALSE) {
   $port_path_query_fragment = "[-A-Z0-9+&@#\/%=~_|$?!:,.]*[A-Z0-9+&@#\/%=~_|$]";
   $url_rx = "/($scheme)(($domain_name)|($ip_addr))($port_path_query_fragment)?/i";
   $text2 = preg_replace($url_rx, "<a href='$0' target='_blank'>$0</a>", $text2);
-//  $n_matches = preg_match_all($url_rx, $text2, $matches);
-//  dbg($matches);
-
-////  dbg($text2);
-//  $n_urls = preg_match_all($url_rx, $text2, $matches);
-//  if ($n_urls) {
-//    foreach ($matches[0] as $n => $url) {
-//      $scheme = $matches[1][$n];
-//      if ($scheme) {
-//        $text2 = str_replace($url, "<a href='$url' target='_blank'>$url</a>", $text2);
-//      }
-//      else {
-//        $text2 = str_replace($url, "<a href='http://$url' target='_blank'>$url</a>", $text2);
-//      }
-//    }
-//  }
-
-  //
-//  dbg($text2);
 
   // Scan for referenced members:
   $n_members = preg_match_all("/(^|\s)\@([a-z0-9\_\-]+)\b/i", $text2, $matches);
@@ -80,6 +81,15 @@ function moonmars_text_scan($text, $nl2br = FALSE) {
       $parent_entity_link = $channel->parentEntityLink();
       $text2 = str_replace("[$channel_title]", $parent_entity_link, $text2);
     }
+  }
+
+  // Insert emoticons:
+  $theme_path = drupal_get_path('theme', 'astro');
+  $emoticon_path = "/$theme_path/images/emoticons";
+  // Remove double-encoding of <, which can be caused by using the heart emoticon <3.
+  $text2 = str_replace('&amp;lt;', '&lt;', $text2);
+  foreach (moonmars_text_emoticons() as $emoticon_name => $emoticon_symbol) {
+    $text2 = str_replace($emoticon_symbol, "<img class='emoticon' src='$emoticon_path/$emoticon_name.png'>", $text2);
   }
 
   // Insert break tags if requested:
