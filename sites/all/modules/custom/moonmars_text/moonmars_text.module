@@ -15,7 +15,6 @@ function moonmars_text_emoticons() {
     'sad'       => ':(',
     'smile'     => ':)',
     'surprise'  => ':o',
-    'uncertain' => ':/',
     'wink'      => ';)',
   );
 }

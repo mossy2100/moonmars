@@ -2,12 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ff922214-f7cd-4eef-9f30-177ba578dd26" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/sites/all/themes/astro/images/rating-icons2.png" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_comments/moonmars_comments.module" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_comments/moonmars_comments.module" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_text/moonmars_text.module" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_text/moonmars_text.module" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/css/_ratings.scss" afterPath="$PROJECT_DIR$/sites/all/themes/astro/css/_ratings.scss" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-comment.inc" afterPath="$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-comment.inc" />
     </list>
     <ignored path="moonmars.com.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -33,19 +28,19 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="moonmars_text.module" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="moonmars_text.module" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_text/moonmars_text.module">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="83" column="3" selection-start="2473" selection-end="2473" vertical-scroll-proportion="-1.8">
+            <state line="20" column="0" selection-start="366" selection-end="366" vertical-scroll-proportion="0.5042017">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="preprocess-comment.inc" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="preprocess-comment.inc" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-comment.inc">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="33" column="0" selection-start="1140" selection-end="1140" vertical-scroll-proportion="0.3579832">
+            <state line="33" column="0" selection-start="1140" selection-end="1140" vertical-scroll-proportion="-4.26">
               <folding>
                 <marker date="1345383267000" expanded="true" signature="2060:2091" placeholder="..." />
                 <marker date="1345383267000" expanded="true" signature="2434:2777" placeholder="..." />
@@ -111,8 +106,8 @@
         <option value="$PROJECT_DIR$/sites/all/themes/astro/templates/node--item.tpl.php" />
         <option value="$PROJECT_DIR$/sites/all/themes/astro/css/_ratings.scss" />
         <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_comments/moonmars_comments.module" />
-        <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_text/moonmars_text.module" />
         <option value="$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-comment.inc" />
+        <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_text/moonmars_text.module" />
       </list>
     </option>
   </component>
@@ -738,13 +733,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_text/moonmars_text.module">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="83" column="3" selection-start="2473" selection-end="2473" vertical-scroll-proportion="-1.8">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/templates/comment.tpl.php">
       <provider selected="true" editor-type-id="text-editor">
         <state line="50" column="0" selection-start="1524" selection-end="1524" vertical-scroll-proportion="-30.25">
@@ -756,12 +744,19 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-comment.inc">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="33" column="0" selection-start="1140" selection-end="1140" vertical-scroll-proportion="0.3579832">
+        <state line="33" column="0" selection-start="1140" selection-end="1140" vertical-scroll-proportion="-4.26">
           <folding>
             <marker date="1345383267000" expanded="true" signature="2060:2091" placeholder="..." />
             <marker date="1345383267000" expanded="true" signature="2434:2777" placeholder="..." />
             <marker date="1345383267000" expanded="true" signature="2538:2763" placeholder="..." />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_text/moonmars_text.module">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="20" column="0" selection-start="366" selection-end="366" vertical-scroll-proportion="0.5042017">
+          <folding />
         </state>
       </provider>
     </entry>
