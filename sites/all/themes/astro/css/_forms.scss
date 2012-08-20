@@ -113,24 +113,24 @@ form {
     color: $grey3;
   }
 
+  .form-type-checkboxes,
   .form-type-radios {
-    div.form-radios {
+    .form-checkboxes,
+    .form-radios {
       margin-bottom: 2px;
 
-      div.form-type-radio {
-        //height: 25px;
-        //line-height: 25px;
+      .form-type-checkbox,
+      .form-type-radio {
         vertical-align: middle;
         cursor: pointer;
 
         input {
-          margin: 0 10px;
+          margin: 0 5px 0 10px;
           cursor: pointer;
         }
 
         label {
           font-weight: normal;
-          //line-height: 25px;
           vertical-align: middle;
           cursor: pointer;
         }
