@@ -86,7 +86,7 @@ function astro_alpha_preprocess_node_item(&$vars) {
 
   // Add links in comment text to URLs, member references and hash tags:
   if (isset($vars['content']['field_item_text'])) {
-    $vars['content']['field_item_text'][0]['#markup'] = moonmars_text_filter($vars['content']['field_item_text'][0]['#markup'], FALSE);
+    $vars['content']['field_item_text'][0]['#markup'] = moonmars_text_filter($vars['content']['field_item_text'][0]['#markup'], FALSE, TRUE);
   }
 
   // Links for comment/edit/remove/delete item:

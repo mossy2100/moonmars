@@ -32,7 +32,7 @@ function astro_alpha_preprocess_comment(&$vars) {
 
   // Add links for urls, mentions and tags to the comment text:
   $comment_text = html_entity_decode($vars['content']['comment_body'][0]['#markup']);
-  $vars['content']['comment_body'][0]['#markup'] = moonmars_text_filter($comment_text, TRUE);
+  $vars['content']['comment_body'][0]['#markup'] = moonmars_text_filter($comment_text, TRUE, TRUE);
 
   // Get the current member:
   $current_member = Member::currentMember();

@@ -925,10 +925,14 @@ class Member extends User {
     // If the member wants an email, send it:
     $send_email = $this->wantsEmailNotification($channel);
     if ($send_email) {
+
+      // Convert newlines but not emoticons:
+      $text = moonmars_text_filter($text, TRUE, FALSE);
+
       $params = array(
         'subject' => "[moonmars.com] $subject",
         'summary' => "<p style='margin: 0 0 10px; color: #919191;'>$summary</p>",
-        'text'    => "<p style='margin: 0;'>" . moonmars_text_filter($text, TRUE) . "</p>",
+        'text'    => "<p style='margin: 0;'>$text</p>",
       );
       drupal_mail('moonmars_members', 'notification', $this->mail(), language_default(), $params);
     }

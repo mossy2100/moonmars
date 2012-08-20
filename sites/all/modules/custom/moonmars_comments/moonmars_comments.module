@@ -160,7 +160,6 @@ function moonmars_comments_ajax_edit() {
   // Update the comment text:
   $text = strip_tags(str_replace('<3', '&lt;3', $text));
   $item_comment->field('comment_body', LANGUAGE_NONE, 0, 'value', $text);
-  $filtered_text = moonmars_text_filter($text, TRUE);
 
   // Save the comment:
   // @todo maybe make these functions part of the Comment class.
@@ -172,7 +171,7 @@ function moonmars_comments_ajax_edit() {
 
   // Complete data array, encode and send:
   $data['result'] = TRUE;
-  $data['filtered_text'] = $filtered_text;
+  $data['filtered_text'] = moonmars_text_filter($text, TRUE, TRUE);
   echo json_encode($data);
 }
 

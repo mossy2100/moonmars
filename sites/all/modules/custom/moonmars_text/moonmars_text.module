@@ -24,7 +24,7 @@ function moonmars_text_emoticons() {
  *
  * @param $text
  */
-function moonmars_text_scan($text, $nl2br = FALSE) {
+function moonmars_text_scan($text, $nl2br = FALSE, $emoticons = FALSE) {
   $text2 = $text;
 
   // Make URLs into links:
@@ -83,12 +83,14 @@ function moonmars_text_scan($text, $nl2br = FALSE) {
   }
 
   // Insert emoticons:
-  $theme_path = drupal_get_path('theme', 'astro');
-  $emoticon_path = "/$theme_path/images/emoticons";
-  // Remove double-encoding of <, which can be caused by using the heart emoticon <3.
-  $text2 = str_replace('&amp;lt;', '&lt;', $text2);
-  foreach (moonmars_text_emoticons() as $emoticon_name => $emoticon_symbol) {
-    $text2 = str_replace($emoticon_symbol, "<img class='emoticon' src='$emoticon_path/$emoticon_name.png'>", $text2);
+  if ($emoticons) {
+    $theme_path = drupal_get_path('theme', 'astro');
+    $emoticon_path = "/$theme_path/images/emoticons";
+    // Remove double-encoding of <, which can be caused by using the heart emoticon <3.
+    $text2 = str_replace('&amp;lt;', '&lt;', $text2);
+    foreach (moonmars_text_emoticons() as $emoticon_name => $emoticon_symbol) {
+      $text2 = str_replace($emoticon_symbol, "<img class='emoticon' src='$emoticon_path/$emoticon_name.png'>", $text2);
+    }
   }
 
   // Insert break tags if requested:
@@ -109,8 +111,8 @@ function moonmars_text_scan($text, $nl2br = FALSE) {
  *
  * @param $text
  */
-function moonmars_text_filter($text, $nl2br = FALSE) {
-  $scan = moonmars_text_scan($text, $nl2br);
+function moonmars_text_filter($text, $nl2br = FALSE, $emoticons = FALSE) {
+  $scan = moonmars_text_scan($text, $nl2br, $emoticons);
   return $scan['filtered_text'];
 }
 
@@ -120,8 +122,21 @@ function moonmars_text_filter($text, $nl2br = FALSE) {
  * @param $text
  */
 function moonmars_text_referenced_members($text) {
-  $scan = moonmars_text_scan($text);
-  return $scan['members'];
+  $members = array();
+
+  $n_members = preg_match_all("/(^|\s)\@([a-z0-9\_\-]+)\b/i", $text, $matches);
+  if ($n_members) {
+    foreach ($matches[2] as $name) {
+      // Check if we have a member with this name:
+      $user = user_load_by_name($name);
+      if ($user) {
+        $member = Member::create($user);
+        $members[$member->uid()] = $member;
+      }
+    }
+  }
+
+  return $members;
 }
 
 /**
@@ -129,10 +144,10 @@ function moonmars_text_referenced_members($text) {
  *
  * @param $text
  */
-function moonmars_text_hash_tags($text) {
-  $scan = moonmars_text_scan($text);
-  return $scan['hash_tags'];
-}
+//function moonmars_text_hash_tags($text) {
+//  $scan = moonmars_text_scan($text);
+//  return $scan['hash_tags'];
+//}
 
 /**
  * Trims a bit of text to a maximum length, using ellipsis to indicate the trim.
