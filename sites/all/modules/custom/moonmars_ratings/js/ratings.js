@@ -31,10 +31,10 @@ function rateEntityReturn(data, textStatus, jqXHR) {
     // Update the entity's score:
     $('.score-' + data.entity_type + '-' + data.entity_id).text(data.entity.new_score);
 
-    // Update the rater's score:
-    if (data.rater.new_score !== undefined) {
-      $('.score-user-' + data.rater.uid).text(data.rater.new_score);
-    }
+//    // Update the rater's score:
+//    if (data.rater.new_score !== undefined) {
+//      $('.score-user-' + data.rater.uid).text(data.rater.new_score);
+//    }
 
     // Update the poster's score:
     if (data.poster.new_score !== undefined) {

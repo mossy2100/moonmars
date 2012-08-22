@@ -18,9 +18,9 @@ function moonmars_ratings_names() {
   return array(
     -2 => 'warning',
     -1 => 'dislike',
-     0 => 'meh',
+//     0 => 'meh',
      1 => 'like',
-     2 => 'love',
+     2 => 'favourite',
   );
 }
 

@@ -1,7 +1,7 @@
 
 .rating-buttons {
   float: right;
-  width: 105px;
+  width: 84px;
   height: $ratingButtonHeight;
   margin: 0 0 0 10px;
 
@@ -51,7 +51,7 @@
       }
     }
 
-    &.rating-button-love {
+    &.rating-button-favourite {
       background-position: -80px top;
 
       &:hover,

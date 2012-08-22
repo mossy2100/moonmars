@@ -1396,23 +1396,23 @@ class Member extends User {
       $result['entity']['old_score'] = $entity_old_score;
       $result['entity']['new_score'] = $entity_new_score;
 
-      /////////////////////////////////////////////////////////
-      // Step 3. Update the rater's score.
-
-      // If the rater hasn't rated this entity before, give them a point:
-      if ($old_rating === FALSE) {
-        // Get the rater's current score:
-        $rater_old_score = (int) $this->field('field_score');
-
-        // Update the rater's total score:
-        $rater_new_score = $rater_old_score + 1;
-        $this->field('field_score', LANGUAGE_NONE, 0, 'value', $rater_new_score);
-        $this->save();
-
-        // Add to result:
-        $result['rater']['old_score'] = $rater_old_score;
-        $result['rater']['new_score'] = $rater_new_score;
-      }
+//      /////////////////////////////////////////////////////////
+//      // Step 3. Update the rater's score.
+//
+//      // If the rater hasn't rated this entity before, give them a point:
+//      if ($old_rating === FALSE) {
+//        // Get the rater's current score:
+//        $rater_old_score = (int) $this->field('field_score');
+//
+//        // Update the rater's total score:
+//        $rater_new_score = $rater_old_score + 1;
+//        $this->field('field_score', LANGUAGE_NONE, 0, 'value', $rater_new_score);
+//        $this->save();
+//
+//        // Add to result:
+//        $result['rater']['old_score'] = $rater_old_score;
+//        $result['rater']['new_score'] = $rater_new_score;
+//      }
 
       /////////////////////////////////////////////////////////
       // Step 4. Update the poster's score.
@@ -1437,7 +1437,6 @@ class Member extends User {
       // Step 5. Update the group's score, if applicable.
 
       $item = NULL;
-      $group = NULL;
 
       if ($entity instanceof ItemComment) {
         $item = $entity->item();
@@ -1447,6 +1446,9 @@ class Member extends User {
       }
 
       if ($item) {
+        // If the item was shared in a group, find it.
+        $group = NULL;
+
         $channel = $item->channel();
         if ($channel) {
           $parent_entity = $channel->parentEntity();
@@ -1454,24 +1456,24 @@ class Member extends User {
             $group = $parent_entity;
           }
         }
-      }
 
-      if ($group) {
-        // Get the group's current score:
-        $group_old_score = (int) $group->field('field_score');
+        if ($group) {
+          // Get the group's current score:
+          $group_old_score = (int) $group->field('field_score');
 
-        // Update the group's total score:
-        $group_new_score = $group_old_score - $old_rating + $new_rating;
-        $group->field('field_score', LANGUAGE_NONE, 0, 'value', $group_new_score);
+          // Update the group's total score:
+          $group_new_score = $group_old_score - $old_rating + $new_rating;
+          $group->field('field_score', LANGUAGE_NONE, 0, 'value', $group_new_score);
 
-//        dbg($group);
-        $group->save();
-//        dbg($group);
+  //        dbg($group);
+          $group->save();
+  //        dbg($group);
 
-        // Add to result:
-        $result['group']['nid'] = $group->nid();
-        $result['group']['old_score'] = $group_old_score;
-        $result['group']['new_score'] = $group_new_score;
+          // Add to result:
+          $result['group']['nid'] = $group->nid();
+          $result['group']['old_score'] = $group_old_score;
+          $result['group']['new_score'] = $group_new_score;
+        }
       }
 
       return $result;
