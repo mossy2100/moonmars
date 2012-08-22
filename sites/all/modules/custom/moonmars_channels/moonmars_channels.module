@@ -154,7 +154,7 @@ function moonmars_channels_social_links() {
 }
 
 /**
- * Common code for inserting or updating nodes.
+ * Common code for inserting or updating entities with channels.
  * 
  * @param $entity
  * @param $entity_type
@@ -164,7 +164,7 @@ function moonmars_channels_entity_save($entity, $entity_type) {
   $entity = MoonMarsEntity::getEntity($entity_type, $entity);
   if ($entity && method_exists($entity, 'channel')) {
     $channel = $entity->channel();
-    $channel->updateAliasAndTitle();
+    $channel->resetAliasAndTitle();
   }
 }
 

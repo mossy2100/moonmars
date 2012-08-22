@@ -536,8 +536,17 @@ class Member extends User {
   /**
    * Update the path alias for the member's profile.
    */
-  public function setAlias() {
+  public function resetAlias() {
     $this->alias('member/' . $this->name());
+  }
+
+  /**
+   * Get the path to the entity's email preferences form.
+   *
+   * @return string
+   */
+  public function emailPreferencesAlias() {
+    return $this->alias() . '/email-preferences';
   }
 
   /**

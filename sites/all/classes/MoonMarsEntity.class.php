@@ -21,10 +21,10 @@ class MoonMarsEntity {
 
       case 'node':
         // Get the node type:
-        $type = is_uint($entity) ? node_get_type($entity) : $entity->type;
+        $node_type = is_uint($entity) ? node_get_type($entity) : $entity->type;
 
         // Get the node class:
-        $class = ucfirst($type);
+        $class = ucfirst($node_type);
 
         // If the node class exists, instantiate:
         if (class_exists($class)) {
@@ -42,19 +42,23 @@ class MoonMarsEntity {
         $cid = is_uint($entity) ? $entity : $entity->cid;
 
         // Get the comment's node type.
-        $type = comment_get_node_type($cid);
+        $node_type = comment_get_node_type($cid);
 
         // Get the comment class:
-        $class = ucfirst($type) . 'Comment';
+        $class = ucfirst($node_type) . 'Comment';
 
         // If the comment class exists, instantiate.
-        // This will capture ItemComment and potential other future comment classes such as ArticleComment.
+        // This will capture ItemComment and potential other future comment classes such as ArticleComment or BlogPostComment.
         if (class_exists($class)) {
           return $class::create($entity);
         }
 
         // Fall back to base Comment class:
         return Comment::create($entity);
+
+      case 'relation':
+        // Create the object:
+        return MoonMarsRelation::create($entity);
     }
 
     return FALSE;
@@ -94,8 +98,8 @@ class MoonMarsEntity {
     // Create the relationship between the entity and the relationship:
     Relation::createNewBinary('has_channel', $entity_type, $entity_id, 'node', $channel->nid());
 
-    // Update the channel's alias and title:
-    $channel->updateAliasAndTitle();
+    // Reset the channel's alias and title:
+    $channel->resetAliasAndTitle();
 
     // Return the Channel:
     return $channel;

@@ -152,7 +152,7 @@ class Group extends MoonMarsNode {
    * @param string $type
    * @return mixed|Node|string
    */
-  public function type($type = NULL) {
+  public function groupType($type = NULL) {
     return $this->field('field_group_type', LANGUAGE_NONE, 0, 'value', $type);
   }
 
@@ -162,7 +162,7 @@ class Group extends MoonMarsNode {
    * @static
    * @return array
    */
-  public static function types() {
+  public static function groupTypes() {
     if (!isset(self::$types)) {
       $rec = db_select('field_config', 'fc')
         ->fields('fc', array('data'))

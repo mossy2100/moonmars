@@ -138,11 +138,11 @@ abstract class EntityBase {
         // For some "quick load" properties, just get the field from the table record rather than load the whole object:
         if (in_array($property, $class::$quickLoadProperties)) {
 
-          $rec = db_select($class::table, 't')
+          $q = db_select($class::table, 't')
             ->fields('t', array($property))
-            ->condition($class::primaryKey, $this->id())
-            ->execute()
-            ->fetch();
+            ->condition($class::primaryKey, $this->id());
+
+          $rec = $q->execute()->fetch();
 
           // If we got the record then set the property value:
           if ($rec) {
@@ -334,17 +334,18 @@ abstract class EntityBase {
       $source = $this->path();
 
       // Delete any existing aliases for this entity.
-      db_delete('url_alias')
+      $q = db_delete('url_alias')
         ->condition('source', $source);
+      $q->execute();
 
       // Insert the new alias:
-      db_insert('url_alias')
+      $q = db_insert('url_alias')
         ->fields(array(
                       'source'   => $source,
                       'alias'    => $alias,
                       'language' => LANGUAGE_NONE,
-                 ))
-        ->execute();
+                 ));
+      $q->execute();
     }
   }
 

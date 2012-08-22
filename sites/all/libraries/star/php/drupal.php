@@ -382,13 +382,19 @@ function user_get_link($uid) {
 function role_load($role) {
   if (is_numeric($role)) {
     // Assume $role == rid
-    $sql = "SELECT * FROM {role} WHERE rid = %d";
+    return db_select('role', 'r')
+      ->fields('r')
+      ->condition('rid', $role)
+      ->execute()
+      ->fetchObject();
   }
-  else {
-    // Assume $role is role name:
-    $sql = "SELECT * FROM {role} WHERE name = '%s'";
-  }
-  return db_fetch_array(db_query($sql, $role));
+
+  // Assume $role is role name:
+  return db_select('role', 'r')
+    ->fields('r')
+    ->condition('name', $role)
+    ->execute()
+    ->fetchObject();
 }
 
 /**
@@ -453,51 +459,29 @@ function user_remove_role(&$user, $role) {
  * Returns TRUE if the user has the given role.
  * If $user == NULL, defaults to the logged-in user.
  * If the user is not logged in, returns FALSE.
+ *
  * @param mixed $role
  * @param object $user
- * @param array $edit Edit fields as would be passed to hook_user() or user_save()
  * @return bool
  */
-function user_has_role($role, $user = NULL, $edit = array()) {
-  // default to global user:
+function user_has_role($role, $user = NULL) {
+  // Default to global user:
   if (!$user) {
     $user = $GLOBALS['user'];
   }
-  // allow for $user being the uid:
-  if (is_numeric($user)) {
-    $uid = $user;
-    $user = user_load($uid);
+
+  // Allow for $user being the uid:
+  if (is_uint($user)) {
+    $user = user_load($user);
   }
+
+  // Check we have a user:
   if (!$user || !$user->uid) {
     return FALSE;
   }
-  $role_info = role_load($role);
-  $rid = $role_info['rid'];
-  $result = $user->roles[$rid] || $edit['roles'][$rid];
-//  debug($result ? "user is $role" : "user is not $role");
-  return $result;
-}
 
-/**
- * Returns TRUE if the user has the given role.
- * If $user == NULL, defaults to the logged-in user.  If the user is not logged in, returns FALSE.
- * Same as above function but optimised for speed.
- * This function does not load or save the user, but access the DB directly for speed.
- *
- * @param mixed $role Can be rid or role name.
- * @param int $uid
- * @return bool
- */
-function user_has_role_by_uid($role, $uid) {
-  if (!$uid) {
-    return FALSE;
-  }
-  // Get the role info:
-  $role = role_load($role);
-  // See if the user has this role:
-  $sql = "SELECT * FROM {users_roles} WHERE uid = %d AND rid = %d";
-  $rec = db_fetch_array(db_query($sql, $uid, $role['rid']));
-  return (bool) $rec;
+  // Check if the role (which may be a rid or a role name) is either a key or a value in the user's roles array:
+  return in_array($role, $user->roles) || array_key_exists($role, $user->roles);
 }
 
 /**
@@ -522,6 +506,23 @@ function user_get_roles($uid) {
   return $roles;
 }
 
+/**
+ * Checks if the logged-in user is the superuser.
+ *
+ * @return bool
+ */
+function user_is_superuser() {
+  return $GLOBALS['user']->uid == 1;
+}
+
+/**
+ * Checks if the logged-in user is the superuser.
+ *
+ * @return bool
+ */
+function user_is_admin() {
+  return user_has_role('administrator');
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Useful form-related functions.

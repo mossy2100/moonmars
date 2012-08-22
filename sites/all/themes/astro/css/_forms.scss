@@ -121,20 +121,35 @@ form {
 
       .form-type-checkbox,
       .form-type-radio {
-        vertical-align: middle;
-        cursor: pointer;
-
         input {
-          margin: 0 5px 0 10px;
-          cursor: pointer;
+          margin-left: 5px;
         }
 
         label {
           font-weight: normal;
-          vertical-align: middle;
-          cursor: pointer;
         }
       }
+    }
+  }
+
+  .form-type-checkbox,
+  .form-type-radio {
+    vertical-align: middle;
+    cursor: pointer;
+
+    input {
+      margin: 0 5px 0 0;
+      cursor: pointer;
+    }
+
+    label {
+      font-weight: normal;
+      vertical-align: middle;
+      cursor: pointer;
+    }
+
+    .description {
+      margin-left: 0;
     }
   }
 
@@ -583,7 +598,7 @@ form#moonmars-groups-search-form {
 
     .form-type-checkbox,
     .form-type-radio {
-      display: inline;
+      //display: inline;
       margin-right: 10px;
 
       label {
@@ -598,6 +613,12 @@ form#moonmars-groups-search-form {
 
     .group-search-member {
       margin: 15px 0;
+      @include clearfix;
+
+      label.group-search-member-title {
+        font-weight: bold;
+        display: block;
+      }
 
       div,
       label {
@@ -605,12 +626,8 @@ form#moonmars-groups-search-form {
       }
 
       label {
+        padding: 0;
         font-weight: normal;
-      }
-
-      label.group-search-member-title {
-        font-weight: bold;
-        display: block;
       }
 
       #edit-member {
@@ -671,4 +688,13 @@ form#moonmars-groups-search-form {
 #autocomplete li.selected {
   background: $red3;
   color: #fff;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Relation edit form
+
+#relation-edit-form {
+  .form-item-field-item-notification-und {
+    margin-top: 0;
+  }
 }

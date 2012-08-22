@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * Implements hook_menu().
+ */
 function moonmars_items_menu() {
   $items['ajax/item/edit'] = array(
     'page callback'    => 'moonmars_items_ajax_edit',

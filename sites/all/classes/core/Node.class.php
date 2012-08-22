@@ -36,7 +36,12 @@ class Node extends EntityBase {
    * Constructor.
    */
   protected function __construct() {
-    return parent::__construct();
+    // Create the object:
+    parent::__construct();
+
+    // Set the node type:
+    $class = get_called_class();
+    $this->entity->type = $class::nodeType;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -55,9 +60,6 @@ class Node extends EntityBase {
     if (is_null($node_param)) {
       // Create new node:
       $node_obj = new $class;
-
-      // Set the type:
-      $node_obj->entity->type = $class::nodeType;
 
       // Default status to published:
       $node_obj->entity->status = 1;
@@ -223,10 +225,13 @@ class Node extends EntityBase {
   /**
    * Get/set the node's type.
    *
+   * Note as a rule we never say just 'type' because it's far too easy to get node type, entity type, field type,
+   * relation type, etc., mixed up, which is a source of bugs.
+   *
    * @param null|string
    * @return string|Node
    */
-  public function type($type = NULL) {
+  public function nodeType($type = NULL) {
     return $this->prop('type', $type);
   }
 

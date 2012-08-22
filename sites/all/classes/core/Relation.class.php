@@ -215,6 +215,15 @@ class Relation extends EntityBase {
   }
 
   /**
+   * Get the relation type.
+   *
+   * @return string
+   */
+  public function relationType() {
+    return $this->prop('relation_type');
+  }
+
+  /**
    * Get an endpoint.
    *
    * @param string $lang

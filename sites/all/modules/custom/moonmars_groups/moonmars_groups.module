@@ -6,6 +6,11 @@
 const MOONMARS_GROUP_SEARCH_PAGE_SIZE = 20;
 
 /**
+ * The nid of the default group, which contains a member's default group notification preferences.
+ */
+const MOONMARS_DEFAULT_GROUP_NID = 5375;
+
+/**
  * Implements hook_menu().
  */
 function moonmars_groups_menu() {
@@ -138,7 +143,7 @@ function moonmars_groups_leave($group_nid) {
   $group = Group::create($group_nid);
 
   // Check the type:
-  if ($group->type() != 'group') {
+  if ($group->nodeType() != 'group') {
     drupal_set_message('Group not found.');
     return;
   }
@@ -615,10 +620,10 @@ function moonmars_groups_search_form() {
     '#type' => 'radios',
     '#options' => array(
       1 => "is",
-      0 => "is not",
+      0 => "is not a member of.",
     ),
     '#default_value' => isset($_SESSION['group_search']['params']['is_in']) ? ((int) $_SESSION['group_search']['params']['is_in']) : 1,
-    '#suffix' => "a member of.</div>",
+    '#suffix' => "</div>",
   );
 
   $form['search']['clear'] = array(
@@ -769,7 +774,7 @@ function theme_moonmars_groups_search_form($vars) {
   if (isset($_SESSION['group_search']['results']) && $_SESSION['group_search']['results']) {
 
     // Search results:
-    $types = Group::types();
+    $types = Group::groupTypes();
     $rows = array();
 
     for ($i = 0; $i < MOONMARS_GROUP_SEARCH_PAGE_SIZE; $i++) {
@@ -784,7 +789,7 @@ function theme_moonmars_groups_search_form($vars) {
       $group = Group::create($group_nid);
 
       $description = "
-        Type: <span class='group-type'>" . $types[$group->type()] . "</span><br>
+        Type: <span class='group-type'>" . $types[$group->groupType()] . "</span><br>
         Member count: <span class='group-member-count'>" . $group->memberCount() . "</span><br>
         <div class='group-description'>" . $group->description() . "</span>";
 

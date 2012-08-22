@@ -550,13 +550,16 @@ function moonmars_members_menu_block() {
     $html .= "<li>$follow_link</li>";
   }
 
-  // Links for editing the profile, for when you're on your own site, or for admins.
+  // Links for editing the profile, if the member is on their own profile page, or for admins.
   if ($own_profile || user_access('administer users', $user)) {
     // Edit profile link:
     $html .= "<li>" . l('Edit profile', $profile_member->editAlias()) . "</li>";
 
     // Edit links:
     $html .= "<li>" . l('Edit links', $profile_member->channel()->editAlias()) . "</li>";
+
+    // Email preferences:
+    $html .= "<li>" . l('Email preferences', $profile_member->emailPreferencesAlias()) . "</li>";
   }
 
   $html .= "</ul>";
@@ -686,7 +689,7 @@ function moonmars_members_ajax_username_check() {
 function moonmars_members_user_save($account) {
   // Update the alias for the member's profile:
   $member = Member::create($account->uid);
-  $member->setAlias();
+  $member->resetAlias();
 }
 
 /**

@@ -134,11 +134,15 @@ class Channel extends MoonMarsNode {
    *
    * @return Channel
    */
-  public function setAlias() {
+  public function resetAlias() {
     // Get the parent entity:
     $parent_entity = $this->parentEntity();
     if (!$parent_entity) {
       return FALSE;
+    }
+
+    if ($parent_entity->alias() == 'user/246') {
+      dbg($parent_entity);
     }
 
     // Set the alias:
@@ -155,7 +159,7 @@ class Channel extends MoonMarsNode {
    *
    * @return Channel
    */
-  public function setTitle() {
+  public function resetTitle() {
     $entity = $this->parentEntity();
     $title = $entity ? $entity->channelTitle() : FALSE;
     if ($title) {
@@ -165,12 +169,12 @@ class Channel extends MoonMarsNode {
   }
 
   /**
-   * Update a channel's alias and title to match the parent entity.
+   * Reset a channel's alias and title to match the parent entity.
    */
-  public function updateAliasAndTitle() {
+  public function resetAliasAndTitle() {
     $this->load();
-    $this->setAlias();
-    $this->setTitle();
+    $this->resetAlias();
+    $this->resetTitle();
     $this->save();
   }
 

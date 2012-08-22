@@ -11,7 +11,17 @@ function moonmars_update_menu() {
     'type'             => MENU_CALLBACK,
   );
   $items['named-colors'] = array(
-    'page callback'    => 'moonmars_named_colors',
+    'page callback'    => 'moonmars_update_named_colors',
+    'access callback'  => TRUE,
+    'type'             => MENU_CALLBACK,
+  );
+  $items['update/default-group-preferences'] = array(
+    'page callback'    => 'moonmars_update_default_group_preferences',
+    'access callback'  => TRUE,
+    'type'             => MENU_CALLBACK,
+  );
+  $items['update/fix-aliases'] = array(
+    'page callback'    => 'moonmars_update_fix_aliases',
     'access callback'  => TRUE,
     'type'             => MENU_CALLBACK,
   );
@@ -77,7 +87,7 @@ function moonmars_update_subscriber_relationships() {
 /**
  * Sort the color names.
  */
-function moonmars_named_colors() {
+function moonmars_update_named_colors() {
   $colors = StarColor::colorNames();
   $colors2 = array();
   foreach ($colors as $name => $hex) {
@@ -85,4 +95,67 @@ function moonmars_named_colors() {
   }
   ksort($colors2);
   dbg($colors2);
+}
+
+/**
+ * Create a relationship between user 1 and node 0 (phantom group).
+ */
+function moonmars_update_default_group_preferences() {
+  $rel = Relation::createNewBinary('has_member', 'node', MOONMARS_DEFAULT_GROUP_NID, 'user', 1);
+  dbg($rel);
+}
+
+/**
+ * Fix URL aliases.
+ */
+function moonmars_update_fix_aliases() {
+  require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'pathauto') . '/pathauto.inc';
+
+  // Members:
+  $q = db_select('users', 'u')
+    ->fields('u', array('uid'))
+    ->condition('uid', 0, '>');
+  $rs = $q->execute();
+  foreach ($rs as $rec) {
+    $member = Member::create($rec->uid);
+    $member->resetAlias();
+    drupal_set_message("Updated member alias to <em>" . $member->alias() . "</em>");
+  }
+
+  // Channels and notifications:
+  $q = db_select('node', 'n')
+    ->fields('n', array('nid', 'type'))
+    ->condition('type', array('channel', 'notification', 'item'))
+    ->orderBy('type')
+    ->orderBy('nid');
+  $rs = $q->execute();
+  foreach ($rs as $rec) {
+    switch ($rec->type) {
+      case 'channel':
+        $channel = Channel::create($rec->nid);
+        if ($channel->resetAlias()) {
+          drupal_set_message("Updated channel alias to <em>" . $channel->alias() . "</em>");
+        }
+        else {
+          drupal_set_message("Could not updated channel alias for <em>" . $channel->alias() . "</em>", 'warning');
+        }
+        break;
+
+      case 'notification':
+        $nxn = Notification::create($rec->nid);
+        $alias = pathauto_create_alias('node', 'return', "node/$rec->nid", array('node' => $nxn->node()), 'notification');
+        $nxn->alias($alias);
+        drupal_set_message("Updated notification alias to <em>" . $nxn->alias() . "</em>");
+        break;
+
+      case 'item':
+        $item = Item::create($rec->nid);
+        $alias = pathauto_create_alias('node', 'return', "node/$rec->nid", array('node' => $item->node()), 'item');
+        $item->alias($alias);
+        drupal_set_message("Updated item alias to <em>" . $item->alias() . "</em>");
+        break;
+    }
+  }
+
+  return '';
 }
