@@ -5,8 +5,14 @@ $(function() {
 
   $('.rating-button').click(function() {
     // Show the waiting icon:
-    $(this).closest('.post-controls').addClass('waiting');
+//    $(this).closest('.post-controls').addClass('waiting');
 
+    // Change which button is selected:
+    var buttons = $(this).closest('.rating-buttons');
+    buttons.find('.rating-button').removeClass('selected');
+    $(this).addClass('selected');
+
+    // Tell the server:
     var entity_type = $(this).parent('.rating-buttons').attr('data-entity-type');
     var entity_id = $(this).parent('.rating-buttons').attr('data-entity-id');
     var rating = $(this).attr('data-rating');
@@ -18,15 +24,12 @@ $(function() {
 function rateEntityReturn(data, textStatus, jqXHR) {
   // Hide the waiting icon:
   var buttons = $('#rating-buttons-' + data.entity_type + '-' + data.entity_id);
-  buttons.closest('.post-controls').removeClass('waiting');
+//  buttons.closest('.post-controls').removeClass('waiting');
 
   if (!data.result) {
     alert(data.error);
   }
   else {
-    // Change which button is selected:
-    buttons.find('.rating-button').removeClass('selected');
-    buttons.find('.rating-button-' + data.entity.new_rating_name).addClass('selected');
 
     // Update the entity's score:
     $('.score-' + data.entity_type + '-' + data.entity_id).text(data.entity.new_score);

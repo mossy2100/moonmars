@@ -2,10 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ff922214-f7cd-4eef-9f30-177ba578dd26" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/classes/Member.class.php" afterPath="$PROJECT_DIR$/sites/all/classes/Member.class.php" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_ratings/js/ratings.js" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_ratings/js/ratings.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_ratings/moonmars_ratings.module" afterPath="$PROJECT_DIR$/sites/all/modules/custom/moonmars_ratings/moonmars_ratings.module" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sites/all/themes/astro/css/_ratings.scss" afterPath="$PROJECT_DIR$/sites/all/themes/astro/css/_ratings.scss" />
     </list>
     <ignored path="moonmars.com.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -40,10 +37,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="_ratings.scss" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="_ratings.scss" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/_ratings.scss">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="3" column="11" selection-start="46" selection-end="46" vertical-scroll-proportion="0.069767445">
+            <state line="3" column="11" selection-start="46" selection-end="46" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -60,10 +57,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ratings.js" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="ratings.js" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_ratings/js/ratings.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="29" column="0" selection-start="970" selection-end="970" vertical-scroll-proportion="0.0">
+            <state line="12" column="0" selection-start="321" selection-end="321" vertical-scroll-proportion="0.27906978">
               <folding />
             </state>
           </provider>
@@ -95,9 +92,9 @@
         <option value="$PROJECT_DIR$/sites/all/themes/astro/preprocess/preprocess-node-item.inc" />
         <option value="$PROJECT_DIR$/sites/all/themes/astro/css/_forms.scss" />
         <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_ratings/moonmars_ratings.module" />
-        <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_ratings/js/ratings.js" />
         <option value="$PROJECT_DIR$/sites/all/classes/Member.class.php" />
         <option value="$PROJECT_DIR$/sites/all/themes/astro/css/_ratings.scss" />
+        <option value="$PROJECT_DIR$/sites/all/modules/custom/moonmars_ratings/js/ratings.js" />
       </list>
     </option>
   </component>
@@ -864,13 +861,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_ratings/js/ratings.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="29" column="0" selection-start="970" selection-end="970" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_ratings/moonmars_ratings.module">
       <provider selected="true" editor-type-id="text-editor">
         <state line="41" column="39" selection-start="1211" selection-end="1211" vertical-scroll-proportion="-10.958333">
@@ -889,7 +879,14 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sites/all/themes/astro/css/_ratings.scss">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="3" column="11" selection-start="46" selection-end="46" vertical-scroll-proportion="0.069767445">
+        <state line="3" column="11" selection-start="46" selection-end="46" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sites/all/modules/custom/moonmars_ratings/js/ratings.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="12" column="0" selection-start="321" selection-end="321" vertical-scroll-proportion="0.27906978">
           <folding />
         </state>
       </provider>
