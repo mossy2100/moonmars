@@ -71,7 +71,33 @@ class MoonMarsEntity {
    * @return bool
    */
   public static function getEntityFromUrl() {
-    return self::getEntity(arg(0), arg(1));
+    $valid_entity_types = array('user', 'node', 'comment', 'relation');
+
+    // Look for the entity type and id in the request_uri:
+    $uri = trim($_SERVER['REQUEST_URI'], '/');
+    $parts = explode('/', $uri);
+
+    if (in_array($parts[0], $valid_entity_types)) {
+      $id = $parts[1];
+      if ($id && is_uint($id)) {
+        return self::getEntity($parts[0], $parts[1]);
+      }
+    }
+
+    // Maybe it's an alias, try converting to normal path:
+    $entity_alias = $parts[0] . '/'. $parts[1];
+    $path = drupal_get_normal_path($entity_alias);
+    $parts = explode('/', $path);
+
+    if (in_array($parts[0], $valid_entity_types)) {
+      $id = $parts[1];
+      if ($id && is_uint($id)) {
+        return self::getEntity($parts[0], $parts[1]);
+      }
+    }
+
+    // Not an entity path:
+    return FALSE;
   }
 
   /**

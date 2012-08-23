@@ -1,0 +1,299 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function moonmars_notifications_menu() {
+  $items = array();
+  $items['user/%/notifications'] = array(
+    'page callback'   => 'moonmars_notifications_list',
+    'page arguments'  => array(1),
+    'access callback' => 'user_is_logged_in',
+    'type'            => MENU_CALLBACK,
+  );
+  $items['member/%/notifications/preferences'] = array(
+    'page callback'   => 'drupal_get_form',
+    'page arguments'  => array('moonmars_notifications_form', 1),
+    'access callback' => 'user_is_logged_in',
+    'type'            => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_mail().
+ */
+function moonmars_notifications_mail($key, &$message, $params) {
+  switch ($key) {
+    case 'notification':
+      $message['subject'] = $params['subject'];
+      $message['body'][] = $params['summary'];
+      $message['body'][] = $params['text'];
+      $message['headers']['Content-Type'] = "text/html; charset='utf-8';";
+      break;
+  }
+}
+
+/**
+ * List a member's notifications.
+ *
+ * @return string
+ */
+function moonmars_notifications_list($uid) {
+  // Make sure the user is looking at their own notifications and not someone else's.
+  $current_member = Member::currentMember();
+  if ($current_member->uid() != $uid) {
+    drupal_access_denied();
+  }
+
+  drupal_set_title('Your Notifications');
+
+  $html = "<p><a class='button' href='/" . $current_member->alias() . "/notifications/preferences'>Edit notifications preferences</a></p>";
+  $html .= views_embed_view('notifications', 'page', $uid);
+
+  return $html;
+}
+
+/**
+ * Form for notifications preferences.
+ *
+ * @return array
+ */
+function moonmars_notifications_form($form, &$form_state, $uid) {
+  // Make sure the user is looking at their own notifications and not someone else's.
+  $current_member = Member::currentMember();
+  $profile_member = Member::create($uid);
+
+  if (!Member::equals($current_member, $profile_member)) {
+    drupal_access_denied();
+  }
+
+  drupal_set_title("Edit notifications preferences");
+
+  $new_thing_options = array(
+    'all'  => 'All',
+    'none' => 'None',
+    'some' => 'Some',
+  );
+
+  $str_all_none = "Select if you want all, no, or some notifications about new";
+  $str_fieldset_title = "Select the notifications you want about";
+
+  // New members:
+  $new_members = array(
+    '#type'        => 'radios',
+    '#title'       => "New members",
+    '#description' => "$str_all_none members.",
+    '#options'     => $new_thing_options,
+  );
+  $which_members = array(
+    '#type'        => 'checkboxes',
+    '#title'       => "Which members?",
+    '#description' => "Select which members you want to be notified about.",
+    '#options'     => array(
+      'country' => "Members from my country",
+    ),
+  );
+
+  // New groups:
+  $new_groups = array(
+    '#type'        => 'radios',
+    '#title'       => "New groups",
+    '#description' => "$str_all_none groups.",
+    '#options'     => $new_thing_options,
+  );
+  $which_groups = array(
+    '#type'        => 'checkboxes',
+    '#title'       => "Which groups?",
+    '#description' => "Select which groups you want to be notified about.",
+    '#options'     => array_merge(Group::groupTypes(), array(
+      'topic' => "Groups about topics I'm interested in",
+    )),
+  );
+
+  // New items:
+  $new_items = array(
+    '#type'        => 'radios',
+    '#title'       => "New items",
+    '#description' => "$str_all_none items.",
+    '#options'     => $new_thing_options,
+  );
+  $which_items = array(
+    '#type'        => 'checkboxes',
+    '#title'       => "Which items?",
+    '#description' => "Select which items you want to be notified about.",
+    '#options'     => array(
+      'mention' => "Items that mention me",
+      'topic'   => "Items about a topic I'm interested in",
+    ),
+  );
+
+  // New comments:
+  $new_comments = array(
+    '#type'        => 'radios',
+    '#title'       => "New comments",
+    '#description' => "$str_all_none comments.",
+    '#options'     => $new_thing_options,
+  );
+  $which_comments = array(
+    '#type'        => 'checkboxes',
+    '#title'       => "Which comments?",
+    '#description' => "Select which comments you want to be notified about.",
+    '#options'     => array(
+      'mention' => "Comments that mention me",
+      'topic'   => "Comments about a topic I'm interested in",
+      'mine'    => "Comments on an item I shared",
+      'comment' => "Comments on an item I've already commented on",
+    ),
+  );
+
+  $form = array(
+    '#attached'            => array(
+      'js' => array(
+        drupal_get_path('module', 'moonmars_notifications') . '/js/notifications-form.js',
+      ),
+    ),
+    'uid' => array(
+      '#type' => 'hidden',
+      '#value' => $current_member->uid(),
+    ),
+    'buttons'              => array(
+      '#markup' => "
+        <p>These preferences are additive, which is to say, if one preference say 'yes', and another says 'no',
+        the result will be 'yes'. For example, if you say you want no notifications about your groups, but you want all
+        notifications about your followees, then if a followee posts something in one of your groups you'll be notified.</p>
+
+        <p>The default settings should suit most people.</p>
+
+        <div id='notifications-form-buttons'>
+          <strong>Select:</strong>
+          <input type='button' onclick='notificationsFormSelectEverything()' value='Everything'>
+          <input type='button' onclick='notificationsFormSelectNothing()' value='Nothing'>
+          <input type='button' onclick='notificationsFormSelectDefault()' value='Default'>
+        </div>
+      ",
+    ),
+    'site'                 => array(
+      '#type'               => 'fieldset',
+      '#title'              => "Site",
+      '#description'        => "Select your site-wide notifications. This excludes closed groups that you aren't a member of.",
+      'site_new_members'    => $new_members,
+      'site_which_members'  => $which_members,
+      'site_new_groups'     => $new_groups,
+      'site_which_groups'   => $which_groups,
+      'site_new_items'      => $new_items,
+      'site_which_items'    => $which_items,
+      'site_new_comments'   => $new_comments,
+      'site_which_comments' => $which_comments,
+    ),
+    'page'                 => array(
+      '#type'               => 'fieldset',
+      '#title'              => "My channel",
+      '#description'        => "$str_fieldset_title your channel.",
+      'page_new_items'      => $new_items,
+      'page_which_items'    => $which_items,
+      'page_new_comments'   => $new_comments,
+      'page_which_comments' => $which_comments,
+    ),
+    'followee'             => array(
+      '#type'                   => 'fieldset',
+      '#title'                  => "My followees",
+      '#description'            => "$str_fieldset_title members you follow.",
+      'followee_new_items'      => $new_items,
+      'followee_which_items'    => $which_items,
+      'followee_new_comments'   => $new_comments,
+      'followee_which_comments' => $which_comments,
+      'followee_misc'           => array(
+        '#type'        => 'checkboxes',
+        '#title'       => "Miscellaneous",
+        '#description' => "Select other notifications you want about the member.",
+        '#options'     => array(
+          "update" => "Profile updated",
+        ),
+      ),
+    ),
+    'group'                => array(
+      '#type'                   => 'fieldset',
+      '#title'                  => "My groups",
+      '#description'            => "$str_fieldset_title your groups.",
+      'group_new_items'         => $new_items,
+      'group_which_items'       => $which_items,
+      'group_new_comments'      => $new_comments,
+      'group_which_comments'    => $which_comments,
+      'group_misc'              => array(
+        '#type'        => 'checkboxes',
+        '#title'       => "Miscellaneous",
+        '#description' => "Select other notifications you want about the group.",
+        '#options'     => array(
+          'new-subgroup' => "New subgroup (includes events and projects)",
+          'new-member'   => "New member",
+          'new-admin'    => "New administrator",
+          'admin-wanted' => "Administrator wanted",
+          "update"       => "Profile updated",
+        ),
+      ),
+    ),
+  );
+
+  // Set values:
+  $preferences = @unserialize($profile_member->field('field_notifications_preferences'));
+  if (is_array($preferences)) {
+    foreach ($preferences as $key => $value) {
+      $parts = explode('_', $key);
+      $group = $parts[0];
+      $form[$group][$key]['#default_value'] = $value;
+    }
+  }
+
+  // Submit button:
+  $form['submit'] = array(
+    '#prefix' => "<div class='form-actions'>",
+    '#type' => 'submit',
+    '#value' => 'Save',
+    '#submit' => array('moonmars_notifications_form_submit'),
+    '#suffix' => "</div>",
+  );
+
+  return $form;
+}
+
+function moonmars_notifications_form_submit($form, &$form_state) {
+  $uid = (int) $form_state['values']['uid'];
+  $profile_member = Member::create($uid);
+
+  $notification_preferences = array();
+
+  foreach ($form_state['values'] as $key => $value) {
+    $parts = explode('_', $key);
+    if (!in_array($parts[0], array('site', 'page', 'followee', 'group'))) {
+      continue;
+    }
+
+    if (is_array($value)) {
+      $value = array_values(array_filter($value));
+    }
+
+    if ($parts[1] == 'which') {
+      $new_key = $parts[0] . '_new_' . $parts[2];
+      // If Some was selected, but nothing was checked, switch it to None:
+      if ($notification_preferences[$new_key] == 'some' && !$value) {
+        $notification_preferences[$new_key] = 'none';
+      }
+    }
+
+    // Remember:
+    $notification_preferences[$key] = $value;
+  }
+
+  // Store the notifications preferences in the member's profile:
+  $profile_member->field('field_notifications_preferences', LANGUAGE_NONE, 0, 'value', serialize($notification_preferences));
+  $profile_member->save();
+
+  // Message:
+  drupal_set_message("Your notifications preferences have been updated.");
+
+//  dpm($notification_preferences);
+
+  // Go back to their notifications:
+  $form_state['redirect'] = $profile_member->alias() . '/notifications';
+}

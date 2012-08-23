@@ -943,7 +943,7 @@ class Member extends User {
         'summary' => "<p style='margin: 0 0 10px; color: #919191;'>$summary</p>",
         'text'    => "<p style='margin: 0;'>$text</p>",
       );
-      drupal_mail('moonmars_members', 'notification', $this->mail(), language_default(), $params);
+      drupal_mail('moonmars_notifications', 'notification', $this->mail(), language_default(), $params);
     }
   }
 

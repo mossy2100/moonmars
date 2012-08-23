@@ -49,7 +49,7 @@ $(function() {
 
   $('#edit-field-background-color-und-0-rgb').hide();
   $('.colorpicker').remove();
-  $('#field-background-color-add-more-wrapper').insertAfter('.form-item-field-background-color-und-0-rgb label');
+  $('.color-icons').insertAfter('.form-item-field-background-color-und-0-rgb label');
 
   updateColors();
 

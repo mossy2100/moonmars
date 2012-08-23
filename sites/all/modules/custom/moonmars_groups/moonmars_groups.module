@@ -45,9 +45,6 @@ function moonmars_groups_form_alter(&$form, &$form_state, $form_id) {
 
     // Hide the score:
     unset($form['field_score']);
-
-//    dbg($form);
-
   }
 }
 

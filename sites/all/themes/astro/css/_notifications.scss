@@ -1,0 +1,127 @@
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Notifications preferences form
+
+form#moonmars-notifications-form {
+  @include blank-form-style;
+
+  #notifications-form-buttons {
+    margin-bottom: 20px;
+  }
+
+  fieldset {
+    .fieldset-wrapper {
+      @include grey-form-style;
+      margin-bottom: 0;
+    }
+
+    legend {
+      top: -5px;
+    }
+
+    .form-type-radios {
+      margin: 15px 0 5px;
+
+      .form-radios {
+        .form-type-radio {
+          display: inline;
+          margin-right: 10px;
+
+          input.form-radio {
+            margin-right: 2px;
+          }
+        }
+      }
+    }
+
+    .form-item-site-which-members,
+    .form-item-site-which-groups,
+    .form-item-site-which-items,
+    .form-item-site-which-comments,
+    .form-item-page-which-items,
+    .form-item-page-which-comments,
+    .form-item-followee-which-items,
+    .form-item-followee-which-comments,
+    .form-item-group-which-items,
+    .form-item-group-which-comments {
+      margin: 0 0 0 20px;
+    }
+  }
+
+  #edit-group {
+    margin-bottom: 0;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Notifications views
+
+.region-content {
+  .view-notifications {
+    table {
+
+      thead {
+        display: none;
+      }
+
+      tr {
+        td {
+          border: 0;
+
+          &.views-field-created {
+            padding: 5px 5px 5px 0;
+            color: $grey3;
+          }
+
+          &.views-field-field-notification-summary {
+            padding: 5px 0;
+          }
+
+          p {
+            margin: 0;
+          }
+
+          .notification-summary {
+            color: $grey3;
+          }
+
+          .notification-teaser {
+            margin-top: 3px;
+          }
+        }
+      }
+    }
+  }
+}
+
+.region-sidebar-first {
+  .view-notifications {
+
+    .views-row {
+      margin: 10px 0;
+    }
+
+    .views-field-created {
+      font-size: 11px;
+      color: $grey3;
+    }
+
+    .view-all-notifications {
+      text-align: right;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    .notification-summary {
+      font-size: 11px;
+      color: $grey3;
+    }
+
+    .notification-teaser {
+      margin-top: 3px;
+      font-size: 11px;
+    }
+  }
+}

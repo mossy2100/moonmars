@@ -59,7 +59,7 @@ class User extends EntityBase {
       // Assume active:
       $user_obj->entity->status = 1;
 
-      // Without a uid the user is valid:
+      // Without a uid the user is assumed valid until proven otherwise:
       $user_obj->valid = TRUE;
     }
     elseif (is_uint($user_param)) {
@@ -77,6 +77,22 @@ class User extends EntityBase {
         // Set the uid:
         $user_obj->entity->uid = $uid;
       }
+    }
+    elseif (is_string($user_param)) {
+      // name provided.
+      $name = $user_param;
+
+      // Create new user:
+      $user_obj = new $class;
+
+      // Assume active:
+      $user_obj->entity->status = 1;
+
+      // Remember the name:
+      $user_obj->entity->name = $name;
+
+      // Without a uid the user is assumed valid until proven otherwise:
+      $user_obj->valid = TRUE;
     }
     elseif (is_object($user_param)) {
       // Drupal user object provided.
@@ -180,6 +196,9 @@ class User extends EntityBase {
   public function uid($uid = NULL) {
     if ($uid === NULL) {
       // Get the uid:
+      if (!isset($this->entity->uid) || !$this->entity->uid) {
+        $this->load();
+      }
       return isset($this->entity->uid) ? $this->entity->uid : NULL;
     }
     else {
