@@ -413,7 +413,7 @@ function editCommentReturn(data, textStatus, jqXHR) {
 
     // Update comment body contents:
     var commentBody = commentArticle.find('.field-name-comment-body');
-    commentBody.find('.field-item').html(data.filtered_text);
+    commentBody.find('.field-item').html(data.html);
 
     // Remove uploading icon and disabled state from textarea, and update contents:
     commentArticle.find('textarea').removeAttr('disabled').removeClass('uploading').val(data.text);

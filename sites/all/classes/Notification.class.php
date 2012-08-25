@@ -69,7 +69,12 @@ class Notification extends MoonMarsNode {
    * @param array $recipients
    * @param array $members
    */
-  public static function collectRecipients($category, $thing_type, $thing, array $members, array &$recipients) {
+  public static function collectRecipients($category, $thing_type, $thing, $members, array &$recipients) {
+    // In case we were just passed one member, convert to an array:
+    if (!is_array($members)) {
+      $members = array($members);
+    }
+
     foreach ($members as $member) {
       $which_nxns = $member->whichNotifications($category, $thing_type);
 
@@ -90,31 +95,24 @@ class Notification extends MoonMarsNode {
                 break;
 
               case 'event':
-                // Applies to new groups.
-                // Notify the member if the group type is event.
-                if ($thing->groupType() == 'event') {
-                  $recipients[$member->uid()] = $member;
-                }
-                break;
-
               case 'project':
                 // Applies to new groups.
-                // Notify the member if the group type is project.
-                if ($thing->groupType() == 'project') {
+                // Notify the member if the group type matches.
+                if ($thing->groupType() == $which_nxn) {
                   $recipients[$member->uid()] = $member;
                 }
                 break;
 
               case 'mention':
                 // Applies to items and comments.
-                if ($thing->mentions($member)) {
+                if ($thing->textScan()->mentions($member)) {
                   $recipients[$member->uid()] = $member;
                 }
                 break;
 
               case 'topic':
                 // Applies to new groups, items and comments.
-        //        if ($thing->matchesMemberTopics($member)) {
+                //        if ($thing->matchesMemberTopics($member)) {
                 //          $recipients[$member->uid()] = $member;
                 //        }
                 break;
@@ -130,7 +128,7 @@ class Notification extends MoonMarsNode {
               case 'comment':
                 // Applies to new comments.
                 // Notify the member if the comment is on an item they've commented on:
-                if ($thing->item()->hasCommenter($member)) {
+                if ($member->commentedOn($thing->item())) {
                   $recipients[$member->uid()] = $member;
                 }
                 break;

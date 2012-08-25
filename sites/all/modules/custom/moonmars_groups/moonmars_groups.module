@@ -8,7 +8,7 @@ const MOONMARS_GROUP_SEARCH_PAGE_SIZE = 20;
 /**
  * The nid of the default group, which contains a member's default group notification preferences.
  */
-const MOONMARS_DEFAULT_GROUP_NID = 5375;
+//const MOONMARS_DEFAULT_GROUP_NID = 5375;
 
 /**
  * Implements hook_menu().

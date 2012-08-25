@@ -11,7 +11,7 @@ abstract class EntityBase {
    *
    * @var array
    */
-  private static $cache;
+  protected static $cache;
 
   /**
    * The Drupal entity object (node, user, etc.)

@@ -31,8 +31,16 @@ function astro_alpha_preprocess_comment(&$vars) {
   $vars['attributes_array']['id'] = "comment-article-$cid";
 
   // Add links for urls, mentions and tags to the comment text:
-  $comment_text = html_entity_decode($vars['content']['comment_body'][0]['#markup']);
-  $vars['content']['comment_body'][0]['#markup'] = moonmars_text_filter($comment_text, TRUE);
+//  if (strpos($item_comment->text(), 'This '))
+//  dbg($vars['content']['comment_body'][0]['#markup']);
+//  dbg($item_comment->text());
+
+
+//  exit;
+
+//  $comment_text = html_entity_decode($vars['content']['comment_body'][0]['#markup']);
+//  $vars['content']['comment_body'][0]['#markup'] = moonmars_text_filter($comment_text, TRUE);
+  $vars['content']['comment_body'][0]['#markup'] = $item_comment->textScan()->html();
 
   // Get the current member:
   $current_member = Member::currentMember();
@@ -69,7 +77,7 @@ function astro_alpha_preprocess_comment(&$vars) {
 //    dbg($vars['content']['comment_body'][0]['#markup']);
     $vars['edit_comment_form'] = "
       <form class='comment-form edit-comment-form'>
-        <textarea id='edit-comment-$cid'>$comment_text</textarea>
+        <textarea id='edit-comment-$cid'>" . html_entity_decode($item_comment->text(), ENT_QUOTES) . "</textarea>
         <div class='comment-buttons'>
           <input data-nid='$nid' class='form-button cancel-comment-button' type='button' value='Cancel'>
           <input data-nid='$nid' class='form-button update-comment-button' type='button' value='Update'>

@@ -27,26 +27,26 @@ class MoonMarsRelation extends Relation {
     return NULL;
   }
 
-  /**
-   * Reset the alias for a relation.
-   */
-  public function resetAlias() {
-    switch ($this->relationType()) {
-      case 'has_member':
-        $group = $this->endpoint(0);
-        $member = $this->endpoint(1);
-        $alias = $member->alias() . '/email-preferences/' . (($group->nid() == MOONMARS_DEFAULT_GROUP_NID) ? 'groups' : $group->alias());
-        dpm($alias);
-        $this->alias($alias);
-        break;
-
-      case 'has_follower':
-        $followee = $this->endpoint(0);
-        $follower = $this->endpoint(1);
-        $alias = $follower->alias() . '/email-preferences/' . (($followee->uid() == MOONMARS_DEFAULT_MEMBER_UID) ? 'members' : $followee->alias());
-        $this->alias($alias);
-        break;
-    }
-  }
+//  /**
+//   * Reset the alias for a relation.
+//   */
+//  public function resetAlias() {
+//    switch ($this->relationType()) {
+//      case 'has_member':
+//        $group = $this->endpoint(0);
+//        $member = $this->endpoint(1);
+//        $alias = $member->alias() . '/email-preferences/' . (($group->nid() == MOONMARS_DEFAULT_GROUP_NID) ? 'groups' : $group->alias());
+//        dpm($alias);
+//        $this->alias($alias);
+//        break;
+//
+//      case 'has_follower':
+//        $followee = $this->endpoint(0);
+//        $follower = $this->endpoint(1);
+//        $alias = $follower->alias() . '/email-preferences/' . (($followee->uid() == MOONMARS_DEFAULT_MEMBER_UID) ? 'members' : $followee->alias());
+//        $this->alias($alias);
+//        break;
+//    }
+//  }
 
 }

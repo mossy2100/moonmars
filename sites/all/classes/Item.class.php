@@ -61,6 +61,11 @@ class Item extends MoonMarsNode {
    * @param null|string $text
    */
   public function text($text = NULL) {
+    if ($text) {
+      // Convert hearts to HTML entities:
+      $text = moonmars_text_fix_hearts($text);
+    }
+
     return $this->field('field_item_text', LANGUAGE_NONE, 0, 'value', $text);
   }
 
@@ -72,69 +77,9 @@ class Item extends MoonMarsNode {
   public function textScan() {
     // If we haven't scanned the text yet, do it now.
     if (!isset($this->textScan)) {
-      $this->textScan = moonmars_text_scan($this->text());
+      $this->textScan = new TextScan($this->text());
     }
     return $this->textScan;
-  }
-
-  /**
-   * Get the item HTML, with or without emoticons.
-   *
-   * @param null|string $text
-   */
-  public function html($emoticons = TRUE) {
-    $text_scan = $this->textScan();
-    $html = $text_scan['html'];
-    if ($emoticons) {
-      $html = moonmars_text_add_emoticons($html);
-    }
-    return $html;
-  }
-
-  /**
-   * Get the members mentioned in the item text.
-   *
-   * @return array
-   */
-  public function mentionedMembers() {
-    $text_scan = $this->textScan();
-    return $text_scan['members'];
-  }
-
-  /**
-   * Checks if an item mentions a member.
-   *
-   * @param Member $member
-   * @return bool
-   */
-  public function mentions(Member $member) {
-    $members = $this->mentionedMembers();
-    foreach ($members as $mentioned_member) {
-      if (Member::equals($mentioned_member, $member)) {
-        return TRUE;
-      }
-    }
-    return FALSE;
-  }
-
-  /**
-   * Get the groups mentioned in the item text.
-   *
-   * @return array
-   */
-  public function mentionedGroups() {
-    $text_scan = $this->textScan();
-    return $text_scan['groups'];
-  }
-
-  /**
-   * Get the tags mentioned in the item text.
-   *
-   * @return array
-   */
-  public function mentionedTags() {
-    $text_scan = $this->textScan();
-    return $text_scan['tags'];
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -205,6 +150,27 @@ class Item extends MoonMarsNode {
     }
 
     return $message;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Comments
+
+  /**
+   * Get the members who commented on this item.
+   *
+   * @return array
+   */
+  public function commenters() {
+    $q = db_select('comment', 'c')
+      ->fields('c', array('uid'))
+      ->distinct()
+      ->condition('nid', $this->nid());
+    $rs = $q->execute();
+    $members = array();
+    foreach ($rs as $rec) {
+      $members[$rec->uid] = Member::create($rec->uid);
+    }
+    return $members;
   }
 
 }

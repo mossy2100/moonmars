@@ -171,6 +171,13 @@ class Comment extends EntityBase {
     return $this;
   }
 
+  /**
+   * OO wrapper for comment_submit.
+   */
+  public function submit() {
+    comment_submit($this->entity);
+  }
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Get and set.
 

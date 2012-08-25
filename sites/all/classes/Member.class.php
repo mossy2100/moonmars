@@ -71,79 +71,6 @@ class Member extends User {
   }
 
   /**
-   * Get the location as an array.
-   *
-   * @return array
-   */
-  public function location() {
-    $location = array(
-      'city'          => $this->field('field_user_location', LANGUAGE_NONE, 0, 'city'),
-      'province_code' => $this->field('field_user_location', LANGUAGE_NONE, 0, 'province'),
-    );
-
-    // Get the country code. Note, this will be lower-case, because that's what the location module uses:
-    $country_code = $this->field('field_user_location', LANGUAGE_NONE, 0, 'country');
-
-    // Get the upper-case country code because that's what everyone else in the whole world uses:
-    $location['country_code'] = strtoupper($country_code);
-
-    // Default names:
-    $location['province_name'] = '';
-    $location['country_name'] = '';
-
-    if ($country_code) {
-      // If we have a province code, get the full province name:
-      if ($location['province_code']) {
-        $provinces = location_get_provinces($country_code);
-        $location['province_name'] = $provinces[$location['province_code']];
-      }
-
-      // Get the full country name:
-      require_once DRUPAL_ROOT . '/includes/locale.inc';
-      $countries = country_get_list();
-      $location['country_name'] = isset($countries[$location['country_code']]) ? $countries[$location['country_code']] : '';
-    }
-
-    return $location;
-  }
-
-  /**
-   * Get the location as a string.
-   *
-   * @param bool $full
-   *   If TRUE, use province and country names instead of codes.
-   * @return array
-   */
-  public function locationStr($full = FALSE, $map_link = FALSE) {
-    $location = $this->location();
-
-    if ($full) {
-      $location_str = implode(', ', array_filter(array(
-                                                      $location['city'],
-                                                      $location['province_name'],
-                                                      $location['country_name']
-                                                 )));
-    }
-    else {
-      $location_str = implode(', ', array_filter(array(
-                                                      $location['city'],
-                                                      $location['province_code'],
-                                                      $location['country_code']
-                                                 )));
-    }
-
-    if ($map_link) {
-      return l($location_str, 'http://maps.google.com', array(
-                                                             'attributes'  => array('target' => '_blank'),
-                                                             'query'       => array('q' => $location_str)
-                                                        ));
-    }
-    else {
-      return $location_str;
-    }
-  }
-
-  /**
    * Calculate the member's age from their date of birth.
    *
    * @return int
@@ -197,66 +124,6 @@ class Member extends User {
                                           $gender,
                                           $age
                                      )));
-  }
-
-  /**
-   * Create a planet-flag icon for this member.
-   *
-   * @return string
-   */
-  public function planetFlagIcon() {
-    require_once DRUPAL_ROOT . '/modules/system/image.gd.inc';
-
-    $moon_or_mars = $this->field('field_moon_or_mars');
-    $location = $this->location();
-    $country_code = $location['country_code'] ? strtolower($location['country_code']) : NULL;
-    $filename = implode('-', array_filter(array($moon_or_mars, $country_code))) . '.png';
-    $files_dir = drupal_realpath("public://");
-
-    // Check if this planet-flag icon already exists:
-    $path = "$files_dir/planet-flag-icons/$filename";
-    if (!file_exists($path)) {
-
-      // Load the 40x40 planet icon:
-      $planet = new stdClass;
-      $planet->source = "$files_dir/styles/icon-40x40/public/avatars/870x870/$moon_or_mars-870x870.jpg";
-      $planet->info['extension'] = 'jpg';
-      image_gd_load($planet);
-
-      // Paste the flag on it:
-      if ($country_code) {
-
-        // Get the path to the flag icon and check if it exists:
-        $flag_path = DRUPAL_ROOT . '/' . drupal_get_path('theme', 'astro') . "/images/flag-icons/$country_code.png";
-        if (file_exists($flag_path)) {
-
-          // Load the flag icon:
-          $flag = new stdClass;
-          $flag->source = $flag_path;
-          $flag->info['extension'] = 'png';
-          image_gd_load($flag);
-
-          // Get width and height of the flag:
-          $info = getimagesize($flag_path);
-
-          // Paste the flag onto the planet:
-          imagecopy($planet->resource, $flag->resource, 7, 7, 0, 0, $info[0], $info[1]);
-        }
-      }
-
-      // Save the planet-flag icon.
-      image_gd_save($planet, $path);
-    }
-
-    if ($path) {
-      return array(
-        'path' => $path,
-        'url' => str_replace(DRUPAL_ROOT, '', $path),
-        'uri' => str_replace($files_dir, 'public:/', $path),
-      );
-    }
-
-    return FALSE;
   }
 
   /**
@@ -403,41 +270,6 @@ class Member extends User {
       'title' => 'Visit ' . $this->name() . "'s profile."
     );
     return l($this->name(), $this->alias(), array('attributes' => $attr));
-  }
-
-  /**
-   * Renders a Moon or Mars or Both icon, with a flag on top.
-   *
-   * @return string
-   */
-  public function moonOrMarsWithFlag() {
-    $moon_or_mars = $this->field('field_moon_or_mars');
-    $country = $this->field('field_user_location', LANGUAGE_NONE, 0, 'country');
-
-    // If the user doesn't have a picture, use a default icon:
-    $icon = $this->field('field_moon_or_mars');
-    if (!$icon) {
-      $icon = 'both';
-    }
-    $image = array(
-      'style_name' => 'icon-40x40',
-      'path'       => "avatars/870x870/$icon-870x870.jpg",
-      'alt'        => $this->entity->name,
-      'attributes' => array('class' => array('avatar-icon')),
-    );
-
-    // Remember the HTML in the property so we don't have to theme the image again:
-    $html = theme('image_style', $image);
-
-    // See if the flag exists for the member's country:
-    if ($country) {
-      $path = "/" . drupal_get_path('theme', 'astro') . "/images/flag-icons/$country.png";
-      if (file_exists(DRUPAL_ROOT . $path)) {
-        $html .= "<img id='profile-flag' src='$path'>";
-      }
-    }
-
-    return $html;
   }
 
   /**
@@ -607,6 +439,184 @@ class Member extends User {
    */
   public function commentBorderStyle() {
     return "style='border-color: " . $this->commentBorderColor()->hex() . ";'";
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Location/geography
+
+  /**
+   * Get the location as an array.
+   *
+   * @return array
+   */
+  public function location() {
+    $location = array(
+      'city'          => $this->field('field_user_location', LANGUAGE_NONE, 0, 'city'),
+      'province_code' => $this->field('field_user_location', LANGUAGE_NONE, 0, 'province'),
+    );
+
+    // Get the country code. Note, this will be lower-case, because that's what the location module uses:
+    $country_code = $this->field('field_user_location', LANGUAGE_NONE, 0, 'country');
+
+    // Get the upper-case country code because that's what everyone else in the whole world uses:
+    $location['country_code'] = strtoupper($country_code);
+
+    // Default names:
+    $location['province_name'] = '';
+    $location['country_name'] = '';
+
+    if ($country_code) {
+      // If we have a province code, get the full province name:
+      if ($location['province_code']) {
+        $provinces = location_get_provinces($country_code);
+        $location['province_name'] = $provinces[$location['province_code']];
+      }
+
+      // Get the full country name:
+      require_once DRUPAL_ROOT . '/includes/locale.inc';
+      $countries = country_get_list();
+      $location['country_name'] = isset($countries[$location['country_code']]) ? $countries[$location['country_code']] : '';
+    }
+
+    return $location;
+  }
+
+  /**
+   * Get the location as a string.
+   *
+   * @param bool $full
+   *   If TRUE, use province and country names instead of codes.
+   * @return array
+   */
+  public function locationStr($full = FALSE, $map_link = FALSE) {
+    $location = $this->location();
+
+    if ($full) {
+      $location_str = implode(', ', array_filter(array(
+                                                      $location['city'],
+                                                      $location['province_name'],
+                                                      $location['country_name']
+                                                 )));
+    }
+    else {
+      $location_str = implode(', ', array_filter(array(
+                                                      $location['city'],
+                                                      $location['province_code'],
+                                                      $location['country_code']
+                                                 )));
+    }
+
+    if ($map_link) {
+      return l($location_str, 'http://maps.google.com', array(
+                                                             'attributes'  => array('target' => '_blank'),
+                                                             'query'       => array('q' => $location_str)
+                                                        ));
+    }
+    else {
+      return $location_str;
+    }
+  }
+
+  /**
+   * Get the member's country code.
+   *
+   * @return string
+   */
+  public function countryCode() {
+    return strtoupper($this->field('field_user_location', LANGUAGE_NONE, 0, 'country'));
+  }
+
+  /**
+   * Renders a Moon or Mars or Both icon, with a flag on top.
+   *
+   * @return string
+   */
+  public function moonOrMarsWithFlag() {
+    // If the user doesn't have a picture, use a default icon:
+    $icon = $this->field('field_moon_or_mars');
+    if (!$icon) {
+      $icon = 'both';
+    }
+    $image = array(
+      'style_name' => 'icon-40x40',
+      'path'       => "avatars/870x870/$icon-870x870.jpg",
+      'alt'        => $this->entity->name,
+      'attributes' => array('class' => array('avatar-icon')),
+    );
+
+    // Remember the HTML in the property so we don't have to theme the image again:
+    $html = theme('image_style', $image);
+
+    // See if the flag exists for the member's country:
+    $country = $this->field('field_user_location', LANGUAGE_NONE, 0, 'country');
+    if ($country) {
+      $path = "/" . drupal_get_path('theme', 'astro') . "/images/flag-icons/$country.png";
+      if (file_exists(DRUPAL_ROOT . $path)) {
+        $html .= "<img id='profile-flag' src='$path'>";
+      }
+    }
+
+    return $html;
+  }
+
+  /**
+   * Create a planet-flag icon for this member.
+   *
+   * @return string
+   */
+  public function planetFlagIcon() {
+    require_once DRUPAL_ROOT . '/modules/system/image.gd.inc';
+
+    $moon_or_mars = $this->field('field_moon_or_mars');
+    $location = $this->location();
+    $country_code = $location['country_code'] ? strtolower($location['country_code']) : NULL;
+    $filename = implode('-', array_filter(array($moon_or_mars, $country_code))) . '.png';
+    $files_dir = drupal_realpath("public://");
+
+    // Check if this planet-flag icon already exists:
+    $path = "$files_dir/planet-flag-icons/$filename";
+    if (!file_exists($path)) {
+
+      // Load the 40x40 planet icon:
+      $planet = new stdClass;
+      $planet->source = "$files_dir/styles/icon-40x40/public/avatars/870x870/$moon_or_mars-870x870.jpg";
+      $planet->info['extension'] = 'jpg';
+      image_gd_load($planet);
+
+      // Paste the flag on it:
+      if ($country_code) {
+
+        // Get the path to the flag icon and check if it exists:
+        $flag_path = DRUPAL_ROOT . '/' . drupal_get_path('theme', 'astro') . "/images/flag-icons/$country_code.png";
+        if (file_exists($flag_path)) {
+
+          // Load the flag icon:
+          $flag = new stdClass;
+          $flag->source = $flag_path;
+          $flag->info['extension'] = 'png';
+          image_gd_load($flag);
+
+          // Get width and height of the flag:
+          $info = getimagesize($flag_path);
+
+          // Paste the flag onto the planet:
+          imagecopy($planet->resource, $flag->resource, 7, 7, 0, 0, $info[0], $info[1]);
+        }
+      }
+
+      // Save the planet-flag icon.
+      image_gd_save($planet, $path);
+    }
+
+    if ($path) {
+      return array(
+        'path' => $path,
+        'url' => str_replace(DRUPAL_ROOT, '', $path),
+        'uri' => str_replace($files_dir, 'public:/', $path),
+      );
+    }
+
+    return FALSE;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -875,13 +885,14 @@ class Member extends User {
    * Send a notification message to a member.
    *
    * @param string $summary
-   * @param string $text
+   * @param EntityBase $thing
+   *   The thing (member, group, item or comment) that the notification is about.
    * @param Member $actor
    * @param Channel $channel
    * @param Item $item
    * @param ItemComment $comment
    */
-  public function notify($summary, $text = NULL, Member $actor = NULL, Channel $channel = NULL, Item $item = NULL, ItemComment $comment = NULL) {
+  public function notify($summary, $thing = NULL, Member $actor = NULL) {
     $subject = strip_tags($summary);
 
     // Create the notification node:
@@ -890,7 +901,7 @@ class Member extends User {
         $summary
       </p>
       <p class='notification-teaser'>
-       " . moonmars_text_trim($text, 100) . "
+       " . moonmars_text_trim($thing->text(), 100) . "
       </p>
     ";
     $notification = Notification::create();
@@ -899,40 +910,14 @@ class Member extends User {
     $notification->field('field_notification_summary', LANGUAGE_NONE, 0, 'value', $notification_summary);
     $notification->save();
 
-//    // Create relationship between notification and actor:
-//    if ($actor) {
-//      Relation::createNewBinary('about_member', 'node', $notification->nid(), 'user', $actor->uid());
-//    }
-//
-//    // Create relationship between notification and channel:
-//    if ($channel) {
-//      Relation::createNewBinary('about_channel', 'node', $notification->nid(), 'node', $channel->nid());
-//    }
-//
-//    // Create relationship between notification and item:
-//    if ($item) {
-//      Relation::createNewBinary('about_item', 'node', $notification->nid(), 'node', $item->nid());
-//    }
-//
-//    // Create relationship between notification and comment:
-//    if ($comment) {
-//      Relation::createNewBinary('about_comment', 'node', $notification->nid(), 'comment', $comment->cid());
-//    }
+    $text = $thing->textScan()->html();
 
-    // If the member wants an email, send it:
-    $send_email = $this->wantsEmailNotification($channel);
-    if ($send_email) {
-
-      // Don't convert emoticons:
-      $text = moonmars_text_filter($text, FALSE);
-
-      $params = array(
-        'subject' => "[moonmars.com] $subject",
-        'summary' => "<p style='margin: 0 0 10px; color: #919191;'>$summary</p>",
-        'text'    => "<p style='margin: 0;'>$text</p>",
-      );
-      drupal_mail('moonmars_notifications', 'notification', $this->mail(), language_default(), $params);
-    }
+    $params = array(
+      'subject' => "[moonmars.com] $subject",
+      'summary' => "<p style='margin: 0 0 10px; color: #919191;'>$summary</p>",
+      'text'    => "<p style='margin: 0;'>$text</p>",
+    );
+    drupal_mail('moonmars_notifications', 'notification', $this->mail(), language_default(), $params);
   }
 
   /**
@@ -954,9 +939,11 @@ class Member extends User {
     // If they chose to be notified about only some of the new things, which ones?
     $which_field = 'field_' . $category . '_which_' . $thing . '_nxn';
     $values = $this->prop($which_field);
-    foreach ($values[LANGUAGE_NONE] as $value) {
-      if ($value['value']) {
-        $result['which'][] = $value['value'];
+    if ($values) {
+      foreach ($values[LANGUAGE_NONE] as $value) {
+        if ($value['value']) {
+          $result['which'][] = $value['value'];
+        }
       }
     }
 
@@ -1501,6 +1488,51 @@ class Member extends User {
 
       return $result;
     }
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Comments
+
+  /**
+   * Checks if a member commented on an item.
+   *
+   * @param Item $item
+   * @return bool
+   */
+  public function commentedOn(Item $item) {
+    foreach ($item->commenters() as $commenter) {
+      if (Member::equals($commenter, $this)) {
+        return TRUE;
+      }
+    }
+    return FALSE;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Search
+
+  /**
+   * Look for a member with the specified name. Avoid doing a full user load.
+   *
+   * @static
+   * @param $name
+   * @return Member|bool
+   */
+  public static function searchByName($name) {
+    // Check in the cache:
+    foreach (EntityBase::$cache['user'] as $uid => $member) {
+      if ($member->name() == $name) {
+        return $member;
+      }
+    }
+
+    // Check in the database:
+    $q = db_select('users', 'u')
+      ->fields('u', array('uid'))
+      ->condition('name', $name);
+    $rs = $q->execute();
+    $rec = $rs->fetch();
+    return $rec ? Member::create($rec->uid) : FALSE;
   }
 
 }

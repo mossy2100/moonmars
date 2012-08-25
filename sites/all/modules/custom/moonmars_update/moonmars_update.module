@@ -15,11 +15,11 @@ function moonmars_update_menu() {
     'access callback'  => TRUE,
     'type'             => MENU_CALLBACK,
   );
-  $items['update/default-group-preferences'] = array(
-    'page callback'    => 'moonmars_update_default_group_preferences',
-    'access callback'  => TRUE,
-    'type'             => MENU_CALLBACK,
-  );
+//  $items['update/default-group-preferences'] = array(
+//    'page callback'    => 'moonmars_update_default_group_preferences',
+//    'access callback'  => TRUE,
+//    'type'             => MENU_CALLBACK,
+//  );
   $items['update/fix-aliases'] = array(
     'page callback'    => 'moonmars_update_fix_aliases',
     'access callback'  => TRUE,
@@ -97,13 +97,13 @@ function moonmars_update_named_colors() {
   dbg($colors2);
 }
 
-/**
- * Create a relationship between user 1 and node 0 (phantom group).
- */
-function moonmars_update_default_group_preferences() {
-  $rel = Relation::createNewBinary('has_member', 'node', MOONMARS_DEFAULT_GROUP_NID, 'user', 1);
-  dbg($rel);
-}
+///**
+// * Create a relationship between user 1 and node 0 (phantom group).
+// */
+//function moonmars_update_default_group_preferences() {
+//  $rel = Relation::createNewBinary('has_member', 'node', MOONMARS_DEFAULT_GROUP_NID, 'user', 1);
+//  dbg($rel);
+//}
 
 /**
  * Fix URL aliases.

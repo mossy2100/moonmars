@@ -6,6 +6,13 @@
 class ItemComment extends Comment {
 
   /**
+   * Result of text scan.
+   *
+   * @var string
+   */
+  protected $textScan;
+
+  /**
    * Get the item that the comment was about.
    *
    * @return Item
@@ -25,15 +32,6 @@ class ItemComment extends Comment {
   }
 
   /**
-   * Get/set the comment text.
-   *
-   * @param null|string $text
-   */
-  public function text($text = NULL) {
-    return $this->field('comment_body', LANGUAGE_NONE, 0, 'value', $text);
-  }
-
-  /**
    * Get a link to the comment, which is really a link to the item with the comment highlighted.
    *
    * @param null|string $text
@@ -42,6 +40,33 @@ class ItemComment extends Comment {
     $label = ($label === NULL) ? $this->subject() : $label;
     $cid = $this->cid();
     return l($label, $this->item()->alias(), array('query' => array('cid' => $cid), 'fragment' => "comment-$cid"));
+  }
+
+  /**
+   * Get/set the comment text.
+   *
+   * @param null|string $text
+   */
+  public function text($text = NULL) {
+    if ($text) {
+      // Special handling for heart emoticons:
+      $text = moonmars_text_fix_hearts($text);
+    }
+
+    return $this->field('comment_body', LANGUAGE_NONE, 0, 'value', $text);
+  }
+
+  /**
+   * Get the text scan.
+   *
+   * @param array
+   */
+  public function textScan() {
+    // If we haven't scanned the text yet, do it now.
+    if (!isset($this->textScan)) {
+      $this->textScan = new TextScan($this->text());
+    }
+    return $this->textScan;
   }
 
 }

@@ -327,124 +327,50 @@ class Channel extends MoonMarsNode {
 
     $recipients = array();
 
-    // Let's do these in the same order as the notifications form.
+    // Do these in the same order as the notifications form.
     // @see members_notifications_form().
 
-    // What's the most efficient way to do this?
-
-    // Site-wide settings:
+    // Site-wide preferences.
     // Get all members who want to be notified about at least some of the new items posted on the site.
-    $members = Notification::whoWants('site', 'item');
-    foreach ($members as $member) {
-      $which_nxns = $member->whichNotifications('site', 'item');
+    Notification::collectRecipients('site', 'item', $item, Notification::whoWants('site', 'item'), $recipients);
 
-      switch ($which_nxns['new']) {
-        case 'all':
-          $recipients[$member->uid()] = $member;
-          break;
-
-        case 'some':
-          // mention:
-          if (in_array('mention', $which_nxns['which']) && $item->mentions($member)) {
-            $recipients[$member->uid()] = $member;
-          }
-
-          // topic: (@todo)
-  //        if (isset($which_items['topic']) && $item->matchesMemberTopics($member)) {
-  //          $recipients[$member->uid()] = $member;
-  //        }
-  //      }
-
-          break;
-      }
-    }
-
-    // My channel settings:
+    // Channel preferences.
     // If this is a member's channel, check if they want to be notified.
     if ($parent_entity instanceof Member) {
-      $member = $parent_entity;
-      $which_nxns = $member->wantsNotifications('channel', 'item');
-
-      switch ($which_nxns['new']) {
-        case 'all':
-          $recipients[$member->uid()] = $member;
-          break;
-
-        case 'some':
-          // mention:
-          if (in_array('mention', $which_nxns['which']) && $item->mentions($member)) {
-            $recipients[$member->uid()] = $member;
-          }
-          break;
-      }
+      Notification::collectRecipients('channel', 'item', $item, $parent_entity, $recipients);
     }
 
-    // Followees:
+    // Followee preferences.
     // Get the followers of the poster and notify those who want to be notified.
-    $members = $item_poster->followers();
-    foreach ($members as $member) {
-      $which_nxns = $member->whichNotifications('followee', 'item');
+    Notification::collectRecipients('followee', 'item', $item, $item_poster->followers(), $recipients);
 
-      switch ($which_nxns['new']) {
-        case 'all':
-          $recipients[$member->uid()] = $member;
-          break;
-
-        case 'some':
-          // mention:
-          if (in_array('mention', $which_nxns['which']) && $item->mentions($member)) {
-            $recipients[$member->uid()] = $member;
-          }
-          break;
-      }
-    }
-
-    // Groups:
-    // If this is a group channel, get the members of the group with group_new_items in (all, some) and check each to see if they want to be notified.
+    // Group preferences.
+    // If this is a group channel, get the members of the group and notify those who want to be notified.
     if ($parent_entity instanceof Group) {
-      $group = $parent_entity;
-      $members = $group->members();
-      foreach ($members as $member) {
-        $which_nxns = $member->whichNotifications('group', 'item');
-
-        switch ($which_nxns['new']) {
-          case 'all':
-            $recipients[$member->uid()] = $member;
-            break;
-
-          case 'some':
-            // mention:
-            if (in_array('mention', $which_nxns['which']) && $item->mentions($member)) {
-              $recipients[$member->uid()] = $member;
-            }
-            break;
-        }
-      }
-
+      Notification::collectRecipients('group', 'item', $item, $parent_entity->members(), $recipients);
     }
 
-
-    // 1. If the item is being posted in a member's channel, notify that member.
-    if ($parent_entity instanceof Member) {
-      $recipients[$parent_entity->uid()] = $parent_entity;
-    }
-
-    // 2. If an admin edited a member's item, tell them.
-    $recipients[$item_poster->uid()] = $item_poster;
-
-    // 3. Everyone subscribed to this channel:
-    $subscribers = $channel->subscribers();
-    foreach ($subscribers as $subscriber) {
-      $recipients[$subscriber->uid()] = $subscriber;
-    }
-
-    // 4. Everyone mentioned in the item text.
-    $item_mentions = moonmars_text_referenced_members($item->text());
-    foreach ($item_mentions as $member) {
-      $recipients[$member->uid()] = $member;
-    }
-
-    // 5. Everyone following a hash tag that appears in the item text. @todo
+//    // 1. If the item is being posted in a member's channel, notify that member.
+//    if ($parent_entity instanceof Member) {
+//      $recipients[$parent_entity->uid()] = $parent_entity;
+//    }
+//
+//    // 2. If an admin edited a member's item, tell them.
+//    $recipients[$item_poster->uid()] = $item_poster;
+//
+//    // 3. Everyone subscribed to this channel:
+//    $subscribers = $channel->subscribers();
+//    foreach ($subscribers as $subscriber) {
+//      $recipients[$subscriber->uid()] = $subscriber;
+//    }
+//
+//    // 4. Everyone mentioned in the item text.
+//    $item_mentions = moonmars_text_referenced_members($item->text());
+//    foreach ($item_mentions as $member) {
+//      $recipients[$member->uid()] = $member;
+//    }
+//
+//    // 5. Everyone following a hash tag that appears in the item text. @todo
 
     /////////////////////////////////////////////////////////////////////////////
     // Create notifications.
@@ -532,36 +458,59 @@ class Channel extends MoonMarsNode {
 
     $recipients = array();
 
-    // 1. If the comment is being posted in a member's channel, notify that member.
+    // Do these in the same order as the notifications form.
+    // @see members_notifications_form().
+
+    // Site-wide preferences.
+    // Get all members who want to be notified about at least some of the new comments posted on the site.
+    Notification::collectRecipients('site', 'comment', $comment, Notification::whoWants('site', 'comment'), $recipients);
+
+    // Channel preferences.
+    // If this is a member's channel, check if they want to be notified about new comments.
     if ($parent_entity instanceof Member) {
-      $recipients[$parent_entity->uid()] = $parent_entity;
+      Notification::collectRecipients('channel', 'comment', $comment, $parent_entity, $recipients);
     }
 
-    // 2. If an admin edited a member's comment, tell them.
-    $recipients[$comment_poster->uid()] = $comment_poster;
+    // Followee preferences.
+    // Get the followers of the poster and notify those who want to be notified about new comments.
+    Notification::collectRecipients('followee', 'comment', $comment, $comment_poster->followers(), $recipients);
 
-    // 3. Tell the original poster of the item:
-    $recipients[$item_poster->uid()] = $item_poster;
-
-    // 3. Everyone subscribed to this channel:
-    $subscribers = $channel->subscribers();
-    foreach ($subscribers as $subscriber) {
-      $recipients[$subscriber->uid()] = $subscriber;
+    // Group preferences.
+    // If this is a group channel, get the members of the group and notify those who want to be notified about new comments.
+    if ($parent_entity instanceof Group) {
+      Notification::collectRecipients('group', 'comment', $comment, $parent_entity->members(), $recipients);
     }
 
-    // 4. Everyone mentioned in the comment text.
-    $comment_mentions = moonmars_text_referenced_members($comment->text());
-    foreach ($comment_mentions as $member) {
-      $recipients[$member->uid()] = $member;
-    }
-
-    // 5. Everyone mentioned in the item text.
-    $item_mentions = moonmars_text_referenced_members($item->text());
-    foreach ($item_mentions as $member) {
-      $recipients[$member->uid()] = $member;
-    }
-
-    // 5. Everyone following a hash tag that appears in the item text. @todo
+//    // 1. If the comment is being posted in a member's channel, notify that member.
+//    if ($parent_entity instanceof Member) {
+//      $recipients[$parent_entity->uid()] = $parent_entity;
+//    }
+//
+//    // 2. If an admin edited a member's comment, tell them.
+//    $recipients[$comment_poster->uid()] = $comment_poster;
+//
+//    // 3. Tell the original poster of the item:
+//    $recipients[$item_poster->uid()] = $item_poster;
+//
+//    // 3. Everyone subscribed to this channel:
+//    $subscribers = $channel->subscribers();
+//    foreach ($subscribers as $subscriber) {
+//      $recipients[$subscriber->uid()] = $subscriber;
+//    }
+//
+//    // 4. Everyone mentioned in the comment text.
+//    $comment_mentions = moonmars_text_referenced_members($comment->text());
+//    foreach ($comment_mentions as $member) {
+//      $recipients[$member->uid()] = $member;
+//    }
+//
+//    // 5. Everyone mentioned in the item text.
+//    $item_mentions = moonmars_text_referenced_members($item->text());
+//    foreach ($item_mentions as $member) {
+//      $recipients[$member->uid()] = $member;
+//    }
+//
+//    // 5. Everyone following a hash tag that appears in the item text. @todo
 
     /////////////////////////////////////////////////////////////////////////////
     // Create notifications.

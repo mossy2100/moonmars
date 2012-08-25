@@ -13,10 +13,10 @@ function moonmars_relations_menu() {
   return $items;
 }
 
-/**
- * Implements hook_form_alter().
- */
-function moonmars_relations_form_alter(&$form, &$form_state, $form_id) {
+///**
+// * Implements hook_form_alter().
+// */
+//function moonmars_relations_form_alter(&$form, &$form_state, $form_id) {
 //  dbg($form_id);
 //
 //
@@ -50,8 +50,8 @@ function moonmars_relations_form_alter(&$form, &$form_state, $form_id) {
 //      unset($form['field_is_admin']);
 //    }
 //  }
-
-}
+//
+//}
 
 /**
  * Look through the relations and see if any refer to a relation type that has been deleted.
@@ -100,34 +100,34 @@ function moonmars_relations_cleanup() {
   return '';
 }
 
-/**
- * Common code for inserting or updating relations.
- *
- * @param $entity
- * @param $entity_type
- */
-function moonmars_relations_entity_save($entity, $entity_type) {
-  // Update the relation's alias.
-  if ($entity_type == 'relation') {
+///**
+// * Common code for inserting or updating relations.
+// *
+// * @param $entity
+// * @param $entity_type
+// */
+//function moonmars_relations_entity_save($entity, $entity_type) {
+//  // Update the relation's alias.
+//  if ($entity_type == 'relation') {
+//
+//    // Get the MoonMarsRelation object:
+//    $relation = MoonMarsEntity::getEntity($entity_type, $entity);
+//
+//    // Reset the alias:
+//    $relation->resetAlias();
+//  }
+//}
 
-    // Get the MoonMarsRelation object:
-    $relation = MoonMarsEntity::getEntity($entity_type, $entity);
-
-    // Reset the alias:
-    $relation->resetAlias();
-  }
-}
-
-/**
- * Implements hook_entity_insert().
- */
-function moonmars_relations_entity_insert($entity, $entity_type) {
-  moonmars_relations_entity_save($entity, $entity_type);
-}
-
-/**
- * Implements hook_entity_update().
- */
-function moonmars_relations_entity_update($entity, $entity_type) {
-  moonmars_relations_entity_save($entity, $entity_type);
-}
+///**
+// * Implements hook_entity_insert().
+// */
+//function moonmars_relations_entity_insert($entity, $entity_type) {
+//  moonmars_relations_entity_save($entity, $entity_type);
+//}
+//
+///**
+// * Implements hook_entity_update().
+// */
+//function moonmars_relations_entity_update($entity, $entity_type) {
+//  moonmars_relations_entity_save($entity, $entity_type);
+//}

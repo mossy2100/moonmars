@@ -86,7 +86,7 @@ function astro_alpha_preprocess_node_item(&$vars) {
 
   // Convert item text to HTML:
   if (isset($vars['content']['field_item_text'])) {
-    $vars['content']['field_item_text'][0]['#markup'] = $item->html();
+    $vars['content']['field_item_text'][0]['#markup'] = $item->textScan()->html();
   }
 
   // Links for comment/edit/remove/delete item:
