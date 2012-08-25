@@ -279,16 +279,6 @@ class Channel extends MoonMarsNode {
   }
 
   /**
-   * Add a subscriber to an array for notification.
-   *
-   * @param array $subscribers
-   * @param Member $member
-   */
-  protected static function collectSubscriber(array &$subscribers, Member $member) {
-    $subscribers[$member->uid()] = $member;
-  }
-
-  /**
    * Post or edit an item, and notify the appropriate people.
    *
    * @param Item $item
@@ -332,7 +322,7 @@ class Channel extends MoonMarsNode {
 
     // Site-wide preferences.
     // Get all members who want to be notified about at least some of the new items posted on the site.
-    Notification::collectRecipients('site', 'item', $item, Notification::whoWants('site', 'item'), $recipients);
+    Notification::collectRecipients('site', 'item', $item, Notification::mayWantNxnNew('site', 'item'), $recipients);
 
     // Channel preferences.
     // If this is a member's channel, check if they want to be notified.
@@ -463,7 +453,8 @@ class Channel extends MoonMarsNode {
 
     // Site-wide preferences.
     // Get all members who want to be notified about at least some of the new comments posted on the site.
-    Notification::collectRecipients('site', 'comment', $comment, Notification::whoWants('site', 'comment'), $recipients);
+    $members = Notification::mayWantNxnNew('site', 'comment');
+    Notification::collectRecipients('site', 'comment', $comment, $members, $recipients);
 
     // Channel preferences.
     // If this is a member's channel, check if they want to be notified about new comments.
@@ -686,76 +677,6 @@ class Channel extends MoonMarsNode {
     }
 
     return $html;
-  }
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Subscriber methods.
-
-  /**
-   * Get the subscribers to the channel.
-   *
-   * @param int $offset
-   * @param int $limit
-   * @return array
-   */
-  public function subscribers($offset = NULL, $limit = NULL) {
-    // Get the channel's subscribers in reverse order of that in which they subscribed.
-    $q = db_select('view_channel_has_subscriber', 'v')
-      ->fields('v', array('subscriber_uid'))
-      ->condition('channel_nid', $this->nid())
-      ->orderBy('created', 'DESC');
-
-    // Set a limit if specified:
-    if ($offset !== NULL && $limit !== NULL) {
-      $q->range($offset, $limit);
-    }
-
-    $rs = $q->execute();
-    $subscribers = array();
-    foreach ($rs as $rec) {
-      $subscribers[] = Member::create($rec->subscriber_uid);
-    }
-
-    return $subscribers;
-  }
-
-  /**
-   * Get the number of subscribers in a channel.
-   *
-   * @return int
-   */
-  public function subscriberCount() {
-    $q = db_select('view_channel_has_subscriber', 'v')
-      ->fields('v', array('rid'))
-      ->condition('channel_nid', $this->nid());
-    $rs = $q->execute();
-    return $rs->rowCount();
-  }
-
-  /**
-   * Check if a member is a subscriber to the channel.
-   *
-   * @param Member $member
-   * @return bool
-   */
-  public function hasSubscriber(Member $member) {
-    $rels = Relation::searchBinary('has_subscriber', 'node', $this->nid(), 'user', $member->uid());
-    return (bool) $rels;
-  }
-
-  /**
-   * Get subscriber relationship.
-   *
-   * @param Member $member
-   * @return array
-   *   or FALSE if the relationship doesn't exist.
-   */
-  public function getSubscriberRelationship(Member $member) {
-    $rels = Relation::searchBinary('has_subscriber', 'node', $this->nid(), 'user', $member->uid());
-    if ($rels) {
-      return Relation::create($rels[0]->rid());
-    }
-    return FALSE;
   }
 
 }

@@ -556,9 +556,6 @@ function moonmars_members_menu_block() {
     // Profile:
     $html .= "<li>" . l('Profile', $profile_member->alias()) . "</li>";
 
-    // Edit subscriptions:
-    $html .= "<li>" . l('Subscriptions', $profile_member->alias() . '/subscriptions') . "</li>";
-
     // View notifications:
     $html .= "<li>" . l('Notifications', $profile_member->alias() . '/notifications') . "</li>";
   }

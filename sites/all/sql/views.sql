@@ -110,6 +110,28 @@ from
 where r.relation_type = 'has_member';
 
 
+CREATE or replace view view_followers
+AS select
+   r.rid AS rid,
+   r.vid AS vid,
+   r.uid AS uid,
+   r.created AS created,
+   r.changed AS changed,
+   fde0.endpoints_entity_id AS follower_uid,
+   u1.name AS follower_name,
+   u1.status AS follower_status,
+   fde1.endpoints_entity_id AS followee_uid,
+   u2.name AS followee_name,
+   u2.status AS followee_status
+from
+  relation r
+  left join field_data_endpoints fde0 on ((r.rid = fde0.entity_id) and (fde0.endpoints_r_index = 0))
+  left join field_data_endpoints fde1 on ((r.rid = fde1.entity_id) and (fde1.endpoints_r_index = 1))
+  left join users u1 on fde0.endpoints_entity_id = u1.uid
+  left join users u2 on fde1.endpoints_entity_id = u2.uid
+where r.relation_type = 'follows';
+
+
 CREATE or replace view view_member
 AS select
    u.uid,

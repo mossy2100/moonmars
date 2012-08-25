@@ -34,6 +34,20 @@ class Member extends User {
   protected $channel;
 
   /**
+   * The member's followers.
+   *
+   * @var
+   */
+  protected $followers;
+
+  /**
+   * The member's followees.
+   *
+   * @var
+   */
+  protected $followees;
+
+  /**
    * Constructor.
    */
   protected function __construct() {
@@ -672,25 +686,22 @@ class Member extends User {
    *
    * @return array
    */
-  public function followers($limit = NULL) {
-    // Get the group's members in reverse order of that in which they joined.
-    $q = db_select('view_channel_has_subscriber', 'v')
-      ->fields('v', array('subscriber_uid'))
-      ->condition('channel_nid', $this->channel()->nid())
-      ->orderBy('created', 'DESC');
+  public function followers() {
+    if (!isset($this->followers)) {
+      // Get the member's followers in reverse order of that in which they connected.
+      $q = db_select('view_followers', 'vf')
+        ->fields('vf', array('follower_uid'))
+        ->condition('followee_uid', $this->uid())
+        ->orderBy('created', 'DESC');
+      $rs = $q->execute();
 
-    // Set a limit if specified:
-    if ($limit !== NULL) {
-      $q->range(0, $limit);
+      $followers = array();
+      foreach ($rs as $rec) {
+        $followers[] = self::create($rec->follower_uid);
+      }
     }
 
-    $rs = $q->execute();
-    $followers = array();
-    foreach ($rs as $rec) {
-      $followers[] = self::create($rec->subscriber_uid);
-    }
-
-    return $followers;
+    return $this->followers;
   }
 
   /**
@@ -699,42 +710,34 @@ class Member extends User {
    * @return int
    */
   public function followerCount() {
-    $q = db_select('view_channel_has_subscriber', 'v')
-      ->fields('v', array('subscriber_uid'))
-      ->condition('channel_nid', $this->channel()->nid());
-    $rs = $q->execute();
-    return $rs->rowCount();
+    return count($this->followers());
   }
 
   /**
    * Get a member's followees (i.e. other members that the member follows).
-   * @todo This method could be tightened up by querying the database directly.
    *
    * @return array
    */
   public function followees($limit = NULL) {
-    // Get the channels that this member is subscribed to:
-    $channels = $this->subscribedChannels();
+    if (!isset($this->followees)) {
+      // Get the member's followees in reverse order of that in which they connected.
+      $q = db_select('view_followers', 'vf')
+        ->fields('vf', array('followee_uid'))
+        ->condition('follower_uid', $this->uid())
+        ->orderBy('created', 'DESC');
+      $rs = $q->execute();
 
-    // Filter for member channels:
-    $followees = array();
-    foreach ($channels as $channel) {
-      $parent_entity = $channel->parentEntity();
-      if ($parent_entity instanceof Member) {
-        $followees[] = $parent_entity;
-
-        // Limit to specified count:
-        if ($limit !== NULL && count($followees) == $limit) {
-          break;
-        }
+      $followees = array();
+      foreach ($rs as $rec) {
+        $followees[] = self::create($rec->followee_uid);
       }
     }
-    return $followees;
+
+    return $this->followees;
   }
 
   /**
    * Get the number of followees that a member has.
-   * @todo This method could be tightened up by querying the database directly.
    *
    * @return int
    */
@@ -743,12 +746,23 @@ class Member extends User {
   }
 
   /**
-   * Checks if one user follows another.
+   * Checks if one member follows another.
    *
    * @param Member $member
    */
   public function follows(Member $member) {
-    return $member->channel()->hasSubscriber($this);
+    // If we've already got the list of followees, look through that in order to avoid a database hit:
+    if (isset($this->followees)) {
+      foreach ($this->followees as $followee) {
+        if (self::equals($member, $followee)) {
+          return TRUE;
+        }
+      }
+    }
+
+    // Otherwise let's look for a relationship:
+    $rels = Relation::searchBinary('follows', 'user', $this->uid(), 'user', $member->uid());
+    return (bool) $rels;
   }
 
   /**
@@ -757,12 +771,15 @@ class Member extends User {
    * @param Member $member
    */
   public function follow(Member $member) {
-    // Subscribe to the member's channel:
-    $this->subscribe($member->channel());
+    // Create or update the follow relationship:
+    Relation::updateBinary('follows', 'user', $this->uid(), 'user', $member->uid());
 
-    // Notify the followee:
-    $summary = $this->link() . " subscribed to " . $member->link("your channel");
-    $member->notify($summary, NULL, $this, $member->channel());
+    // Notify the followee if they want to be notified:
+    if ($member->wantsFollowNotification()) {
+      $subject = "You have a new follower!";
+      $summary = $this->link() . " followed you. They're really cool, you could " . l('follow them back', $this->alias() . '/follow') . ".";
+      $member->notify($summary, NULL, $this, $member->channel());
+    }
   }
 
   /**
@@ -771,12 +788,17 @@ class Member extends User {
    * @param Member $member
    */
   public function unfollow(Member $member) {
-    // Unsubscribe from the member's channel:
-    $this->unsubscribe($member->channel());
+    // Delete the follow relationship:
+    Relation::deleteBinary('follows', 'user', $this->uid(), 'user', $member->uid());
+  }
 
-    // Notify the followee:
-    $summary = $this->link() . " unsubscribed from " . $member->link("your channel");
-    $member->notify($summary, NULL, $this, $member->channel());
+  /**
+   * Check if the member wants to be notified when someone follows them.
+   *
+   * @return bool
+   */
+  public function wantsFollowNotification() {
+    return in_array('follow', $this->miscNotifications('site'));
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -788,15 +810,25 @@ class Member extends User {
    * @param Member $member
    */
   public function joinGroup(Group $group) {
-    // Create the membership relationship:
+    // Create or update the membership relationship.
+    // We're calling updateBinary() here instead of createBinary(), just in case, but basically this method should never
+    // be called if they're already a member of the group.
     Relation::updateBinary('has_member', 'node', $group->nid(), 'user', $this->uid());
 
-    // Subscribe the member to the group channel:
-    $this->subscribe($group->channel());
+    //////////////////
+    // Notifications
 
-    // Post system message to the group:
-//    $summary = $this->link() . " joined " . $group->channelTitleLink();
-//    $group->notifyAdmins($summary, NULL, $this, $group->channel());
+    // Nxn summary:
+    $summary = "Guess what! " . $this->link() . " joined your group " . $group->link() . ".";
+
+    // Go through members:
+    $members = $group->members();
+    foreach ($members as $member) {
+      // If they want to be notified, notify them:
+      if ($member->wantNxnMisc('group', 'new-member')) {
+        $member->notify($summary, $group, $this);
+      }
+    }
   }
 
   /**
@@ -807,81 +839,12 @@ class Member extends User {
   public function leaveGroup(Group $group) {
     // Delete the membership relationship:
     Relation::deleteBinary('has_member', 'node', $group->nid(), 'user', $this->uid());
-
-    // Unsubscribe the member from the group channel:
-    $this->unsubscribe($group->channel());
-  }
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Subscription-related methods.
-
-  /**
-   * Get the channels that the member is subscribed to.
-   *
-   * @return array
-   */
-  public function subscribedChannels() {
-    $rels = Relation::searchBinary('has_subscriber', 'node', NULL, 'user', $this->uid());
-
-    $channels = array();
-    if ($rels) {
-      foreach ($rels as $rel) {
-        $channels[] = Channel::create($rel->endpointEntityId(0));
-      }
-    }
-
-    return $channels;
-  }
-
-  /**
-   * Subscribe member to a channel.
-   *
-   * @param Channel $channel
-   * @param bool $email_notification
-   * @return Member
-   */
-  public function subscribe(Channel $channel, $email_notification = NULL) {
-    // See if the relationship already exists:
-    $rels = Relation::searchBinary('has_subscriber', 'node', $channel->nid(), 'user', $this->uid());
-
-//    $email_notification = $this->defaultEmailNotification();
-    $email_notification = ($email_notification === NULL) ? TRUE : $email_notification;
-
-    // If the relationship doesn't exist, create it now:
-    if (!$rels) {
-      $rel = Relation::createNewBinary('has_subscriber', 'node', $channel->nid(), 'user', $this->uid(), FALSE);
-      $update = TRUE;
-    }
-    else {
-      // Update the relationship if the email_notification field has changed:
-      $rel = $rels[0];
-      $update = ((int) $rel->field('field_email_notification')) != ((int) $email_notification);
-    }
-
-    // Update the email_notification field:
-    if ($update) {
-      $rel->field('field_email_notification', LANGUAGE_NONE, 0, 'value', (int) $email_notification);
-      $rel->save();
-    }
-
-    return $this;
-  }
-
-  /**
-   * Unsubscribe member from a channel.
-   *
-   * @param Channel $channel
-   * @return Member
-   */
-  public function unsubscribe(Channel $channel) {
-    Relation::deleteBinary('has_subscriber', 'node', $channel->nid(), 'user', $this->uid());
-    return $this;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Notifications
 
-  /***
+  /**
    * Send a notification message to a member.
    *
    * @param string $summary
@@ -937,12 +900,37 @@ class Member extends User {
     $result['new'] = $this->field($new_field);
 
     // If they chose to be notified about only some of the new things, which ones?
-    $which_field = 'field_' . $category . '_which_' . $thing . '_nxn';
-    $values = $this->prop($which_field);
-    if ($values) {
+    if ($result['new'] == 'some') {
+      $which_field = 'field_' . $category . '_which_' . $thing . '_nxn';
+      $values = $this->prop($which_field);
+      if ($values && isset($values[LANGUAGE_NONE]) && is_array($values[LANGUAGE_NONE])) {
+        foreach ($values[LANGUAGE_NONE] as $value) {
+          if (isset($value['value']) && $value['value']) {
+            $result['which'][] = $value['value'];
+          }
+        }
+      }
+    }
+
+    return $result;
+  }
+
+  /**
+   * Get the miscellaneous notifications the member wants in a certain category.
+   *
+   * @param string $category
+   *   site, channel, followee or group
+   * @return array
+   */
+  public function miscNotifications($category) {
+    $result = array();
+
+    $misc_field = 'field_' . $category . '_misc_nxn';
+    $values = $this->prop($misc_field);
+    if ($values && isset($values[LANGUAGE_NONE]) && is_array($values[LANGUAGE_NONE])) {
       foreach ($values[LANGUAGE_NONE] as $value) {
-        if ($value['value']) {
-          $result['which'][] = $value['value'];
+        if (isset($value['value']) && $value['value']) {
+          $result[] = $value['value'];
         }
       }
     }

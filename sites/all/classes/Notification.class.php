@@ -46,15 +46,36 @@ class Notification extends MoonMarsNode {
    * @param string $thing
    * @return array
    */
-  public static function whoWants($category, $thing) {
-    $field = $category . '_' . $thing . '_nxn';
+  public static function mayWantNxnNew($category, $thing) {
+    $col = $category . '_' . $thing . '_nxn';
     $q = db_select('view_member', 'vm')
       ->fields('vm', array('uid'))
-      ->condition($field, array('some', 'all'));
+      ->condition($col, array('some', 'all'));
     $rs = $q->execute();
     $members = array();
     foreach ($rs as $rec) {
       $members[] = Member::create($rec->uid);
+    }
+    return $members;
+  }
+
+  /**
+   * Get the members who want a certain miscellaneous notification.
+   *
+   * @static
+   * @param string $category
+   * @param string $nxn_key
+   */
+  public static function wantNxnMisc($category, $nxn_key) {
+    $table = 'field_data_field_' . $category . '_misc_nxn';
+    $field = 'field_' . $category . '_misc_nxn_value';
+    $q = db_select($table, 'mn')
+      ->fields('mn', array('entity_id'))
+      ->condition($field, $nxn_key);
+    $rs = $q->execute();
+    $members = array();
+    foreach ($rs as $rec) {
+      $members[] = Member::create($rec->entity_id);
     }
     return $members;
   }

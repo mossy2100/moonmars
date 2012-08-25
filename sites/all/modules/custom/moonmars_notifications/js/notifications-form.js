@@ -93,6 +93,7 @@ function notificationsFormSelectDefault() {
   $('#edit-field-site-which-item-nxn .form-checkbox').check();
   $('#edit-field-site-new-comment-nxn input.form-radio[value=some]').check().click();
   $('#edit-field-site-which-comment-nxn .form-checkbox').check();
+  $('#edit-field-site-misc-nxn .form-checkbox').check();
 
   // Default settings for my channel:
   $('#edit-field-channel-new-item-nxn input.form-radio[value=all]').check().click();

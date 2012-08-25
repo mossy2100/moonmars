@@ -3,23 +3,13 @@
 define('MOONMARS_CHANNEL_DEFAULT_PAGE_SIZE', 10);
 define('MOONMARS_NEWS_CHANNEL_NID', 467);
 
-/**
- * Implements hook_menu().
- */
-function moonmars_channels_menu() {
-  $items = array();
-  $items['user/%/subscriptions'] = array(
-    'page callback'    => 'moonmars_channels_list',
-    'access callback'  => 'user_is_logged_in',
-    'type'             => MENU_NORMAL_ITEM,
-  );
-  $items['subscriptions/update'] = array(
-    'page callback'    => 'moonmars_channels_update_subscriptions',
-    'access callback'  => 'user_is_logged_in',
-    'type'             => MENU_CALLBACK,
-  );
-  return $items;
-}
+///**
+// * Implements hook_menu().
+// */
+//function moonmars_channels_menu() {
+//  $items = array();
+//  return $items;
+//}
 
 /**
  * Implements hook_form_alter().
@@ -201,107 +191,4 @@ function moonmars_channels_is_embedded_channel_page() {
   }
 
   return FALSE;
-}
-
-/**
- * Reorder the channels by title.
- *
- * @param $channels
- */
-function moonmars_channels_sort_by_title(&$channels) {
-  usort($channels, function ($channel1, $channel2) {
-    $channel1_title = strtolower($channel1->title());
-    $channel2_title = strtolower($channel2->title());
-    if ($channel1_title == $channel2_title) {
-      return 0;
-    }
-    elseif ($channel1_title < $channel2_title) {
-      return -1;
-    }
-    else {
-      return 1;
-    }
-  });
-}
-
-/**
- * List all channels, and show whether the member is subscribed to them or not.
- *
- * @todo Update this to use the Forms API. Will need to convert much of this to a custom render function.
- */
-function moonmars_channels_list() {
-  // Get the current member and their subscriptions:
-  $current_member = Member::currentMember();
-  $channels = $current_member->subscribedChannels();
-
-  // Reorder the channels by title:
-  moonmars_channels_sort_by_title($channels);
-
-  $header = array(
-    'Title',
-    "<input type='checkbox' id='subscribed-all'> Subscribed?",
-    "<input type='checkbox' id='email-notification-all'> Email notifications?",
-  );
-
-  foreach ($channels as $channel) {
-    $channel_nid = $channel->nid();
-    $subscriber_rel = $channel->getSubscriberRelationship($current_member);
-    $subscribed = (bool) $subscriber_rel;
-    $email_notification = $subscribed ? ((bool) $subscriber_rel->field('field_email_notification')) : FALSE;
-
-    $row = array(
-      $channel->parentEntityLink(),
-      "<input type='checkbox' id='subscribed-$channel_nid' name='subscribed[$channel_nid]'" . ($subscribed ? " checked" : "") . " class='subscribed'>",
-      "<input type='checkbox' id='email-notification-$channel_nid' name='email_notification[$channel_nid]'" . ($subscribed ? ($email_notification ? " checked" : "") : " disabled") . " class='email-notification'>",
-    );
-
-    // Add the row:
-    $rows[] = $row;
-  }
-
-  $table = array(
-    'header' => $header,
-    'rows' => $rows,
-  );
-
-  $html = '';
-  $html .= "<p>This page lists all of the channels you're subscribed to. You can update your subscriptions, and specify if you want email notifications for each channel. <a href='/handbook/channels'>Find out more about channels.</a></p>";
-  $html .= "<form id='subscriptions-form' action='/subscriptions/update' method='post'>";
-  $html .= theme('table', $table);
-  $html .= "
-    <div id='channels-button'>
-      <input type='submit' value='Update subscriptions'>
-    </div>
-  ";
-  $html .= "</form>";
-
-  drupal_add_js(drupal_get_path('module', 'moonmars_channels') . '/js/subscriptions.js');
-
-  return $html;
-}
-
-/**
- * Update a member's subscriptions.
- * @todo Move this to a submit handler.
- */
-function moonmars_channels_update_subscriptions() {
-  // Get the current member and their subscriptions:
-  $current_member = Member::currentMember();
-  $channels = $current_member->subscribedChannels();
-
-  // Update the member's subscriptions:
-  foreach ($channels as $channel) {
-    $channel_nid = $channel->nid();
-    $subscribed = isset($_POST['subscribed'][$channel_nid]) ? ((bool) $_POST['subscribed'][$channel_nid]) : FALSE;
-    if ($subscribed) {
-      $email_notification = isset($_POST['email_notification'][$channel_nid]) ? ((bool) $_POST['email_notification'][$channel_nid]) : FALSE;
-      $current_member->subscribe($channel, $email_notification);
-    }
-    else {
-      $current_member->unsubscribe($channel);
-    }
-  }
-
-  drupal_set_message("Your subscriptions have been updated. Have a great day!");
-  drupal_goto($current_member->alias());
 }
