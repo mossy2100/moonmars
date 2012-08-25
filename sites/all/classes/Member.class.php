@@ -868,19 +868,8 @@ class Member extends User {
     return $this;
   }
 
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Notification methods.
-
-  /**
-   * Check if the member wants an email notification from this channel.
-   */
-  public function wantsEmailNotification($channel) {
-    $rels = Relation::searchBinary('has_subscriber', 'node', $channel->nid(), 'user', $this->uid());
-    if (!$rels) {
-      return FALSE;
-    }
-    return (bool) $rels[0]->field('field_email_notification');
-  }
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Notifications
 
   /***
    * Send a notification message to a member.
@@ -893,7 +882,6 @@ class Member extends User {
    * @param ItemComment $comment
    */
   public function notify($summary, $text = NULL, Member $actor = NULL, Channel $channel = NULL, Item $item = NULL, ItemComment $comment = NULL) {
-
     $subject = strip_tags($summary);
 
     // Create the notification node:
@@ -935,8 +923,8 @@ class Member extends User {
     $send_email = $this->wantsEmailNotification($channel);
     if ($send_email) {
 
-      // Convert newlines but not emoticons:
-      $text = moonmars_text_filter($text, TRUE, FALSE);
+      // Don't convert emoticons:
+      $text = moonmars_text_filter($text, FALSE);
 
       $params = array(
         'subject' => "[moonmars.com] $subject",
@@ -945,6 +933,34 @@ class Member extends User {
       );
       drupal_mail('moonmars_notifications', 'notification', $this->mail(), language_default(), $params);
     }
+  }
+
+  /**
+   * Get which things of a certain type and category the member wants to be notified about.
+   *
+   * @param string $category
+   *   site, channel, followee or group
+   * @param string $thing
+   *   member, group, item or comment
+   * @return array
+   */
+  public function whichNotifications($category, $thing) {
+    $result = array();
+
+    // Preference for new things:
+    $new_field = 'field_' . $category . '_new_' . $thing . '_nxn';
+    $result['new'] = $this->field($new_field);
+
+    // If they chose to be notified about only some of the new things, which ones?
+    $which_field = 'field_' . $category . '_which_' . $thing . '_nxn';
+    $values = $this->prop($which_field);
+    foreach ($values[LANGUAGE_NONE] as $value) {
+      if ($value['value']) {
+        $result['which'][] = $value['value'];
+      }
+    }
+
+    return $result;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

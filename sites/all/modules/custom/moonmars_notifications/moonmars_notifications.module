@@ -11,12 +11,12 @@ function moonmars_notifications_menu() {
     'access callback' => 'user_is_logged_in',
     'type'            => MENU_CALLBACK,
   );
-  $items['member/%/notifications/preferences'] = array(
-    'page callback'   => 'drupal_get_form',
-    'page arguments'  => array('moonmars_notifications_form', 1),
-    'access callback' => 'user_is_logged_in',
-    'type'            => MENU_CALLBACK,
-  );
+//  $items['member/%/notifications/preferences'] = array(
+//    'page callback'   => 'drupal_get_form',
+//    'page arguments'  => array('moonmars_notifications_form', 1),
+//    'access callback' => 'user_is_logged_in',
+//    'type'            => MENU_CALLBACK,
+//  );
   return $items;
 }
 
@@ -48,8 +48,7 @@ function moonmars_notifications_list($uid) {
 
   drupal_set_title('Your Notifications');
 
-  $html = "<p><a class='button' href='/" . $current_member->alias() . "/notifications/preferences'>Edit notifications preferences</a></p>";
-  $html .= views_embed_view('notifications', 'page', $uid);
+  $html = views_embed_view('notifications', 'page', $uid);
 
   return $html;
 }
@@ -71,9 +70,9 @@ function moonmars_notifications_form($form, &$form_state, $uid) {
   drupal_set_title("Edit notifications preferences");
 
   $new_thing_options = array(
-    'all'  => 'All',
     'none' => 'None',
     'some' => 'Some',
+    'all'  => 'All',
   );
 
   $str_all_none = "Select if you want all, no, or some notifications about new";
@@ -148,23 +147,21 @@ function moonmars_notifications_form($form, &$form_state, $uid) {
   );
 
   $form = array(
-    '#attached'            => array(
+    '#attached'               => array(
       'js' => array(
         drupal_get_path('module', 'moonmars_notifications') . '/js/notifications-form.js',
       ),
     ),
-    'uid' => array(
-      '#type' => 'hidden',
+    'uid'                     => array(
+      '#type'  => 'hidden',
       '#value' => $current_member->uid(),
     ),
-    'buttons'              => array(
+    'buttons'                 => array(
       '#markup' => "
         <p>These preferences are additive, which is to say, if one preference say 'yes', and another says 'no',
         the result will be 'yes'. For example, if you say you want no notifications about your groups, but you want all
         notifications about your followees, then if a followee posts something in one of your groups you'll be notified.</p>
-
         <p>The default settings should suit most people.</p>
-
         <div id='notifications-form-buttons'>
           <strong>Select:</strong>
           <input type='button' onclick='notificationsFormSelectEverything()' value='Everything'>
@@ -173,7 +170,7 @@ function moonmars_notifications_form($form, &$form_state, $uid) {
         </div>
       ",
     ),
-    'site'                 => array(
+    'site'                    => array(
       '#type'               => 'fieldset',
       '#title'              => "Site",
       '#description'        => "Select your site-wide notifications. This excludes closed groups that you aren't a member of.",
@@ -186,16 +183,16 @@ function moonmars_notifications_form($form, &$form_state, $uid) {
       'site_new_comments'   => $new_comments,
       'site_which_comments' => $which_comments,
     ),
-    'page'                 => array(
-      '#type'               => 'fieldset',
-      '#title'              => "My channel",
-      '#description'        => "$str_fieldset_title your channel.",
-      'page_new_items'      => $new_items,
-      'page_which_items'    => $which_items,
-      'page_new_comments'   => $new_comments,
-      'page_which_comments' => $which_comments,
+    'channel'                 => array(
+      '#type'                  => 'fieldset',
+      '#title'                 => "My channel",
+      '#description'           => "$str_fieldset_title your channel.",
+      'channel_new_items'      => $new_items,
+      'channel_which_items'    => $which_items,
+      'channel_new_comments'   => $new_comments,
+      'channel_which_comments' => $which_comments,
     ),
-    'followee'             => array(
+    'followee'                => array(
       '#type'                   => 'fieldset',
       '#title'                  => "My followees",
       '#description'            => "$str_fieldset_title members you follow.",
@@ -212,7 +209,7 @@ function moonmars_notifications_form($form, &$form_state, $uid) {
         ),
       ),
     ),
-    'group'                => array(
+    'group'                   => array(
       '#type'                   => 'fieldset',
       '#title'                  => "My groups",
       '#description'            => "$str_fieldset_title your groups.",
@@ -297,3 +294,20 @@ function moonmars_notifications_form_submit($form, &$form_state) {
   // Go back to their notifications:
   $form_state['redirect'] = $profile_member->alias() . '/notifications';
 }
+
+/*
+
+mention|Items that mention me
+topic|Items about a topic I'm interested in
+
+Select which items you want to be notified about.
+
+mention|Comments that mention me
+topic|Comments about a topic I'm interested in
+item|Comments on an item I shared
+comment|Comments on an item I've commented on
+
+Select which comments you want to be notified about.
+*/
+
+

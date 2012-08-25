@@ -1,11 +1,28 @@
 var $ = jQuery;
 
 $(function() {
+  // If a tab was specified, select it:
+  if (tab) {
+    var tabLink = $('.horizontal-tab-button a strong').each(function() {
+      if ($(this).text().toLowerCase() == tab.toLowerCase()) {
+        // Click the tab:
+        $(this).closest('a').click();
+        // We're done:
+        return false;
+      }
+    });
+  }
+
+  // Remove all N/A radio buttons:
+  $('input.form-radio[value=_none]').parent().remove();
+
+  // TEMPORARY. Remove all topic checkboxes.
+  $('input.form-checkbox[value=topic]').parent().remove();
 
   // Set default values for the radio-button/checkbox combination widgets:
   function nxn_set_radios(category, thing, defaultVal) {
-    var rbg_id = '.form-type-radios.form-item-' + category + '-new-' + thing + 's';
-    var cbg_id = '.form-type-checkboxes.form-item-' + category + '-which-' + thing + 's';
+    var rbg_id = '#edit-field-' + category + '-new-' + thing + '-nxn';
+    var cbg_id = '#edit-field-' + category + '-which-' + thing + '-nxn';
 
     // Set default value:
     if ($(rbg_id + ' .form-radio:checked').length == 0) {
@@ -49,44 +66,53 @@ $(function() {
   nxn_set_radios('site', 'member', 'none');
   nxn_set_radios('site', 'item', 'some');
   nxn_set_radios('site', 'comment', 'some');
-  nxn_set_radios('page', 'item', 'all');
-  nxn_set_radios('page', 'comment', 'all');
+  nxn_set_radios('channel', 'item', 'all');
+  nxn_set_radios('channel', 'comment', 'all');
   nxn_set_radios('followee', 'item', 'all');
   nxn_set_radios('followee', 'comment', 'all');
   nxn_set_radios('group', 'item', 'all');
   nxn_set_radios('group', 'comment', 'all');
 });
 
-function notificationsFormSelectEverything() {
-  $('.form-checkbox').check();
-  $('.form-radio[value=all]').check().click();
-}
-
+/**
+ * Select options to receive no notifications.
+ */
 function notificationsFormSelectNothing() {
-  $('.form-checkbox').uncheck();
-  $('.form-radio[value=none]').check().click();
+  $('fieldset.group-tab-nxns .form-checkbox').uncheck();
+  $('fieldset.group-tab-nxns .form-radio[value=none]').check().click();
 }
 
+/**
+ * Select options to receive default notifications.
+ */
 function notificationsFormSelectDefault() {
   // Default site settings:
-  $('#edit-site-new-members-none').check().click();
-  $('#edit-site-new-groups-all').check().click();
-  $('#edit-site-new-items-some').check().click();
-  $('#edit-site-which-items .form-checkbox').check();
-  $('#edit-site-new-comments-some').check().click();
-  $('#edit-site-which-comments .form-checkbox').check();
+  $('#edit-field-site-new-member-nxn input.form-radio[value=none]').check().click();
+  $('#edit-field-site-new-group-nxn input.form-radio[value=all]').check().click();
+  $('#edit-field-site-new-item-nxn input.form-radio[value=some]').check().click();
+  $('#edit-field-site-which-item-nxn .form-checkbox').check();
+  $('#edit-field-site-new-comment-nxn input.form-radio[value=some]').check().click();
+  $('#edit-field-site-which-comment-nxn .form-checkbox').check();
 
   // Default settings for my channel:
-  $('#edit-page-new-items-all').check().click();
-  $('#edit-page-new-comments-all').check().click();
+  $('#edit-field-channel-new-item-nxn input.form-radio[value=all]').check().click();
+  $('#edit-field-channel-new-comment-nxn input.form-radio[value=all]').check().click();
 
   // Default settings for my followees' channels:
-  $('#edit-followee-new-items-all').check().click();
-  $('#edit-followee-new-comments-all').check().click();
-  $('#edit-followee-misc .form-checkbox').check();
+  $('#edit-field-followee-new-item-nxn input.form-radio[value=all]').check().click();
+  $('#edit-field-followee-new-comment-nxn input.form-radio[value=all]').check().click();
+  $('#edit-field-followee-misc-nxn .form-checkbox').check();
 
   // Default settings for my groups:
-  $('#edit-group-new-items-all').check().click();
-  $('#edit-group-new-comments-all').check().click();
-  $('#edit-group-misc .form-checkbox').check();
+  $('#edit-field-group-new-item-nxn input.form-radio[value=all]').check().click();
+  $('#edit-field-group-new-comment-nxn input.form-radio[value=all]').check().click();
+  $('#edit-field-group-misc-nxn .form-checkbox').check();
+}
+
+/**
+ * Select options to receive all notifications.
+ */
+function notificationsFormSelectEverything() {
+  $('fieldset.group-tab-nxns .form-checkbox').check();
+  $('fieldset.group-tab-nxns .form-radio[value=all]').check().click();
 }

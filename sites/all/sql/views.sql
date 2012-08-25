@@ -126,7 +126,17 @@ AS select
    fmm.field_moon_or_mars_value as moon_or_mars,
    upper(l.country) as country,
    l.province as province,
-   l.city as city
+   l.city as city,
+   snm.field_site_new_member_nxn_value as site_member_nxn,
+   sng.field_site_new_group_nxn_value as site_group_nxn,
+   sni.field_site_new_item_nxn_value as site_item_nxn,
+   snc.field_site_new_comment_nxn_value as site_comment_nxn,
+   cni.field_channel_new_item_nxn_value as channel_item_nxn,
+   cnc.field_channel_new_comment_nxn_value as channel_comment_nxn,
+   fni.field_followee_new_item_nxn_value as followee_item_nxn,
+   fnc.field_followee_new_comment_nxn_value as followee_comment_nxn,
+   gni.field_group_new_item_nxn_value as group_item_nxn,
+   gnc.field_group_new_comment_nxn_value as group_comment_nxn
 from
   users u
   left join field_data_field_first_name ffn on u.uid = ffn.entity_id
@@ -137,7 +147,17 @@ from
   left join field_data_field_mobile_phone fmp on u.uid = fmp.entity_id
   left join field_data_field_moon_or_mars fmm on u.uid = fmm.entity_id
   left join field_data_field_user_location ful on u.uid = ful.entity_id
-  left join location l on ful.field_user_location_lid = l.lid;
+  left join location l on ful.field_user_location_lid = l.lid
+  left join field_data_field_site_new_member_nxn snm on u.uid = snm.entity_id
+  left join field_data_field_site_new_group_nxn sng on u.uid = sng.entity_id
+  left join field_data_field_site_new_item_nxn sni on u.uid = sni.entity_id
+  left join field_data_field_site_new_comment_nxn snc on u.uid = snc.entity_id
+  left join field_data_field_channel_new_item_nxn cni on u.uid = cni.entity_id
+  left join field_data_field_channel_new_comment_nxn cnc on u.uid = cnc.entity_id
+  left join field_data_field_followee_new_item_nxn fni on u.uid = fni.entity_id
+  left join field_data_field_followee_new_comment_nxn fnc on u.uid = fnc.entity_id
+  left join field_data_field_group_new_item_nxn gni on u.uid = gni.entity_id
+  left join field_data_field_group_new_comment_nxn gnc on u.uid = gnc.entity_id;
 
 
 CREATE or replace VIEW view_relationship

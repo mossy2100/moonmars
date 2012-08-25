@@ -1,57 +1,13 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Notifications preferences form
+// Notifications buttons
 
-form#moonmars-notifications-form {
-  @include blank-form-style;
-
-  #notifications-form-buttons {
-    margin-bottom: 20px;
-  }
-
-  fieldset {
-    .fieldset-wrapper {
-      @include grey-form-style;
-      margin-bottom: 0;
-    }
-
-    legend {
-      top: -5px;
-    }
-
-    .form-type-radios {
-      margin: 15px 0 5px;
-
-      .form-radios {
-        .form-type-radio {
-          display: inline;
-          margin-right: 10px;
-
-          input.form-radio {
-            margin-right: 2px;
-          }
-        }
-      }
-    }
-
-    .form-item-site-which-members,
-    .form-item-site-which-groups,
-    .form-item-site-which-items,
-    .form-item-site-which-comments,
-    .form-item-page-which-items,
-    .form-item-page-which-comments,
-    .form-item-followee-which-items,
-    .form-item-followee-which-comments,
-    .form-item-group-which-items,
-    .form-item-group-which-comments {
-      margin: 0 0 0 20px;
-    }
-  }
-
-  #edit-group {
-    margin-bottom: 0;
-  }
+// @todo refactor this into a more general-purpose buttons-bar
+#notifications-form-buttons {
+  margin-bottom: 20px;
+  @include clearfix;
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Notifications views

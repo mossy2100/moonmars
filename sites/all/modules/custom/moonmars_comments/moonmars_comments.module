@@ -171,7 +171,7 @@ function moonmars_comments_ajax_edit() {
 
   // Complete data array, encode and send:
   $data['result'] = TRUE;
-  $data['filtered_text'] = moonmars_text_filter($text, TRUE, TRUE);
+  $data['filtered_text'] = moonmars_text_filter($text, TRUE);
   echo json_encode($data);
 }
 

@@ -39,7 +39,10 @@ function field_rename_form_submit($form, &$form_state) {
   }
 
   // Check if there's already a field with this name:
-  $rs = db_query("SELECT * FROM {field_config} WHERE field_name = :field_name", array(':field_name' => $new_field_name));
+  $sq = db_select('field_config', 'fc')
+    ->fields('fc')
+    ->condition('field_name', $new_field_name);
+  $rs = $sq->execute();
   $rec = $rs->fetchObject();
   if ($rec) {
     form_set_error('new_field_name', t("There is already a field named %field_name.", array('%field_name' => $new_field_name)));
@@ -49,13 +52,13 @@ function field_rename_form_submit($form, &$form_state) {
   // Update the field_config table:
   db_update('field_config')
     ->fields(array('field_name' => $new_field_name))
-    ->condition('field_name', $old_field_name, '=')
+    ->condition('field_name', $old_field_name)
     ->execute();
 
   // Update the field_config_instance table:
   db_update('field_config_instance')
     ->fields(array('field_name' => $new_field_name))
-    ->condition('field_name', $old_field_name, '=')
+    ->condition('field_name', $old_field_name)
     ->execute();
 
   foreach (array('data', 'revision') as $key) {
@@ -74,5 +77,32 @@ function field_rename_form_submit($form, &$form_state) {
 
     // Rename the relevant field_data and field_revision tables:
     db_rename_table($old_table_name, $new_table_name);
+  }
+
+  // Update the field_group table:
+  $q = db_select('field_group', 'fg')
+    ->fields('fg', array('id', 'data'))
+    ->condition('data', "%$old_field_name%", 'LIKE');
+  $rs = $q->execute();
+
+  // Update the data field:
+  $recs = array();
+  foreach ($rs as $rec) {
+    $data = unserialize($rec->data);
+    foreach ($data['children'] as &$value) {
+      if ($value == $old_field_name) {
+        $value = $new_field_name;
+      }
+    }
+    $rec->data = serialize($data);
+    $recs[] = $rec;
+  }
+
+  // Update the rows:
+  foreach ($recs as $rec) {
+    $uq = db_update('field_group')
+      ->fields(array('data' => $rec->data))
+      ->condition('id', $rec->id);
+    $uq->execute();
   }
 }

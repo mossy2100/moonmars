@@ -128,9 +128,13 @@ function dbg_sql($query, $target = 'default') {
   $query_string = (string) $query;
   $statement_type = strtolower(substr($query_string, 0, strpos($query_string, ' ')));
 
+  dpm($query_string);
+
   // Prefix tables:
   $connection = Database::getConnection($target);
   $query_string = trim($connection->prefixTables($query_string));
+
+  dpm($query_string);
 
   // Convert query object to an array so we can access readonly properties:
   $query_array = object_to_array($query, TRUE);
@@ -144,30 +148,26 @@ function dbg_sql($query, $target = 'default') {
     }
   }
   elseif ($statement_type == 'update') {
-    // This code is almost certainly wrong and needs testing.
-    $values = $query_array['updateValues'][0];
-    foreach ($values as $index => $value) {
+    $fields = $query_array['fields'];
+    $n = 0;
+    foreach ($fields as $value) {
       $replacement = is_numeric($value) ? $value : $connection->quote($value);
-      $query_string = str_replace(":db_update_placeholder_$index", $replacement, $query_string);
+      $query_string = str_replace(":db_update_placeholder_$n", $replacement, $query_string);
+      $n++;
     }
   }
 
   // Replace condition placeholders:
-  if ($statement_type == 'select') {
+  if (isset($query_array['where']['arguments']) && is_array($query_array['where']['arguments'])) {
     foreach ($query_array['where']['arguments'] as $placeholder => $value) {
       $replacement = is_numeric($value) ? $value : $connection->quote($value);
       $query_string = str_replace($placeholder, $replacement, $query_string);
     }
   }
-  elseif (isset($query_array['condition']['conditions'])) {
-    $conditions = $query_array['condition']['conditions'];
-    foreach ($conditions as $n => $info) {
-      if (!is_int($n)) {
-        continue;
-      }
-      $value = $info['value'];
+  if (isset($query_array['condition']['arguments']) && is_array($query_array['condition']['arguments'])) {
+    foreach ($query_array['condition']['arguments'] as $placeholder => $value) {
       $replacement = is_numeric($value) ? $value : $connection->quote($value);
-      $query_string = str_replace(':db_condition_placeholder_' . $n, $replacement, $query_string);
+      $query_string = str_replace($placeholder, $replacement, $query_string);
     }
   }
 

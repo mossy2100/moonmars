@@ -146,11 +146,34 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
       $form['#attached']['js'][] = "$module_path/js/moon-or-mars.js";
       $form['#attached']['js'][] = "$module_path/js/profile-form.js";
       $form['#attached']['js'][] = "$module_path/js/check-username.js";
+      $form['#attached']['js'][] = drupal_get_path('module', 'moonmars_notifications') . '/js/notifications-form.js';
+
+      // Check if the tab is specified in the querystring:
+      $tab = isset($_GET['tab']) ? addslashes($_GET['tab']) : NULL;
+
+      // Add some buttons up the top:
+      $form['buttons'] = array(
+        '#markup' => "
+          <p>These preferences are additive, which is to say, if one preference say 'yes', and another says 'no',
+          the result will be 'yes'. For example, if you say you want no notifications about your groups, but you want all
+          notifications about your followees, then if a followee posts something in one of your groups you'll be notified.</p>
+          <p>The default settings should suit most people.</p>
+          <div id='notifications-form-buttons'>
+            <strong>Select:</strong>
+            <input type='button' onclick='notificationsFormSelectNothing()' value='Nothing'>
+            <input type='button' onclick='notificationsFormSelectDefault()' value='Default'>
+            <input type='button' onclick='notificationsFormSelectEverything()' value='Everything'>
+          </div>
+          <script>
+          var tab = '$tab';
+          </script>
+        ",
+      );
+      // Add it to the the notifications tab:
+      $form['#group_children']['buttons'] = 'group_tab_nxns';
 
       // Update username field description re valid characters:
       $form['account']['name']['#description'] = MOONMARS_USERNAME_DESCRIPTION;
-      $form['account']['#type'] = 'fieldset';
-      $form['account']['#title'] = "Account details";
 
       // Hidden field to contain the uid:
       $form['uid'] = array(
@@ -163,14 +186,6 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
       $form['comments_color'] = array(
         '#markup' => moonmars_color_icons2($form['field_background_color'][LANGUAGE_NONE][0]['rgb']['#default_value']),
       );
-
-//      // Color icons for border color:
-//      $form['field_border_color'][LANGUAGE_NONE][0]['#suffix'] = moonmars_color_icons('border-color', '#96b1ff', $form['field_border_color'][LANGUAGE_NONE][0]['rgb']['#default_value']);
-      unset($form['field_border_color']);
-//
-//      // Color icons for text color:
-//      $form['field_text_color'][LANGUAGE_NONE][0]['#suffix'] = moonmars_color_icons('color', '#314fa9', $form['field_text_color'][LANGUAGE_NONE][0]['rgb']['#default_value']);
-      unset($form['field_text_color']);
 
       // Hide the score:
       unset($form['field_score']);
@@ -186,52 +201,64 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
 
       // Add a submit handler:
       $form['#submit'][] = 'moonmars_members_user_profile_form_submit';
-      break;
-  }
 
-  // Order the fields. This should work the same for both forms.
-  if ($form_id == 'user_register_form' || $form_id == 'user_profile_form') {
-    $weight = 0;
+      //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      // Order fields:
+      $weight = 0;
 
-    $form['account']['#weight'] = $weight++;
-    $form['account']['name']['#weight'] = $weight++;
-    $form['account']['mail']['#weight'] = $weight++;
-    $form['account']['current_pass']['#weight'] = $weight++;
-    $form['account']['pass']['#weight'] = $weight++;
-    $form['account']['roles']['#weight'] = $weight++;
-    $form['account']['status']['#weight'] = $weight++;
-    $form['account']['notify']['#weight'] = $weight++;
+      // Account details group:
+      $form['#fieldgroups']['group_account']->weight = $weight++;
+      $form['account']['#weight'] = $weight++;
+      $form['account']['name']['#weight'] = $weight++;
+      $form['account']['mail']['#weight'] = $weight++;
+      $form['account']['current_pass']['#weight'] = $weight++;
+      $form['account']['pass']['#weight'] = $weight++;
+      $form['account']['roles']['#weight'] = $weight++;
+      $form['account']['status']['#weight'] = $weight++;
+      $form['account']['notify']['#weight'] = $weight++;
 
-    $form['#fieldgroups']['group_personal']->weight = $weight++;
-    $form['picture']['#weight'] = $weight++;
-    $form['field_first_name']['#weight'] = $weight++;
-    $form['field_last_name']['#weight'] = $weight++;
-    $form['field_date_of_birth']['#weight'] = $weight++;
-    $form['field_gender']['#weight'] = $weight++;
-    $form['field_mobile_phone']['#weight'] = $weight++;
-    $form['field_skype']['#weight'] = $weight++;
-    $form['field_bio']['#weight'] = $weight++;
-    $form['field_moon_or_mars']['#weight'] = $weight++;
+      // Personal details group:
+      $form['#fieldgroups']['group_personal']->weight = $weight++;
+      $form['picture']['#weight'] = $weight++;
+      $form['field_first_name']['#weight'] = $weight++;
+      $form['field_last_name']['#weight'] = $weight++;
+      $form['field_date_of_birth']['#weight'] = $weight++;
+      $form['field_gender']['#weight'] = $weight++;
+      $form['field_mobile_phone']['#weight'] = $weight++;
+      $form['field_skype']['#weight'] = $weight++;
+      $form['field_bio']['#weight'] = $weight++;
+      $form['field_moon_or_mars']['#weight'] = $weight++;
 
-    $form['field_user_location']['#weight'] = $weight++;
-    $form['timezone']['#weight'] = $weight++;
+      // Location group:
+      $form['#fieldgroups']['group_location']->weight = $weight++;
+      $form['field_user_location']['#weight'] = $weight++;
+      $form['timezone']['#weight'] = $weight++;
 
-//    $form['links']['#weight'] = $weight++;
+      // Preferences group:
+      $form['#fieldgroups']['group_preferences']->weight = $weight++;
+      $form['signature']['#weight'] = $weight++;
+      $form['contact']['#weight'] = $weight++;
+      $form['rules']['#weight'] = $weight++;
+      $form['rules-cb']['#weight'] = $weight++;
 
-    $form['#fieldgroups']['group_preferences']->weight = $weight++;
-    $form['signature']['#weight'] = $weight++;
-    $form['contact']['#weight'] = $weight++;
-    $form['rules']['#weight'] = $weight++;
-    $form['rules-cb']['#weight'] = $weight++;
+      // Notifications tab:
+      $form['buttons']['#weight'] = $weight++;
+      $form['#fieldgroups']['group_site_nxns']->weight = $weight++;
+      $form['#fieldgroups']['group_channel_nxns']->weight = $weight++;
+      $form['#fieldgroups']['group_followee_nxns']->weight = $weight++;
+      $form['#fieldgroups']['group_nxns']->weight = $weight++;
 
-    //      $keys = array_keys($form);
+//      dpm($form);
+
+      //      $keys = array_keys($form);
 //      foreach ($form as $key => $value) {
 //        if (is_array($value) && isset($value['#weight'])) {
 //          dbg("$key weight {$value['#weight']}");
 //        }
 //      }
-  }
 
+      break;
+  }
 }
 
 /**

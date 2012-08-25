@@ -301,7 +301,8 @@ class Channel extends MoonMarsNode {
     // Get the original item poster:
     $item_poster = $item->creator();
 
-    // Get the item's channel. This will be NULL for a new item.
+    // Get the item's channel. Note, this will be NULL for a new item.
+    // In the future, if/when we support cross-posting, it could be an array of channels.
     $channel = $item->channel();
 
     ////////////////////////////////////////////////
@@ -322,9 +323,106 @@ class Channel extends MoonMarsNode {
     $parent_entity = $channel->parentEntity();
 
     ////////////////////////////////////////////////
-    // Determine who needs to be notified.
+    // NOTIFICATIONS
 
     $recipients = array();
+
+    // Let's do these in the same order as the notifications form.
+    // @see members_notifications_form().
+
+    // What's the most efficient way to do this?
+
+    // Site-wide settings:
+    // Get all members who want to be notified about at least some of the new items posted on the site.
+    $members = Notification::whoWants('site', 'item');
+    foreach ($members as $member) {
+      $which_nxns = $member->whichNotifications('site', 'item');
+
+      switch ($which_nxns['new']) {
+        case 'all':
+          $recipients[$member->uid()] = $member;
+          break;
+
+        case 'some':
+          // mention:
+          if (in_array('mention', $which_nxns['which']) && $item->mentions($member)) {
+            $recipients[$member->uid()] = $member;
+          }
+
+          // topic: (@todo)
+  //        if (isset($which_items['topic']) && $item->matchesMemberTopics($member)) {
+  //          $recipients[$member->uid()] = $member;
+  //        }
+  //      }
+
+          break;
+      }
+    }
+
+    // My channel settings:
+    // If this is a member's channel, check if they want to be notified.
+    if ($parent_entity instanceof Member) {
+      $member = $parent_entity;
+      $which_nxns = $member->wantsNotifications('channel', 'item');
+
+      switch ($which_nxns['new']) {
+        case 'all':
+          $recipients[$member->uid()] = $member;
+          break;
+
+        case 'some':
+          // mention:
+          if (in_array('mention', $which_nxns['which']) && $item->mentions($member)) {
+            $recipients[$member->uid()] = $member;
+          }
+          break;
+      }
+    }
+
+    // Followees:
+    // Get the followers of the poster and notify those who want to be notified.
+    $members = $item_poster->followers();
+    foreach ($members as $member) {
+      $which_nxns = $member->whichNotifications('followee', 'item');
+
+      switch ($which_nxns['new']) {
+        case 'all':
+          $recipients[$member->uid()] = $member;
+          break;
+
+        case 'some':
+          // mention:
+          if (in_array('mention', $which_nxns['which']) && $item->mentions($member)) {
+            $recipients[$member->uid()] = $member;
+          }
+          break;
+      }
+    }
+
+    // Groups:
+    // If this is a group channel, get the members of the group with group_new_items in (all, some) and check each to see if they want to be notified.
+    if ($parent_entity instanceof Group) {
+      $group = $parent_entity;
+      $members = $group->members();
+      foreach ($members as $member) {
+        $which_nxns = $member->whichNotifications('group', 'item');
+
+        switch ($which_nxns['new']) {
+          case 'all':
+            $recipients[$member->uid()] = $member;
+            break;
+
+          case 'some':
+            // mention:
+            if (in_array('mention', $which_nxns['which']) && $item->mentions($member)) {
+              $recipients[$member->uid()] = $member;
+            }
+            break;
+        }
+      }
+
+    }
+
 
     // 1. If the item is being posted in a member's channel, notify that member.
     if ($parent_entity instanceof Member) {

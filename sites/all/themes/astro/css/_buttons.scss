@@ -8,7 +8,7 @@
   @include box-sizing(content-box);
   line-height: 19px;
   height: 19px;
-  padding: 3px 9px;
+  padding: 1px 9px;
 	border: 0;
 	@include border-radius(3px);
   text-decoration: none;
@@ -37,6 +37,8 @@ input.form-submit,
 
 a.button {
   @include button;
+  display: block;
+  float: left;
 
   &:link,
   &:visited,

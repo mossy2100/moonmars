@@ -6,6 +6,8 @@ class Item extends MoonMarsNode {
 
   /**
    * The node type.
+   *
+   * @var string
    */
   const nodeType = 'item';
 
@@ -15,6 +17,13 @@ class Item extends MoonMarsNode {
    * @var Channel
    */
   protected $channel;
+
+  /**
+   * Result of text scan.
+   *
+   * @var string
+   */
+  protected $textScan;
 
   /**
    * Constructor.
@@ -43,6 +52,9 @@ class Item extends MoonMarsNode {
     return $this->channel;
   }
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Text
+
   /**
    * Get/set the item text.
    *
@@ -52,8 +64,81 @@ class Item extends MoonMarsNode {
     return $this->field('field_item_text', LANGUAGE_NONE, 0, 'value', $text);
   }
 
+  /**
+   * Get the results of the text scan.
+   *
+   * @param array
+   */
+  public function textScan() {
+    // If we haven't scanned the text yet, do it now.
+    if (!isset($this->textScan)) {
+      $this->textScan = moonmars_text_scan($this->text());
+    }
+    return $this->textScan;
+  }
+
+  /**
+   * Get the item HTML, with or without emoticons.
+   *
+   * @param null|string $text
+   */
+  public function html($emoticons = TRUE) {
+    $text_scan = $this->textScan();
+    $html = $text_scan['html'];
+    if ($emoticons) {
+      $html = moonmars_text_add_emoticons($html);
+    }
+    return $html;
+  }
+
+  /**
+   * Get the members mentioned in the item text.
+   *
+   * @return array
+   */
+  public function mentionedMembers() {
+    $text_scan = $this->textScan();
+    return $text_scan['members'];
+  }
+
+  /**
+   * Checks if an item mentions a member.
+   *
+   * @param Member $member
+   * @return bool
+   */
+  public function mentions(Member $member) {
+    $members = $this->mentionedMembers();
+    foreach ($members as $mentioned_member) {
+      if (Member::equals($mentioned_member, $member)) {
+        return TRUE;
+      }
+    }
+    return FALSE;
+  }
+
+  /**
+   * Get the groups mentioned in the item text.
+   *
+   * @return array
+   */
+  public function mentionedGroups() {
+    $text_scan = $this->textScan();
+    return $text_scan['groups'];
+  }
+
+  /**
+   * Get the tags mentioned in the item text.
+   *
+   * @return array
+   */
+  public function mentionedTags() {
+    $text_scan = $this->textScan();
+    return $text_scan['tags'];
+  }
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Render methods.
+  // Rendering
 
   /**
    * Render an item.
