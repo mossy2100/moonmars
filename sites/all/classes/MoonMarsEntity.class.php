@@ -154,7 +154,7 @@ class MoonMarsEntity {
     $rels = MoonMarsRelation::searchBinary('has_channel', $entity, NULL);
 
     if (!empty($rels)) {
-      return Channel::create($rels[0]->endpointEntityId(1));
+      return $rels[0]->endpoint(1);
     }
 
     // If the entity has no channel, and $create is TRUE, create the channel now:

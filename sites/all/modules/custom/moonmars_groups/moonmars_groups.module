@@ -178,24 +178,23 @@ function moonmars_groups_leave($group_nid) {
  *
  * @param array $groups
  *   Array of Group objects.
- * @param int $group_count
- *   The total number of groups (could be larger than the array count).
+ * @param int $max_n_display
+ *   The maximum number of groups to display in the block.
  * @return string
  */
-function moonmars_groups_render_block($groups, $group_count = NULL, $view_all_link = NULL) {
+function moonmars_groups_render_block($groups, $max_n_display = NULL, $view_all_link = NULL) {
   $html = "<div class='groups-block'>\n";
 
   // Group count:
-  if ($group_count !== NULL) {
-    $html .= "<div class='group-count'>\n";
-    $html .= format_plural($group_count, '1 group', '@count groups');
-    $html .= "</div>";
-  }
+  $html .= "<div class='group-count'>\n";
+  $html .= format_plural(count($groups), '1 group', '@count groups');
+  $html .= "</div>";
 
   // Groups:
   $html .= "<ul class='group-list clearfix'>\n";
 
   // Avatars for most recent groups:
+  $n = 0;
   foreach ($groups as $group) {
     $html .= "<li class='group-icon'>\n";
 
@@ -206,6 +205,12 @@ function moonmars_groups_render_block($groups, $group_count = NULL, $view_all_li
     $html .= l($label, $group->alias(), array('html' => TRUE, 'attributes' => array('title' => $title)));
 
     $html .= "</li>\n";
+
+    // Have we rendered enough?
+    $n++;
+    if ($max_n_display !== NULL && $n == $max_n_display) {
+      break;
+    }
   }
   $html .= "</ul>\n";
 
@@ -352,7 +357,7 @@ function moonmars_groups_members_block() {
   }
 
   // Generate HTML:
-  $html = moonmars_members_render_avatars(12, $group->members());
+  $html = moonmars_members_render_avatars($group->members());
   // l('View all', drupal_get_path_alias("node/$group_nid") . '/members')
 
   return $html;

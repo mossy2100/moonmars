@@ -36,16 +36,31 @@ class Member extends User {
   /**
    * The member's followers.
    *
-   * @var
+   * @var array
    */
   protected $followers;
 
   /**
    * The member's followees.
    *
-   * @var
+   * @var array
    */
   protected $followees;
+
+  /**
+   * The member's groups.
+   *
+   * @var array
+   */
+  protected $groups;
+
+  /**
+   * Which misc notifications the member wants.
+   * @todo update to contain details of all nxns.
+   *
+   * @var array
+   */
+  protected $miscNxns;
 
   /**
    * Constructor.
@@ -639,30 +654,27 @@ class Member extends User {
   /**
    * Get a member's groups.
    *
-   * @param int $offset
-   * @param int $limit
    * @return array
    */
-  public function groups($offset = NULL, $limit = NULL) {
-    // Get the group's members in reverse order of that in which they joined.
-    $q = db_select('view_group_has_member', 'v')
-      ->fields('v', array('group_nid'))
-      ->condition('member_uid', $this->uid())
-      ->orderBy('created', 'DESC');
+  public function groups() {
+    // Check if we already did this:
+    if (!isset($this->groups)) {
+      $this->groups = array();
 
-    // Set a limit if specified:
-    if ($offset !== NULL && $limit !== NULL) {
-      $q->range($offset, $limit);
+      // Get the group's members in reverse order of that in which they joined.
+      $q = db_select('view_group_has_member', 'v')
+        ->fields('v', array('group_nid'))
+        ->condition('member_uid', $this->uid())
+        ->orderBy('created', 'DESC');
+
+      // Get the groups:
+      $rs = $q->execute();
+      foreach ($rs as $rec) {
+        $this->groups[] = Group::create($rec->group_nid);
+      }
     }
 
-    // Get the groups:
-    $rs = $q->execute();
-    $groups = array();
-    foreach ($rs as $rec) {
-      $groups[] = Group::create($rec->group_nid);
-    }
-
-    return $groups;
+    return $this->groups;
   }
 
   /**
@@ -671,11 +683,7 @@ class Member extends User {
    * @return int
    */
   public function groupCount() {
-    $q = db_select('view_group_has_member', 'v')
-      ->fields('v', array('group_nid'))
-      ->condition('member_uid', $this->uid());
-    $rs = $q->execute();
-    return $rs->rowCount();
+    return count($this->groups());
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -778,8 +786,8 @@ class Member extends User {
     // Create or update the follow relationship:
     MoonMarsRelation::updateBinary('follows', $this, $member);
 
-    // Notify the followee if they want to be notified:
-    if ($member->wantsFollowNotification()) {
+    // Notify the followee, if they want to be notified:
+    if ($member->wantsFollowNxn()) {
       $subject = "You have a new follower!";
       $summary = $this->link() . " followed you. They're really cool, you could " . l('follow them back', $this->alias() . '/follow') . ".";
       $member->notify($summary, NULL, $this, $member->channel());
@@ -801,12 +809,12 @@ class Member extends User {
    *
    * @return bool
    */
-  public function wantsFollowNotification() {
-    return in_array('follow', $this->miscNotifications('site'));
+  public function wantsFollowNxn() {
+    return in_array('follow', $this->miscNxns('site'));
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Group-related methods. 
+  // Group-related methods
 
   /**
    * Add a member to the group.
@@ -823,13 +831,22 @@ class Member extends User {
     // Notifications
 
     // Nxn summary:
-    $summary = "Guess what! " . $this->link() . " joined your group " . $group->link() . ".";
+    $summary = "Guess what! " . $this->link() . " joined the group " . $group->link() . ".";
 
-    // Go through members:
+    // 1. Notify group members:
     $members = $group->members();
     foreach ($members as $member) {
       // If they want to be notified, notify them:
-      if ($member->wantNxnMisc('group', 'new-member')) {
+      if ($member->wantMiscNxn('group', 'new-member')) {
+        $member->notify($summary, $group, $this);
+      }
+    }
+
+    // 2. Notify the member's followers:
+    $members = $this->followers();
+    foreach ($members as $member) {
+      // If they want to be notified, notify them:
+      if ($member->wantMiscNxn('followee', 'join-group')) {
         $member->notify($summary, $group, $this);
       }
     }
@@ -871,7 +888,7 @@ class Member extends User {
        " . moonmars_text_trim($thing->text(), 100) . "
       </p>
     ";
-    $notification = Notification::create();
+    $notification = Nxn::create();
     $notification->uid($this->uid());
     $notification->title($subject);
     $notification->field('field_notification_summary', LANGUAGE_NONE, 0, 'value', $notification_summary);
@@ -896,7 +913,7 @@ class Member extends User {
    *   member, group, item or comment
    * @return array
    */
-  public function whichNotifications($category, $thing) {
+  public function whichNxns($category, $thing) {
     $result = array();
 
     // Preference for new things:
@@ -926,20 +943,47 @@ class Member extends User {
    *   site, channel, followee or group
    * @return array
    */
-  public function miscNotifications($category) {
-    $result = array();
+  public function miscNxns($category) {
+    // Check if we already got these:
+    if (!isset($this->miscNxns) || !isset($this->miscNxns[$category])) {
+      $this->miscNxns[$category] = array();
 
-    $misc_field = 'field_' . $category . '_misc_nxn';
-    $values = $this->prop($misc_field);
-    if ($values && isset($values[LANGUAGE_NONE]) && is_array($values[LANGUAGE_NONE])) {
-      foreach ($values[LANGUAGE_NONE] as $value) {
-        if (isset($value['value']) && $value['value']) {
-          $result[] = $value['value'];
+      $field = "field_{$category}_misc_nxn";
+      if (isset($this->entity->$field)) {
+        $values = $this->entity->$field;
+        if ($values && isset($values[LANGUAGE_NONE]) && is_array($values[LANGUAGE_NONE])) {
+          foreach ($values[LANGUAGE_NONE] as $value) {
+            if (isset($value['value']) && $value['value']) {
+              $this->miscNxns[$category][] = $value['value'];
+            }
+          }
+        }
+      }
+      else {
+        // Look in the database table:
+        $col = "{$field}_value";
+        $q = db_select("field_data_{$field}", 'mn')
+          ->fields('mn', array($col))
+          ->condition('entity_id', $this->uid());
+        $rs = $q->execute();
+        foreach ($rs as $rec) {
+          $this->miscNxns[$category][] = $rec->$col;
         }
       }
     }
 
-    return $result;
+    return $this->miscNxns[$category];
+  }
+
+  /**
+   * Check if the member wants a certain miscellaneous notification.
+   *
+   * @static
+   * @param string $category
+   * @param string $nxn_key
+   */
+  public function wantMiscNxn($category, $nxn_key) {
+    return in_array($nxn_key, $this->miscNxns($category));
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

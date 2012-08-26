@@ -2,7 +2,7 @@
 /**
  * Encapsulates an notification node.
  */
-class Notification extends MoonMarsNode {
+class Nxn extends MoonMarsNode {
 
   /**
    * The node type.
@@ -60,27 +60,6 @@ class Notification extends MoonMarsNode {
   }
 
   /**
-   * Get the members who want a certain miscellaneous notification.
-   *
-   * @static
-   * @param string $category
-   * @param string $nxn_key
-   */
-  public static function wantNxnMisc($category, $nxn_key) {
-    $table = 'field_data_field_' . $category . '_misc_nxn';
-    $field = 'field_' . $category . '_misc_nxn_value';
-    $q = db_select($table, 'mn')
-      ->fields('mn', array('entity_id'))
-      ->condition($field, $nxn_key);
-    $rs = $q->execute();
-    $members = array();
-    foreach ($rs as $rec) {
-      $members[] = Member::create($rec->entity_id);
-    }
-    return $members;
-  }
-
-  /**
    * When something new is created ('category thing', e.g. site member, channel item, followee comment, group comment,
    * etc.) check a list of members to see who wants to be notified about it, and add them to a list of recipients.
    *
@@ -97,7 +76,7 @@ class Notification extends MoonMarsNode {
     }
 
     foreach ($members as $member) {
-      $which_nxns = $member->whichNotifications($category, $thing_type);
+      $which_nxns = $member->whichNxns($category, $thing_type);
 
       switch ($which_nxns['new']) {
         case 'all':

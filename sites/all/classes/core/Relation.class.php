@@ -236,28 +236,6 @@ class Relation extends EntityBase {
     return isset($this->entity->endpoints[$lang][$delta]) ? ((object) $this->entity->endpoints[$lang][$delta]) : NULL;
   }
 
-  /**
-   * Get an endpoint entity type.
-   *
-   * @param string $lang
-   * @param int $delta
-   * @return string
-   */
-  public function endpointEntityType($delta, $lang = LANGUAGE_NONE) {
-    return $this->field('endpoints', $lang, $delta, 'entity_type');
-  }
-
-  /**
-   * Get an endpoint entity id.
-   *
-   * @param string $lang
-   * @param int $delta
-   * @return int
-   */
-  public function endpointEntityId($delta, $lang = LANGUAGE_NONE) {
-    return $this->field('endpoints', $lang, $delta, 'entity_id');
-  }
-
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Status flags.
 
@@ -355,7 +333,7 @@ class Relation extends EntityBase {
     $q = db_select('view_relationship', 'vr')
       ->fields('vr', array('rid'));
 
-    // Add WHERE clause:
+    // Add conditions:
     $q->condition('relation_type', $relationship_type);
     if ($entity0 !== NULL) {
       $q->condition('entity_type0', $entity0->entityType());

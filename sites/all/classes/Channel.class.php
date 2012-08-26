@@ -77,7 +77,7 @@ class Channel extends MoonMarsNode {
     // Check if we remembered the result in the parentEntity property:
     if (!isset($this->parentEntity)) {
 
-      // Look up the has_channel relationship:
+      // Search for the has_channel relationship:
       $rels = MoonMarsRelation::searchBinary('has_channel', NULL, $this);
 
       if (!empty($rels)) {
@@ -242,7 +242,7 @@ class Channel extends MoonMarsNode {
       $rel = $rels[0];
 
       // Check the item wasn't posted in a different channel; if so, it's an error:
-      if ($rel->endpointEntityId(0) != $this->nid()) {
+      if (EntityBase::equals($rel->endpoint(0), $this)) {
         trigger_error("Item has already been posted in another channel.", E_USER_WARNING);
         return FALSE;
       }
@@ -317,22 +317,22 @@ class Channel extends MoonMarsNode {
 
     // Site-wide preferences.
     // Get all members who want to be notified about at least some of the new items posted on the site.
-    Notification::collectRecipients('site', 'item', $item, Notification::mayWantNxnNew('site', 'item'), $recipients);
+    Nxn::collectRecipients('site', 'item', $item, Notification::mayWantNxnNew('site', 'item'), $recipients);
 
     // Channel preferences.
     // If this is a member's channel, check if they want to be notified.
     if ($parent_entity instanceof Member) {
-      Notification::collectRecipients('channel', 'item', $item, $parent_entity, $recipients);
+      Nxn::collectRecipients('channel', 'item', $item, $parent_entity, $recipients);
     }
 
     // Followee preferences.
     // Get the followers of the poster and notify those who want to be notified.
-    Notification::collectRecipients('followee', 'item', $item, $item_poster->followers(), $recipients);
+    Nxn::collectRecipients('followee', 'item', $item, $item_poster->followers(), $recipients);
 
     // Group preferences.
     // If this is a group channel, get the members of the group and notify those who want to be notified.
     if ($parent_entity instanceof Group) {
-      Notification::collectRecipients('group', 'item', $item, $parent_entity->members(), $recipients);
+      Nxn::collectRecipients('group', 'item', $item, $parent_entity->members(), $recipients);
     }
 
 //    // 1. If the item is being posted in a member's channel, notify that member.
@@ -448,23 +448,23 @@ class Channel extends MoonMarsNode {
 
     // Site-wide preferences.
     // Get all members who want to be notified about at least some of the new comments posted on the site.
-    $members = Notification::mayWantNxnNew('site', 'comment');
-    Notification::collectRecipients('site', 'comment', $comment, $members, $recipients);
+    $members = Nxn::mayWantNxnNew('site', 'comment');
+    Nxn::collectRecipients('site', 'comment', $comment, $members, $recipients);
 
     // Channel preferences.
     // If this is a member's channel, check if they want to be notified about new comments.
     if ($parent_entity instanceof Member) {
-      Notification::collectRecipients('channel', 'comment', $comment, $parent_entity, $recipients);
+      Nxn::collectRecipients('channel', 'comment', $comment, $parent_entity, $recipients);
     }
 
     // Followee preferences.
     // Get the followers of the poster and notify those who want to be notified about new comments.
-    Notification::collectRecipients('followee', 'comment', $comment, $comment_poster->followers(), $recipients);
+    Nxn::collectRecipients('followee', 'comment', $comment, $comment_poster->followers(), $recipients);
 
     // Group preferences.
     // If this is a group channel, get the members of the group and notify those who want to be notified about new comments.
     if ($parent_entity instanceof Group) {
-      Notification::collectRecipients('group', 'comment', $comment, $parent_entity->members(), $recipients);
+      Nxn::collectRecipients('group', 'comment', $comment, $parent_entity->members(), $recipients);
     }
 
 //    // 1. If the comment is being posted in a member's channel, notify that member.

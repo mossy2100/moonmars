@@ -452,7 +452,7 @@ function moonmars_members_profile_edit() {
  *   The members.
  * @return string
  */
-function moonmars_members_render_avatars($max_n_display, array $members, $view_all_link = NULL) {
+function moonmars_members_render_avatars(array $members, $max_n_display = 12, $view_all_link = NULL) {
   // Member count:
   $html = "<div class='member-count'>\n";
   $html .= format_plural(count($members), '1 member', '@count members');
@@ -607,14 +607,12 @@ function moonmars_members_groups_block() {
     return '';
   }
 
-  // Get the latest 4 groups that the member joined.
-  // (Might change this to the biggest or most active or most popular groups that the member is in.)
-  $groups = $member->groups(0, 4);
-  $group_count = $member->groupCount();
+  // Get the member's groups.
+  $groups = $member->groups();
 
   // Generate HTML:
   $view_all_link = l('View all', 'groups', array('query' => array('member' => $member->name())));
-  $html = moonmars_groups_render_block($groups, $group_count, $view_all_link);
+  $html = moonmars_groups_render_block($groups, 4, $view_all_link);
 
   return $html;
 }
@@ -633,7 +631,7 @@ function moonmars_members_followers_block() {
   }
 
   // Generate HTML:
-  $html = moonmars_members_render_avatars(12, $member->followers());
+  $html = moonmars_members_render_avatars($member->followers());
 
   return $html;
 }
@@ -652,7 +650,7 @@ function moonmars_members_followees_block() {
   }
 
   // Generate HTML:
-  $html = moonmars_members_render_avatars(12, $member->followees());
+  $html = moonmars_members_render_avatars($member->followees());
 
   return $html;
 }

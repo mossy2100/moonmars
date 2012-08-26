@@ -139,7 +139,7 @@ function moonmars_update_fix_aliases() {
         break;
 
       case 'notification':
-        $nxn = Notification::create($rec->nid);
+        $nxn = Nxn::create($rec->nid);
         $alias = pathauto_create_alias('node', 'return', "node/$rec->nid", array('node' => $nxn->node()), 'notification');
         $nxn->alias($alias);
         drupal_set_message("Updated notification alias to <em>" . $nxn->alias() . "</em>");
