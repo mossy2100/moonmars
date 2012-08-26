@@ -149,5 +149,5 @@ function astro_alpha_preprocess_node_item(&$vars) {
   // Ratings:
   // To rate an item, the member must be logged in, and it must have been created by someone else.
   $can_rate = $current_member && !Member::equals($current_member, $poster);
-  $vars['rating_buttons'] = $can_rate ? moonmars_ratings_buttons($current_member, 'node', $item_nid) : '';
+  $vars['rating_buttons'] = $can_rate ? moonmars_ratings_buttons($current_member, $item) : '';
 }

@@ -30,8 +30,11 @@ function moonmars_ratings_names() {
  * @param int $selected
  * @return string
  */
-function moonmars_ratings_buttons(Member $member, $entity_type, $entity_id) {
-  $current_rating = $member->rating($entity_type, $entity_id);
+function moonmars_ratings_buttons(Member $member, EntityBase $entity) {
+  $current_rating = $member->rating($entity);
+
+  $entity_type = $entity->entityType();
+  $entity_id = $entity->id();
 
   $html = "<div id='rating-buttons-{$entity_type}-{$entity_id}' class='rating-buttons' data-entity-type='$entity_type' data-entity-id='$entity_id'>\n";
 
@@ -79,7 +82,8 @@ function moonmars_ratings_ajax_rate() {
   }
 
   // Update the rating:
-  $result = $current_member->rating($entity_type, $entity_id, $rating);
+  $entity = MoonMarsEntity::getEntity($entity_type, $entity_id);
+  $result = $current_member->rating($entity, $rating);
 //  dbg($result);
 
   // Update result:

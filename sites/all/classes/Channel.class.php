@@ -77,12 +77,11 @@ class Channel extends MoonMarsNode {
     // Check if we remembered the result in the parentEntity property:
     if (!isset($this->parentEntity)) {
 
-      // Look up the entity_has_channel relationship:
-      $rels = Relation::searchBinary('has_channel', NULL, NULL, 'node', $this->nid());
+      // Look up the has_channel relationship:
+      $rels = MoonMarsRelation::searchBinary('has_channel', NULL, $this);
 
       if (!empty($rels)) {
-        $endpoint = $rels[0]->endpoint(0);
-        $this->parentEntity = MoonMarsEntity::getEntity($endpoint['entity_type'], $endpoint['entity_id']);
+        $this->parentEntity = $rels[0]->endpoint(0);
       }
     }
 
@@ -223,7 +222,7 @@ class Channel extends MoonMarsNode {
    * @return bool
    */
   public function hasItem(Item $item) {
-    return (bool) Relation::searchBinary('has_item', 'node', $this->nid(), 'node', $item->nid());
+    return (bool) MoonMarsRelation::searchBinary('has_item', $this, $item);
   }
 
   /**
@@ -235,18 +234,15 @@ class Channel extends MoonMarsNode {
    *   The channel_has_item relationship.
    */
   public function addItem(Item $item) {
-    $this_channel_nid = $this->nid();
-    $item_nid = $item->nid();
 
     // Check if the item is already in a channel:
-    $rels = Relation::searchBinary('has_item', 'node', $this_channel_nid, 'node', $item_nid);
+    $rels = MoonMarsRelation::searchBinary('has_item', $this, $item);
 
     if ($rels) {
       $rel = $rels[0];
 
       // Check the item wasn't posted in a different channel; if so, it's an error:
-      $item_channel_nid = $rel->endpointEntityId(0);
-      if ($item_channel_nid != $this_channel_nid) {
+      if ($rel->endpointEntityId(0) != $this->nid()) {
         trigger_error("Item has already been posted in another channel.", E_USER_WARNING);
         return FALSE;
       }
@@ -257,7 +253,7 @@ class Channel extends MoonMarsNode {
     }
     else {
       // Create a new relationship:
-      return Relation::createNewBinary('has_item', 'node', $this_channel_nid, 'node', $item_nid);
+      return MoonMarsRelation::createNewBinary('has_item', $this, $item);
     }
   }
 
@@ -268,8 +264,7 @@ class Channel extends MoonMarsNode {
    * @return int
    */
   public function bumpItem(Item $item) {
-    $channel_nid = $this->nid();
-    $rels = Relation::searchBinary('has_item', 'node', $channel_nid, 'node', $item->nid());
+    $rels = MoonMarsRelation::searchBinary('has_item', $this, $item);
     if ($rels) {
       $rels[0]->load();
       $rels[0]->save();
@@ -638,17 +633,6 @@ class Channel extends MoonMarsNode {
   public function renderLinks() {
     $html = '';
     $entity = $this->parentEntity();
-
-//    // Official website:
-//    $url = $this->field('field_website', LANGUAGE_NONE, 0, 'url');
-//    if ($url) {
-//      $title = htmlspecialchars("Visit " . (($entity instanceof Member) ? ($entity->name() . "'s official website") : ("the official website of " . $entity->title())), ENT_QUOTES);
-//      $html .= "
-//        <p class='official-website'>
-//          Official website:<br>
-//          <a href='$url' target='_blank' title='$title' class='autotrim'>" . rtrim(trimhttp($url), '/') . "</a>
-//        </p>\n";
-//    }
 
     // Social links:
     $social_links = '';

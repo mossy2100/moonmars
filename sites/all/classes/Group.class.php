@@ -31,6 +31,13 @@ class Group extends MoonMarsNode {
   protected $icon;
 
   /**
+   * The group's members.
+   *
+   * @var
+   */
+  protected $members;
+
+  /**
    * Constructor.
    */
   protected function __construct() {
@@ -48,7 +55,7 @@ class Group extends MoonMarsNode {
    */
   public function channel($create = TRUE) {
     if (!isset($this->channel)) {
-      $this->channel = MoonMarsEntity::getEntityChannel('node', $this->nid(), $create);
+      $this->channel = MoonMarsEntity::getEntityChannel($this, $create);
     }
     return $this->channel;
   }
@@ -182,29 +189,26 @@ class Group extends MoonMarsNode {
   /**
    * Get the members of the group.
    *
-   * @param int $offset
-   * @param int $limit
    * @return array
    */
-  public function members($offset = NULL, $limit = NULL) {
-    // Get the group's members in reverse order of that in which they joined.
-    $q = db_select('view_group_has_member', 'v')
-      ->fields('v', array('member_uid'))
-      ->condition('group_nid', $this->nid())
-      ->orderBy('created', 'DESC');
+  public function members() {
+    // Check if we already got them:
+    if (!isset($this->members)) {
 
-    // Set a limit if specified:
-    if ($offset !== NULL && $limit !== NULL) {
-      $q->range($offset, $limit);
+      // Get the group's members in reverse order of that in which they joined.
+      $q = db_select('view_group_has_member', 'v')
+        ->fields('v', array('member_uid'))
+        ->condition('group_nid', $this->nid())
+        ->orderBy('created', 'DESC');
+
+      $rs = $q->execute();
+      $this->members = array();
+      foreach ($rs as $rec) {
+        $this->members[] = Member::create($rec->member_uid);
+      }
     }
 
-    $rs = $q->execute();
-    $members = array();
-    foreach ($rs as $rec) {
-      $members[] = Member::create($rec->member_uid);
-    }
-
-    return $members;
+    return $this->members;
   }
 
   /**
@@ -227,7 +231,7 @@ class Group extends MoonMarsNode {
    * @return bool
    */
   public function hasMember(Member $member) {
-    $rels = Relation::searchBinary('has_member', 'node', $this->nid(), 'user', $member->uid());
+    $rels = MoonMarsRelation::searchBinary('has_member', $this, $member);
     return (bool) $rels;
   }
 
@@ -283,7 +287,7 @@ class Group extends MoonMarsNode {
     }
 
     // Check if the user is a member of the group, and if they're also an admin.
-    $rels = Relation::searchBinary('has_member', 'node', $this->nid(), 'user', $member->uid());
+    $rels = MoonMarsRelation::searchBinary('has_member', $this, $member);
     return $rels ? ((bool) $rels[0]->field('field_is_admin')) : FALSE;
   }
 

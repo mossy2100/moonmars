@@ -365,7 +365,7 @@ class Member extends User {
    */
   public function channel($create = TRUE) {
     if (!isset($this->channel)) {
-      $this->channel = MoonMarsEntity::getEntityChannel('user', $this->uid(), $create);
+      $this->channel = MoonMarsEntity::getEntityChannel($this, $create);
     }
     return $this->channel;
   }
@@ -687,7 +687,9 @@ class Member extends User {
    * @return array
    */
   public function followers() {
+    // Check if we already got them:
     if (!isset($this->followers)) {
+
       // Get the member's followers in reverse order of that in which they connected.
       $q = db_select('view_followers', 'vf')
         ->fields('vf', array('follower_uid'))
@@ -695,9 +697,9 @@ class Member extends User {
         ->orderBy('created', 'DESC');
       $rs = $q->execute();
 
-      $followers = array();
+      $this->followers = array();
       foreach ($rs as $rec) {
-        $followers[] = self::create($rec->follower_uid);
+        $this->followers[] = self::create($rec->follower_uid);
       }
     }
 
@@ -718,8 +720,10 @@ class Member extends User {
    *
    * @return array
    */
-  public function followees($limit = NULL) {
+  public function followees() {
+    // Check if we already got them:
     if (!isset($this->followees)) {
+
       // Get the member's followees in reverse order of that in which they connected.
       $q = db_select('view_followers', 'vf')
         ->fields('vf', array('followee_uid'))
@@ -727,9 +731,9 @@ class Member extends User {
         ->orderBy('created', 'DESC');
       $rs = $q->execute();
 
-      $followees = array();
+      $this->followees = array();
       foreach ($rs as $rec) {
-        $followees[] = self::create($rec->followee_uid);
+        $this->followees[] = self::create($rec->followee_uid);
       }
     }
 
@@ -761,7 +765,7 @@ class Member extends User {
     }
 
     // Otherwise let's look for a relationship:
-    $rels = Relation::searchBinary('follows', 'user', $this->uid(), 'user', $member->uid());
+    $rels = MoonMarsRelation::searchBinary('follows', $this, $member);
     return (bool) $rels;
   }
 
@@ -772,7 +776,7 @@ class Member extends User {
    */
   public function follow(Member $member) {
     // Create or update the follow relationship:
-    Relation::updateBinary('follows', 'user', $this->uid(), 'user', $member->uid());
+    MoonMarsRelation::updateBinary('follows', $this, $member);
 
     // Notify the followee if they want to be notified:
     if ($member->wantsFollowNotification()) {
@@ -789,7 +793,7 @@ class Member extends User {
    */
   public function unfollow(Member $member) {
     // Delete the follow relationship:
-    Relation::deleteBinary('follows', 'user', $this->uid(), 'user', $member->uid());
+    MoonMarsRelation::deleteBinary('follows', $this, $member);
   }
 
   /**
@@ -813,7 +817,7 @@ class Member extends User {
     // Create or update the membership relationship.
     // We're calling updateBinary() here instead of createBinary(), just in case, but basically this method should never
     // be called if they're already a member of the group.
-    Relation::updateBinary('has_member', 'node', $group->nid(), 'user', $this->uid());
+    MoonMarsRelation::updateBinary('has_member', $group, $this);
 
     //////////////////
     // Notifications
@@ -838,7 +842,7 @@ class Member extends User {
    */
   public function leaveGroup(Group $group) {
     // Delete the membership relationship:
-    Relation::deleteBinary('has_member', 'node', $group->nid(), 'user', $this->uid());
+    Relation::deleteBinary('has_member', $group, $this);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1338,10 +1342,11 @@ class Member extends User {
    * @param int $new_rating
    * @return int|bool
    */
-  public function rating($entity_type, $entity_id, $new_rating = NULL) {
+  public function rating($entity, $new_rating = NULL) {
     if ($new_rating === NULL) {
       // Get this member's rating for the entity.
-      $rels = Relation::searchBinary('rates', 'user', $this->uid(), $entity_type, $entity_id);
+      $rels = MoonMarsRelation::searchBinary('rates', $this, $entity);
+
       if ($rels) {
         return (int) $rels[0]->field('field_rating');
       }
@@ -1353,7 +1358,7 @@ class Member extends User {
       // Set this member's rating for the entity.
 
       // Get the member's current rating for this entity:
-      $old_rating = $this->rating($entity_type, $entity_id);
+      $old_rating = $this->rating($entity);
       // $old_rating will be FALSE if the member hasn't rated the entity yet.
 
       $rating_names = moonmars_ratings_names();
@@ -1373,16 +1378,13 @@ class Member extends User {
 
       /////////////////////////////////////////////////////////
       // Step 1. Update the rating relationship:
-      $rel = Relation::updateBinary('rates', 'user', $this->uid(), $entity_type, $entity_id, FALSE);
+      $rel = MoonMarsRelation::updateBinary('rates', $this, $entity, FALSE);
       $rel->field('field_rating', LANGUAGE_NONE, 0, 'value', $new_rating);
       $rel->field('field_multiplier', LANGUAGE_NONE, 0, 'value', 1);
       $rel->save();
 
       /////////////////////////////////////////////////////////
       // Step 2. Update the entity's score.
-
-      // Get the entity:
-      $entity = MoonMarsEntity::getEntity($entity_type, $entity_id);
 
       // Get the entity's current score:
       $entity_old_score = (int) $entity->field('field_score');

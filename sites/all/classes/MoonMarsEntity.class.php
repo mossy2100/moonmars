@@ -11,10 +11,25 @@ class MoonMarsEntity {
    * Gets an EntityBase-derived object from a Drupal entity.
    *
    * @static
-   * @param $node
-   * @return mixed
+   * @param object|string $param1
+   * @param null|object|int $param2
+   * @return EntityBase
    */
-  public static function getEntity($entity_type, $entity) {
+  public static function getEntity($param1, $param2 = NULL) {
+    // Allow for the first parameter to be an endpoint object:
+    if (is_object($param1)) {
+      $endpoint = $param1;
+      $entity_type = $endpoint->entity_type;
+      $entity = $endpoint->entity_id;
+    }
+    elseif (is_string($param2)) {
+      $entity_type = $param1;
+      $entity = $param2;
+    }
+    else {
+      return FALSE;
+    }
+
     switch ($entity_type) {
       case 'user':
         return Member::create($entity);
@@ -103,28 +118,24 @@ class MoonMarsEntity {
   /**
    * Creates a new channel for an entity.
    *
-   * @param string $entity_type
-   * @param int $entity_id
+   * @param EntityBase $entity
    * @return int
    */
-  public static function createEntityChannel($entity_type, $entity_id) {
-    // Get the parent entity object:
-    $parent_entity = self::getEntity($entity_type, $entity_id);
-
+  public static function createEntityChannel(EntityBase $entity) {
     // Create the new channel:
     $channel = Channel::create()
       ->setProperties(array(
-          'uid'   => $parent_entity->uid(),
-          'title' => $parent_entity->channelTitle(),
+          'uid'   => $entity->uid(),
+          'title' => $entity->channelTitle(),
         ));
 
     // Save the node for the first time, which will give it a nid, which we need to create the relationship:
     $channel->save();
 
     // Create the relationship between the entity and the relationship:
-    Relation::createNewBinary('has_channel', $entity_type, $entity_id, 'node', $channel->nid());
+    MoonMarsRelation::createNewBinary('has_channel', $entity, $channel);
 
-    // Reset the channel's alias and title:
+    // Reset the channel's alias and title. This needs to be done after creating the relationship.
     $channel->resetAliasAndTitle();
 
     // Return the Channel:
@@ -134,14 +145,13 @@ class MoonMarsEntity {
   /**
    * Get an entity's channel.
    *
-   * @param string $entity_type
-   * @param int $entity_id
+   * @param EntityBase $entity
    * @param bool $create
    * @return int
    */
-  public static function getEntityChannel($entity_type, $entity_id, $create = TRUE) {
+  public static function getEntityChannel(EntityBase $entity, $create = TRUE) {
     // Check if the entity already has a channel:
-    $rels = Relation::searchBinary('has_channel', $entity_type, $entity_id, 'node', NULL);
+    $rels = MoonMarsRelation::searchBinary('has_channel', $entity, NULL);
 
     if (!empty($rels)) {
       return Channel::create($rels[0]->endpointEntityId(1));
@@ -149,7 +159,7 @@ class MoonMarsEntity {
 
     // If the entity has no channel, and $create is TRUE, create the channel now:
     if ($create) {
-      return self::createEntityChannel($entity_type, $entity_id);
+      return self::createEntityChannel($entity);
     }
 
     return NULL;

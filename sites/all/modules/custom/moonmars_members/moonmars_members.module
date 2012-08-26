@@ -446,22 +446,31 @@ function moonmars_members_profile_edit() {
 /**
  * Render some member avatars in a sidebar block.
  *
- * @param int $total_member_count
+ * @param int $n_display
+ *   The maximum number of members to display in the block.
  * @param array $members
+ *   The members.
  * @return string
  */
-function moonmars_members_render_avatars($total_member_count, $members, $view_all_link = NULL) {
+function moonmars_members_render_avatars($max_n_display, array $members, $view_all_link = NULL) {
   // Member count:
   $html = "<div class='member-count'>\n";
-  $html .= format_plural($total_member_count, '1 member', '@count members');
+  $html .= format_plural(count($members), '1 member', '@count members');
   $html .= "</div>";
 
   // Avatars for most recently joined members:
   $html .= "<ul class='member-grid clearfix'>\n";
+  $n = 0;
   foreach ($members as $member) {
     $html .= "<li>\n";
     $html .= $member->avatarTooltip();
     $html .= "</li>\n";
+
+    // Limit the number displayed:
+    $n++;
+    if ($n == $max_n_display) {
+      break;
+    }
   }
   $html .= "</ul>\n";
 
@@ -623,11 +632,8 @@ function moonmars_members_followers_block() {
     return '';
   }
 
-  // Get the latest 12 followers:
-  $followers = $member->followers(12);
-
   // Generate HTML:
-  $html = moonmars_members_render_avatars($member->followerCount(), $followers);
+  $html = moonmars_members_render_avatars(12, $member->followers());
 
   return $html;
 }
@@ -645,11 +651,8 @@ function moonmars_members_followees_block() {
     return '';
   }
 
-  // Get the latest 12 followees:
-  $followees = $member->followees(12);
-
   // Generate HTML:
-  $html = moonmars_members_render_avatars($member->followeeCount(), $followees);
+  $html = moonmars_members_render_avatars(12, $member->followees());
 
   return $html;
 }
@@ -748,12 +751,11 @@ function moonmars_members_activity_redirect() {
   drupal_goto(Member::currentMember()->alias() . '/activity');
 }
 
-/**
- * Show rating buttons for the specified member.
- */
-function moonmars_members_rating_buttons($uid) {
-//  $current_member = Member::currentMember();
-//  $profile_member = Member::create($uid);
-//  $rel = Relation::searchBinary('rates', 'user', $current_member->uid(), 'user', $profile_member->uid());
-
-}
+///**
+// * Show rating buttons for the specified member.
+// */
+//function moonmars_members_rating_buttons($uid) {
+////  $current_member = Member::currentMember();
+////  $profile_member = Member::create($uid);
+////  $rel = MoonMarsRelation::searchBinary('rates', 'user', $current_member->uid(), 'user', $profile_member->uid());
+//}

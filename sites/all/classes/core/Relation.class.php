@@ -49,6 +49,7 @@ class Relation extends EntityBase {
    * @return Relation
    */
   public static function create($relation_param = NULL) {
+
     // Get the class of the object we want to create:
     $class = get_called_class();
 
@@ -97,7 +98,7 @@ class Relation extends EntityBase {
       return $relation_obj;
     }
 
-    trigger_error("Invalid parameter to Relation::create()", E_USER_ERROR);
+    trigger_error("Invalid parameter to self::create()", E_USER_ERROR);
   }
 
   /**
@@ -228,11 +229,11 @@ class Relation extends EntityBase {
    *
    * @param string $lang
    * @param int $delta
-   * @return array
+   * @return object|null
    */
   public function endpoint($delta, $lang = LANGUAGE_NONE) {
     $this->load();
-    return isset($this->entity->endpoints[$lang][$delta]) ? $this->entity->endpoints[$lang][$delta] : NULL;
+    return isset($this->entity->endpoints[$lang][$delta]) ? ((object) $this->entity->endpoints[$lang][$delta]) : NULL;
   }
 
   /**
@@ -295,15 +296,21 @@ class Relation extends EntityBase {
    *
    * @static
    * @param string $relationship_type
-   * @param string $entity_type0
-   * @param int $entity_id0
-   * @param string $entity_type1
-   * @param int $entity_id1
+   * @param EntityBase $entity0
+   * @param EntityBase $entity1
    * @param bool $save
    *   Whether or not to save the relationship. Defaults to TRUE.
    * @return Relation
    */
-  public static function createNewBinary($relationship_type, $entity_type0, $entity_id0, $entity_type1, $entity_id1, $save = TRUE) {
+  public static function createNewBinary($relationship_type, $entity0, $entity1, $save = TRUE) {
+    $entity_type0 = $entity0->entityType();
+    $entity_id0 = $entity0->id();
+    $entity_type1 = $entity1->entityType();
+    $entity_id1 = $entity1->id();
+
+    // Get the called class:
+    $class = get_called_class();
+
     $endpoints = array(
       array(
         'entity_type' => $entity_type0,
@@ -319,7 +326,7 @@ class Relation extends EntityBase {
     $rel_entity = relation_create($relationship_type, $endpoints);
 
     // Create the Relation object:
-    $relation = Relation::create($rel_entity);
+    $relation = $class::create($rel_entity);
 
     // Save if requested:
     if ($save) {
@@ -335,36 +342,28 @@ class Relation extends EntityBase {
    * @todo This method currently relies on the database view 'view_relationship', which makes it somewhat unportable.
    *
    * @param string $relationship_type
-   * @param string $entity_type0
+   * @param EntityBase $entity0
    *   Use NULL to match all.
-   * @param int $entity_id0
-   *   Use NULL to match all.
-   * @param string $entity_type1
-   *   Use NULL to match all.
-   * @param int $entity_id1
+   * @param EntityBase $entity1
    *   Use NULL to match all.
    * @param null|int $offset
    * @param null|int $limit
    * @return array
    */
-  public static function searchBinary($relationship_type, $entity_type0 = NULL, $entity_id0 = NULL, $entity_type1 = NULL, $entity_id1 = NULL, $offset = NULL, $limit = NULL, $orderByField = NULL, $orderByDirection = NULL) {
+  public static function searchBinary($relationship_type, $entity0 = NULL, $entity1 = NULL, $offset = NULL, $limit = NULL, $orderByField = NULL, $orderByDirection = NULL) {
     // Look for a relationship record:
     $q = db_select('view_relationship', 'vr')
       ->fields('vr', array('rid'));
 
     // Add WHERE clause:
     $q->condition('relation_type', $relationship_type);
-    if ($entity_type0 !== NULL) {
-      $q->condition('entity_type0', $entity_type0);
+    if ($entity0 !== NULL) {
+      $q->condition('entity_type0', $entity0->entityType());
+      $q->condition('entity_id0', $entity0->id());
     }
-    if ($entity_id0 !== NULL) {
-      $q->condition('entity_id0', $entity_id0);
-    }
-    if ($entity_type1 !== NULL) {
-      $q->condition('entity_type1', $entity_type1);
-    }
-    if ($entity_id1 !== NULL) {
-      $q->condition('entity_id1', $entity_id1);
+    if ($entity1 !== NULL) {
+      $q->condition('entity_type1', $entity1->entityType());
+      $q->condition('entity_id1', $entity1->id());
     }
 
     // Add LIMIT clause:
@@ -381,11 +380,14 @@ class Relation extends EntityBase {
     }
     $q->orderBy($orderByField, $orderByDirection);
 
+    // Get the called class:
+    $class = get_called_class();
+
     // Get the relationships:
     $rs = $q->execute();
     $results = array();
     foreach ($rs as $rec) {
-      $results[] = Relation::create($rec->rid);
+      $results[] = $class::create($rec->rid);
     }
     return $results;
   }
@@ -394,16 +396,18 @@ class Relation extends EntityBase {
    * Update or create a relationship.
    *
    * @param string $relationship_type
-   * @param string $entity_type0
-   * @param int $entity_id0
-   * @param string $entity_type1
-   * @param int $entity_id1
+   * @param EntityBase $entity0
+   * @param EntityBase $entity1
    * @param bool $save
    *   Whether or not to save the relationship. Defaults to TRUE.
+   * @return Relation
    */
-  public static function updateBinary($relationship_type, $entity_type0, $entity_id0, $entity_type1, $entity_id1, $save = TRUE) {
+  public static function updateBinary($relationship_type, $entity0, $entity1, $save = TRUE) {
+    // Get the called class:
+    $class = get_called_class();
+
     // See if the relationship already exists:
-    $rels = Relation::searchBinary($relationship_type, $entity_type0, $entity_id0, $entity_type1, $entity_id1);
+    $rels = $class::searchBinary($relationship_type, $entity0, $entity1);
 
     if ($rels) {
       // Update the relationship. We really just want to update the changed timestamp, so let's just load and save it.
@@ -416,7 +420,7 @@ class Relation extends EntityBase {
     }
     else {
       // Create a new relationship:
-      $rel = Relation::createNewBinary($relationship_type, $entity_type0, $entity_id0, $entity_type1, $entity_id1, $save);
+      $rel = $class::createNewBinary($relationship_type, $entity0, $entity1, $save);
     }
 
     return $rel;
@@ -426,16 +430,17 @@ class Relation extends EntityBase {
    * Delete relationships.
    *
    * @param string $relationship_type
-   * @param string $entity_type0
-   * @param int $entity_id0
-   * @param string $entity_type1
-   * @param int $entity_id1
+   * @param EntityBase $entity0
+   * @param EntityBase $entity1
    * @return bool
    *   TRUE on success, FALSE on failure
    */
-  public static function deleteBinary($relationship_type, $entity_type0 = NULL, $entity_id0 = NULL, $entity_type1 = NULL, $entity_id1 = NULL) {
+  public static function deleteBinary($relationship_type, $entity0 = NULL, $entity1 = NULL) {
+    // Get the called class:
+    $class = get_called_class();
+
     // Get the relationships:
-    $rels = Relation::searchBinary($relationship_type, $entity_type0, $entity_id0, $entity_type1, $entity_id1);
+    $rels = $class::searchBinary($relationship_type, $entity0, $entity1);
 
     // If none were found, return FALSE:
     if (empty($rels)) {
