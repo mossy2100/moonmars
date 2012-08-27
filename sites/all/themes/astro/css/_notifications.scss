@@ -81,3 +81,42 @@
     }
   }
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Notifications preferences form
+
+form#moonmars-nxn-form {
+  @include blank-container;
+
+  // Set up fieldsets:
+  fieldset.form-wrapper {
+    legend {
+      top: -5px;
+    }
+
+    div.fieldset-wrapper {
+      @include grey-form-style;
+    }
+  }
+
+  .form-type-radios {
+    margin: 15px 0 5px;
+
+    .form-radios {
+      .form-type-radio {
+        display: inline;
+        margin-right: 10px;
+
+        input.form-radio {
+          margin-right: 2px;
+        }
+      }
+    }
+  }
+
+  .form-type-checkboxes {
+    margin: 0 0 0 20px;
+  }
+
+}
+

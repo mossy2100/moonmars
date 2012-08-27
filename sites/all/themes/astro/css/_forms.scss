@@ -27,6 +27,7 @@ form {
   }
 
   fieldset {
+    @include blank-container;
     margin-bottom: 25px;
 
     legend {
@@ -363,13 +364,4 @@ form#moonmars-groups-search-form {
 #autocomplete li.selected {
   background: $red3;
   color: #fff;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Relation edit form
-
-#relation-edit-form {
-  .form-item-field-item-notification-und {
-    margin-top: 0;
-  }
 }

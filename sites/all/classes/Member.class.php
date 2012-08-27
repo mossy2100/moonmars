@@ -55,12 +55,18 @@ class Member extends User {
   protected $groups;
 
   /**
-   * Which misc notifications the member wants.
-   * @todo update to contain details of all nxns.
+   * If the member wants none, all or some of a certain type of notification.
    *
    * @var array
    */
-  protected $miscNxns;
+  protected $nxnPrefs;
+
+  /**
+   * Conditions for when a member only wants some of a certain type of notification.
+   *
+   * @var array
+   */
+  protected $nxnPrefConditions;
 
   /**
    * Constructor.
@@ -787,7 +793,7 @@ class Member extends User {
     MoonMarsRelation::updateBinary('follows', $this, $member);
 
     // Notify the followee, if they want to be notified:
-    if ($member->wantsFollowNxn()) {
+    if ($member->wantsNxn('site', 'new-follower')) {
       $subject = "You have a new follower!";
       $summary = $this->link() . " followed you. They're really cool, you could " . l('follow them back', $this->alias() . '/follow') . ".";
       $member->notify($summary, NULL, $this, $member->channel());
@@ -802,15 +808,6 @@ class Member extends User {
   public function unfollow(Member $member) {
     // Delete the follow relationship:
     MoonMarsRelation::deleteBinary('follows', $this, $member);
-  }
-
-  /**
-   * Check if the member wants to be notified when someone follows them.
-   *
-   * @return bool
-   */
-  public function wantsFollowNxn() {
-    return in_array('follow', $this->miscNxns('site'));
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -837,7 +834,7 @@ class Member extends User {
     $members = $group->members();
     foreach ($members as $member) {
       // If they want to be notified, notify them:
-      if ($member->wantMiscNxn('group', 'new-member')) {
+      if ($member->wantsNxn('group', 'new-member')) {
         $member->notify($summary, $group, $this);
       }
     }
@@ -846,7 +843,7 @@ class Member extends User {
     $members = $this->followers();
     foreach ($members as $member) {
       // If they want to be notified, notify them:
-      if ($member->wantMiscNxn('followee', 'join-group')) {
+      if ($member->wantsNxn('followee', 'join-group')) {
         $member->notify($summary, $group, $this);
       }
     }
@@ -901,89 +898,90 @@ class Member extends User {
       'summary' => "<p style='margin: 0 0 10px; color: #919191;'>$summary</p>",
       'text'    => "<p style='margin: 0;'>$text</p>",
     );
-    drupal_mail('moonmars_notifications', 'notification', $this->mail(), language_default(), $params);
+    drupal_mail('moonmars_nxn', 'notification', $this->mail(), language_default(), $params);
   }
 
   /**
-   * Get which things of a certain type and category the member wants to be notified about.
+   * Get the cached/database value for what notifications a member wants of a certain type.
+   * Returns MOONMARS_NXN_NO, MOONMARS_NXN_YES, or an array of conditions.
    *
    * @param string $category
    *   site, channel, followee or group
-   * @param string $thing
-   *   member, group, item or comment
-   * @return array
-   */
-  public function whichNxns($category, $thing) {
-    $result = array();
-
-    // Preference for new things:
-    $new_field = 'field_' . $category . '_new_' . $thing . '_nxn';
-    $result['new'] = $this->field($new_field);
-
-    // If they chose to be notified about only some of the new things, which ones?
-    if ($result['new'] == 'some') {
-      $which_field = 'field_' . $category . '_which_' . $thing . '_nxn';
-      $values = $this->prop($which_field);
-      if ($values && isset($values[LANGUAGE_NONE]) && is_array($values[LANGUAGE_NONE])) {
-        foreach ($values[LANGUAGE_NONE] as $value) {
-          if (isset($value['value']) && $value['value']) {
-            $result['which'][] = $value['value'];
-          }
-        }
-      }
-    }
-
-    return $result;
-  }
-
-  /**
-   * Get the miscellaneous notifications the member wants in a certain category.
-   *
-   * @param string $category
-   *   site, channel, followee or group
-   * @return array
-   */
-  public function miscNxns($category) {
-    // Check if we already got these:
-    if (!isset($this->miscNxns) || !isset($this->miscNxns[$category])) {
-      $this->miscNxns[$category] = array();
-
-      $field = "field_{$category}_misc_nxn";
-      if (isset($this->entity->$field)) {
-        $values = $this->entity->$field;
-        if ($values && isset($values[LANGUAGE_NONE]) && is_array($values[LANGUAGE_NONE])) {
-          foreach ($values[LANGUAGE_NONE] as $value) {
-            if (isset($value['value']) && $value['value']) {
-              $this->miscNxns[$category][] = $value['value'];
-            }
-          }
-        }
-      }
-      else {
-        // Look in the database table:
-        $col = "{$field}_value";
-        $q = db_select("field_data_{$field}", 'mn')
-          ->fields('mn', array($col))
-          ->condition('entity_id', $this->uid());
-        $rs = $q->execute();
-        foreach ($rs as $rec) {
-          $this->miscNxns[$category][] = $rec->$col;
-        }
-      }
-    }
-
-    return $this->miscNxns[$category];
-  }
-
-  /**
-   * Check if the member wants a certain miscellaneous notification.
-   *
-   * @static
-   * @param string $category
    * @param string $nxn_key
+   * @return int|array
    */
-  public function wantMiscNxn($category, $nxn_key) {
-    return in_array($nxn_key, $this->miscNxns($category));
+  public function nxnPref($nxn_category, $nxn_key) {
+
+    // Check if we already got this result:
+    if (!isset($this->nxnPrefs[$nxn_category][$nxn_key])) {
+      $table = "moonmars_{$nxn_category}_nxn_pref";
+
+      // Let's get all the fields from the one record, since we're querying that record anyway.
+      // It will save database hits later if we need to know another nxn pref from the same category.
+      $q = db_select($table, 'np')
+        ->fields('np')
+        ->condition('uid', $this->uid());
+      $rs = $q->execute();
+      $rec = $rs->fetchAssoc();
+      if ($rec) {
+        foreach ($rec as $key => $value) {
+          $nxn_key2 = str_replace('_', '-', $key);
+          $this->nxnPrefs[$nxn_category][$nxn_key2] = unserialize($value);
+        }
+      }
+
+      // If we still don't have the value, use the default:
+      if (!isset($this->nxnPrefs[$nxn_category][$nxn_key])) {
+        $definitions = moonmars_nxn_definitions();
+        $wants = $definitions[$nxn_category]['nxns'][$nxn_key]['default'];
+
+        // Check if we already got this result:
+        if ($wants == MOONMARS_NXN_SOME) {
+          foreach ($definitions[$nxn_category]['nxns'][$nxn_key]['conditions'] as $nxn_condition => $nxn_condition_info) {
+            $this->nxnPrefs[$nxn_category][$nxn_key][$nxn_condition] = $nxn_condition_info['default'];
+          }
+        }
+        else {
+          // Set the preference to NXN_NO ot NXN_YES:
+          $this->nxnPrefs[$nxn_category][$nxn_key] = $wants;
+        }
+      }
+    }
+
+    return $this->nxnPrefs[$nxn_category][$nxn_key];
+  }
+
+  /**
+   * Find out whether a member wants a certain notification in a certain category.
+   * Returns MOONMARS_NXN_NO, MOONMARS_NXN_YES, or MOONMARS_NXN_SOME.
+   *
+   * @param string $category
+   *   site, channel, followee or group
+   * @param string $nxn_key
+   * @return int
+   */
+  public function nxnPrefWants($nxn_category, $nxn_key) {
+    $pref = $this->nxnPref($nxn_category, $nxn_key);
+    return is_array($pref) ? MOONMARS_NXN_SOME : $pref;
+  }
+
+  /**
+   * Find out the conditions for when a member only wants some of a certain kind of notification.
+   * Arrays of conditions have the condition key as keys and booleans as values, e.g.
+   *    array(
+   *      'mention' => TRUE,
+   *      'topic' => FALSE,
+   *    )
+   * Then we know which checkboxes have actually been set, i.e. if the key is not in the array then use the default.
+   *
+   * @param string $category
+   *   site, channel, followee or group
+   * @param string $nxn_key
+   * @return array|null
+   */
+  public function nxnPrefConditions($nxn_category, $nxn_key) {
+    $pref = $this->nxnPref($nxn_category, $nxn_key);
+    return is_array($pref) ? $pref : array();
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

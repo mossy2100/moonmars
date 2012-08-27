@@ -16,6 +16,7 @@ function field_rename_form_alter(&$form, &$form_state, $form_id) {
     $form['field']['new_field_name']['#default_value'] = $form['#field']['field_name'];
     $form['field']['new_field_name']['#required'] = TRUE;
     $form['field']['new_field_name']['#weight'] = -1000;
+    $form['field']['new_field_name']['#maxlength'] = 32;
 
     // Custom submit handler:
     $form['#submit'][] = 'field_rename_form_submit';

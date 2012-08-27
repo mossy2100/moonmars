@@ -507,12 +507,12 @@ function user_get_roles($uid) {
 }
 
 /**
- * Checks if the logged-in user is the superuser.
+ * Checks if the logged-in user is an administrator.
  *
  * @return bool
  */
-function user_is_superuser() {
-  return $GLOBALS['user']->uid == 1;
+function user_is_admin() {
+  return user_has_role('administrator');
 }
 
 /**
@@ -520,8 +520,8 @@ function user_is_superuser() {
  *
  * @return bool
  */
-function user_is_admin() {
-  return user_has_role('administrator');
+function user_is_superuser() {
+  return $GLOBALS['user']->uid == 1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

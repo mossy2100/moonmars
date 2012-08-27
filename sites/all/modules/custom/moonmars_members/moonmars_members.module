@@ -146,7 +146,7 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
       $form['#attached']['js'][] = "$module_path/js/moon-or-mars.js";
       $form['#attached']['js'][] = "$module_path/js/profile-form.js";
       $form['#attached']['js'][] = "$module_path/js/check-username.js";
-      $form['#attached']['js'][] = drupal_get_path('module', 'moonmars_notifications') . '/js/notifications-form.js';
+      $form['#attached']['js'][] = drupal_get_path('module', 'moonmars_nxn') . '/js/notifications-form.js';
 
       // Check if the tab is specified in the querystring:
       $tab = isset($_GET['tab']) ? addslashes($_GET['tab']) : NULL;
@@ -160,12 +160,13 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
           <p>The default settings should suit most people.</p>
           <div id='notifications-form-buttons'>
             <strong>Select:</strong>
-            <input type='button' onclick='notificationsFormSelectNothing()' value='Nothing'>
-            <input type='button' onclick='notificationsFormSelectDefault()' value='Default'>
-            <input type='button' onclick='notificationsFormSelectEverything()' value='Everything'>
+            <input type='button' onclick='nxnSelectAll()' value='Everything'>
+            <input type='button' onclick='nxnSelectNone()' value='Nothing'>
+            <input type='button' onclick='nxnSelectDefault()' finvalue='Default'>
           </div>
           <script>
           var tab = '$tab';
+          var nxnDefaultPrefs = " . json_encode(Nxn::defaultPrefs()) . ";
           </script>
         ",
       );

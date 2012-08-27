@@ -1,0 +1,422 @@
+<?php
+
+/**
+ * Constant for specifying notifications of a certain type.
+ */
+const MOONMARS_NXN_NO   = 0;
+const MOONMARS_NXN_YES  = 1;
+const MOONMARS_NXN_SOME = 2;
+
+/**
+ * Implements hook_menu().
+ */
+function moonmars_nxn_menu() {
+  $items = array();
+  $items['user/%/notifications'] = array(
+    'page callback'   => 'moonmars_nxn_list',
+    'page arguments'  => array(1),
+    'access callback' => 'user_is_logged_in',
+    'type'            => MENU_CALLBACK,
+  );
+  $items['member/%/notifications/preferences'] = array(
+    'page callback'   => 'drupal_get_form',
+    'page arguments'  => array('moonmars_nxn_form', 1),
+    'access callback' => 'user_is_logged_in',
+    'type'            => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_mail().
+ */
+function moonmars_nxn_mail($key, &$message, $params) {
+  switch ($key) {
+    case 'notification':
+      $message['subject'] = $params['subject'];
+      $message['body'][] = $params['summary'];
+      $message['body'][] = $params['text'];
+      $message['headers']['Content-Type'] = "text/html; charset='utf-8';";
+      break;
+  }
+}
+
+/**
+ * Get the notification definitions.
+ *
+ * @return array
+ */
+function moonmars_nxn_definitions() {
+
+  $new_member_conditions = array(
+    'country' => array(
+      'label'   => "Members from the same country as me",
+      'default' => TRUE,
+    ),
+  );
+
+  $new_group_conditions = array(
+    'event'   => array(
+      'label'   => "New events",
+      'default' => TRUE,
+    ),
+    'project' => array(
+      'label'   => "New projects",
+      'default' => TRUE,
+    ),
+    'topic'   => array(
+      'label'   => "Groups about a topic I'm interested in",
+      'default' => TRUE,
+    ),
+  );
+
+  $new_item_conditions = array(
+    'mention' => array(
+      'label'   => "Items that mention me",
+      'default' => TRUE,
+    ),
+    'topic'   => array(
+      'label'   => "Items about a topic I'm interested in",
+      'default' => TRUE,
+    ),
+  );
+
+  $new_comment_conditions = array(
+    'mention' => array(
+      'label'   => "Comments that mention me",
+      'default' => TRUE,
+    ),
+    'item'    => array(
+      'label'   => "Comments on an item I shared",
+      'default' => TRUE,
+    ),
+    'comment' => array(
+      'label'   => "Comments on an item I also commented on",
+      'default' => TRUE,
+    ),
+    'topic'   => array(
+      'label'   => "Comments about a topic I'm interested in",
+      'default' => TRUE,
+    ),
+  );
+
+  return array(
+    'site'     => array(
+      'title' => "Site",
+      'description' => "Select your notification preferences for the whole site. This excludes closed groups that you aren't a member of.",
+      'nxns'  => array(
+        'new-member'   => array(
+          'title'       => 'New members',
+          'description' => "Do you want to be notified about new members?",
+          'default'     => MOONMARS_NXN_NO,
+          'conditions'  => $new_member_conditions,
+        ),
+        'new-group'    => array(
+          'title'       => 'New groups',
+          'description' => "Do you want to be notified about new groups?",
+          'default'     => MOONMARS_NXN_YES,
+          'conditions'  => $new_group_conditions,
+        ),
+        'new-item'     => array(
+          'title'       => 'New items',
+          'description' => "Do you want to be notified about new items?",
+          'default'     => MOONMARS_NXN_SOME,
+          'conditions'  => $new_item_conditions,
+        ),
+        'new-comment'  => array(
+          'title'       => 'New comments',
+          'description' => "Do you want to be notified about new comments?",
+          'default'     => MOONMARS_NXN_SOME,
+          'conditions'  => $new_comment_conditions,
+        ),
+        'new-follower' => array(
+          'title'       => 'New followers',
+          'description' => "Do you want to be notified about new followers?",
+          'default'     => MOONMARS_NXN_YES,
+        ),
+      ),
+    ),
+    'channel'  => array(
+      'title' => "My channel",
+      'description' => "Select the notifications you want about your channel.",
+      'nxns'  => array(
+        'new-item'    => array(
+          'title'       => 'New items',
+          'description' => "Do you want to be notified about new items shared in your channel?",
+          'default'     => MOONMARS_NXN_YES,
+          'conditions'  => $new_item_conditions,
+        ),
+        'new-comment' => array(
+          'title'       => 'New comments',
+          'description' => "Do you want to be notified about new comments posted in your channel?",
+          'default'     => MOONMARS_NXN_YES,
+          'conditions'  => $new_comment_conditions,
+        ),
+      ),
+    ),
+    'followee' => array(
+      'title' => "My followees",
+      'description' => "Select the notifications you want about the members you follow.",
+      'nxns'  => array(
+        'new-item'           => array(
+          'title'       => 'New items',
+          'description' => "Do you want to be notified when they share a new item?",
+          'default'     => MOONMARS_NXN_YES,
+          'conditions'  => $new_item_conditions,
+        ),
+        'new-comment'        => array(
+          'title'       => 'New comments',
+          'description' => "Do you want to be notified when they post a new comment?",
+          'default'     => MOONMARS_NXN_YES,
+          'conditions'  => $new_comment_conditions,
+        ),
+        'join-group'         => array(
+          'title'       => 'Joins group',
+          'description' => "Do you want to be notified when they join a group?",
+          'default'     => MOONMARS_NXN_NO,
+        ),
+        'update-profile'     => array(
+          'title'       => 'Updates profile',
+          'description' => "Do you want to be notified when they update their profile?",
+          'default'     => MOONMARS_NXN_NO,
+        ),
+        'new-page'           => array(
+          'title'       => 'New pages',
+          'description' => "Do you want to be notified when they create a new page?",
+          'default'     => MOONMARS_NXN_YES,
+        ),
+      ),
+    ),
+    'group'    => array(
+      'title' => "My groups",
+      'description' => "Select the notifications you want about your groups.",
+      'nxns'  => array(
+        'new-member'        => array(
+          'title'       => 'New members',
+          'description' => "Do you want to be notified when someone joins?",
+          'default'     => MOONMARS_NXN_YES,
+          'conditions'  => $new_member_conditions,
+        ),
+        'new-group'         => array(
+          'title'       => 'New subgroups',
+          'description' => "Do you want to be notified when a new subgroup is created?",
+          'default'     => MOONMARS_NXN_YES,
+          'conditions'  => $new_group_conditions,
+        ),
+        'new-item'          => array(
+          'title'       => 'New items',
+          'description' => "Do you want to be notified when a new item is shared?",
+          'default'     => MOONMARS_NXN_YES,
+          'conditions'  => $new_item_conditions,
+        ),
+        'new-comment'       => array(
+          'title'       => 'New items',
+          'description' => "Do you want to be notified when a new comment is posted?",
+          'default'     => MOONMARS_NXN_YES,
+          'conditions'  => $new_comment_conditions,
+        ),
+        'new-admin'         => array(
+          'title'       => 'New administrator',
+          'description' => "Do you want to be notified when the group gets a new adminstrator?",
+          'default'     => MOONMARS_NXN_YES,
+        ),
+        'want-admin'        => array(
+          'title'       => 'Administrator wanted',
+          'description' => "Do you want to be notified when the groups needs a new adminstrator?",
+          'default'     => MOONMARS_NXN_YES,
+        ),
+        'update-profile'    => array(
+          'title'       => 'Profile updated',
+          'description' => "Do you want to be notified when the group profile is updated?",
+          'default'     => MOONMARS_NXN_NO,
+        ),
+      ),
+    ),
+  );
+}
+
+/**
+ * List a member's notifications.
+ *
+ * @return string
+ */
+function moonmars_nxn_list($uid) {
+  // Make sure the user is looking at their own notifications and not someone else's.
+  $current_member = Member::currentMember();
+  if ($current_member->uid() != $uid) {
+    drupal_access_denied();
+  }
+
+  drupal_set_title('Your Notifications');
+
+  $html = views_embed_view('notifications', 'page', $uid);
+
+  return $html;
+}
+
+/**
+ * Form for notifications preferences.
+ *
+ * @return array
+ */
+function moonmars_nxn_form($form, &$form_state, $uid) {
+  // Make sure the user is looking at their own notifications and not someone else's.
+  $current_member = Member::currentMember();
+  $profile_member = Member::create($uid);
+  if (!Member::equals($current_member, $profile_member)) {
+    drupal_access_denied();
+  }
+
+  // Set the title:
+  drupal_set_title("Edit notifications preferences");
+
+  // Start building the form:
+  $form = array(
+    '#attached'               => array(
+      'js' => array(
+        drupal_get_path('module', 'moonmars_nxn') . '/js/nxn-form.js',
+      ),
+    ),
+    'uid'                     => array(
+      '#type'  => 'hidden',
+      '#value' => $current_member->uid(),
+    ),
+    'buttons'                 => array(
+      '#markup' => "
+        <p>These preferences are additive, which is to say, if one preference say 'yes', and another says 'no',
+        the result will be 'yes'. For example, if you say you want no notifications about your groups, but you want all
+        notifications about your followees, then if a followee posts something in one of your groups you'll be notified.</p>
+        <p>The default settings should suit most people.</p>
+        <div id='notifications-form-buttons'>
+          <strong>Select:</strong>&nbsp;
+          <input type='button' onclick='nxnSelectNone()' value='Nothing'>
+          <input type='button' onclick='nxnSelectAll()' value='Everything'>
+          <input type='button' onclick='nxnSelectDefault()' value='Default'>
+        </div>
+        <script>
+        var nxnDefinitions = " . json_encode(moonmars_nxn_definitions()) . ";
+        </script>
+      ",
+    ),
+  );
+
+  // Get the nxn definitions:
+  $definitions = moonmars_nxn_definitions();
+
+  foreach ($definitions as $nxn_category => $nxn_category_info) {
+    // Create a fieldset for the category:
+    $form[$nxn_category] = array(
+      '#type'        => 'fieldset',
+      '#title'       => $nxn_category_info['title'],
+      '#description' => $nxn_category_info['description']
+    );
+
+    foreach ($nxn_category_info['nxns'] as $nxn_key => $nxn_info) {
+      $nxn_full_key = "$nxn_category-$nxn_key";
+      $form[$nxn_category][$nxn_full_key] = array(
+        '#type'          => 'radios',
+        '#title'         => $nxn_info['title'],
+        '#description'   => $nxn_info['description'],
+        '#options'       => array(
+          MOONMARS_NXN_NO  => 'No',
+          MOONMARS_NXN_YES => 'Yes',
+        ),
+        '#default_value' => $current_member->nxnPrefWants($nxn_category, $nxn_key),
+      );
+
+      // If there are conditions...
+      if (isset($nxn_info['conditions'])) {
+        // Add the 'Some' option:
+        $form[$nxn_category][$nxn_full_key]['#options'][MOONMARS_NXN_SOME] = 'Some';
+
+        // Create the checkbox group:
+        $nxn_cond_key = $nxn_full_key . '-cond';
+        $form[$nxn_category][$nxn_cond_key] = array(
+          '#type'          => 'checkboxes',
+          '#title'         => 'Notify me about:',
+          '#default_value' => $current_member->nxnPrefConditions($nxn_category, $nxn_key),
+        );
+
+        // Add the options:
+        foreach ($nxn_info['conditions'] as $nxn_condition => $nxn_condition_info) {
+          $form[$nxn_category][$nxn_cond_key]['#options'][$nxn_condition] = $nxn_condition_info['label'];
+        }
+      }
+    }
+  }
+
+  // Submit button:
+  $form['submit'] = array(
+    '#prefix' => "<div class='form-actions'>",
+    '#type'   => 'submit',
+    '#value'  => 'Save',
+    '#submit' => array('moonmars_nxn_form_submit'),
+    '#suffix' => "</div>",
+  );
+
+  return $form;
+}
+
+/**
+ * Submit handler for nxn prefs form.
+ */
+function moonmars_nxn_form_submit($form, &$form_state) {
+  $uid = (int) $form_state['values']['uid'];
+  $profile_member = Member::create($uid);
+
+  $nxn_prefs = array();
+  $definitions = moonmars_nxn_definitions();
+
+  dpm($form_state['values']);
+
+//  foreach ($form_state['values'] as $key => $value) {
+//    $parts = explode('_', $key);
+//    if (!isset($definitions[$parts[0]])) {
+//      continue;
+//    }
+//
+//    if (is_array($value)) {
+//      $value = array_values(array_filter($value));
+//    }
+//
+//    if ($parts[1] == 'which') {
+//      $new_key = $parts[0] . '_new_' . $parts[2];
+//      // If Some was selected, but nothing was checked, switch it to None:
+//      if ($nxn_prefs[$new_key] == 'some' && !$value) {
+//        $nxn_prefs[$new_key] = 'none';
+//      }
+//    }
+//
+//    // Remember:
+//    $nxn_prefs[$key] = $value;
+//  }
+//
+//  // Store the notifications preferences in the member's profile:
+//  $profile_member->field('field_notifications_preferences', LANGUAGE_NONE, 0, 'value', serialize($nxn_prefs));
+//  $profile_member->save();
+//
+//  // Message:
+//  drupal_set_message("Your notifications preferences have been updated.");
+//
+////  dpm($nxn_prefs);
+//
+//  // Go back to their notifications:
+//  $form_state['redirect'] = $profile_member->alias() . '/notifications';
+}
+
+/*
+
+mention|Items that mention me
+topic|Items about a topic I'm interested in
+
+Select which items you want to be notified about.
+
+mention|Comments that mention me
+topic|Comments about a topic I'm interested in
+item|Comments on an item I shared
+comment|Comments on an item I've commented on
+
+Select which comments you want to be notified about.
+*/
+
+

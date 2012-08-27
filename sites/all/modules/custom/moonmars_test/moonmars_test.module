@@ -1,0 +1,56 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function moonmars_test_menu() {
+  $items = array();
+  $items['test/wants-nxn'] = array(
+    'page callback'    => 'moonmars_test_wants_nxn',
+    'access callback'  => 'user_is_superuser',
+    'type'             => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+function moonmars_test_wants_nxn() {
+  $member = Member::currentMember();
+  $member->load();
+
+  $nxns = array(
+    'site'     => array(
+      'new-member',
+      'new-group',
+      'new-item',
+      'new-comment',
+      'new-follower',
+    ),
+    'channel'  => array(
+      'new-item',
+      'new-comment',
+    ),
+    'followee' => array(
+      'new-item',
+      'new-comment',
+      'update-profile',
+      'join-group',
+    ),
+    'group'    => array(
+      'new-member',
+      'new-group',
+      'new-item',
+      'new-comment',
+      'new-admin',
+      'want-admin',
+      'update-profile',
+    ),
+  );
+
+  foreach ($nxns as $nxn_category => $nxn_keys) {
+    foreach ($nxn_keys as $nxn_key) {
+      dbg($member->nxnPref($nxn_category, $nxn_key));
+      echo "<hr>";
+    }
+  }
+
+}
