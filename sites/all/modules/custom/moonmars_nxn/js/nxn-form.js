@@ -17,8 +17,8 @@ $(function() {
 
   // Set up the form.
   for (var nxnCategory in nxnDefinitions) {
-    for (var nxnKey in nxnDefinitions[nxnCategory]['nxns']) {
-      nxnSetRadios(nxnCategory, nxnKey);
+    for (var nxnType in nxnDefinitions[nxnCategory]['nxns']) {
+      nxnSetRadios(nxnCategory, nxnType);
     }
   }
 });
@@ -27,19 +27,19 @@ $(function() {
  * Set default values for the radio-button/checkbox combination widgets.
  *
  * @param string nxnCategory
- * @param string nxnKey
+ * @param string nxnType
  */
-function nxnSetRadios(nxnCategory, nxnKey) {
+function nxnSetRadios(nxnCategory, nxnType) {
   // Get the radio button group:
-  var rbg_id = '#edit-' + nxnCategory + '-' + nxnKey;
+  var rbg_id = '#edit-nxn-' + nxnCategory + '-' + nxnType;
 
   // If none selected, select the default:
   if ($(rbg_id + ' .form-radio:checked').length == 0) {
-    nxnSelectDefaultPref(nxnCategory, nxnKey);
+    nxnSelectDefaultPref(nxnCategory, nxnType);
   }
 
   // If there's a checkbox group for conditions, add behaviours:
-  var cbg_id = '.form-item-' + nxnCategory + '-' + nxnKey + '-cond';
+  var cbg_id = '.form-item-nxn-' + nxnCategory + '-' + nxnType + '-cond';
   if ($(cbg_id).length) {
 
     // Remember the original height of the checkbox group:
@@ -94,8 +94,8 @@ function nxnSelectNone() {
  */
 function nxnSelectDefault() {
   for (var nxnCategory in nxnDefinitions) {
-    for (var nxnKey in nxnDefinitions[nxnCategory]['nxns']) {
-      nxnSelectDefaultPref(nxnCategory, nxnKey);
+    for (var nxnType in nxnDefinitions[nxnCategory]['nxns']) {
+      nxnSelectDefaultPref(nxnCategory, nxnType);
     }
   }
 }
@@ -104,36 +104,21 @@ function nxnSelectDefault() {
  * Select default preferences for a given notification, specified by category and key.
  *
  * @param string nxnCategory
- * @param string nxnKey
+ * @param string nxnType
  */
-function nxnSelectDefaultPref(nxnCategory, nxnKey) {
-
-
-
+function nxnSelectDefaultPref(nxnCategory, nxnType) {
   // Select and click the default radio button:
-  var nxn = nxnDefinitions[nxnCategory]['nxns'][nxnKey];
-  console.log(nxn);
-
-  var nxnPref = nxn['default'];
-
-  console.log(nxnCategory + ', ' + nxnKey + ', nxnPref == ' + nxnPref);
-
-  var rbgId = '#edit-' + nxnCategory + '-' + nxnKey;
-  $(rbgId + ' .form-radio[value=' + nxnPref + ']').check().click();
+  var nxn = nxnDefinitions[nxnCategory]['nxns'][nxnType];
+  var nxnWants = nxn['default'];
+  var rbgId = '#edit-nxn-' + nxnCategory + '-' + nxnType;
+  $(rbgId + ' .form-radio[value=' + nxnWants + ']').check().click();
 
   // If the default radio is 'Some'...
-  if (nxnPref == MOONMARS_NXN_SOME) {
-
+  if (nxnWants == MOONMARS_NXN_SOME) {
     // Check/uncheck the default condition checkboxes:
-    console.log('check = ' + rbgId + '-cond .form-checkbox[value=' + nxnCondition + ']' + ' = ' + (nxnPref[nxnCondition]['default'] ? 'T' : 'F'));
-
     for (var nxnCondition in nxn['conditions']) {
-
-
-      if (nxn['conditions'].hasOwnProp(nxnCondition )) {
-        console.log('hasOwnProperty(' + nxnCondition + ')')
-
-        $(rbgId + '-cond .form-checkbox[value=' + nxnCondition + ']').check(nxnPref[nxnCondition]['default']);
+      if (nxn['conditions']) {
+        $(rbgId + '-cond .form-checkbox[value=' + nxnCondition + ']').check(nxn['conditions'][nxnCondition]['default']);
       }
     }
   }

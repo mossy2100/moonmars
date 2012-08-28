@@ -79,12 +79,12 @@ class Nxn extends MoonMarsNode {
    *
    * @static
    * @param string $nxn_category
-   * @param string $nxn_key
+   * @param string $nxn_type
    * @param string $thing
    * @param array $members
    * @param array $recipients
    */
-  public static function collectRecipients($nxn_category, $nxn_key, $thing, array $members, array &$recipients) {
+  public static function collectRecipients($nxn_category, $nxn_type, $thing, array $members, array &$recipients) {
     // In case we were just passed one member, convert to an array:
     if (!is_array($members)) {
       $members = array($members);
@@ -92,7 +92,7 @@ class Nxn extends MoonMarsNode {
 
     foreach ($members as $member) {
       // Does the member want this nxn?
-      $wants_nxn = $member->wantsNxn($nxn_category, $nxn_key);
+      $wants_nxn = $member->wantsNxn($nxn_category, $nxn_type);
 
       if (is_bool($wants_nxn)) {
         if ($wants_nxn) {
@@ -165,12 +165,12 @@ class Nxn extends MoonMarsNode {
    *
    * @static
    * @param string $nxn_category
-   * @param string $nxn_key
+   * @param string $nxn_type
    * @return bool|array
    */
-  public static function defaultPref($nxn_category, $nxn_key) {
+  public static function defaultPref($nxn_category, $nxn_type) {
     $default_prefs = self::defaultPrefs();
-    return $default_prefs[$nxn_category][$nxn_key];
+    return $default_prefs[$nxn_category][$nxn_type];
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

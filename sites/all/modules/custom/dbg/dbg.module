@@ -128,13 +128,9 @@ function dbg_sql($query, $target = 'default') {
   $query_string = (string) $query;
   $statement_type = strtolower(substr($query_string, 0, strpos($query_string, ' ')));
 
-  dpm($query_string);
-
   // Prefix tables:
   $connection = Database::getConnection($target);
   $query_string = trim($connection->prefixTables($query_string));
-
-  dpm($query_string);
 
   // Convert query object to an array so we can access readonly properties:
   $query_array = object_to_array($query, TRUE);

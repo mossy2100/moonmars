@@ -62,13 +62,6 @@ class Member extends User {
   protected $nxnPrefs;
 
   /**
-   * Conditions for when a member only wants some of a certain type of notification.
-   *
-   * @var array
-   */
-  protected $nxnPrefConditions;
-
-  /**
    * Constructor.
    */
   protected function __construct() {
@@ -903,66 +896,67 @@ class Member extends User {
 
   /**
    * Get the cached/database value for what notifications a member wants of a certain type.
-   * Returns MOONMARS_NXN_NO, MOONMARS_NXN_YES, or an array of conditions.
+   * Returns an array with two keys:
+   *    nxn_wants => MOONMARS_NXN_NO, MOONMARS_NXN_YES or MOONMARS_NXN_SOME
+   *    nxn_conditions => an array of conditions
    *
    * @param string $category
    *   site, channel, followee or group
-   * @param string $nxn_key
-   * @return int|array
+   * @param string $nxn_type
+   * @return array
    */
-  public function nxnPref($nxn_category, $nxn_key) {
+  public function nxnPref($nxn_category, $nxn_type) {
 
     // Check if we already got this result:
-    if (!isset($this->nxnPrefs[$nxn_category][$nxn_key])) {
-      $table = "moonmars_{$nxn_category}_nxn_pref";
+    if (!isset($this->nxnPrefs[$nxn_category][$nxn_type])) {
 
-      // Let's get all the fields from the one record, since we're querying that record anyway.
-      // It will save database hits later if we need to know another nxn pref from the same category.
-      $q = db_select($table, 'np')
-        ->fields('np')
+      $q = db_select('moonmars_nxn_pref', 'np')
+        ->fields('np', array('nxn_wants', 'nxn_conditions'))
+        ->condition('nxn_category', $nxn_category)
+        ->condition('nxn_type', $nxn_type)
         ->condition('uid', $this->uid());
       $rs = $q->execute();
-      $rec = $rs->fetchAssoc();
+      $rec = $rs->fetchObject();
       if ($rec) {
-        foreach ($rec as $key => $value) {
-          $nxn_key2 = str_replace('_', '-', $key);
-          $this->nxnPrefs[$nxn_category][$nxn_key2] = unserialize($value);
+        $this->nxnPrefs[$nxn_category][$nxn_type]['wants'] = $rec->nxn_wants;
+        if ($rec->nxn_conditions) {
+          $this->nxnPrefs[$nxn_category][$nxn_type]['conditions'] = unserialize($rec->nxn_conditions);
         }
       }
 
       // If we still don't have the value, use the default:
-      if (!isset($this->nxnPrefs[$nxn_category][$nxn_key])) {
+      if (!isset($this->nxnPrefs[$nxn_category][$nxn_type])) {
         $definitions = moonmars_nxn_definitions();
-        $wants = $definitions[$nxn_category]['nxns'][$nxn_key]['default'];
+        $nxn = $definitions[$nxn_category]['nxns'][$nxn_type];
 
-        // Check if we already got this result:
-        if ($wants == MOONMARS_NXN_SOME) {
-          foreach ($definitions[$nxn_category]['nxns'][$nxn_key]['conditions'] as $nxn_condition => $nxn_condition_info) {
-            $this->nxnPrefs[$nxn_category][$nxn_key][$nxn_condition] = $nxn_condition_info['default'];
+        // Set the wants value:
+        $nxn_wants = $nxn['default'];
+        $this->nxnPrefs[$nxn_category][$nxn_type]['wants'] = $nxn_wants;
+
+        // If default is some, set default conditions:
+        if ($nxn_wants == MOONMARS_NXN_SOME) {
+          foreach ($nxn['conditions'] as $nxn_condition => $nxn_condition_info) {
+            $this->nxnPrefs[$nxn_category][$nxn_type]['conditions'][$nxn_condition] = $nxn_condition_info['default'];
           }
-        }
-        else {
-          // Set the preference to NXN_NO ot NXN_YES:
-          $this->nxnPrefs[$nxn_category][$nxn_key] = $wants;
         }
       }
     }
 
-    return $this->nxnPrefs[$nxn_category][$nxn_key];
+    return $this->nxnPrefs[$nxn_category][$nxn_type];
   }
 
   /**
    * Find out whether a member wants a certain notification in a certain category.
    * Returns MOONMARS_NXN_NO, MOONMARS_NXN_YES, or MOONMARS_NXN_SOME.
    *
-   * @param string $category
+   * @param string $nxn_category
    *   site, channel, followee or group
-   * @param string $nxn_key
+   * @param string $nxn_type
    * @return int
    */
-  public function nxnPrefWants($nxn_category, $nxn_key) {
-    $pref = $this->nxnPref($nxn_category, $nxn_key);
-    return is_array($pref) ? MOONMARS_NXN_SOME : $pref;
+  public function nxnPrefWants($nxn_category, $nxn_type) {
+    $nxn_pref = $this->nxnPref($nxn_category, $nxn_type);
+    return $nxn_pref['wants'];
   }
 
   /**
@@ -974,14 +968,14 @@ class Member extends User {
    *    )
    * Then we know which checkboxes have actually been set, i.e. if the key is not in the array then use the default.
    *
-   * @param string $category
+   * @param string $nxn_category
    *   site, channel, followee or group
-   * @param string $nxn_key
-   * @return array|null
+   * @param string $nxn_type
+   * @return array
    */
-  public function nxnPrefConditions($nxn_category, $nxn_key) {
-    $pref = $this->nxnPref($nxn_category, $nxn_key);
-    return is_array($pref) ? $pref : array();
+  public function nxnPrefConditions($nxn_category, $nxn_type) {
+    $nxn_pref = $this->nxnPref($nxn_category, $nxn_type);
+    return isset($nxn_pref['conditions']) ? $nxn_pref['conditions'] : array();
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

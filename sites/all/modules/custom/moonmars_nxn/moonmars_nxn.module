@@ -158,31 +158,31 @@ function moonmars_nxn_definitions() {
       'title' => "My followees",
       'description' => "Select the notifications you want about the members you follow.",
       'nxns'  => array(
-        'new-item'           => array(
+        'new-item' => array(
           'title'       => 'New items',
           'description' => "Do you want to be notified when they share a new item?",
           'default'     => MOONMARS_NXN_YES,
           'conditions'  => $new_item_conditions,
         ),
-        'new-comment'        => array(
+        'new-comment' => array(
           'title'       => 'New comments',
           'description' => "Do you want to be notified when they post a new comment?",
           'default'     => MOONMARS_NXN_YES,
           'conditions'  => $new_comment_conditions,
         ),
-        'join-group'         => array(
-          'title'       => 'Joins group',
-          'description' => "Do you want to be notified when they join a group?",
-          'default'     => MOONMARS_NXN_NO,
-        ),
-        'update-profile'     => array(
-          'title'       => 'Updates profile',
-          'description' => "Do you want to be notified when they update their profile?",
-          'default'     => MOONMARS_NXN_NO,
-        ),
-        'new-page'           => array(
+        'new-page' => array(
           'title'       => 'New pages',
           'description' => "Do you want to be notified when they create a new page?",
+          'default'     => MOONMARS_NXN_YES,
+        ),
+        'new-member' => array(
+          'title'       => 'Joins group',
+          'description' => "Do you want to be notified when they join a group?",
+          'default'     => MOONMARS_NXN_YES,
+        ),
+        'update-profile' => array(
+          'title'       => 'Updates profile',
+          'description' => "Do you want to be notified when they update their profile?",
           'default'     => MOONMARS_NXN_YES,
         ),
       ),
@@ -215,6 +215,11 @@ function moonmars_nxn_definitions() {
           'default'     => MOONMARS_NXN_YES,
           'conditions'  => $new_comment_conditions,
         ),
+        'new-page'           => array(
+          'title'       => 'New pages',
+          'description' => "Do you want to be notified when a new page is created?",
+          'default'     => MOONMARS_NXN_YES,
+        ),
         'new-admin'         => array(
           'title'       => 'New administrator',
           'description' => "Do you want to be notified when the group gets a new adminstrator?",
@@ -228,7 +233,7 @@ function moonmars_nxn_definitions() {
         'update-profile'    => array(
           'title'       => 'Profile updated',
           'description' => "Do you want to be notified when the group profile is updated?",
-          'default'     => MOONMARS_NXN_NO,
+          'default'     => MOONMARS_NXN_YES,
         ),
       ),
     ),
@@ -311,8 +316,8 @@ function moonmars_nxn_form($form, &$form_state, $uid) {
       '#description' => $nxn_category_info['description']
     );
 
-    foreach ($nxn_category_info['nxns'] as $nxn_key => $nxn_info) {
-      $nxn_full_key = "$nxn_category-$nxn_key";
+    foreach ($nxn_category_info['nxns'] as $nxn_type => $nxn_info) {
+      $nxn_full_key = "nxn-$nxn_category-$nxn_type";
       $form[$nxn_category][$nxn_full_key] = array(
         '#type'          => 'radios',
         '#title'         => $nxn_info['title'],
@@ -321,7 +326,7 @@ function moonmars_nxn_form($form, &$form_state, $uid) {
           MOONMARS_NXN_NO  => 'No',
           MOONMARS_NXN_YES => 'Yes',
         ),
-        '#default_value' => $current_member->nxnPrefWants($nxn_category, $nxn_key),
+        '#default_value' => $current_member->nxnPrefWants($nxn_category, $nxn_type),
       );
 
       // If there are conditions...
@@ -333,8 +338,8 @@ function moonmars_nxn_form($form, &$form_state, $uid) {
         $nxn_cond_key = $nxn_full_key . '-cond';
         $form[$nxn_category][$nxn_cond_key] = array(
           '#type'          => 'checkboxes',
-          '#title'         => 'Notify me about:',
-          '#default_value' => $current_member->nxnPrefConditions($nxn_category, $nxn_key),
+          '#title'         => 'Just notify me about:',
+          '#default_value' => array_keys(array_filter($current_member->nxnPrefConditions($nxn_category, $nxn_type))),
         );
 
         // Add the options:
@@ -362,61 +367,59 @@ function moonmars_nxn_form($form, &$form_state, $uid) {
  */
 function moonmars_nxn_form_submit($form, &$form_state) {
   $uid = (int) $form_state['values']['uid'];
-  $profile_member = Member::create($uid);
+  $member = Member::create($uid);
 
   $nxn_prefs = array();
-  $definitions = moonmars_nxn_definitions();
 
-  dpm($form_state['values']);
+//  dpm($form_state['values']);
 
-//  foreach ($form_state['values'] as $key => $value) {
-//    $parts = explode('_', $key);
-//    if (!isset($definitions[$parts[0]])) {
-//      continue;
-//    }
-//
-//    if (is_array($value)) {
-//      $value = array_values(array_filter($value));
-//    }
-//
-//    if ($parts[1] == 'which') {
-//      $new_key = $parts[0] . '_new_' . $parts[2];
-//      // If Some was selected, but nothing was checked, switch it to None:
-//      if ($nxn_prefs[$new_key] == 'some' && !$value) {
-//        $nxn_prefs[$new_key] = 'none';
-//      }
-//    }
-//
-//    // Remember:
-//    $nxn_prefs[$key] = $value;
-//  }
-//
-//  // Store the notifications preferences in the member's profile:
-//  $profile_member->field('field_notifications_preferences', LANGUAGE_NONE, 0, 'value', serialize($nxn_prefs));
-//  $profile_member->save();
-//
-//  // Message:
-//  drupal_set_message("Your notifications preferences have been updated.");
-//
-////  dpm($nxn_prefs);
-//
-//  // Go back to their notifications:
-//  $form_state['redirect'] = $profile_member->alias() . '/notifications';
+  foreach ($form_state['values'] as $key => $value) {
+    $parts = explode('-', $key);
+
+    if ($parts[0] != 'nxn') {
+      continue;
+    }
+
+    $nxn_category = $parts[1];
+    $nxn_type = "{$parts[2]}-{$parts[3]}";
+
+    if (is_numeric($value)) {
+      $nxn_prefs[$nxn_category][$nxn_type]['wants'] = (int) $value;
+    }
+    elseif (is_array($value) && $nxn_prefs[$nxn_category][$nxn_type]['wants'] == MOONMARS_NXN_SOME) {
+      // Conditions array:
+      $nxn_prefs[$nxn_category][$nxn_type]['conditions'] = serialize(array_map(function($x) {
+        return (int) (bool) $x;
+      }, $value));
+    }
+  }
+
+  // Update database.
+  // Delete all nxn prefs for this user:
+  $q = db_delete('moonmars_nxn_pref')
+    ->condition('uid', $member->uid());
+  $q->execute();
+
+//  dpm($nxn_prefs);
+
+  // Insert new records for prefs:
+  foreach ($nxn_prefs as $nxn_category => $nxn_types) {
+    foreach ($nxn_types as $nxn_type => $nxn_pref) {
+      $q = db_insert('moonmars_nxn_pref')
+        ->fields(array(
+                      'uid'            => $member->uid(),
+                      'nxn_category'   => $nxn_category,
+                      'nxn_type'       => $nxn_type,
+                      'nxn_wants'      => $nxn_pref['wants'],
+                      'nxn_conditions' => isset($nxn_pref['conditions']) ? $nxn_pref['conditions'] : NULL,
+                 ));
+      $q->execute();
+    }
+  }
+
+  // Message:
+  drupal_set_message("Your notifications preferences have been updated.");
+
+  // Go back to their notifications:
+//  $form_state['redirect'] = $member->alias() . '/notifications';
 }
-
-/*
-
-mention|Items that mention me
-topic|Items about a topic I'm interested in
-
-Select which items you want to be notified about.
-
-mention|Comments that mention me
-topic|Comments about a topic I'm interested in
-item|Comments on an item I shared
-comment|Comments on an item I've commented on
-
-Select which comments you want to be notified about.
-*/
-
-

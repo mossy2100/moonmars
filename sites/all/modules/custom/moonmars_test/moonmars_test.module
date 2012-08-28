@@ -17,38 +17,12 @@ function moonmars_test_wants_nxn() {
   $member = Member::currentMember();
   $member->load();
 
-  $nxns = array(
-    'site'     => array(
-      'new-member',
-      'new-group',
-      'new-item',
-      'new-comment',
-      'new-follower',
-    ),
-    'channel'  => array(
-      'new-item',
-      'new-comment',
-    ),
-    'followee' => array(
-      'new-item',
-      'new-comment',
-      'update-profile',
-      'join-group',
-    ),
-    'group'    => array(
-      'new-member',
-      'new-group',
-      'new-item',
-      'new-comment',
-      'new-admin',
-      'want-admin',
-      'update-profile',
-    ),
-  );
+  $definitions = moonmars_nxn_definitions();
 
-  foreach ($nxns as $nxn_category => $nxn_keys) {
-    foreach ($nxn_keys as $nxn_key) {
-      dbg($member->nxnPref($nxn_category, $nxn_key));
+  foreach ($definitions as $nxn_category => $nxn_category_info) {
+    foreach ($nxn_category_info['nxns'] as $nxn_type => $nxn_type['info']) {
+      dbg("category = $nxn_category, type = $nxn_type");
+      dbg($member->nxnPref($nxn_category, $nxn_type));
       echo "<hr>";
     }
   }
