@@ -110,7 +110,7 @@ function moonmars_items_form_alter(&$form, &$form_state, $form_id) {
       // Change the button label:
       $form['actions']['submit']['#value'] = t('Post');
 
-      // Make the textarea non-resizable and only 2 rows high. We will use the autoresize() plugin on the client. When it's working.
+      // Make the textarea non-resizable and only 2 rows high. We will use the autoresize() plugin on the client.
       $form['field_item_text']['#wysiwyg'] = FALSE;
       $form['field_item_text'][LANGUAGE_NONE][0]['value']['#rows'] = 2;
 
@@ -202,11 +202,6 @@ function moonmars_items_node_presave($node) {
     // If the item is a image, copy the entered text to the image title:
     if (isset($node->field_item_image[LANGUAGE_NONE][0]['fid']) && $node->field_item_image[LANGUAGE_NONE][0]['fid']) {
       $node->field_item_image[LANGUAGE_NONE][0]['title'] = $text;
-    }
-    
-    // If the item is a document, copy the entered text to the document description:
-    if (isset($node->field_item_document[LANGUAGE_NONE][0]['fid']) && $node->field_item_document[LANGUAGE_NONE][0]['fid']) {
-      $node->field_item_document[LANGUAGE_NONE][0]['description'] = $text;
     }
 
     // Set the title to a trimmed version of the text:
