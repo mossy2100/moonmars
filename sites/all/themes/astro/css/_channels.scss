@@ -28,6 +28,12 @@ $ratingButtonHeight = 20px;
       float: right;
       width: 16px;
       height: 16px;
+      line-height: 16px;
+
+      img {
+        position: relative;
+        top: -5px;
+      }
     }
 
   }
