@@ -20,9 +20,9 @@ function moonmars_test_wants_nxn() {
   $definitions = moonmars_nxn_definitions();
 
   foreach ($definitions as $nxn_category => $nxn_category_info) {
-    foreach ($nxn_category_info['nxns'] as $nxn_type => $nxn_type['info']) {
-      dbg("category = $nxn_category, type = $nxn_type");
-      dbg($member->nxnPref($nxn_category, $nxn_type));
+    foreach ($nxn_category_info['nxns'] as $triumph_type => $triumph_type['info']) {
+      dbg("category = $nxn_category, type = $triumph_type");
+      dbg($member->nxnPref($nxn_category, $triumph_type));
       echo "<hr>";
     }
   }

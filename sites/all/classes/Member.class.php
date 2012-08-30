@@ -902,47 +902,75 @@ class Member extends User {
    *
    * @param string $category
    *   site, channel, followee or group
-   * @param string $nxn_type
+   * @param string $triumph_type
+   * @param int $entity_id
+   *   The group_nid or followee_uid
    * @return array
    */
-  public function nxnPref($nxn_category, $nxn_type) {
+  public function nxnPref($nxn_category, $triumph_type, $entity_id = 0) {
 
     // Check if we already got this result:
-    if (!isset($this->nxnPrefs[$nxn_category][$nxn_type])) {
+    if (!isset($this->nxnPrefs[$nxn_category][$triumph_type][$entity_id])) {
 
-      $q = db_select('moonmars_nxn_pref', 'np')
-        ->fields('np', array('nxn_wants', 'nxn_conditions'))
-        ->condition('nxn_category', $nxn_category)
-        ->condition('nxn_type', $nxn_type)
-        ->condition('uid', $this->uid());
-      $rs = $q->execute();
-      $rec = $rs->fetchObject();
-      if ($rec) {
-        $this->nxnPrefs[$nxn_category][$nxn_type]['wants'] = $rec->nxn_wants;
-        if ($rec->nxn_conditions) {
-          $this->nxnPrefs[$nxn_category][$nxn_type]['conditions'] = unserialize($rec->nxn_conditions);
+      $found = FALSE;
+
+      // 1. If entity_id is specified, look for this exact preference:
+      if ($entity_id) {
+        $q = db_select('moonmars_nxn_pref', 'np')
+          ->fields('np', array('nxn_wants', 'nxn_conditions'))
+          ->condition('nxn_category', $nxn_category)
+          ->condition('triumph_type', $triumph_type)
+          ->condition('entity_id', $entity_id)
+          ->condition('uid', $this->uid());
+        $rs = $q->execute();
+        $rec = $rs->fetchObject();
+        if ($rec) {
+          $found = TRUE;
+          $this->nxnPrefs[$nxn_category][$triumph_type][$entity_id]['wants'] = $rec->nxn_wants;
+          if ($rec->nxn_conditions) {
+            $this->nxnPrefs[$nxn_category][$triumph_type][$entity_id]['conditions'] = unserialize($rec->nxn_conditions);
+          }
         }
       }
 
-      // If we still don't have the value, use the default:
-      if (!isset($this->nxnPrefs[$nxn_category][$nxn_type])) {
+      // 2. If we did not find it (or if entity_id not specified), use their base preference:
+      if (!$found) {
+        $q = db_select('moonmars_nxn_pref', 'np')
+          ->fields('np', array('nxn_wants', 'nxn_conditions'))
+          ->condition('nxn_category', $nxn_category)
+          ->condition('triumph_type', $triumph_type)
+          ->condition('entity_id', 0)
+          ->condition('uid', $this->uid());
+        $rs = $q->execute();
+        $rec = $rs->fetchObject();
+        if ($rec) {
+          $found = TRUE;
+          $this->nxnPrefs[$nxn_category][$triumph_type][$entity_id]['wants'] = $rec->nxn_wants;
+          if ($rec->nxn_conditions) {
+            $this->nxnPrefs[$nxn_category][$triumph_type][$entity_id]['conditions'] = unserialize($rec->nxn_conditions);
+          }
+        }
+      }
+
+      // 3. If we still don't have the value, use the site default:
+      if (!$found) {
         $definitions = moonmars_nxn_definitions();
-        $nxn = $definitions[$nxn_category]['nxns'][$nxn_type];
+        $nxn = $definitions[$nxn_category]['nxns'][$triumph_type];
 
         // Set the wants value:
         $nxn_wants = $nxn['default'];
-        $this->nxnPrefs[$nxn_category][$nxn_type]['wants'] = $nxn_wants;
+        $this->nxnPrefs[$nxn_category][$triumph_type][$entity_id]['wants'] = $nxn_wants;
 
         // If default is some, set default conditions:
         if ($nxn_wants == MOONMARS_NXN_SOME) {
           foreach ($nxn['conditions'] as $nxn_condition => $nxn_condition_info) {
-            $this->nxnPrefs[$nxn_category][$nxn_type]['conditions'][$nxn_condition] = $nxn_condition_info['default'];
+            $this->nxnPrefs[$nxn_category][$triumph_type][$entity_id]['conditions'][$nxn_condition] = $nxn_condition_info['default'];
           }
         }
       }
     }
 
-    return $this->nxnPrefs[$nxn_category][$nxn_type];
+    return $this->nxnPrefs[$nxn_category][$triumph_type][$entity_id];
   }
 
   /**
@@ -951,11 +979,13 @@ class Member extends User {
    *
    * @param string $nxn_category
    *   site, channel, followee or group
-   * @param string $nxn_type
+   * @param string $triumph_type
+   * @param int $entity_id
+   *   The group_nid or followee_uid
    * @return int
    */
-  public function nxnPrefWants($nxn_category, $nxn_type) {
-    $nxn_pref = $this->nxnPref($nxn_category, $nxn_type);
+  public function nxnPrefWants($nxn_category, $triumph_type, $entity_id = 0) {
+    $nxn_pref = $this->nxnPref($nxn_category, $triumph_type, $entity_id);
     return $nxn_pref['wants'];
   }
 
@@ -970,11 +1000,13 @@ class Member extends User {
    *
    * @param string $nxn_category
    *   site, channel, followee or group
-   * @param string $nxn_type
+   * @param string $triumph_type
+   * @param int $entity_id
+   *   The group_nid or followee_uid
    * @return array
    */
-  public function nxnPrefConditions($nxn_category, $nxn_type) {
-    $nxn_pref = $this->nxnPref($nxn_category, $nxn_type);
+  public function nxnPrefConditions($nxn_category, $triumph_type, $entity_id = 0) {
+    $nxn_pref = $this->nxnPref($nxn_category, $triumph_type, $entity_id);
     return isset($nxn_pref['conditions']) ? $nxn_pref['conditions'] : array();
   }
 

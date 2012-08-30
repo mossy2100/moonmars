@@ -254,7 +254,13 @@ function moonmars_nxn_list($uid) {
 
   drupal_set_title('Your Notifications');
 
-  $html = views_embed_view('notifications', 'page', $uid);
+  $html = "
+    <div id='notifications-form-buttons'>
+      <a class='button' href='/" . $current_member->alias() . "/notifications/preferences'>Edit notifications preferences</a>
+    </div>
+  ";
+
+  $html .= views_embed_view('notifications', 'page', $uid);
 
   return $html;
 }
@@ -277,16 +283,20 @@ function moonmars_nxn_form($form, &$form_state, $uid) {
 
   // Start building the form:
   $form = array(
-    '#attached'               => array(
+    '#attached' => array(
       'js' => array(
         drupal_get_path('module', 'moonmars_nxn') . '/js/nxn-form.js',
       ),
     ),
-    'uid'                     => array(
+    'uid' => array(
       '#type'  => 'hidden',
       '#value' => $current_member->uid(),
     ),
-    'buttons'                 => array(
+    'entity_id' => array(
+      '#type'  => 'hidden',
+      '#value' => 0,
+    ),
+    'buttons' => array(
       '#markup' => "
         <p>These preferences are additive, which is to say, if one preference say 'yes', and another says 'no',
         the result will be 'yes'. For example, if you say you want no notifications about your groups, but you want all
@@ -316,8 +326,8 @@ function moonmars_nxn_form($form, &$form_state, $uid) {
       '#description' => $nxn_category_info['description']
     );
 
-    foreach ($nxn_category_info['nxns'] as $nxn_type => $nxn_info) {
-      $nxn_full_key = "nxn-$nxn_category-$nxn_type";
+    foreach ($nxn_category_info['nxns'] as $triumph_type => $nxn_info) {
+      $nxn_full_key = "nxn-$nxn_category-$triumph_type";
       $form[$nxn_category][$nxn_full_key] = array(
         '#type'          => 'radios',
         '#title'         => $nxn_info['title'],
@@ -326,7 +336,7 @@ function moonmars_nxn_form($form, &$form_state, $uid) {
           MOONMARS_NXN_NO  => 'No',
           MOONMARS_NXN_YES => 'Yes',
         ),
-        '#default_value' => $current_member->nxnPrefWants($nxn_category, $nxn_type),
+        '#default_value' => $current_member->nxnPrefWants($nxn_category, $triumph_type),
       );
 
       // If there are conditions...
@@ -339,7 +349,7 @@ function moonmars_nxn_form($form, &$form_state, $uid) {
         $form[$nxn_category][$nxn_cond_key] = array(
           '#type'          => 'checkboxes',
           '#title'         => 'Just notify me about:',
-          '#default_value' => array_keys(array_filter($current_member->nxnPrefConditions($nxn_category, $nxn_type))),
+          '#default_value' => array_keys(array_filter($current_member->nxnPrefConditions($nxn_category, $triumph_type))),
         );
 
         // Add the options:
@@ -366,9 +376,14 @@ function moonmars_nxn_form($form, &$form_state, $uid) {
  * Submit handler for nxn prefs form.
  */
 function moonmars_nxn_form_submit($form, &$form_state) {
+  // Get the member:
   $uid = (int) $form_state['values']['uid'];
   $member = Member::create($uid);
 
+  // Get the entity_id:
+  $entity_id = (int) $form_state['values']['entity_id'];
+
+  // Remember the prefs:
   $nxn_prefs = array();
 
 //  dpm($form_state['values']);
@@ -381,14 +396,14 @@ function moonmars_nxn_form_submit($form, &$form_state) {
     }
 
     $nxn_category = $parts[1];
-    $nxn_type = "{$parts[2]}-{$parts[3]}";
+    $triumph_type = "{$parts[2]}-{$parts[3]}";
 
     if (is_numeric($value)) {
-      $nxn_prefs[$nxn_category][$nxn_type]['wants'] = (int) $value;
+      $nxn_prefs[$nxn_category][$triumph_type]['wants'] = (int) $value;
     }
-    elseif (is_array($value) && $nxn_prefs[$nxn_category][$nxn_type]['wants'] == MOONMARS_NXN_SOME) {
+    elseif (is_array($value) && $nxn_prefs[$nxn_category][$triumph_type]['wants'] == MOONMARS_NXN_SOME) {
       // Conditions array:
-      $nxn_prefs[$nxn_category][$nxn_type]['conditions'] = serialize(array_map(function($x) {
+      $nxn_prefs[$nxn_category][$triumph_type]['conditions'] = serialize(array_map(function($x) {
         return (int) (bool) $x;
       }, $value));
     }
@@ -403,16 +418,17 @@ function moonmars_nxn_form_submit($form, &$form_state) {
 //  dpm($nxn_prefs);
 
   // Insert new records for prefs:
-  foreach ($nxn_prefs as $nxn_category => $nxn_types) {
-    foreach ($nxn_types as $nxn_type => $nxn_pref) {
+  foreach ($nxn_prefs as $nxn_category => $triumph_types) {
+    foreach ($triumph_types as $triumph_type => $nxn_pref) {
       $q = db_insert('moonmars_nxn_pref')
         ->fields(array(
-                      'uid'            => $member->uid(),
-                      'nxn_category'   => $nxn_category,
-                      'nxn_type'       => $nxn_type,
-                      'nxn_wants'      => $nxn_pref['wants'],
-                      'nxn_conditions' => isset($nxn_pref['conditions']) ? $nxn_pref['conditions'] : NULL,
-                 ));
+          'uid'            => $member->uid(),
+          'nxn_category'   => $nxn_category,
+          'triumph_type'       => $triumph_type,
+          'entity_id'      => $entity_id,
+          'nxn_wants'      => $nxn_pref['wants'],
+          'nxn_conditions' => isset($nxn_pref['conditions']) ? $nxn_pref['conditions'] : NULL,
+        ));
       $q->execute();
     }
   }
