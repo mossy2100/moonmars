@@ -48,6 +48,16 @@ function initChannel() {
 
   // Resize YouTube videos:
   $('.media-youtube-outer-wrapper, .media-youtube-preview-wrapper, .youtube-player').css({width: '240px', height: '180px'}).attr({width: 240, height: 180});
+
+//  // Highlight the comment if mentioned in the hash:
+//  var hash = window.location.hash;
+//  if (hash) {
+//    var hashParts = hash.split('-');
+//    if (hashParts[0] == '#comment') {
+//      $('#comment-article-' + hashParts[1] + ' .post-article-body').css('border-color', 'black');
+//    }
+//
+//  }
 }
 
 /**

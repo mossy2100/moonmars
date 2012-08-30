@@ -578,26 +578,19 @@ class Member extends User {
   /**
    * Get the HTML attribute for the member's comment style.
    */
-  public function commentStyle() {
+  public function commentStyle($highlight = FALSE) {
     // Style:
     $style = array();
-
-//    $text_color = clone $bg_color;
-//    $text_color->saturation(0.4);
-//    $text_color->lightness(0.4);
-//    $style[] = "color: " . $text_color->hex() . ";";
-
-    $style[] = "background-color: " . $this->commentBackgroundColor()->hex() . ";";
-    $style[] = "border-color: " . $this->commentBorderColor()->hex() . ";";
-
+    $style[] = "background-color: " . ($highlight ? 'white' : $this->commentBackgroundColor()->hex()) . ";";
+    $style[] = "border-color: " . ($highlight ? '#919191' : $this->commentBorderColor()->hex()) . ";";
     return "style='" . implode(' ', $style) . "'";
   }
 
   /**
    * Get the HTML attribute for the member's comment border style.
    */
-  public function commentBorderStyle() {
-    return "style='border-color: " . $this->commentBorderColor()->hex() . ";'";
+  public function commentBorderStyle($highlight = FALSE) {
+    return "style='border-color: " . ($highlight ? '#919191' : $this->commentBorderColor()->hex()) . ";'";
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

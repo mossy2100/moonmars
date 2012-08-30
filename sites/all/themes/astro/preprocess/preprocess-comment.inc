@@ -78,8 +78,8 @@ function astro_alpha_preprocess_comment(&$vars) {
     ";
   }
 
-  // Highlight class:
-  $vars['highlight'] = (isset($_GET['cid']) && $item_comment->cid() == $_GET['cid']) ? 'highlight' : '';
+  // Use highlight style?
+  $vars['highlight'] = isset($_GET['cid']) && $item_comment->cid() == $_GET['cid'];
 
   // Score:
   $vars['score'] = (int) $item_comment->field('field_score');
@@ -88,4 +88,7 @@ function astro_alpha_preprocess_comment(&$vars) {
   // To rate an item, the member must be logged in, and it must have been created by someone else.
   $can_rate = $current_member && !Member::equals($current_member, $poster);
   $vars['rating_buttons'] = $can_rate ? moonmars_ratings_buttons($current_member, 'comment', $cid) : '';
+
+  // Path to theme:
+  $vars['theme_path'] = drupal_get_path('theme', 'astro');
 }

@@ -1,12 +1,13 @@
 <article<?php echo $attributes; ?> xmlns="http://www.w3.org/1999/html">
 
-  <div class='post-article-body <?php echo $highlight; ?>' <?php echo $poster->commentStyle(); ?>>
+  <div class='post-article-body' <?php echo $poster->commentStyle($highlight); ?>>
     <div class='user-picture'>
       <?php echo $avatar; ?>
     </div>
 
     <div class='post-content-wrapper' <?php echo $content_attributes; ?>>
       <div class='post-content'>
+        <a class='post-link' href='/<?php echo $item_comment->alias(); ?>'><img src='/<?php echo $theme_path; ?>/images/link-icon.png'></a>
 
         <div class='who_where_when_posted'>
           <?php
@@ -39,7 +40,7 @@
     </div> <!-- /score-more-wrapper -->
     */ ?>
 
-    <div class='post-controls top-post-controls' <?php echo $poster->commentBorderStyle(); ?>>
+    <div class='post-controls top-post-controls' <?php echo $poster->commentBorderStyle($highlight); ?>>
 
       <?php
       echo $rating_buttons;

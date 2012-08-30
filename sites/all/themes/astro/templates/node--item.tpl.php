@@ -8,6 +8,7 @@
 
     <div class='post-content-wrapper' <?php echo $content_attributes; ?>>
       <div class='post-content'>
+        <a class='post-link' href='/<?php echo $item->alias(); ?>'><img src='/<?php echo $theme_path; ?>/images/link-icon.png'></a>
 
         <div class='who_where_when_posted'>
           <?php

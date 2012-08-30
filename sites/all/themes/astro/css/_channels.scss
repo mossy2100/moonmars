@@ -22,6 +22,14 @@ $ratingButtonHeight = 20px;
       font-size: 12px;
       line-height: 16px;
     }
+
+    a.post-link {
+      display: block;
+      float: right;
+      width: 16px;
+      height: 16px;
+    }
+
   }
 
   .comment-link-wrapper {
@@ -304,13 +312,9 @@ article.comment {
   margin-top: 5px;
 
   .post-article-body {
+    // Default colours - overridden by poster's colour preference.
     background-color: $blue5;
     border-color: $blue4;
-
-    &.highlight {
-      background-color: $red5;
-      border-color: $red4;
-    }
   }
 
   &.comment-unpublished {

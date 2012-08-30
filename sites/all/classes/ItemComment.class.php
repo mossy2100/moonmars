@@ -38,10 +38,19 @@ class ItemComment extends Comment {
    *
    * @param null|string $text
    */
+  public function alias() {
+    $cid = $this->cid();
+    return $this->item()->alias() . "?cid=$cid#comment-$cid";
+  }
+
+  /**
+   * Get a link to the comment.
+   *
+   * @return string
+   */
   public function link($label = NULL) {
     $label = ($label === NULL) ? $this->subject() : $label;
-    $cid = $this->cid();
-    return l($label, $this->item()->alias(), array('query' => array('cid' => $cid), 'fragment' => "comment-$cid"));
+    return l($label, $this->alias());
   }
 
 }
