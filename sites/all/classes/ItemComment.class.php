@@ -34,13 +34,20 @@ class ItemComment extends Comment {
   }
 
   /**
-   * Get a link to the comment, which is really a link to the item with the comment highlighted.
+   * Get/set the comment alias.
    *
    * @param null|string $text
    */
-  public function alias() {
-    $cid = $this->cid();
-    return $this->item()->alias() . "?cid=$cid#comment-$cid";
+  public function alias($alias = NULL) {
+    if ($alias === NULL) {
+      // Get the comment alias:
+      $cid = $this->cid();
+      return $this->item()->alias() . "?cid=$cid#comment-$cid";
+    }
+    else {
+      // Set the comment alias:
+      return parent::alias($alias);
+    }
   }
 
   /**

@@ -340,10 +340,10 @@ abstract class EntityBase {
       // Insert the new alias:
       db_insert('url_alias')
         ->fields(array(
-                      'source'   => $source,
-                      'alias'    => $alias,
-                      'language' => LANGUAGE_NONE,
-                 ))
+          'source'   => $source,
+          'alias'    => $alias,
+          'language' => LANGUAGE_NONE,
+        ))
         ->execute();
     }
   }
