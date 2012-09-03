@@ -84,9 +84,9 @@ class Member extends User {
   /**
    * Get a link to the user's profile.
    */
-  public function link($label = NULL, $include_at = FALSE) {
+  public function link($label = NULL, $include_at = FALSE, $absolute = FALSE) {
     $label = ($include_at ? '@' : '') . (($label === NULL) ? $this->name() : $label);
-    return l($label, $this->alias());
+    return l($label, $this->url($absolute));
   }
 
   /**
@@ -224,9 +224,7 @@ class Member extends User {
   public function skypeLink() {
     $skype = $this->field('field_skype');
     if ($skype) {
-      return "
-          <a class='skype-add' href='skype:$skype?add'></a>
-      ";
+      return "<a class='skype-add' href='skype:$skype?add'></a>";
     }
     return NULL;
   }
@@ -238,7 +236,6 @@ class Member extends User {
    */
   function tooltip() {
     if (!$this->tooltip) {
-
       // Make sure the user is loaded:
       $this->load();
 
@@ -478,35 +475,48 @@ class Member extends User {
    * @return array
    */
   public function location() {
-    $location = array(
-      'city'          => $this->field('field_user_location', LANGUAGE_NONE, 0, 'city'),
-      'province_code' => $this->field('field_user_location', LANGUAGE_NONE, 0, 'province'),
-    );
+    // Initialise:
+    $city           = $this->field('field_user_location', LANGUAGE_NONE, 0, 'city');
+    $province_code  = $this->field('field_user_location', LANGUAGE_NONE, 0, 'province');
+    $province_name  = '';
+    $country_code   = '';
+    $country_name   = '';
 
-    // Get the country code. Note, this will be lower-case, because that's what the location module uses:
-    $country_code = $this->field('field_user_location', LANGUAGE_NONE, 0, 'country');
+    // Get the list of countries:
+    require_once DRUPAL_ROOT . '/includes/locale.inc';
+    $countries = country_get_list();
 
-    // Get the upper-case country code because that's what everyone else in the whole world uses:
-    $location['country_code'] = strtoupper($country_code);
-
-    // Default names:
-    $location['province_name'] = '';
-    $location['country_name'] = '';
-
-    if ($country_code) {
-      // If we have a province code, get the full province name:
-      if ($location['province_code']) {
-        $provinces = location_get_provinces($country_code);
-        $location['province_name'] = $provinces[$location['province_code']];
-      }
-
-      // Get the full country name:
-      require_once DRUPAL_ROOT . '/includes/locale.inc';
-      $countries = country_get_list();
-      $location['country_name'] = isset($countries[$location['country_code']]) ? $countries[$location['country_code']] : '';
+    // Check the country code. The location module uses lower-case codes but we'll use upper-case which is standard.
+    $lc_country_code = $this->field('field_user_location', LANGUAGE_NONE, 0, 'country');
+    // Check if we have a 2-letter country code, and, if so, force to lower-case:
+    $country_code_ok = location_standardize_country_code($lc_country_code);
+    if ($country_code_ok) {
+      // Now check if the country code actually corresponds to a country:
+      $uc_country_code = strtoupper($lc_country_code);
+      $country_code_ok = isset($countries[$uc_country_code]);
     }
 
-    return $location;
+    // If we have a valid country code, get the province and country name:
+    if ($country_code_ok) {
+      // Get the country code and name:
+      $country_code = $uc_country_code;
+      $country_name = $countries[$country_code];
+
+      // If we have a province code, get the full province name:
+      if ($province_code) {
+        $provinces = location_get_provinces($lc_country_code);
+        $province_name = $provinces[$province_code];
+      }
+    }
+
+    // Create the location array:
+    return array(
+      'city'          => $city,
+      'province_code' => $province_code,
+      'province_name' => $province_name,
+      'country_code'  => $country_code,
+      'country_name'  => $country_name,
+    );
   }
 
   /**
@@ -913,8 +923,13 @@ class Member extends User {
     if (!isset($this->nxnPrefs[$nxn_category][$triumph_type][$entity_id])) {
 
       $found = FALSE;
+      $nxn_pref = NULL;
+      $nxn_definitions = moonmars_nxn_definitions();
 
-      // 1. If entity_id is specified, look for this exact preference:
+      //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      // 1. Get the "wants" preference.
+
+      // 1a. If entity_id is specified (indicating group_nid or followee_uid), look for this exact preference:
       if ($entity_id) {
         $q = db_select('moonmars_nxn_pref', 'np')
           ->fields('np', array('nxn_wants', 'nxn_conditions'))
@@ -926,14 +941,11 @@ class Member extends User {
         $rec = $rs->fetchObject();
         if ($rec) {
           $found = TRUE;
-          $this->nxnPrefs[$nxn_category][$triumph_type][$entity_id]['wants'] = $rec->nxn_wants;
-          if ($rec->nxn_conditions) {
-            $this->nxnPrefs[$nxn_category][$triumph_type][$entity_id]['conditions'] = unserialize($rec->nxn_conditions);
-          }
+          $nxn_pref['wants'] = $rec->nxn_wants;
         }
       }
 
-      // 2. If we did not find it (or if entity_id not specified), use their base preference:
+      // 1b. If we did not find it (or if entity_id not specified), use their base preference:
       if (!$found) {
         $q = db_select('moonmars_nxn_pref', 'np')
           ->fields('np', array('nxn_wants', 'nxn_conditions'))
@@ -945,29 +957,40 @@ class Member extends User {
         $rec = $rs->fetchObject();
         if ($rec) {
           $found = TRUE;
-          $this->nxnPrefs[$nxn_category][$triumph_type][$entity_id]['wants'] = $rec->nxn_wants;
-          if ($rec->nxn_conditions) {
-            $this->nxnPrefs[$nxn_category][$triumph_type][$entity_id]['conditions'] = unserialize($rec->nxn_conditions);
-          }
+          $nxn_pref['wants'] = $rec->nxn_wants;
         }
       }
 
-      // 3. If we still don't have the value, use the site default:
+      // 1c. If we still don't have the value, use the site default:
       if (!$found) {
-        $definitions = moonmars_nxn_definitions();
-        $nxn = $definitions[$nxn_category]['nxns'][$triumph_type];
+        $nxn_pref['wants'] = $nxn_definitions[$nxn_category]['triumph types'][$triumph_type]['default'];
+      }
 
-        // Set the wants value:
-        $nxn_wants = $nxn['default'];
-        $this->nxnPrefs[$nxn_category][$triumph_type][$entity_id]['wants'] = $nxn_wants;
+      //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      // 2. If Some, get the "conditions" preferences.
 
-        // If default is some, set default conditions:
-        if ($nxn_wants == MOONMARS_NXN_SOME) {
-          foreach ($nxn['conditions'] as $nxn_condition => $nxn_condition_info) {
-            $this->nxnPrefs[$nxn_category][$triumph_type][$entity_id]['conditions'][$nxn_condition] = $nxn_condition_info['default'];
+      if ($this->nxnPrefs[$nxn_category][$triumph_type][$entity_id]['wants'] == MOONMARS_NXN_SOME) {
+        // If a db record was found, get the conditions that were specified:
+        if ($found && $rec->nxn_conditions) {
+          $rec_nxn_conditions = unserialize($rec->nxn_conditions);
+        }
+
+        // Scan through the conditions and use default value if not set.
+        $nxn_conditions = $nxn_definitions[$nxn_category]['triumph types'][$triumph_type]['conditions'];
+        foreach ($nxn_conditions as $nxn_condition => $nxn_condition_info) {
+          if (isset($rec_nxn_conditions)) {
+            // If specified in the database record, use that value:
+            $nxn_pref['conditions'][$nxn_condition] = $rec_nxn_conditions[$nxn_condition];
+          }
+          else {
+            // Otherwise use the default:
+            $nxn_pref['conditions'][$nxn_condition] = $nxn_condition_info['default'];
           }
         }
       }
+
+      // Remember the result:
+      $this->nxnPrefs[$nxn_category][$triumph_type][$entity_id] = $nxn_pref;
     }
 
     return $this->nxnPrefs[$nxn_category][$triumph_type][$entity_id];

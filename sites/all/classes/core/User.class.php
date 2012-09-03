@@ -244,9 +244,9 @@ class User extends EntityBase {
    *
    * @return string
    */
-  public function link($label = NULL) {
+  public function link($label = NULL, $absolute = FALSE) {
     $label = ($label === NULL) ? $this->name() : $label;
-    return l($label, $this->alias());
+    return l($label, $this->url($absolute));
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

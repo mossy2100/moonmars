@@ -80,7 +80,7 @@ class MoonMarsEntity {
   }
 
   /**
-   * Get the entity from the URL.
+   * Get the entity with current focus from the URL.
    *
    * @static
    * @return bool
@@ -90,25 +90,26 @@ class MoonMarsEntity {
 
     // Look for the entity type and id in the request_uri:
     $uri = trim($_SERVER['REQUEST_URI'], '/');
-    $parts = explode('/', $uri);
 
-    if (in_array($parts[0], $valid_entity_types)) {
-      $id = $parts[1];
-      if ($id && is_uint($id)) {
-        return self::getEntity($parts[0], $parts[1]);
-      }
+    // If we're at 'user' then the entity is the current logged-in user:
+    if ($uri == 'user' && user_is_logged_in()) {
+      return Member::currentMember();
     }
 
-    // Maybe it's an alias, try converting to normal path:
-    $entity_alias = $parts[0] . '/'. $parts[1];
-    $path = drupal_get_normal_path($entity_alias);
-    $parts = explode('/', $path);
+    // Check for a normal user/%uid or node/%nid type of path:
+    $parts = explode('/', $uri);
+    if (count($parts) >= 2 && in_array($parts[0], $valid_entity_types) && is_uint($parts[1])) {
+      return self::getEntity($parts[0], $parts[1]);
+    }
 
-    if (in_array($parts[0], $valid_entity_types)) {
-      $id = $parts[1];
-      if ($id && is_uint($id)) {
-        return self::getEntity($parts[0], $parts[1]);
-      }
+    // Maybe it's an alias. Try converting to normal path from just the first 2 path parts.
+    $entity_alias = $parts[0] . (isset($parts[1]) ? ('/' . $parts[1]) : '');
+    $path = drupal_get_normal_path($entity_alias);
+
+    // Check again:
+    $parts = explode('/', $path);
+    if (count($parts) >= 2 && in_array($parts[0], $valid_entity_types) && is_uint($parts[1])) {
+      return self::getEntity($parts[0], $parts[1]);
     }
 
     // Not an entity path:

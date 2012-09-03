@@ -259,9 +259,9 @@ class Node extends EntityBase {
    *
    * @return string
    */
-  public function link($label = NULL) {
+  public function link($label = NULL, $absolute = FALSE) {
     $label = ($label === NULL) ? $this->title() : $label;
-    return l($label, $this->alias());
+    return l($label, $this->url($absolute));
   }
 
   /**

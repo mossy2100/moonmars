@@ -17,8 +17,8 @@ $(function() {
 
   // Set up the form.
   for (var nxnCategory in nxnDefinitions) {
-    for (var nxnType in nxnDefinitions[nxnCategory]['nxns']) {
-      nxnSetRadios(nxnCategory, nxnType);
+    for (var triumphType in nxnDefinitions[nxnCategory]['triumph types']) {
+      nxnSetRadios(nxnCategory, triumphType);
     }
   }
 });
@@ -27,19 +27,19 @@ $(function() {
  * Set default values for the radio-button/checkbox combination widgets.
  *
  * @param string nxnCategory
- * @param string nxnType
+ * @param string triumphType
  */
-function nxnSetRadios(nxnCategory, nxnType) {
+function nxnSetRadios(nxnCategory, triumphType) {
   // Get the radio button group:
-  var rbg_id = '#edit-nxn-' + nxnCategory + '-' + nxnType;
+  var rbg_id = '#edit-nxn-' + nxnCategory + '-' + triumphType;
 
   // If none selected, select the default:
   if ($(rbg_id + ' .form-radio:checked').length == 0) {
-    nxnSelectDefaultPref(nxnCategory, nxnType);
+    nxnSelectDefaultPref(nxnCategory, triumphType);
   }
 
   // If there's a checkbox group for conditions, add behaviours:
-  var cbg_id = '.form-item-nxn-' + nxnCategory + '-' + nxnType + '-cond';
+  var cbg_id = '.form-item-nxn-' + nxnCategory + '-' + triumphType + '-cond';
   if ($(cbg_id).length) {
 
     // Remember the original height of the checkbox group:
@@ -94,8 +94,8 @@ function nxnSelectNone() {
  */
 function nxnSelectDefault() {
   for (var nxnCategory in nxnDefinitions) {
-    for (var nxnType in nxnDefinitions[nxnCategory]['nxns']) {
-      nxnSelectDefaultPref(nxnCategory, nxnType);
+    for (var triumphType in nxnDefinitions[nxnCategory]['triumph types']) {
+      nxnSelectDefaultPref(nxnCategory, triumphType);
     }
   }
 }
@@ -104,13 +104,13 @@ function nxnSelectDefault() {
  * Select default preferences for a given notification, specified by category and key.
  *
  * @param string nxnCategory
- * @param string nxnType
+ * @param string triumphType
  */
-function nxnSelectDefaultPref(nxnCategory, nxnType) {
+function nxnSelectDefaultPref(nxnCategory, triumphType) {
   // Select and click the default radio button:
-  var nxn = nxnDefinitions[nxnCategory]['nxns'][nxnType];
+  var nxn = nxnDefinitions[nxnCategory]['triumph types'][triumphType];
   var nxnWants = nxn['default'];
-  var rbgId = '#edit-nxn-' + nxnCategory + '-' + nxnType;
+  var rbgId = '#edit-nxn-' + nxnCategory + '-' + triumphType;
   $(rbgId + ' .form-radio[value=' + nxnWants + ']').check().click();
 
   // If the default radio is 'Some'...

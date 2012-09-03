@@ -7,15 +7,15 @@
  */
 function moonmars_text_emoticons() {
   return array(
-    'heart'     => '&lt;3',
-    'big-smile' => ':D',
-    'kiss'      => ':*',
-    'meh'       => ':|',
-    'raspberry' => ':p',
-    'sad'       => ':(',
     'smile'     => ':)',
+    'sad'       => ':(',
+    'meh'       => ':|',
+    'big-smile' => ':D',
+    'raspberry' => ':p',
     'surprise'  => ':o',
+    'kiss'      => ':*',
     'wink'      => ';)',
+    'heart'     => '&lt;3',
   );
 }
 

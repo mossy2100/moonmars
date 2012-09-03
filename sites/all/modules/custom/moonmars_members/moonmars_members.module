@@ -9,6 +9,13 @@ define('MOONMARS_USERNAME_DESCRIPTION', "Usernames may only contain letters, dig
  * Implements hook_init().
  */
 function moonmars_members_init() {
+  // If we're at 'user', and the user is logged in, forward the person to their profile.
+  // I don't really want people using that path.
+  if (user_is_logged_in() && trim($_SERVER['REQUEST_URI'], '/') == 'user') {
+    drupal_goto(Member::currentMember()->alias());
+  }
+
+  // Add some JS:
   $module_path = drupal_get_path('module', 'moonmars_members');
   drupal_add_js("$module_path/js/avatar-tooltips.js");
 
@@ -166,7 +173,7 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
           </div>
           <script>
           var tab = '$tab';
-          var nxnDefaultPrefs = " . json_encode(Nxn::defaultPrefs()) . ";
+          var nxnDefaultPrefs = " . json_encode(moonmars_nxn_definitions()) . ";
           </script>
         ",
       );
@@ -545,16 +552,23 @@ function moonmars_members_block_view($delta = '') {
 function moonmars_members_menu_block() {
   global $user;
 
+  // Check we're on a member page:
+  $profile_member = MoonMarsEntity::getEntityFromUrl();
+  if (!$profile_member) {
+    return '';
+  }
+
+  // Check the member is logged in:
   if (!user_is_logged_in()) {
     return "<p>Please <a href='/user/login'>login</a> or <a href='/register'>register</a> to follow this user.</p>";
   }
 
-  $html = "<ul id='member-menu' class='menu'>";
-
-  // Get the user ids of the follower and the followee:
+  // Get the current member and check if they're looking at their own profile:
   $current_member = Member::currentMember();
-  $profile_member = MoonMarsEntity::getEntityFromUrl();
   $own_profile = Member::equals($current_member, $profile_member);
+
+  // Start generating HTML:
+  $html = "<ul id='member-menu' class='menu'>";
 
   // Member profile menu links:
   if ($own_profile) {
@@ -582,7 +596,7 @@ function moonmars_members_menu_block() {
     $html .= "<li>$follow_link</li>";
   }
 
-  // Links for editing the profile, if the member is on their own profile page, or for admins.
+  // Administration links, for if the member is on their own profile page, or for admins.
   if ($own_profile || user_access('administer users', $user)) {
     // Edit profile link:
     $html .= "<li>" . l('Edit profile', $profile_member->editAlias()) . "</li>";

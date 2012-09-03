@@ -311,7 +311,7 @@ abstract class EntityBase {
   // Path and alias-related methods.
 
   /**
-   * Get the path to the entity's page.
+   * Get the system or normal path to the entity's page.
    *
    * @return string
    */
@@ -347,6 +347,17 @@ abstract class EntityBase {
                  ));
       $q->execute();
     }
+  }
+
+  /**
+   * Get the entity's URL.
+   * If $absolute is TRUE, it will begin with the base URL, i.e. http://example.com/alias
+   * If $absolute is FALSE, it will begin with a '/',       i.e. /alias
+   *
+   * @return string
+   */
+  public function url($absolute = FALSE) {
+    return ($absolute ? $GLOBALS['base_url'] : '') . '/' . $this->alias();
   }
 
   /**
