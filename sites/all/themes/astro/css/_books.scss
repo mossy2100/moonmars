@@ -1,0 +1,59 @@
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Sidebar menu
+
+#region-sidebar-first {
+  .block-book-navigation {
+    h2 {
+      font-size: 13px;
+    }
+
+    ul.menu {
+      list-style-type: decimal;
+      margin-left: 20px;
+
+      li {
+        list-style-type: decimal;
+
+        a {
+          background: none;
+          font-weight: normal;
+          text-align: left;
+
+          &:hover {
+            background: none;
+            color: $red3;
+          }
+        }
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Book pages
+
+#book-navigation-616 {
+  ul.menu {
+    display: none;
+  }
+}
+
+#block-system-main {
+  article.node-book {
+    h2 {
+      color: $red3;
+    }
+
+    h3 {
+      color: $red2;
+    }
+
+    ul.links {
+      margin-left: 0;
+    }
+
+    .field-name-body {
+      min-height: 200px;
+    }
+  }
+}
