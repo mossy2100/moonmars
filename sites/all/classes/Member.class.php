@@ -969,7 +969,7 @@ class Member extends User {
       //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       // 2. If Some, get the "conditions" preferences.
 
-      if ($this->nxnPrefs[$nxn_category][$triumph_type][$entity_id]['wants'] == MOONMARS_NXN_SOME) {
+      if ($nxn_pref['wants'] == MOONMARS_NXN_SOME) {
         // If a db record was found, get the conditions that were specified:
         if ($found && $rec->nxn_conditions) {
           $rec_nxn_conditions = unserialize($rec->nxn_conditions);

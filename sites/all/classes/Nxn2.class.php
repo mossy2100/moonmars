@@ -32,10 +32,10 @@ class Nxn2 {
    *
    * @var bool
    */
-  protected $isSent;
+  protected $sent;
 
   /**
-   * When was the nxn email sent? NULL if $isSent is FALSE.
+   * When was the nxn email sent? NULL if $sent is FALSE.
    *
    * @var StarDateTime
    */
@@ -71,12 +71,12 @@ class Nxn2 {
    * @param $rec
    */
   public function copyRec($rec) {
-    $this->nxnId     = (int) $rec->nxn_id;
-    $this->triumph   = new Triumph($rec->triumph_id);
+    $this->nxnId = (int) $rec->nxn_id;
+    $this->triumph = new Triumph($rec->triumph_id);
     $this->recipient = Member::create($rec->recipient_uid);
     $this->dtCreated = new StarDateTime($rec->ts_created);
-    $this->isSent    = (bool) $rec->is_sent;
-    $this->dtSent    = is_null($rec->ts_sent) ? NULL : new StarDateTime($rec->ts_sent);
+    $this->sent = (bool) $rec->sent;
+    $this->dtSent = is_null($rec->ts_sent) ? NULL : new StarDateTime($rec->ts_sent);
   }
 
   /**
@@ -108,7 +108,7 @@ class Nxn2 {
     $fields = array(
       'triumph_id'    => $this->triumph->id(),
       'recipient_uid' => $this->recipient->uid(),
-      'is_sent'       => (int) $this->isSent,
+      'sent'          => (int) $this->sent,
       'ts_sent'       => isset($this->dtSent) ? $this->dtSent->timestamp() : NULL,
     );
     if ($this->nxnId) {
@@ -126,6 +126,21 @@ class Nxn2 {
       $this->nxnId = $q->execute();
     }
     return $this;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Get/set
+
+  /**
+   * Get the nxn recipient.
+   *
+   * @return Member|null
+   */
+  public function recipient() {
+    if (!isset($this->recipient)) {
+      $this->load();
+    }
+    return $this->recipient;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -242,6 +257,28 @@ class Nxn2 {
   }
 
   /**
+   * Generate text for a new-item nxn.
+   */
+  public function newItemEmail() {
+//    return array(
+//      'subject' => $subject,
+//      'summary' => $summary,
+//      'details' => $details,
+//    );
+  }
+
+  /**
+   * Generate text for a new-comment nxn.
+   */
+  public function newCommentEmail() {
+//    return array(
+//      'subject' => $subject,
+//      'summary' => $summary,
+//      'details' => $details,
+//    );
+  }
+
+  /**
    * Generate the email for a notification.
    *
    * @return array
@@ -253,6 +290,50 @@ class Nxn2 {
     $triumphTypeParts = explode('-', $this->triumph->triumphType());
     $fn = $triumphTypeParts[0] . ucfirst($triumphTypeParts[1]) . 'Email';
     return $this->$fn();
+  }
+
+  /**
+   * Send the nxn.
+   *
+   * @return bool
+   *   TRUE on success, else FALSE
+   */
+  public function send() {
+    // Generate and send the email:
+    drupal_mail('moonmars_nxn', 'nxn', $this->recipient()->mail(), language_default(), $this->generateEmail());
+
+    // Update the sent properties:
+    $this->sent = TRUE;
+    $this->dtSent = StarDateTime::now();
+  }
+
+  /**
+   * Send all outstanding nxns.
+   *
+   * @static
+   * @return int
+   *   The number of nxns sent.
+   */
+  public static function sendAllOutstanding() {
+    // Look for any nxns we didn't send yet:
+    $q = db_select('moonmars_nxn', 'mmn')
+      ->fields('mmn')
+      ->condition('sent', 0)
+      ->orderBy('nxn_id');
+    $rs = $q->execute();
+    // Create the nxns:
+    foreach ($rs as $rec) {
+      // Reset the time limit so the script doesn't time out while sending emails.
+      // Let's assume 60 seconds will be ample time for a single iteration of this loop.
+      set_time_limit(60);
+
+      // Create an nxn object:
+      $nxn = new Nxn2($rec);
+      // Send the email and update the sent and dtSent properties:
+      $nxn->send();
+      // Save the nxn to update the sent and ts_sent fields in the db record:
+      $nxn->save();
+    }
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -286,24 +367,24 @@ class Nxn2 {
     return $members;
   }
 
-  /**
-   * Get the unsent nxns.
-   *
-   * @todo add $daily_digest flag so we can filter for people who just want the once-per-day email, or not.
-   *
-   * @static
-   * @return array
-   */
-  public static function getUnsent() {
-    $q = db_select('moonmars_nxn', 'nxn')
-      ->fields('nxn')
-      ->condition('isSent', FALSE)
-      ->orderBy('ts_created');
-    $rs = $q->execute();
-    $nxns = array();
-    foreach ($rs as $rec) {
-      $nxns[$rec->nxn_id] = new Nxn2($rec);
-    }
-    return $nxns;
-  }
+//  /**
+//   * Get the unsent nxns.
+//   *
+//   * @todo add $daily_digest flag so we can filter for people who just want the once-per-day email, or not.
+//   *
+//   * @static
+//   * @return array
+//   */
+//  public static function getUnsent() {
+//    $q = db_select('moonmars_nxn', 'nxn')
+//      ->fields('nxn')
+//      ->condition('sent', FALSE)
+//      ->orderBy('ts_created');
+//    $rs = $q->execute();
+//    $nxns = array();
+//    foreach ($rs as $rec) {
+//      $nxns[$rec->nxn_id] = new Nxn2($rec);
+//    }
+//    return $nxns;
+//  }
 }

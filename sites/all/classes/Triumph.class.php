@@ -35,6 +35,21 @@ class Triumph {
   protected $nxnsCreated;
 
   /**
+   * When the notifications were created.
+   *
+   * @var StarDateTime
+   */
+  protected $dtNxnsCreated;
+
+  /**
+   * Nxns created for about this triumph.
+   * Keys are nxn_ids. Values are Nxn2 objeects.
+   *
+   * @var array
+   */
+  protected $nxns;
+
+  /**
    * Actors involved in the triumph.
    * Keys are actor roles. Values are entities such as Member, Group, Channel, Item, ItemComment.
    *
@@ -49,14 +64,6 @@ class Triumph {
    * @var array
    */
   protected $recipients;
-
-  /**
-   * Nxns created for about this triumph.
-   * Keys are nxn_ids. Values are Nxn2 objeects.
-   *
-   * @var array
-   */
-  protected $nxns;
 
   /**
    * Constructor
@@ -77,6 +84,10 @@ class Triumph {
       $this->actors       = array();
       $this->recipients   = array();
     }
+    elseif ($param instanceof stdClass) {
+      // Assume this is a database record:
+      $this->copyRec($param);
+    }
     else {
       trigger_error("Invalid parameter to Triumph constructor.", E_USER_WARNING);
     }
@@ -86,22 +97,34 @@ class Triumph {
   // Load/save
 
   /**
+   * Copy a database record into properties.
+   *
+   * @param $rec
+   */
+  public function copyRec($rec) {
+    $this->triumphId = (int) $rec->triumph_id;
+    $this->triumphType = $rec->triumph_type;
+    $this->dtCreated = new StarDateTime($rec->ts_created);
+    $this->nxnsCreated = (bool) $rec->nxns_created;
+    $this->dtNxnsCreated = new StarDateTime($rec->nxns_created);
+    return $this;
+  }
+
+  /**
    * Load the triumph.
    */
   public function load() {
     if ($this->triumphId) {
       // Get the triumph record:
-      $q = db_select('moonmars_triumph', 'mt')
-        ->fields('mt')
+      $q = db_select('moonmars_triumph', 'mmt')
+        ->fields('mmt')
         ->condition('triumph_id', $this->triumphId);
       $rs = $q->execute();
       $rec = $rs->fetchObject();
 
       if ($rec) {
         // Set properties:
-        $this->triumphType  = $rec->triumph_type;
-        $this->dtCreated    = new StarDateTime($rec->ts_created);
-        $this->nxnsCreated  = (bool) $rec->nxns_created;
+        $this->copyRec($rec);
       }
       else {
         trigger_error("Triumph::load() -> Triumph $this->triumphId not found.", E_USER_WARNING);
@@ -118,9 +141,10 @@ class Triumph {
   public function save() {
     // Save the triumph record:
     $fields = array(
-      'triumph_type' => $this->triumphType,
-      'ts_created'   => $this->dtCreated->timestamp(),
-      'nxns_created' => (int) $this->nxnsCreated,
+      'triumph_type'    => $this->triumphType,
+      'ts_created'      => $this->dtCreated->timestamp(),
+      'nxns_created'    => (int) $this->nxnsCreated,
+      'ts_nxns_created' => $this->dtNxnsCreated->timestamp(),
     );
 
     if ($this->triumphId) {
@@ -136,8 +160,10 @@ class Triumph {
       $q2->execute();
     }
     else {
+      // Insert a new triumph:
       $q = db_insert('moonmars_triumph')
         ->fields($fields);
+      // Get the new triumphId:
       $this->triumphId = $q->execute();
     }
 
@@ -266,9 +292,13 @@ class Triumph {
   }
 
   /**
-   * Find nxn recipients for this triumph.
+   * Get the nxn recipients for this triumph.
    */
-  protected function findRecipients() {
+  protected function recipients() {
+    // Check if we already did this:
+    if (isset($this->recipients)) {
+      return $this->recipients;
+    }
 
     // Get the channel if relevant:
     switch ($this->triumphType) {
@@ -488,20 +518,53 @@ class Triumph {
         } // foreach members
       } // for each triumph type
     } // for each nxn category
+
+    return $this->recipients;
   } // findRecipients
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Notifications
 
   /**
-   * Create the nxn records for this triumph.
+   * Create the nxns for this triumph.
+   *
+   * @return int
+   *   The number of nxns created.
    */
   public function createNxns() {
-    foreach ($this->recipients as $recipient) {
+    $n = 0;
+    foreach ($this->recipients() as $recipient) {
       $nxn = new Nxn2($this, $recipient);
       $nxn->save();
+      $n++;
     }
     $this->nxnsCreated = TRUE;
+    $this->dtNxnsCreated = StarDateTime::now();
+    return $n;
+  }
+
+  /**
+   * Find any triumphs for which nxns haven't been created yet, and create them.
+   *
+   * @static
+   * @return int
+   *   The total number of nxns created.
+   */
+  public static function createNxnsAllOutstanding() {
+    // Look for any triumphs for which we didn't create nxns yet:
+    $q = db_select('moonmars_triumph', 'mmt')
+      ->fields('mmt')
+      ->condition('nxns_created', 0);
+    $rs = $q->execute();
+    // Create the nxns:
+    $n = 0;
+    foreach ($rs as $rec) {
+      $triumph = new Triumph($rec);
+      // The call to createNxns() followed by save() will update the nxns_created field:
+      $n += $triumph->createNxns();
+      $triumph->save();
+    }
+    return $n;
   }
 
   /**

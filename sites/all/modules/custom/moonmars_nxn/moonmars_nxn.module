@@ -24,6 +24,11 @@ function moonmars_nxn_menu() {
     'access callback' => 'user_is_logged_in',
     'type'            => MENU_CALLBACK,
   );
+  $items['service/send-nxns'] = array(
+    'page callback'   => 'moonmars_nxn_send_outstanding',
+    'access callback' => TRUE,
+    'type'            => MENU_CALLBACK,
+  );
   return $items;
 }
 
@@ -32,10 +37,10 @@ function moonmars_nxn_menu() {
  */
 function moonmars_nxn_mail($key, &$message, $params) {
   switch ($key) {
-    case 'notification':
+    case 'nxn':
       $message['subject'] = $params['subject'];
       $message['body'][] = $params['summary'];
-      $message['body'][] = $params['text'];
+      $message['body'][] = $params['details'];
       $message['headers']['Content-Type'] = "text/html; charset='utf-8';";
       break;
   }
@@ -482,4 +487,21 @@ function moonmars_nxn_form_submit($form, &$form_state) {
 
   // Go back to their notifications:
 //  $form_state['redirect'] = $member->alias() . '/notifications';
+}
+
+/**
+ * Callback to create and send outstanding notifications.
+ * Should be run virtually continuously.
+ */
+function moonmars_nxn_send_outstanding() {
+  // Scan triumphs and create notifications:
+  $n_created = Triumph::createNxnsAllOutstanding();
+
+  // Send outstanding notifications:
+  $n_sent = Nxn2::sendAllOutstanding();
+
+  // Some info in watchdog:
+  watchdog('moonmars_nxn', "Creating and sending outstanding nxns. $n_created nxns created. $n_sent nxns sent.");
+
+  return NULL;
 }
