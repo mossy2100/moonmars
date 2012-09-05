@@ -151,9 +151,10 @@ function moonmars_update_channel_item_relation_changed_times() {
   // Look for relationship records:
   $q = db_select('view_channel_has_item', 'vci')
     ->fields('vci', array('rid', 'item_nid', 'created'))
-//    ->condition('channel_nid', MOONMARS_NEWS_CHANNEL_NID)
+    ->condition('channel_nid', MOONMARS_NEWS_CHANNEL_NID)
 //    ->range(0, 5)
-    ->orderBy('created', 'DESC');
+//    ->orderBy('created', 'DESC');
+    ->orderBy('item_created', 'DESC');
 
 //    dpm_query($q);
 
@@ -169,10 +170,13 @@ function moonmars_update_channel_item_relation_changed_times() {
     $latest = $relation_changed;
     $html .= "Relation changed time: $relation_changed\n";
 
+    $item_created = $item->created();
     $item_changed = $item->changed();
     if ($item_changed > $latest) {
       $latest = $item_changed;
     }
+    $html .= "<b>" . $item->title() . "</b>\n";
+    $html .= "Item created time: <span style='color:blue;'>$item_created</span>\n";
     $html .= "Item changed time: $item_changed\n";
 
     $comments = $item->comments();
@@ -195,7 +199,7 @@ function moonmars_update_channel_item_relation_changed_times() {
         ->fields(array('created' => $latest->timestamp()))
         ->condition('rid', $rec->rid);
       $html .= dbg_sql($q2) . "\n";
-      $q2->execute();
+//      $q2->execute();
     }
 
     $html .= "<hr>";

@@ -581,7 +581,7 @@ class Channel extends MoonMarsNode {
     $page = isset($_GET['page']) ? ((int) $_GET['page']) : 0;
 
     // Get the items from this channel:
-    $order_by_field = ($this->nid() == MOONMARS_NEWS_CHANNEL_NID) ? 'item_changed' : 'changed';
+    $order_by_field = ($this->nid() == MOONMARS_NEWS_CHANNEL_NID) ? 'item_created' : 'changed';
     $items = $this->items($page * self::pageSize, self::pageSize, $order_by_field);
 
     // Get the total item count:

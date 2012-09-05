@@ -953,6 +953,12 @@ class Member extends User {
 //      return self::equals($parent_entity, $this) || $parent_entity->follows($this);
     }
     else if ($parent_entity instanceof Group) {
+      // No-one can post items in the News channel.
+      // @todo This should be controlled by group permission settings.
+      if ($channel->nid() == MOONMARS_NEWS_CHANNEL_NID) {
+        return FALSE;
+      }
+
       // Only members of the group can post in the group's channel:
       return $parent_entity->hasMember($this);
     }
@@ -1072,7 +1078,7 @@ class Member extends User {
         return TRUE;
       }
 
-      // If posted in a group channel, the member can comment on it if they are a member of the group:
+      // If posted in a group channel, the member can post comment in it if they're a member of the group:
       return $parent_entity->hasMember($this);
     }
 
