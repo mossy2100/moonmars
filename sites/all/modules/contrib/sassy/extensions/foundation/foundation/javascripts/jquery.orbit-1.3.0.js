@@ -1,5 +1,5 @@
 /*
- * jQuery Orbit Plugin 1.4.0
+ * jQuery Orbit Plugin 1.3.0
  * www.ZURB.com/playground
  * Copyright 2010, ZURB
  * Free to use under the MIT license.
@@ -8,13 +8,6 @@
 
 
 (function($) {
-  
-  $.fn.findFirstImage = function () {
-	  return this.first()
-	          .find('img')
-            .andSelf().filter('img')
-            .first();
-	};
   
   var ORBIT = {
     
@@ -27,8 +20,6 @@
       startClockOnMouseOut: false, 		// if clock should start on MouseOut
       startClockOnMouseOutAfter: 1000, 	// how long after MouseOut should the timer start again
       directionalNav: true, 				// manual advancing directional navs
-      directionalNavRightText: 'Right', // text of right directional element for accessibility
-      directionalNavLeftText: 'Left', // text of left directional element for accessibility
       captions: true, 					// do you want captions?
       captionAnimation: 'fade', 			// fade, slideOpen, none
       captionAnimationSpeed: 600, 		// if so how quickly should they animate in
@@ -50,7 +41,7 @@
     wrapperHTML: '<div class="orbit-wrapper" />',
     timerHTML: '<div class="timer"><span class="mask"><span class="rotator"></span></span><span class="pause"></span></div>',
     captionHTML: '<div class="orbit-caption"></div>',
-    directionalNavHTML: '<div class="slider-nav"><span class="right"></span><span class="left"></span></div>',
+    directionalNavHTML: '<div class="slider-nav"><span class="right">Right</span><span class="left">Left</span></div>',
     bulletHTML: '<ul class="orbit-bullets"></ul>',
     
     init: function (element, options) {
@@ -115,8 +106,6 @@
         .addClass('orbit')
         .css({width: '1px', height: '1px'});
         
-      this.$slides.addClass('orbit-slide');
-        
       this.setDimentionsFromLargestSlide();
       this.updateOptionsIfOnlyOneSlide();
       this.setupFirstSlide();
@@ -153,8 +142,7 @@
       self.$element.add(self.$wrapper).height(this.$slides.first().height());
       self.orbitWidth = this.$slides.first().width();
       self.orbitHeight = this.$slides.first().height();
-      $fluidPlaceholder = this.$slides.first().findFirstImage().clone();
-        
+      $fluidPlaceholder = this.$slides.first().clone();
       
       this.$slides.each(function () {
         var slide = $(this),
@@ -168,7 +156,7 @@
         if (slideHeight > self.$element.height()) {
           self.$element.add(self.$wrapper).height(slideHeight);
           self.orbitHeight = self.$element.height();
-          $fluidPlaceholder = $(this).findFirstImage().clone();
+          $fluidPlaceholder = $(this).clone();
 	      }
         self.numberSlides += 1;
       });
@@ -227,7 +215,7 @@
 
     	if (this.$timer.is(':hidden')) {
         this.clock = setInterval(function () {
-          self.$element.trigger('orbit.next');
+          this.$element.trigger('orbit.next');
         }, this.options.advanceSpeed);            		
     	} else {
         this.timerRunning = true;
@@ -357,13 +345,9 @@
     },
     
     setupDirectionalNav: function () {
-      var self = this,
-          $directionalNav = $(this.directionalNavHTML);
-      
-      $directionalNav.find('.right').html(this.options.directionalNavRightText);
-      $directionalNav.find('.left').html(this.options.directionalNavLeftText);
+      var self = this;
 
-      this.$wrapper.append($directionalNav);
+      this.$wrapper.append(this.directionalNavHTML);
       
       this.$wrapper.find('.left').click(function () { 
         self.stopClock();

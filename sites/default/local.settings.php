@@ -1,5 +1,8 @@
 <?php
 
+// Show all errors, warnings, notices::
+error_reporting(E_ALL | E_STRICT);
+
 // Include some PHP:
 require_once DRUPAL_ROOT . '/sites/all/libraries/star/php/strings.php';
 require_once DRUPAL_ROOT . '/sites/all/libraries/star/php/numbers.php';
