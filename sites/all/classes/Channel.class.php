@@ -42,6 +42,7 @@ class Channel extends MoonMarsNode {
     $rec = db_select('node', 'n')
       ->fields('n', array('nid'))
       ->condition('title', $channel_title)
+      ->condition('type', 'channel')
       ->execute()
       ->fetch();
     return $rec ? self::create($rec->nid) : FALSE;
@@ -200,6 +201,8 @@ class Channel extends MoonMarsNode {
 
     // Add ORDER BY clause:
     $q->orderBy($order_by_field, $order_by_direction);
+
+//    dpm_query($q);
 
     // Get the items:
     $rs = $q->execute();

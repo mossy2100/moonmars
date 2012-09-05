@@ -10,6 +10,13 @@ class Item extends MoonMarsNode {
   const nodeType = 'item';
 
   /**
+   * The class to use for comments.
+   *
+   * @var string
+   */
+  const COMMENT_CLASS = 'ItemComment';
+
+  /**
    * The channel where the item was posted.
    *
    * @var Channel

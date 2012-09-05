@@ -9,21 +9,21 @@ class User extends EntityBase {
    *
    * @var string
    */
-  const entityType = 'user';
+  const ENTITY_TYPE = 'user';
 
   /**
-   * The table name.
+   * The database table name.
    *
    * @var string
    */
-  const table = 'users';
+  const DB_TABLE = 'users';
 
   /**
    * The primary key
    *
    * @var string
    */
-  const primaryKey = 'uid';
+  const PRIMARY_KEY = 'uid';
 
   /**
    * Quick-load properties.

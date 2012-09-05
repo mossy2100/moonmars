@@ -84,6 +84,26 @@ class Group extends MoonMarsNode {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Misc static methods
+
+  /**
+   * Get a group given a group title.
+   *
+   * @static
+   * @param $group_title
+   * @return Channel
+   */
+  public static function createByTitle($group_title) {
+    $rec = db_select('node', 'n')
+      ->fields('n', array('nid'))
+      ->condition('type', 'group')
+      ->condition('title', $group_title)
+      ->execute()
+      ->fetch();
+    return $rec ? self::create($rec->nid) : FALSE;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Logo
 
   /**

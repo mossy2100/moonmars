@@ -9,21 +9,21 @@ class Comment extends EntityBase {
    *
    * @var string
    */
-  const entityType = 'comment';
+  const ENTITY_TYPE = 'comment';
 
   /**
-   * The table name.
+   * The database table name.
    *
    * @var string
    */
-  const table = 'comment';
+  const DB_TABLE = 'comment';
 
   /**
    * The primary key
    *
    * @var string
    */
-  const primaryKey = 'cid';
+  const PRIMARY_KEY = 'cid';
 
   /**
    * Quick-load properties.
@@ -45,14 +45,14 @@ class Comment extends EntityBase {
   /**
    * Create a new Comment object.
    *
-   * @param null|int|stdClass $comment_param
+   * @param null|int|stdClass $param
    * @return Comment
    */
-  public static function create($comment_param = NULL) {
+  public static function create($param = NULL) {
     // Get the class of the object we want to create:
     $class = get_called_class();
 
-    if (is_null($comment_param)) {
+    if (is_null($param)) {
       // Create new comment:
       $comment_obj = new $class;
 
@@ -73,9 +73,9 @@ class Comment extends EntityBase {
       // The comment is valid without a cid:
       $comment_obj->valid = TRUE;
     }
-    elseif (is_uint($comment_param)) {
+    elseif (is_uint($param)) {
       // cid provided:
-      $cid = $comment_param;
+      $cid = $param;
 
       // Only create the new comment if not already in the cache:
       if (self::inCache($cid)) {
@@ -89,11 +89,11 @@ class Comment extends EntityBase {
         $comment_obj->entity->cid = $cid;
       }
     }
-    elseif (is_object($comment_param)) {
+    elseif ($param instanceof stdClass) {
       // Drupal comment object provided:
-      $comment = $comment_param;
+      $comment = $param;
 
-      // Get the User object:
+      // Get the Comment object:
       if (isset($comment->cid) && $comment->cid && self::inCache($comment->cid)) {
         $comment_obj = self::getFromCache($comment->cid);
       }

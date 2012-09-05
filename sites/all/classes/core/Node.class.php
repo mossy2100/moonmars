@@ -9,21 +9,28 @@ class Node extends EntityBase {
    *
    * @var string
    */
-  const entityType = 'node';
+  const ENTITY_TYPE = 'node';
 
   /**
-   * The table name.
+   * The database table name.
    *
    * @var string
    */
-  const table = 'node';
+  const DB_TABLE = 'node';
 
   /**
    * The primary key.
    *
    * @var string
    */
-  const primaryKey = 'nid';
+  const PRIMARY_KEY = 'nid';
+
+  /**
+   * The class to use for comments.
+   *
+   * @var string
+   */
+  const COMMENT_CLASS = 'Comment';
 
   /**
    * Quick-load properties.
@@ -260,15 +267,55 @@ class Node extends EntityBase {
   }
 
   /**
-   * Find out how many published comments a node has.
+   * Get the node's comments.
+   *
+   * @param bool|null $published
+   *   NULL for all comments
+   *   TRUE for published comments (default)
+   *   FALSE for unpublished comments
    */
-  public function commentCount() {
-    return db_select('comment', 'c')
+  public function comments($published = TRUE) {
+    // Get the comment class:
+    $node_class = get_called_class();
+    $comment_class = $node_class::COMMENT_CLASS;
+
+    // Get the comments:
+    $q = db_select('comment', 'c')
       ->fields('c', array('cid'))
-      ->condition('nid', $this->nid())
-      ->condition('status', 1)
-      ->execute()
-      ->rowCount();
+      ->condition('nid', $this->nid());
+
+    // Set the published condition if specified:
+    if (is_bool($published)) {
+      $q->condition('status', (int) $published);
+    }
+
+    $rs = $q->execute();
+    $comments = array();
+    foreach ($rs as $rec) {
+      $comments[] = $comment_class::create($rec->cid);
+    }
+    return $comments;
+  }
+
+  /**
+   * Find out how many comments the node has.
+   *
+   * @param bool|null $published
+   *   NULL for all comments
+   *   TRUE for published comments (default)
+   *   FALSE for unpublished comments
+   */
+  public function commentCount($published = TRUE) {
+    $q = db_select('comment', 'c')
+      ->fields('c', array('cid'))
+      ->condition('nid', $this->nid());
+
+    // Set the published condition if specified:
+    if (is_bool($published)) {
+      $q->condition('status', (int) $published);
+    }
+
+    return $q->execute()->rowCount();
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

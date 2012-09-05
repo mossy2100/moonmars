@@ -11,7 +11,17 @@ function moonmars_update_menu() {
     'type'             => MENU_CALLBACK,
   );
   $items['named-colors'] = array(
-    'page callback'    => 'moonmars_named_colors',
+    'page callback'    => 'moonmars_update_named_colors',
+    'access callback'  => TRUE,
+    'type'             => MENU_CALLBACK,
+  );
+//  $items['update/news-items'] = array(
+//    'page callback'    => 'moonmars_update_news_items',
+//    'access callback'  => TRUE,
+//    'type'             => MENU_CALLBACK,
+//  );
+  $items['update/channel-item-relation-changed-times'] = array(
+    'page callback'    => 'moonmars_update_channel_item_relation_changed_times',
     'access callback'  => TRUE,
     'type'             => MENU_CALLBACK,
   );
@@ -71,13 +81,12 @@ function moonmars_update_subscriber_relationships() {
       $rel->delete();
     }
   }
-
 }
 
 /**
  * Sort the color names.
  */
-function moonmars_named_colors() {
+function moonmars_update_named_colors() {
   $colors = StarColor::colorNames();
   $colors2 = array();
   foreach ($colors as $name => $hex) {
@@ -85,4 +94,112 @@ function moonmars_named_colors() {
   }
   ksort($colors2);
   dbg($colors2);
+}
+
+/**
+ * Check the changed timestamps for news items.
+ */
+function moonmars_update_news_items() {
+  // Look for relationship records:
+  $q = db_select('view_channel_has_item', 'vci')
+    ->fields('vci', array('item_nid', 'created'))
+    ->condition('channel_nid', MOONMARS_NEWS_CHANNEL_NID)
+    ->condition('item_status', 1)
+    ->orderBy('created', 'DESC');
+
+//    dpm_query($q);
+
+  // Get the items:
+  $rs = $q->execute();
+  $html = "<pre>";
+
+  foreach ($rs as $rec) {
+    $item = Item::create($rec->item_nid);
+    $html .= "<h1>Item " . $item->nid() . "</h1>\n";
+
+    $relation_changed = new StarDateTime($rec->created);
+    $latest = $relation_changed;
+    $html .= "Relation changed time: $relation_changed\n";
+
+    $item_changed = $item->changed();
+    if ($item_changed > $latest) {
+      $latest = $item_changed;
+    }
+    $html .= "Item changed time: $item_changed\n";
+
+    $comments = $item->comments();
+    foreach ($comments as $comment) {
+      $comment_changed = $comment->changed();
+      if ($comment_changed > $latest) {
+        $latest = $comment_changed;
+      }
+      $html .= "Comment changed time: $comment_changed\n";
+    }
+
+    $html .= "<span style='color: red;'>Latest changed time: $latest</span>\n";
+    $html .= ($latest == $relation_changed ? "OK" : "NOT OK") . "\n";
+    $html .= "<hr>";
+  }
+  $html .= "</pre>";
+  return $html;
+}
+
+/**
+ * Update the channel-item relation changed times to the correct times.
+ */
+function moonmars_update_channel_item_relation_changed_times() {
+  // Look for relationship records:
+  $q = db_select('view_channel_has_item', 'vci')
+    ->fields('vci', array('rid', 'item_nid', 'created'))
+//    ->condition('channel_nid', MOONMARS_NEWS_CHANNEL_NID)
+//    ->range(0, 5)
+    ->orderBy('created', 'DESC');
+
+//    dpm_query($q);
+
+  // Get the items:
+  $rs = $q->execute();
+  $html = "<pre>";
+
+  foreach ($rs as $rec) {
+    $item = Item::create($rec->item_nid);
+    $html .= "<h1>Relation " . $rec->rid . "</h1>\n";
+
+    $relation_changed = new StarDateTime($rec->created);
+    $latest = $relation_changed;
+    $html .= "Relation changed time: $relation_changed\n";
+
+    $item_changed = $item->changed();
+    if ($item_changed > $latest) {
+      $latest = $item_changed;
+    }
+    $html .= "Item changed time: $item_changed\n";
+
+    $comments = $item->comments();
+    foreach ($comments as $comment) {
+      $comment_changed = $comment->changed();
+      if ($comment_changed > $latest) {
+        $latest = $comment_changed;
+      }
+      $html .= "Comment changed time: $comment_changed\n";
+    }
+
+    $html .= "<span style='color: red;'>Latest changed time: $latest</span>\n";
+    $html .= ($latest == $relation_changed ? "OK" : "NOT OK") . "\n";
+
+    if ($latest != $relation_changed) {
+      // Update the relation:
+      $html .= "<b>Updating relation $rec->rid changed time to $latest</b>\n";
+
+      $q2 = db_update('relation')
+        ->fields(array('created' => $latest->timestamp()))
+        ->condition('rid', $rec->rid);
+      $html .= dbg_sql($q2) . "\n";
+      $q2->execute();
+    }
+
+    $html .= "<hr>";
+  }
+  $html .= "</pre>";
+  return $html;
 }

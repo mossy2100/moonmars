@@ -9,21 +9,21 @@ class Relation extends EntityBase {
    *
    * @var string
    */
-  const entityType = 'relation';
+  const ENTITY_TYPE = 'relation';
 
   /**
-   * The table name.
+   * The database table name.
    *
    * @var string
    */
-  const table = 'relation';
+  const DB_TABLE = 'relation';
 
   /**
    * The primary key
    *
    * @var string
    */
-  const primaryKey = 'rid';
+  const PRIMARY_KEY = 'rid';
 
   /**
    * Quick-load properties.
@@ -148,7 +148,7 @@ class Relation extends EntityBase {
    * @return Relation
    */
   public function save() {
-    // Ensure the relation is loaded:
+    // Ensure the relation has been loaded:
     $this->load();
 
     // Save the relation:

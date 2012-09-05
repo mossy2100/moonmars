@@ -88,7 +88,7 @@ abstract class EntityBase {
    */
   public function id() {
     $class = get_class($this);
-    $primaryKey = $class::primaryKey;
+    $primaryKey = $class::PRIMARY_KEY;
     return $this->$primaryKey();
   }
 
@@ -99,7 +99,7 @@ abstract class EntityBase {
    */
   public function entityType() {
     $class = get_class($this);
-    return $class::entityType;
+    return $class::ENTITY_TYPE;
   }
 
   /**
@@ -138,9 +138,9 @@ abstract class EntityBase {
         // For some "quick load" properties, just get the field from the table record rather than load the whole object:
         if (in_array($property, $class::$quickLoadProperties)) {
 
-          $rec = db_select($class::table, 't')
+          $rec = db_select($class::DB_TABLE, 't')
             ->fields('t', array($property))
-            ->condition($class::primaryKey, $this->id())
+            ->condition($class::PRIMARY_KEY, $this->id())
             ->execute()
             ->fetch();
 
@@ -266,7 +266,7 @@ abstract class EntityBase {
     $id = $this->id();
     if ($id) {
       $class = get_class($this);
-      self::$cache[$class::entityType][$id] = $this;
+      self::$cache[$class::ENTITY_TYPE][$id] = $this;
     }
   }
 
@@ -278,7 +278,7 @@ abstract class EntityBase {
    */
   public static function inCache($entity_id) {
     $class = get_called_class();
-    return isset(self::$cache[$class::entityType][$entity_id]);
+    return isset(self::$cache[$class::ENTITY_TYPE][$entity_id]);
   }
 
   /**
@@ -289,7 +289,7 @@ abstract class EntityBase {
    */
   public static function getFromCache($entity_id) {
     $class = get_called_class();
-    return isset(self::$cache[$class::entityType][$entity_id]) ? self::$cache[$class::entityType][$entity_id] : NULL;
+    return isset(self::$cache[$class::ENTITY_TYPE][$entity_id]) ? self::$cache[$class::ENTITY_TYPE][$entity_id] : NULL;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -355,6 +355,27 @@ abstract class EntityBase {
    */
   public function editAlias() {
     return $this->alias() . '/edit';
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Get datetimes
+
+  /**
+   * Get the created datetime.
+   *
+   * @return StarDateTime
+   */
+  public function created() {
+    return new StarDateTime($this->prop('created'));
+  }
+
+  /**
+   * Get the changed datetime.
+   *
+   * @return StarDateTime
+   */
+  public function changed() {
+    return new StarDateTime($this->prop('changed'));
   }
 
 }

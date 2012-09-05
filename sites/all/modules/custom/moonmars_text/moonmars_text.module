@@ -66,19 +66,18 @@ function moonmars_text_scan($text, $nl2br = FALSE, $emoticons = FALSE) {
 //    }
 //  }
 
-  // Scan for entity links:
+  // Scan for group references:
   $n_entities = preg_match_all("/\[([^\]]+)\]/", $text, $matches);
-  $channels = array();
+  $groups = array();
   if ($n_entities) {
-    foreach ($matches[1] as $channel_title) {
-      $channel = Channel::createByTitle($channel_title);
-      if (!$channel) {
+    foreach ($matches[1] as $group_title) {
+      $group = Group::createByTitle($group_title);
+      if (!$group) {
         break;
       }
 
-      $channels[$channel->nid()] = $channel;
-      $parent_entity_link = $channel->parentEntityLink();
-      $text2 = str_replace("[$channel_title]", $parent_entity_link, $text2);
+      $groups[$group->nid()] = $group;
+      $text2 = str_replace("[$group_title]", $group->link(), $text2);
     }
   }
 
@@ -102,7 +101,7 @@ function moonmars_text_scan($text, $nl2br = FALSE, $emoticons = FALSE) {
     'filtered_text' => $text2,
     'members' => $members,
     'hash_tags' => $tags,
-    'channels' => $channels,
+    'groups' => $groups,
   );
 }
 
