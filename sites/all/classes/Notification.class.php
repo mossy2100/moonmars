@@ -7,7 +7,7 @@ class Notification extends MoonMarsNode {
   /**
    * The node type.
    */
-  const nodeType = 'notification';
+  const NODE_TYPE = 'notification';
 
   /**
    * Constructor.

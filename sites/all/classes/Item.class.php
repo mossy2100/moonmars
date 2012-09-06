@@ -7,7 +7,7 @@ class Item extends MoonMarsNode {
   /**
    * The node type.
    */
-  const nodeType = 'item';
+  const NODE_TYPE = 'item';
 
   /**
    * The class to use for comments.

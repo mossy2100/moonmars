@@ -7,7 +7,7 @@ class Channel extends MoonMarsNode {
   /**
    * The node type.
    */
-  const nodeType = 'channel';
+  const NODE_TYPE = 'channel';
 
   /**
    * The default page size for channels.

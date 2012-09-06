@@ -7,7 +7,7 @@ class Group extends MoonMarsNode {
   /**
    * The node type.
    */
-  const nodeType = 'group';
+  const NODE_TYPE = 'group';
 
   /**
    * The group types.
@@ -170,9 +170,9 @@ class Group extends MoonMarsNode {
    * Get/set the group type.
    *
    * @param string $type
-   * @return mixed|Node|string
+   * @return string|Group
    */
-  public function type($type = NULL) {
+  public function groupType($type = NULL) {
     return $this->field('field_group_type', LANGUAGE_NONE, 0, 'value', $type);
   }
 

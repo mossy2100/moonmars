@@ -138,9 +138,9 @@ function moonmars_groups_leave($group_nid) {
   $group = Group::create($group_nid);
 
   // Check the type:
-  if ($group->type() != 'group') {
+  if ($group->nodeType() != 'group') {
     drupal_set_message('Group not found.');
-    return;
+    return '';
   }
 
   // Get the alias:
@@ -784,7 +784,7 @@ function theme_moonmars_groups_search_form($vars) {
       $group = Group::create($group_nid);
 
       $description = "
-        Type: <span class='group-type'>" . $types[$group->type()] . "</span><br>
+        Type: <span class='group-type'>" . $types[$group->groupType()] . "</span><br>
         Member count: <span class='group-member-count'>" . $group->memberCount() . "</span><br>
         <div class='group-description'>" . $group->description() . "</span>";
 

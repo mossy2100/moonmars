@@ -64,7 +64,7 @@ class Node extends EntityBase {
       $node_obj = new $class;
 
       // Set the type:
-      $node_obj->entity->type = $class::nodeType;
+      $node_obj->entity->type = $class::NODE_TYPE;
 
       // Default status to published:
       $node_obj->entity->status = 1;
@@ -233,7 +233,9 @@ class Node extends EntityBase {
    * @param null|string
    * @return string|Node
    */
-  public function type($type = NULL) {
+  public function nodeType($type = NULL) {
+    // If getting the nodeType we could return self::NODE_TYPE here. However, one use of this function can be to check
+    // if the node in the class is the correct type.
     return $this->prop('type', $type);
   }
 
