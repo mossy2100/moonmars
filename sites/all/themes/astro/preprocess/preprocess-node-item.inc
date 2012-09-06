@@ -7,9 +7,6 @@
  */
 function astro_alpha_preprocess_node_item(&$vars) {
 
-  drupal_add_js(drupal_get_path('module', 'moonmars_channels') . '/js/moonmars-channels.js');
-  drupal_add_js(drupal_get_path('module', 'moonmars_ratings') . '/js/ratings.js');
-
   // Get the current logged-in member:
   $current_member = Member::currentMember();
   $vars['current_member'] = $current_member;
