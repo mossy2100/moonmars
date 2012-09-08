@@ -52,7 +52,7 @@ $ratingButtonHeight = 20px;
       form {
         padding: 0;
         margin: 0;
-        border: none;
+        border: 0;
         background: none;
       }
     }
@@ -230,7 +230,7 @@ article.node-channel form,
 article.node-item form {
   padding: 0;
   margin: 0;
-  border: none;
+  border: 0;
   background: none;
 }
 
@@ -301,12 +301,6 @@ form.node-item-form {
 }
 
 article.node-item {
-  .field-name-field-item-text {
-    .field-item {
-      white-space: pre-wrap;
-    }
-  }
-
   p.comment-instruction {
     margin: 0;
     font-size: 11px;

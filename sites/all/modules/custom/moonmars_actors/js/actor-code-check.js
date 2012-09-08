@@ -59,7 +59,7 @@ function actorCodeCheck(actorType, tfActorCode) {
     var actorId = $('#' + (actorType == 'member' ? 'uid' : 'nid')).val();
 
     // Make an AJAX callback to check the actor code:
-    $.get('/ajax/actor-code-check', {
+    $.get('/ajax/check-actor-code', {
       actorType: actorType,
       actorCode: actorCode,
       actorId: actorId

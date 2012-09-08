@@ -171,8 +171,25 @@ class Comment extends EntityBase {
     return $this;
   }
 
+  /**
+   * OO wrapper for comment_submit.
+   */
+  public function submit() {
+    comment_submit($this->entity);
+  }
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Get and set.
+
+  /**
+   * Get the quick-load properties.
+   *
+   * @static
+   * @return array
+   */
+  protected static function quickLoadProperties() {
+    return array('subject', 'nid', 'uid');
+  }
 
   /**
    * Get/set the cid.

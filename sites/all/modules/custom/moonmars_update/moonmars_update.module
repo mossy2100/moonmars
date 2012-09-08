@@ -33,60 +33,61 @@ function moonmars_update_marshall($callback) {
 /**
  * Update subscriber relationships.
  */
-function moonmars_update_subscriber_relationships() {
-  // Convert all has_follower relationships to has_subscriber:
-  $rels = Relation::searchBinary('has_follower');
-  foreach ($rels as $rel) {
-    $member   = Member::create($rel->endpointEntityId(0));
-    $follower = Member::create($rel->endpointEntityId(1));
-
-    // Create the has_subscriber relationship:
-    Relation::updateBinary('has_subscriber', 'node', $member->channel()->nid(), 'user', $follower->uid());
-  }
-
-  // Delete the has_follower relationship:
-  Relation::deleteBinary('has_follower');
-  Relation::deleteBinary('follows');
-
-  // Convert all has_member relationships to has_subscriber:
-  $rels = Relation::searchBinary('has_member');
-  foreach ($rels as $rel) {
-    $group    = Group::create($rel->endpointEntityId(0));
-    $follower = Member::create($rel->endpointEntityId(1));
-
-    // Create the has_subscriber relationship:
-    Relation::updateBinary('has_subscriber', 'node', $group->channel()->nid(), 'user', $follower->uid());
-  }
-
-  // Subscribe everyone to the News channel:
-  $rs = db_select('users', 'u')
-    ->fields('u', array('uid'))
-    ->condition('status', 1)
-    ->execute();
-  foreach ($rs as $rec) {
-    $member = Member::create($rec->uid);
-
-    // Create the has_subscriber relationship:
-    Relation::updateBinary('has_subscriber', 'node', MOONMARS_NEWS_CHANNEL_NID, 'user', $member->uid());
-  }
-
-  // Default email_notifications to TRUE in every subscription relationship.
-  $rels = Relation::searchBinary('has_subscriber', 'node', NULL, 'user', NULL);
-  foreach ($rels as $rel) {
-    $rel->field('field_email_notification', LANGUAGE_NONE, 0, 'value', 1);
-    $rel->save();
-  }
-
-  // Delete all 'has_item' relationships where copied = 1
-  $rels = Relation::searchBinary('has_item', 'node', NULL, 'node', NULL);
-  foreach ($rels as $rel) {
-    $copied = $rel->field('field_copied');
-    if ($copied) {
-      echo 'deleting ' . $rel->rid() . '<br>';
-      $rel->delete();
-    }
-  }
-}
+//function moonmars_update_subscriber_relationships() {
+//  // Convert all has_follower relationships to has_subscriber:
+//  $rels = Relation::searchBinary('has_follower');
+//  foreach ($rels as $rel) {
+//    $member   = Member::create($rel->endpointEntityId(0));
+//    $follower = Member::create($rel->endpointEntityId(1));
+//
+//    // Create the has_subscriber relationship:
+//    Relation::updateBinary('has_subscriber', 'node', $member->channel()->nid(), 'user', $follower->uid());
+//  }
+//
+//  // Delete the has_follower relationship:
+//  Relation::deleteBinary('has_follower');
+//  Relation::deleteBinary('follows');
+//
+//  // Convert all has_member relationships to has_subscriber:
+//  $rels = Relation::searchBinary('has_member');
+//  foreach ($rels as $rel) {
+//    $group    = Group::create($rel->endpointEntityId(0));
+//    $follower = Member::create($rel->endpointEntityId(1));
+//
+//    // Create the has_subscriber relationship:
+//    Relation::updateBinary('has_subscriber', 'node', $group->channel()->nid(), 'user', $follower->uid());
+//  }
+//
+//  // Subscribe everyone to the News channel:
+//  $rs = db_select('users', 'u')
+//    ->fields('u', array('uid'))
+//    ->condition('status', 1)
+//    ->execute();
+//  foreach ($rs as $rec) {
+//    $member = Member::create($rec->uid);
+//
+//    // Create the has_subscriber relationship:
+//    Relation::updateBinary('has_subscriber', 'node', MOONMARS_NEWS_CHANNEL_NID, 'user', $member->uid());
+//  }
+//
+//  // Default email_notifications to TRUE in every subscription relationship.
+//  $rels = Relation::searchBinary('has_subscriber', 'node', NULL, 'user', NULL);
+//  foreach ($rels as $rel) {
+//    $rel->field('field_email_notification', LANGUAGE_NONE, 0, 'value', 1);
+//    $rel->save();
+//  }
+//
+//  // Delete all 'has_item' relationships where copied = 1
+//  $rels = Relation::searchBinary('has_item', 'node', NULL, 'node', NULL);
+//  foreach ($rels as $rel) {
+//    $copied = $rel->field('field_copied');
+//    if ($copied) {
+//      echo 'deleting ' . $rel->rid() . '<br>';
+//      $rel->delete();
+//    }
+//  }
+//
+//}
 
 /**
  * Sort the color names.
@@ -99,6 +100,92 @@ function moonmars_update_named_colors() {
   }
   ksort($colors2);
   dbg($colors2);
+}
+
+/**
+ * Fix URL aliases.
+ */
+function moonmars_update_fix_aliases() {
+  require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'pathauto') . '/pathauto.inc';
+
+  // Members:
+  $q = db_select('users', 'u')
+    ->fields('u', array('uid'))
+    ->condition('uid', 0, '>');
+  $rs = $q->execute();
+  foreach ($rs as $rec) {
+    $member = Member::create($rec->uid);
+    $member->resetAlias();
+    drupal_set_message("Updated member alias to <em>" . $member->alias() . "</em>");
+  }
+
+  // Channels and notifications:
+  $q = db_select('node', 'n')
+    ->fields('n', array('nid', 'type'))
+    ->condition('type', array('channel', 'notification', 'item'))
+    ->orderBy('type')
+    ->orderBy('nid');
+  $rs = $q->execute();
+  foreach ($rs as $rec) {
+    switch ($rec->type) {
+      case 'channel':
+        $channel = Channel::create($rec->nid);
+        if ($channel->resetAlias()) {
+          drupal_set_message("Updated channel alias to <em>" . $channel->alias() . "</em>");
+        }
+        else {
+          drupal_set_message("Could not updated channel alias for <em>" . $channel->alias() . "</em>", 'warning');
+        }
+        break;
+
+      case 'notification':
+        $nxn = Nxn::create($rec->nid);
+        $alias = pathauto_create_alias('node', 'return', "node/$rec->nid", array('node' => $nxn->node()), 'notification');
+        $nxn->alias($alias);
+        drupal_set_message("Updated notification alias to <em>" . $nxn->alias() . "</em>");
+        break;
+
+      case 'item':
+        $item = Item::create($rec->nid);
+        $alias = pathauto_create_alias('node', 'return', "node/$rec->nid", array('node' => $item->node()), 'item');
+        $item->alias($alias);
+        drupal_set_message("Updated item alias to <em>" . $item->alias() . "</em>");
+        break;
+    }
+  }
+  return '';
+}
+
+/**
+ * Convert all has_subscriber relationships to has_member and follows relationships.
+ */
+function moonmars_update_remove_subscriber_relationships() {
+  // Convert all has_subscriber relationships to has_member and follows relationships:
+  $rels = MoonMarsRelation::searchBinary('has_subscriber');
+  foreach ($rels as $rel) {
+
+    // Get the endpoints as objects:
+    $channel = $rel->endpoint(0);
+    $member = $rel->endpoint(1);
+
+    dbg("Channel " . $channel->title() . " has subscriber " . $member->name());
+
+    $parent_entity = $channel->parentEntity();
+
+    if ($parent_entity instanceof Member) {
+      // Follows:
+      dbg("Creating/updating relationship: Member " . $member->name() . " follows " . $parent_entity->name());
+      Relation::updateBinary('follows', $member, $parent_entity);
+    }
+    else {
+      // Member of a group:
+      dbg("Creating/updating relationship: Group " . $parent_entity->title() . " has member " . $member->name());
+      Relation::updateBinary('has_member', $parent_entity, $member);
+    }
+  }
+
+  // Delete all the has_subscriber relationships:
+//  Relation::deleteBinary('has_subscriber');
 }
 
 /**

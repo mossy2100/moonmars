@@ -33,17 +33,15 @@ class Node extends EntityBase {
   const COMMENT_CLASS = 'Comment';
 
   /**
-   * Quick-load properties.
-   *
-   * @var array
-   */
-  protected static $quickLoadProperties = array('title', 'type', 'uid');
-
-  /**
    * Constructor.
    */
   protected function __construct() {
-    return parent::__construct();
+    // Create the object:
+    parent::__construct();
+
+    // Set the node type:
+    $class = get_called_class();
+    $this->entity->type = $class::nodeType;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -186,6 +184,16 @@ class Node extends EntityBase {
   // Get and set.
 
   /**
+   * Get the quick-load properties.
+   *
+   * @static
+   * @return array
+   */
+  protected static function quickLoadProperties() {
+    return array('title', 'type', 'uid');
+  }
+
+  /**
    * Get/set the nid.
    *
    * @param int $nid
@@ -230,6 +238,9 @@ class Node extends EntityBase {
   /**
    * Get/set the node's type.
    *
+   * Note as a rule we never say just 'type' because it's far too easy to get node type, entity type, field type,
+   * relation type, etc., mixed up, which is a source of bugs.
+   *
    * @param null|string
    * @return string|Node
    */
@@ -263,9 +274,9 @@ class Node extends EntityBase {
    *
    * @return string
    */
-  public function link($label = NULL) {
+  public function link($label = NULL, $absolute = FALSE) {
     $label = ($label === NULL) ? $this->title() : $label;
-    return l($label, $this->alias());
+    return l($label, $this->url($absolute));
   }
 
   /**

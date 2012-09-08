@@ -24,8 +24,8 @@ const MOONMARS_ACTOR_CODE_MAX_LENGTH = USERNAME_MAX_LENGTH;
  */
 function moonmars_actors_menu() {
   $items = array();
-  $items['ajax/actor-code-check'] = array(
-    'page callback'   => 'moonmars_actors_ajax_code_check',
+  $items['ajax/check-actor-code'] = array(
+    'page callback'   => 'moonmars_actors_ajax_check_code',
     'access callback' => TRUE,
     'type'            => MENU_CALLBACK,
   );
@@ -35,7 +35,7 @@ function moonmars_actors_menu() {
 /**
  * AJAX callback to check if a actor code is valid.
  */
-function moonmars_actors_ajax_code_check() {
+function moonmars_actors_ajax_check_code() {
   // Get parameters from the query string:
   $actor_type = isset($_REQUEST['actorType']) ? $_REQUEST['actorType'] : NULL;
   $actor_code = isset($_REQUEST['actorCode']) ? $_REQUEST['actorCode'] : NULL;

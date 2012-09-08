@@ -26,13 +26,6 @@ class User extends EntityBase {
   const PRIMARY_KEY = 'uid';
 
   /**
-   * Quick-load properties.
-   *
-   * @var array
-   */
-  protected static $quickLoadProperties = array('name', 'mail');
-
-  /**
    * Constructor.
    */
   protected function __construct() {
@@ -40,7 +33,7 @@ class User extends EntityBase {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Create and delete.
+  // Create/delete
 
   /**
    * Create a new User object.
@@ -59,7 +52,7 @@ class User extends EntityBase {
       // Assume active:
       $user_obj->entity->status = 1;
 
-      // Without a uid the user is valid:
+      // Without a uid the user is assumed valid until proven otherwise:
       $user_obj->valid = TRUE;
     }
     elseif (is_uint($user_param)) {
@@ -77,6 +70,22 @@ class User extends EntityBase {
         // Set the uid:
         $user_obj->entity->uid = $uid;
       }
+    }
+    elseif (is_string($user_param)) {
+      // name provided.
+      $name = $user_param;
+
+      // Create new user:
+      $user_obj = new $class;
+
+      // Assume active:
+      $user_obj->entity->status = 1;
+
+      // Remember the name:
+      $user_obj->entity->name = $name;
+
+      // Without a uid the user is assumed valid until proven otherwise:
+      $user_obj->valid = TRUE;
     }
     elseif (is_object($user_param)) {
       // Drupal user object provided.
@@ -113,7 +122,7 @@ class User extends EntityBase {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Load and save.
+  // Load/save
 
   /**
    * Load the user object.
@@ -171,7 +180,17 @@ class User extends EntityBase {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Get and set methods.
+  // Get/set
+
+  /**
+   * Get the quick-load properties.
+   *
+   * @static
+   * @return array
+   */
+  protected static function quickLoadProperties() {
+    return array('name', 'mail');
+  }
 
   /**
    * Get/set the uid.
@@ -182,6 +201,9 @@ class User extends EntityBase {
   public function uid($uid = NULL) {
     if ($uid === NULL) {
       // Get the uid:
+      if (!isset($this->entity->uid) || !$this->entity->uid) {
+        $this->load();
+      }
       return isset($this->entity->uid) ? $this->entity->uid : NULL;
     }
     else {
@@ -227,9 +249,9 @@ class User extends EntityBase {
    *
    * @return string
    */
-  public function link($label = NULL) {
+  public function link($label = NULL, $absolute = FALSE) {
     $label = ($label === NULL) ? $this->name() : $label;
-    return l($label, $this->alias());
+    return l($label, $this->url($absolute));
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

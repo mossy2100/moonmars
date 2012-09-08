@@ -10,7 +10,7 @@ $(function() {
     $('td.groups-column-member input:checkbox').check(selectAll);
   });
 
-  // Set behaviour of subscribed checkboxes:
+  // Set behaviour of membership checkboxes:
   $('td.groups-column-member input:checkbox').click(function() {
     // Set the state of the select all checkbox:
     setStateSelectAll();

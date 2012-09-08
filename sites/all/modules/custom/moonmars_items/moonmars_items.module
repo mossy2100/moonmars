@@ -411,7 +411,7 @@ function moonmars_items_ajax_remove() {
   // All good - remove the item.
 
   // Remove the item from the current channel:
-  Relation::deleteBinary('has_item', 'node', $current_channel->nid(), 'node', $item_nid);
+  MoonMarsRelation::deleteBinary('has_item', $current_channel, $item);
 
   // Complete data array, encode and send:
   $data['result'] = TRUE;

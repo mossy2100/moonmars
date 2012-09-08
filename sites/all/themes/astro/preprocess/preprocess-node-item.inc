@@ -81,9 +81,9 @@ function astro_alpha_preprocess_node_item(&$vars) {
     $vars['comments'] = "<div id='comments' class='comment-wrapper'></div>";
   }
 
-  // Add links in comment text to URLs, member references and hash tags:
+  // Convert item text to HTML:
   if (isset($vars['content']['field_item_text'])) {
-    $vars['content']['field_item_text'][0]['#markup'] = moonmars_text_filter($vars['content']['field_item_text'][0]['#markup'], FALSE, TRUE);
+    $vars['content']['field_item_text'][0]['#markup'] = $item->textScan()->html();
   }
 
   // Links for comment/edit/remove/delete item:
@@ -145,8 +145,9 @@ function astro_alpha_preprocess_node_item(&$vars) {
 
   // Ratings:
   // To rate an item, the member must be logged in, and it must have been created by someone else.
+  // @todo Update this to a Member::canRateItem() method.
   $can_rate = $current_member && !Member::equals($current_member, $poster);
-  $vars['rating_buttons'] = $can_rate ? moonmars_ratings_buttons($current_member, 'node', $item_nid) : '';
+  $vars['rating_buttons'] = $can_rate ? moonmars_ratings_buttons($current_member, $item) : '';
 
   // Path to theme:
   $vars['theme_path'] = drupal_get_path('theme', 'astro');

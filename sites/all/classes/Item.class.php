@@ -6,6 +6,8 @@ class Item extends MoonMarsNode {
 
   /**
    * The node type.
+   *
+   * @var string
    */
   const NODE_TYPE = 'item';
 
@@ -24,6 +26,13 @@ class Item extends MoonMarsNode {
   protected $channel;
 
   /**
+   * Result of text scan.
+   *
+   * @var string
+   */
+  protected $textScan;
+
+  /**
    * Constructor.
    */
   protected function __construct() {
@@ -40,15 +49,18 @@ class Item extends MoonMarsNode {
    */
   public function channel() {
     if (!isset($this->channel)) {
-      $rels = Relation::searchBinary('has_item', 'node', NULL, 'node', $this->nid());
+      $rels = MoonMarsRelation::searchBinary('has_item', NULL, $this);
 
       if ($rels) {
-        $this->channel = Channel::create($rels[0]->endpointEntityId(0));
+        $this->channel = $rels[0]->endpoint(0);
       }
     }
 
     return $this->channel;
   }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Text
 
   /**
    * Get/set the item text.
@@ -56,11 +68,29 @@ class Item extends MoonMarsNode {
    * @param null|string $text
    */
   public function text($text = NULL) {
+    if ($text) {
+      // Convert hearts to HTML entities:
+      $text = moonmars_text_fix_hearts($text);
+    }
+
     return $this->field('field_item_text', LANGUAGE_NONE, 0, 'value', $text);
   }
 
+  /**
+   * Get the results of the text scan.
+   *
+   * @param array
+   */
+  public function textScan() {
+    // If we haven't scanned the text yet, do it now.
+    if (!isset($this->textScan)) {
+      $this->textScan = new TextScan($this->text());
+    }
+    return $this->textScan;
+  }
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Render methods.
+  // Rendering
 
   /**
    * Render an item.
@@ -127,6 +157,27 @@ class Item extends MoonMarsNode {
     }
 
     return $message;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Comments
+
+  /**
+   * Get the members who commented on this item.
+   *
+   * @return array
+   */
+  public function commenters() {
+    $q = db_select('comment', 'c')
+      ->fields('c', array('uid'))
+      ->distinct()
+      ->condition('nid', $this->nid());
+    $rs = $q->execute();
+    $members = array();
+    foreach ($rs as $rec) {
+      $members[$rec->uid] = Member::create($rec->uid);
+    }
+    return $members;
   }
 
 }

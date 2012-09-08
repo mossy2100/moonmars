@@ -1,7 +1,12 @@
-@mixin blank-form-style {
+@mixin blank-container {
   background: none;
-  border: none;
+  border: 0;
   padding: 0;
+  margin: 0;
+}
+
+@mixin blank-form-style {
+  @include blank-container;
   margin-bottom: 20px;
 }
 
@@ -13,6 +18,8 @@
   margin-bottom: 15px;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// All forms
 form {
   @include grey-form-style;
 
@@ -22,10 +29,11 @@ form {
   }
 
   fieldset {
+    @include blank-container;
     margin-bottom: 25px;
 
     legend {
-      color: $red1;
+      color: black;
       @include border-radius(3px 3px 0 0);
       font-size: $fontSizeH3;
       position: relative;
@@ -121,20 +129,35 @@ form {
 
       .form-type-checkbox,
       .form-type-radio {
-        vertical-align: middle;
-        cursor: pointer;
-
         input {
-          margin: 0 5px 0 10px;
-          cursor: pointer;
+          margin-left: 5px;
         }
 
         label {
           font-weight: normal;
-          vertical-align: middle;
-          cursor: pointer;
         }
       }
+    }
+  }
+
+  .form-type-checkbox,
+  .form-type-radio {
+    vertical-align: middle;
+    cursor: pointer;
+
+    input {
+      margin: 0 5px 0 0;
+      cursor: pointer;
+    }
+
+    label {
+      font-weight: normal;
+      vertical-align: middle;
+      cursor: pointer;
+    }
+
+    .description {
+      margin-left: 0;
     }
   }
 
@@ -172,7 +195,6 @@ form {
 //   - user register form
 //   - member profile edit form
 //   - group create/edit form
-
 #actor-code-wrapper {
   height: 24px;
 
@@ -223,6 +245,7 @@ form {
 ///////////////////////////////////////
 // User registration and profile forms
 
+// User profile form
 #user-profile-form {
   @include blank-form-style;
 
@@ -260,6 +283,7 @@ form {
   }
 }
 
+// User register form
 #user-register-form {
   fieldset {
     margin-bottom: 0;
@@ -274,6 +298,7 @@ form {
   }
 }
 
+// User register and profile forms
 #user-register-form,
 #user-profile-form {
   // Fieldsets:
@@ -495,9 +520,6 @@ form {
   }
 }
 
-////////////////////////////////////////////////////////////////////////
-// Moon or Mars field (register form and profile form)
-
 ////////////////////////////////////
 // Channel node form
 #channel-node-form {
@@ -517,20 +539,16 @@ form {
   }
 }
 
-
 ////////////////////////////////////
 // Search form in right sidebar
-
 #search-block-form {
   #edit-search-block-form--2 {
     width: 100%;
   }
-
 }
 
-////////////////////////////////////
-// Form buttons. This style is to be tested everywhere to make sure it works.
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Form buttons. @todo This style should to be tested everywhere to make sure it works.
 .form-actions {
   display: block;
   text-align: right;
@@ -540,9 +558,8 @@ form {
   }
 }
 
-////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // User login form in sidebar
-
 #user-login-form {
   input.form-text {
     width: 100%;
@@ -553,22 +570,17 @@ form {
   }
 }
 
-
-#subscriptions-form {
-  border: none;
-  background: none;
-  padding: 0;
-  margin: 0;
-
-  #channels-button {
-    text-align: right;
-    //margin-bottom:
-  }
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Autocomplete items
+#autocomplete li.selected {
+  background: $red3;
+  color: #fff;
 }
 
-////////////////////////////
-// Groups search form
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Groups
 
+// Groups search form
 form#moonmars-groups-search-form {
   @include blank-form-style;
 
@@ -598,7 +610,7 @@ form#moonmars-groups-search-form {
 
     .form-type-checkbox,
     .form-type-radio {
-      display: inline;
+      //display: inline;
       margin-right: 10px;
 
       label {
@@ -613,6 +625,12 @@ form#moonmars-groups-search-form {
 
     .group-search-member {
       margin: 15px 0;
+      @include clearfix;
+
+      label.group-search-member-title {
+        font-weight: bold;
+        display: block;
+      }
 
       div,
       label {
@@ -620,12 +638,8 @@ form#moonmars-groups-search-form {
       }
 
       label {
+        padding: 0;
         font-weight: normal;
-      }
-
-      label.group-search-member-title {
-        font-weight: bold;
-        display: block;
       }
 
       #edit-member {
@@ -683,13 +697,6 @@ form#moonmars-groups-search-form {
   }
 }
 
-#autocomplete li.selected {
-  background: $red3;
-  color: #fff;
-}
-
-
-////////////////////////////
 // Group edit form
 form#group-node-form {
   .form-item-title {

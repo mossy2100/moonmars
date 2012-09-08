@@ -11,20 +11,35 @@ class MoonMarsEntity {
    * Gets an EntityBase-derived object from a Drupal entity.
    *
    * @static
-   * @param $node
-   * @return mixed
+   * @param object|string $param1
+   * @param null|object|int $param2
+   * @return EntityBase
    */
-  public static function getEntity($entity_type, $entity) {
+  public static function getEntity($param1, $param2 = NULL) {
+    // Allow for the first parameter to be an endpoint object:
+    if (is_object($param1)) {
+      $endpoint = $param1;
+      $entity_type = $endpoint->entity_type;
+      $entity = $endpoint->entity_id;
+    }
+    elseif (is_string($param2)) {
+      $entity_type = $param1;
+      $entity = $param2;
+    }
+    else {
+      return FALSE;
+    }
+
     switch ($entity_type) {
       case 'user':
         return Member::create($entity);
 
       case 'node':
         // Get the node type:
-        $type = is_uint($entity) ? node_get_type($entity) : $entity->type;
+        $node_type = is_uint($entity) ? node_get_type($entity) : $entity->type;
 
         // Get the node class:
-        $class = ucfirst($type);
+        $class = ucfirst($node_type);
 
         // If the node class exists, instantiate:
         if (class_exists($class)) {
@@ -42,60 +57,87 @@ class MoonMarsEntity {
         $cid = is_uint($entity) ? $entity : $entity->cid;
 
         // Get the comment's node type.
-        $type = comment_get_node_type($cid);
+        $node_type = comment_get_node_type($cid);
 
         // Get the comment class:
-        $class = ucfirst($type) . 'Comment';
+        $class = ucfirst($node_type) . 'Comment';
 
         // If the comment class exists, instantiate.
-        // This will capture ItemComment and potential other future comment classes such as ArticleComment.
+        // This will capture ItemComment and potential other future comment classes such as ArticleComment or BlogPostComment.
         if (class_exists($class)) {
           return $class::create($entity);
         }
 
         // Fall back to base Comment class:
         return Comment::create($entity);
+
+      case 'relation':
+        // Create the object:
+        return MoonMarsRelation::create($entity);
     }
 
     return FALSE;
   }
 
   /**
-   * Get the entity from the URL.
+   * Get the entity with current focus from the URL.
    *
    * @static
    * @return bool
    */
   public static function getEntityFromUrl() {
-    return self::getEntity(arg(0), arg(1));
+    $valid_entity_types = array('user', 'node', 'comment', 'relation');
+
+    // Look for the entity type and id in the request_uri:
+    $uri = trim($_SERVER['REQUEST_URI'], '/');
+
+    // If we're at 'user' then the entity is the current logged-in user:
+    if ($uri == 'user' && user_is_logged_in()) {
+      return Member::currentMember();
+    }
+
+    // Check for a normal user/%uid or node/%nid type of path:
+    $parts = explode('/', $uri);
+    if (count($parts) >= 2 && in_array($parts[0], $valid_entity_types) && is_uint($parts[1])) {
+      return self::getEntity($parts[0], $parts[1]);
+    }
+
+    // Maybe it's an alias. Try converting to normal path from just the first 2 path parts.
+    $entity_alias = $parts[0] . (isset($parts[1]) ? ('/' . $parts[1]) : '');
+    $path = drupal_get_normal_path($entity_alias);
+
+    // Check again:
+    $parts = explode('/', $path);
+    if (count($parts) >= 2 && in_array($parts[0], $valid_entity_types) && is_uint($parts[1])) {
+      return self::getEntity($parts[0], $parts[1]);
+    }
+
+    // Not an entity path:
+    return FALSE;
   }
 
   /**
    * Creates a new channel for an entity.
    *
-   * @param string $entity_type
-   * @param int $entity_id
+   * @param EntityBase $entity
    * @return int
    */
-  public static function createEntityChannel($entity_type, $entity_id) {
-    // Get the parent entity object:
-    $parent_entity = self::getEntity($entity_type, $entity_id);
-
+  public static function createEntityChannel(EntityBase $entity) {
     // Create the new channel:
     $channel = Channel::create()
       ->setProperties(array(
-          'uid'   => $parent_entity->uid(),
-          'title' => $parent_entity->channelTitle(),
+          'uid'   => $entity->uid(),
+          'title' => $entity->channelTitle(),
         ));
 
     // Save the node for the first time, which will give it a nid, which we need to create the relationship:
     $channel->save();
 
     // Create the relationship between the entity and the relationship:
-    Relation::createNewBinary('has_channel', $entity_type, $entity_id, 'node', $channel->nid());
+    MoonMarsRelation::createNewBinary('has_channel', $entity, $channel);
 
-    // Update the channel's alias and title:
-    $channel->setAliasAndTitle();
+    // Reset the channel's alias and title. This needs to be done after creating the relationship.
+    $channel->resetAliasAndTitle();
 
     // Return the Channel:
     return $channel;
@@ -104,22 +146,21 @@ class MoonMarsEntity {
   /**
    * Get an entity's channel.
    *
-   * @param string $entity_type
-   * @param int $entity_id
+   * @param EntityBase $entity
    * @param bool $create
    * @return int
    */
-  public static function getEntityChannel($entity_type, $entity_id, $create = TRUE) {
+  public static function getEntityChannel(EntityBase $entity, $create = TRUE) {
     // Check if the entity already has a channel:
-    $rels = Relation::searchBinary('has_channel', $entity_type, $entity_id, 'node', NULL);
+    $rels = MoonMarsRelation::searchBinary('has_channel', $entity, NULL);
 
     if (!empty($rels)) {
-      return Channel::create($rels[0]->endpointEntityId(1));
+      return $rels[0]->endpoint(1);
     }
 
     // If the entity has no channel, and $create is TRUE, create the channel now:
     if ($create) {
-      return self::createEntityChannel($entity_type, $entity_id);
+      return self::createEntityChannel($entity);
     }
 
     return NULL;

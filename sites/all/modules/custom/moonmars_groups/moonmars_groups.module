@@ -6,6 +6,11 @@
 const MOONMARS_GROUP_SEARCH_PAGE_SIZE = 20;
 
 /**
+ * The nid of the default group, which contains a member's default group notification preferences.
+ */
+//const MOONMARS_DEFAULT_GROUP_NID = 5375;
+
+/**
  * Implements hook_menu().
  */
 function moonmars_groups_menu() {
@@ -56,7 +61,6 @@ function moonmars_groups_form_alter(&$form, &$form_state, $form_id) {
     }
 
 //    dbg($form);
-
   }
 }
 
@@ -190,24 +194,23 @@ function moonmars_groups_leave($group_nid) {
  *
  * @param array $groups
  *   Array of Group objects.
- * @param int $group_count
- *   The total number of groups (could be larger than the array count).
+ * @param int $max_n_display
+ *   The maximum number of groups to display in the block.
  * @return string
  */
-function moonmars_groups_render_block($groups, $group_count = NULL, $view_all_link = NULL) {
+function moonmars_groups_render_block($groups, $max_n_display = NULL, $view_all_link = NULL) {
   $html = "<div class='groups-block'>\n";
 
   // Group count:
-  if ($group_count !== NULL) {
-    $html .= "<div class='group-count'>\n";
-    $html .= format_plural($group_count, '1 group', '@count groups');
-    $html .= "</div>";
-  }
+  $html .= "<div class='group-count'>\n";
+  $html .= format_plural(count($groups), '1 group', '@count groups');
+  $html .= "</div>";
 
   // Groups:
   $html .= "<ul class='group-list clearfix'>\n";
 
   // Avatars for most recent groups:
+  $n = 0;
   foreach ($groups as $group) {
     $html .= "<li class='group-icon'>\n";
 
@@ -218,6 +221,12 @@ function moonmars_groups_render_block($groups, $group_count = NULL, $view_all_li
     $html .= l($label, $group->alias(), array('html' => TRUE, 'attributes' => array('title' => $title)));
 
     $html .= "</li>\n";
+
+    // Have we rendered enough?
+    $n++;
+    if ($max_n_display !== NULL && $n == $max_n_display) {
+      break;
+    }
   }
   $html .= "</ul>\n";
 
@@ -363,11 +372,8 @@ function moonmars_groups_members_block() {
     return '';
   }
 
-  // Get the latest 12 group members:
-  $members = $group->members(0, 12);
-
   // Generate HTML:
-  $html = moonmars_members_render_avatars($group->memberCount(), $members);
+  $html = moonmars_members_render_avatars($group->members());
   // l('View all', drupal_get_path_alias("node/$group_nid") . '/members')
 
   return $html;
@@ -629,10 +635,10 @@ function moonmars_groups_search_form() {
     '#type' => 'radios',
     '#options' => array(
       1 => "is",
-      0 => "is not",
+      0 => "is not a member of.",
     ),
     '#default_value' => isset($_SESSION['group_search']['params']['is_in']) ? ((int) $_SESSION['group_search']['params']['is_in']) : 1,
-    '#suffix' => "a member of.</div>",
+    '#suffix' => "</div>",
   );
 
   $form['search']['clear'] = array(
@@ -783,7 +789,7 @@ function theme_moonmars_groups_search_form($vars) {
   if (isset($_SESSION['group_search']['results']) && $_SESSION['group_search']['results']) {
 
     // Search results:
-    $types = Group::types();
+    $types = Group::groupTypes();
     $rows = array();
 
     for ($i = 0; $i < MOONMARS_GROUP_SEARCH_PAGE_SIZE; $i++) {
@@ -839,4 +845,27 @@ function theme_moonmars_groups_search_form($vars) {
   }
 
   return $html;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Saving
+
+/**
+ * Implements hook_node_insert().
+ */
+function moonmars_groups_node_insert($node) {
+  // Create a new notification:
+  $nxn = Nxn::create();
+  $nxn->subject("New group created");
+  $group = Group::create($node);
+  $nxn->message("
+    <p>A new group has been created: " . $group->link() . ". Here's the description:</p>
+    <p>" . $group->description() . "</p>");
+  // @todo Add group topics.
+
+  // Notify everyone who may want to know about new groups.
+  $members = Nxn::mayWantNxnNew('site', 'group');
+  $recipients = array();
+  Nxn::collectRecipients('site', 'new-group', $group, $members, $recipients);
+  $nxn->send($recipients);
 }

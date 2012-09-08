@@ -8,8 +8,8 @@
   @include box-sizing(content-box);
   line-height: 19px;
   height: 19px;
-  padding: 3px 9px;
-	border: none;
+  padding: 1px 9px;
+	border: 0;
 	@include border-radius(3px);
   text-decoration: none;
 
@@ -33,6 +33,20 @@ input.form-submit,
 .view-calendar .pager a,
 .block-menu ul.menu li a {
   @include button;
+}
+
+a.button {
+  @include button;
+  display: block;
+  float: left;
+
+  &:link,
+  &:visited,
+  &:hover,
+  &:focus,
+  &:active {
+    color: white;
+  }
 }
 
 // This one is last because Firefox can't parse it, thinks it's an error and discards the whole CSS declaration.

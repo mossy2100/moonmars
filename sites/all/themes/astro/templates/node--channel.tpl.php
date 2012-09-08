@@ -20,8 +20,8 @@ require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'node') . '/node.page
     <?php
     if ($viewing_activity) {
       ?>
-      <p>The all new Activity page! This is basically the same as the Home page on Facebook or Twitter, and shows
-      items from all the channels you're subscribed to, ordered by which has changed most recently.</p>
+      <p>The all new Activity page! This is similar to the Home page on Facebook or Twitter, and shows
+      items from your channel plus all your groups and followees, ordered by which has changed most recently.</p>
       <?php
     }
 

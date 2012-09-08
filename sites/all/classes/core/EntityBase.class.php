@@ -11,7 +11,7 @@ abstract class EntityBase {
    *
    * @var array
    */
-  private static $cache;
+  protected static $cache;
 
   /**
    * The Drupal entity object (node, user, etc.)
@@ -70,7 +70,15 @@ abstract class EntityBase {
   abstract public function save();
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Get and set.
+  // Get/set
+
+  /**
+   * Get the quick-load properties.
+   *
+   * @static
+   * @return array
+   */
+  abstract protected static function quickLoadProperties();
 
   /**
    * Get the entity object.
@@ -136,13 +144,12 @@ abstract class EntityBase {
         $class = get_class($this);
 
         // For some "quick load" properties, just get the field from the table record rather than load the whole object:
-        if (in_array($property, $class::$quickLoadProperties)) {
+        if (in_array($property, $class::quickLoadProperties())) {
 
-          $rec = db_select($class::DB_TABLE, 't')
+          $q = db_select($class::DB_TABLE, 't')
             ->fields('t', array($property))
-            ->condition($class::PRIMARY_KEY, $this->id())
-            ->execute()
-            ->fetch();
+            ->condition($class::PRIMARY_KEY, $this->id());
+          $rec = $q->execute()->fetch();
 
           // If we got the record then set the property value:
           if ($rec) {
@@ -311,7 +318,7 @@ abstract class EntityBase {
   // Path and alias-related methods.
 
   /**
-   * Get the path to the entity's page.
+   * Get the system or normal path to the entity's page.
    *
    * @return string
    */
@@ -334,21 +341,31 @@ abstract class EntityBase {
       $source = $this->path();
 
       // Delete any existing aliases for this entity.
-      db_delete('url_alias')
-        ->condition('source', $source)
-        ->execute();
+      $q = db_delete('url_alias')
+        ->condition('source', $source);
+      $q->execute();
 
       // Insert the new alias:
-      db_insert('url_alias')
+      $q = db_insert('url_alias')
         ->fields(array(
           'source'   => $source,
           'alias'    => $alias,
           'language' => LANGUAGE_NONE,
-        ))
-        ->execute();
-
+        ));
+      $q->execute();
       return $this;
     }
+  }
+
+  /**
+   * Get the entity's URL.
+   * If $absolute is TRUE, it will begin with the base URL, i.e. http://example.com/alias
+   * If $absolute is FALSE, it will begin with a '/',       i.e. /alias
+   *
+   * @return string
+   */
+  public function url($absolute = FALSE) {
+    return ($absolute ? $GLOBALS['base_url'] : '') . '/' . $this->alias();
   }
 
   /**

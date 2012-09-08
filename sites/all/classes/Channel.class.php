@@ -78,12 +78,11 @@ class Channel extends MoonMarsNode {
     // Check if we remembered the result in the parentEntity property:
     if (!isset($this->parentEntity)) {
 
-      // Look up the entity_has_channel relationship:
-      $rels = Relation::searchBinary('has_channel', NULL, NULL, 'node', $this->nid());
+      // Search for the has_channel relationship:
+      $rels = MoonMarsRelation::searchBinary('has_channel', NULL, $this);
 
       if (!empty($rels)) {
-        $endpoint = $rels[0]->endpoint(0);
-        $this->parentEntity = MoonMarsEntity::getEntity($endpoint['entity_type'], $endpoint['entity_id']);
+        $this->parentEntity = $rels[0]->endpoint(0);
       }
     }
 
@@ -135,11 +134,15 @@ class Channel extends MoonMarsNode {
    *
    * @return Channel
    */
-  public function setAlias() {
+  public function resetAlias() {
     // Get the parent entity:
     $parent_entity = $this->parentEntity();
     if (!$parent_entity) {
       return FALSE;
+    }
+
+    if ($parent_entity->alias() == 'user/246') {
+      dbg($parent_entity);
     }
 
     // Set the alias:
@@ -156,7 +159,7 @@ class Channel extends MoonMarsNode {
    *
    * @return Channel
    */
-  public function setTitle() {
+  public function resetTitle() {
     $entity = $this->parentEntity();
     $title = $entity ? $entity->channelTitle() : FALSE;
     if ($title) {
@@ -166,12 +169,12 @@ class Channel extends MoonMarsNode {
   }
 
   /**
-   * Set a channel's alias and title to match the parent entity.
+   * Reset a channel's alias and title to match the parent entity.
    */
-  public function setAliasAndTitle() {
+  public function resetAliasAndTitle() {
     $this->load();
-    $this->setAlias();
-    $this->setTitle();
+    $this->resetAlias();
+    $this->resetTitle();
     $this->save();
   }
 
@@ -222,7 +225,7 @@ class Channel extends MoonMarsNode {
    * @return bool
    */
   public function hasItem(Item $item) {
-    return (bool) Relation::searchBinary('has_item', 'node', $this->nid(), 'node', $item->nid());
+    return (bool) MoonMarsRelation::searchBinary('has_item', $this, $item);
   }
 
   /**
@@ -234,18 +237,15 @@ class Channel extends MoonMarsNode {
    *   The channel_has_item relationship.
    */
   public function addItem(Item $item) {
-    $this_channel_nid = $this->nid();
-    $item_nid = $item->nid();
 
     // Check if the item is already in a channel:
-    $rels = Relation::searchBinary('has_item', 'node', $this_channel_nid, 'node', $item_nid);
+    $rels = MoonMarsRelation::searchBinary('has_item', $this, $item);
 
     if ($rels) {
       $rel = $rels[0];
 
       // Check the item wasn't posted in a different channel; if so, it's an error:
-      $item_channel_nid = $rel->endpointEntityId(0);
-      if ($item_channel_nid != $this_channel_nid) {
+      if (EntityBase::equals($rel->endpoint(0), $this)) {
         trigger_error("Item has already been posted in another channel.", E_USER_WARNING);
         return FALSE;
       }
@@ -256,7 +256,7 @@ class Channel extends MoonMarsNode {
     }
     else {
       // Create a new relationship:
-      return Relation::createNewBinary('has_item', 'node', $this_channel_nid, 'node', $item_nid);
+      return MoonMarsRelation::createNewBinary('has_item', $this, $item);
     }
   }
 
@@ -267,24 +267,13 @@ class Channel extends MoonMarsNode {
    * @return int
    */
   public function bumpItem(Item $item) {
-    $channel_nid = $this->nid();
-    $rels = Relation::searchBinary('has_item', 'node', $channel_nid, 'node', $item->nid());
+    $rels = MoonMarsRelation::searchBinary('has_item', $this, $item);
     if ($rels) {
       $rels[0]->load();
       $rels[0]->save();
       return TRUE;
     }
     return FALSE;
-  }
-
-  /**
-   * Add a subscriber to an array for notification.
-   *
-   * @param array $subscribers
-   * @param Member $member
-   */
-  protected static function collectSubscriber(array &$subscribers, Member $member) {
-    $subscribers[$member->uid()] = $member;
   }
 
   /**
@@ -300,7 +289,8 @@ class Channel extends MoonMarsNode {
     // Get the original item poster:
     $item_poster = $item->creator();
 
-    // Get the item's channel. This will be NULL for a new item.
+    // Get the item's channel. Note, this will be NULL for a new item.
+    // In the future, if/when we support cross-posting, it could be an array of channels.
     $channel = $item->channel();
 
     ////////////////////////////////////////////////
@@ -311,93 +301,126 @@ class Channel extends MoonMarsNode {
       // It's a new item, so add it to the channel:
       $this->addItem($item);
       $channel = $this;
+
+      // For new items, create the triumph:
+      Triumph::newItem($item);
     }
     else {
       // It's been edited, so bump it:
       $channel->bumpItem($item);
+
+      // Note: for edited items, we won't create a new triumph for now.
+      // It would mean adding 'update-item' and 'update-comment' triumph types, which is ok, but it also means
+      // a lot of additional checkboxes, and I don't think people want to be notified about updates so much.
     }
 
-    // Get the parent entity:
-    $parent_entity = $channel->parentEntity();
-
-    ////////////////////////////////////////////////
-    // Determine who needs to be notified.
-
-    $recipients = array();
-
-    // 1. If the item is being posted in a member's channel, notify that member.
-    if ($parent_entity instanceof Member) {
-      $recipients[$parent_entity->uid()] = $parent_entity;
-    }
-
-    // 2. If an admin edited a member's item, tell them.
-    $recipients[$item_poster->uid()] = $item_poster;
-
-    // 3. Everyone subscribed to this channel:
-    $subscribers = $channel->subscribers();
-    foreach ($subscribers as $subscriber) {
-      $recipients[$subscriber->uid()] = $subscriber;
-    }
-
-    // 4. Everyone mentioned in the item text.
-    $item_mentions = moonmars_text_referenced_members($item->text());
-    foreach ($item_mentions as $member) {
-      $recipients[$member->uid()] = $member;
-    }
-
-    // 5. Everyone following a hash tag that appears in the item text. @todo
-
-    /////////////////////////////////////////////////////////////////////////////
-    // Create notifications.
-
-    // Get a link to the item:
-    $item_link = $item->link("item");
-
-    // Notify each recipient:
-    foreach ($recipients as $recipient_uid => $recipient) {
-
-      // No need to notify the current member:
-      if (Member::equals($recipient, $current_member)) {
-        continue;
-      }
-
-      // Get a readable link to the channel:
-      if ($parent_entity instanceof Member) {
-        if (Member::equals($parent_entity, $recipient)) {
-          $channel_link = $recipient->link("your channel");
-        }
-        elseif (Member::equals($parent_entity, $current_member)) {
-          $channel_link = $current_member->link("their channel");
-        }
-        else {
-          $channel_link = $parent_entity->link($parent_entity->name() . "'s channel");
-        }
-      }
-      else {
-        $channel_link = $channel->parentEntityLink();
-      }
-
-      // Create a summary of the notification:
-      $summary = '';
-      if ($is_new) {
-        $summary .= "$current_member_link posted a new $item_link in $channel_link.";
-      }
-      else {
-        $summary .= "$current_member_link edited an $item_link";
-        if (Member::equals($recipient, $item_poster)) {
-          $summary .= " you posted";
-        }
-        $summary .= " in $channel_link.";
-      }
-
-      // Add the mention part of the message:
-      if (array_key_exists($recipient_uid, $item_mentions)) {
-        $summary .= " You were mentioned in the $item_link.";
-      }
-
-      // Send the notification
-      $recipient->notify($summary, $item->text(), $current_member, $channel, $item);
-    }
+    // @todo Everything below this line needs to be moved into Triumph and Nxn classes, then removed.
+//
+//    // Get the parent entity:
+//    $parent_entity = $channel->parentEntity();
+//
+//
+//    ////////////////////////////////////////////////
+//    // NOTIFICATIONS
+//
+//    $recipients = array();
+//
+//    // Do these in the same order as the notifications form.
+//    // @see members_notifications_form().
+//
+//    // Site-wide preferences.
+//    // Get all members who want to be notified about at least some of the new items posted on the site.
+//    Nxn::collectRecipients('site', 'new-item', $item, Notification::mayWantNxnNew('site', 'item'), $recipients);
+//
+//    // Channel preferences.
+//    // If this is a member's channel, check if they want to be notified.
+//    if ($parent_entity instanceof Member) {
+//      Nxn::collectRecipients('channel', 'new-item', $item, $parent_entity, $recipients);
+//    }
+//
+//    // Followee preferences.
+//    // Get the followers of the poster and notify those who want to be notified.
+//    Nxn::collectRecipients('followee', 'new-item', $item, $item_poster->followers(), $recipients);
+//
+//    // Group preferences.
+//    // If this is a group channel, get the members of the group and notify those who want to be notified.
+//    if ($parent_entity instanceof Group) {
+//      Nxn::collectRecipients('group', 'new-item', $item, $parent_entity->members(), $recipients);
+//    }
+//
+////    // 1. If the item is being posted in a member's channel, notify that member.
+////    if ($parent_entity instanceof Member) {
+////      $recipients[$parent_entity->uid()] = $parent_entity;
+////    }
+////
+////    // 2. If an admin edited a member's item, tell them.
+////    $recipients[$item_poster->uid()] = $item_poster;
+////
+////    // 3. Everyone subscribed to this channel:
+////    $subscribers = $channel->subscribers();
+////    foreach ($subscribers as $subscriber) {
+////      $recipients[$subscriber->uid()] = $subscriber;
+////    }
+////
+////    // 4. Everyone mentioned in the item text.
+////    $item_mentions = moonmars_text_referenced_members($item->text());
+////    foreach ($item_mentions as $member) {
+////      $recipients[$member->uid()] = $member;
+////    }
+////
+////    // 5. Everyone following a hash tag that appears in the item text. @todo
+//
+//    /////////////////////////////////////////////////////////////////////////////
+//    // Create notifications.
+//
+//    // Get a link to the item:
+//    $item_link = $item->link("item");
+//
+//    // Notify each recipient:
+//    foreach ($recipients as $recipient_uid => $recipient) {
+//
+//      // No need to notify the current member:
+//      if (Member::equals($recipient, $current_member)) {
+//        continue;
+//      }
+//
+//      // Get a readable link to the channel:
+//      if ($parent_entity instanceof Member) {
+//        if (Member::equals($parent_entity, $recipient)) {
+//          $channel_link = $recipient->link("your channel");
+//        }
+//        elseif (Member::equals($parent_entity, $current_member)) {
+//          $channel_link = $current_member->link("their channel");
+//        }
+//        else {
+//          $channel_link = $parent_entity->link($parent_entity->name() . "'s channel");
+//        }
+//      }
+//      else {
+//        $channel_link = $channel->parentEntityLink();
+//      }
+//
+//      // Create a summary of the notification:
+//      $summary = '';
+//      if ($is_new) {
+//        $summary .= "$current_member_link posted a new $item_link in $channel_link.";
+//      }
+//      else {
+//        $summary .= "$current_member_link edited an $item_link";
+//        if (Member::equals($recipient, $item_poster)) {
+//          $summary .= " you posted";
+//        }
+//        $summary .= " in $channel_link.";
+//      }
+//
+//      // Add the mention part of the message:
+//      if (array_key_exists($recipient_uid, $item_mentions)) {
+//        $summary .= " You were mentioned in the $item_link.";
+//      }
+//
+//      // Send the notification
+//      $recipient->notify($summary, $item->text(), $current_member, $channel, $item);
+//    }
   }
 
   /**
@@ -428,111 +451,140 @@ class Channel extends MoonMarsNode {
     // Bump the item:
     $channel->bumpItem($item);
 
-    ////////////////////////////////////////////////
-    // Determine who needs to be notified.
-
-    $recipients = array();
-
-    // 1. If the comment is being posted in a member's channel, notify that member.
-    if ($parent_entity instanceof Member) {
-      $recipients[$parent_entity->uid()] = $parent_entity;
+    // For new comments, create the triumph:
+    if ($is_new) {
+      Triumph::newComment($comment);
     }
 
-    // 2. If an admin edited a member's comment, tell them.
-    $recipients[$comment_poster->uid()] = $comment_poster;
-
-    // 3. Tell the original poster of the item:
-    $recipients[$item_poster->uid()] = $item_poster;
-
-    // 3. Everyone subscribed to this channel:
-    $subscribers = $channel->subscribers();
-    foreach ($subscribers as $subscriber) {
-      $recipients[$subscriber->uid()] = $subscriber;
-    }
-
-    // 4. Everyone mentioned in the comment text.
-    $comment_mentions = moonmars_text_referenced_members($comment->text());
-    foreach ($comment_mentions as $member) {
-      $recipients[$member->uid()] = $member;
-    }
-
-    // 5. Everyone mentioned in the item text.
-    $item_mentions = moonmars_text_referenced_members($item->text());
-    foreach ($item_mentions as $member) {
-      $recipients[$member->uid()] = $member;
-    }
-
-    // 5. Everyone following a hash tag that appears in the item text. @todo
-
-    /////////////////////////////////////////////////////////////////////////////
-    // Create notifications.
-
-    // Get a link to the item and the comment:
-    $item_link = $item->link('item');
-    $comment_link = $comment->link('comment');
-
-    // Notify each recipient:
-    foreach ($recipients as $recipient_uid => $recipient) {
-
-      // No need to notify the current member:
-      if (Member::equals($recipient, $current_member)) {
-        continue;
-      }
-
-      // Get a readable link to the channel:
-      if ($parent_entity instanceof Member) {
-        if (Member::equals($parent_entity, $recipient)) {
-          $channel_link = $recipient->link("your channel");
-        }
-        elseif (Member::equals($parent_entity, $current_member)) {
-          $channel_link = $current_member->link("their channel");
-        }
-        else {
-          $channel_link = $parent_entity->link($parent_entity->name() . "'s channel");
-        }
-      }
-      else {
-        $channel_link = $channel->parentEntityLink();
-      }
-
-      // Create a summary of the notification:
-      $summary = '';
-      if ($is_new) {
-        $summary .= "$current_member_link posted a new $comment_link on an $item_link";
-        if (Member::equals($recipient, $item_poster)) {
-          $summary .= " you posted";
-        }
-        $summary .= " in $channel_link.";
-      }
-      else {
-        $summary .= "$current_member_link edited a $comment_link";
-        if (Member::equals($recipient, $comment_poster)) {
-          $summary .= " you posted";
-        }
-        $summary .= " on an $item_link";
-        if (Member::equals($recipient, $item_poster)) {
-          $summary .= " you posted";
-        }
-        $summary .= " in $channel_link.";
-      }
-
-      // Add the mention part of the message:
-      $mentioned_in_item = array_key_exists($recipient_uid, $item_mentions);
-      $mentioned_in_comment = array_key_exists($recipient_uid, $comment_mentions);
-      if ($mentioned_in_item) {
-        $summary .= " You were mentioned in the $item_link";
-        if ($mentioned_in_comment) {
-          $summary . " and the $comment_link";
-        }
-        $summary .= ".";
-      }
-      elseif ($mentioned_in_comment) {
-        $summary .= " You were mentioned in the $comment_link.";
-      }
-
-      // Send the notification
-      $recipient->notify($summary, $comment->text(), $current_member, $channel, $item, $comment);
-    }
+//    ////////////////////////////////////////////////
+//    // Determine who needs to be notified.
+//
+//    $recipients = array();
+//
+//    // Do these in the same order as the notifications form.
+//    // @see members_notifications_form().
+//
+//    // Site-wide preferences.
+//    // Get all members who want to be notified about at least some of the new comments posted on the site.
+//    $members = Nxn::mayWantNxnNew('site', 'comment');
+//    Nxn::collectRecipients('site', 'new-comment', $comment, $members, $recipients);
+//
+//    // Channel preferences.
+//    // If this is a member's channel, check if they want to be notified about new comments.
+//    if ($parent_entity instanceof Member) {
+//      Nxn::collectRecipients('channel', 'new-comment', $comment, $parent_entity, $recipients);
+//    }
+//
+//    // Followee preferences.
+//    // Get the followers of the poster and notify those who want to be notified about new comments.
+//    Nxn::collectRecipients('followee', 'new-comment', $comment, $comment_poster->followers(), $recipients);
+//
+//    // Group preferences.
+//    // If this is a group channel, get the members of the group and notify those who want to be notified about new comments.
+//    if ($parent_entity instanceof Group) {
+//      Nxn::collectRecipients('group', 'new-comment', $comment, $parent_entity->members(), $recipients);
+//    }
+//
+////    // 1. If the comment is being posted in a member's channel, notify that member.
+////    if ($parent_entity instanceof Member) {
+////      $recipients[$parent_entity->uid()] = $parent_entity;
+////    }
+////
+////    // 2. If an admin edited a member's comment, tell them.
+////    $recipients[$comment_poster->uid()] = $comment_poster;
+////
+////    // 3. Tell the original poster of the item:
+////    $recipients[$item_poster->uid()] = $item_poster;
+////
+////    // 3. Everyone subscribed to this channel:
+////    $subscribers = $channel->subscribers();
+////    foreach ($subscribers as $subscriber) {
+////      $recipients[$subscriber->uid()] = $subscriber;
+////    }
+////
+////    // 4. Everyone mentioned in the comment text.
+////    $comment_mentions = moonmars_text_referenced_members($comment->text());
+////    foreach ($comment_mentions as $member) {
+////      $recipients[$member->uid()] = $member;
+////    }
+////
+////    // 5. Everyone mentioned in the item text.
+////    $item_mentions = moonmars_text_referenced_members($item->text());
+////    foreach ($item_mentions as $member) {
+////      $recipients[$member->uid()] = $member;
+////    }
+////
+////    // 5. Everyone following a hash tag that appears in the item text. @todo
+//
+//    /////////////////////////////////////////////////////////////////////////////
+//    // Create notifications.
+//
+//    // Get a link to the item and the comment:
+//    $item_link = $item->link('item');
+//    $comment_link = $comment->link('comment');
+//
+//    // Notify each recipient:
+//    foreach ($recipients as $recipient_uid => $recipient) {
+//
+//      // No need to notify the current member:
+//      if (Member::equals($recipient, $current_member)) {
+//        continue;
+//      }
+//
+//      // Get a readable link to the channel:
+//      if ($parent_entity instanceof Member) {
+//        if (Member::equals($parent_entity, $recipient)) {
+//          $channel_link = $recipient->link("your channel");
+//        }
+//        elseif (Member::equals($parent_entity, $current_member)) {
+//          $channel_link = $current_member->link("their channel");
+//        }
+//        else {
+//          $channel_link = $parent_entity->link($parent_entity->name() . "'s channel");
+//        }
+//      }
+//      else {
+//        $channel_link = $channel->parentEntityLink();
+//      }
+//
+//      // Create a summary of the notification:
+//      $summary = '';
+//      if ($is_new) {
+//        $summary .= "$current_member_link posted a new $comment_link on an $item_link";
+//        if (Member::equals($recipient, $item_poster)) {
+//          $summary .= " you posted";
+//        }
+//        $summary .= " in $channel_link.";
+//      }
+//      else {
+//        $summary .= "$current_member_link edited a $comment_link";
+//        if (Member::equals($recipient, $comment_poster)) {
+//          $summary .= " you posted";
+//        }
+//        $summary .= " on an $item_link";
+//        if (Member::equals($recipient, $item_poster)) {
+//          $summary .= " you posted";
+//        }
+//        $summary .= " in $channel_link.";
+//      }
+//
+//      // Add the mention part of the message:
+//      $mentioned_in_item = array_key_exists($recipient_uid, $item_mentions);
+//      $mentioned_in_comment = array_key_exists($recipient_uid, $comment_mentions);
+//      if ($mentioned_in_item) {
+//        $summary .= " You were mentioned in the $item_link";
+//        if ($mentioned_in_comment) {
+//          $summary . " and the $comment_link";
+//        }
+//        $summary .= ".";
+//      }
+//      elseif ($mentioned_in_comment) {
+//        $summary .= " You were mentioned in the $comment_link.";
+//      }
+//
+//      // Send the notification
+//      $recipient->notify($summary, $comment->text(), $current_member, $channel, $item, $comment);
+//    }
   }
 
   /**
@@ -600,17 +652,6 @@ class Channel extends MoonMarsNode {
     $html = '';
     $entity = $this->parentEntity();
 
-//    // Official website:
-//    $url = $this->field('field_website', LANGUAGE_NONE, 0, 'url');
-//    if ($url) {
-//      $title = htmlspecialchars("Visit " . (($entity instanceof Member) ? ($entity->name() . "'s official website") : ("the official website of " . $entity->title())), ENT_QUOTES);
-//      $html .= "
-//        <p class='official-website'>
-//          Official website:<br>
-//          <a href='$url' target='_blank' title='$title' class='autotrim'>" . rtrim(trimhttp($url), '/') . "</a>
-//        </p>\n";
-//    }
-
     // Social links:
     $social_links = '';
     $social_link_fields = moonmars_channels_social_links();
@@ -638,76 +679,6 @@ class Channel extends MoonMarsNode {
     }
 
     return $html;
-  }
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Subscriber methods.
-
-  /**
-   * Get the subscribers to the channel.
-   *
-   * @param int $offset
-   * @param int $limit
-   * @return array
-   */
-  public function subscribers($offset = NULL, $limit = NULL) {
-    // Get the channel's subscribers in reverse order of that in which they subscribed.
-    $q = db_select('view_channel_has_subscriber', 'v')
-      ->fields('v', array('subscriber_uid'))
-      ->condition('channel_nid', $this->nid())
-      ->orderBy('created', 'DESC');
-
-    // Set a limit if specified:
-    if ($offset !== NULL && $limit !== NULL) {
-      $q->range($offset, $limit);
-    }
-
-    $rs = $q->execute();
-    $subscribers = array();
-    foreach ($rs as $rec) {
-      $subscribers[] = Member::create($rec->subscriber_uid);
-    }
-
-    return $subscribers;
-  }
-
-  /**
-   * Get the number of subscribers in a channel.
-   *
-   * @return int
-   */
-  public function subscriberCount() {
-    $q = db_select('view_channel_has_subscriber', 'v')
-      ->fields('v', array('rid'))
-      ->condition('channel_nid', $this->nid());
-    $rs = $q->execute();
-    return $rs->rowCount();
-  }
-
-  /**
-   * Check if a member is a subscriber to the channel.
-   *
-   * @param Member $member
-   * @return bool
-   */
-  public function hasSubscriber(Member $member) {
-    $rels = Relation::searchBinary('has_subscriber', 'node', $this->nid(), 'user', $member->uid());
-    return (bool) $rels;
-  }
-
-  /**
-   * Get subscriber relationship.
-   *
-   * @param Member $member
-   * @return array
-   *   or FALSE if the relationship doesn't exist.
-   */
-  public function getSubscriberRelationship(Member $member) {
-    $rels = Relation::searchBinary('has_subscriber', 'node', $this->nid(), 'user', $member->uid());
-    if ($rels) {
-      return Relation::create($rels[0]->rid());
-    }
-    return FALSE;
   }
 
 }
