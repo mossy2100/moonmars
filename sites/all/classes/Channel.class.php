@@ -166,9 +166,9 @@ class Channel extends MoonMarsNode {
   }
 
   /**
-   * Update a channel's alias and title to match the parent entity.
+   * Set a channel's alias and title to match the parent entity.
    */
-  public function updateAliasAndTitle() {
+  public function setAliasAndTitle() {
     $this->load();
     $this->setAlias();
     $this->setTitle();

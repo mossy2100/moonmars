@@ -83,6 +83,24 @@ class Group extends MoonMarsNode {
     return $this->field('field_description', LANGUAGE_NONE, 0, 'value', $description);
   }
 
+  /**
+   * Get/set the group tag.
+   *
+   * @param string $tag
+   * @return mixed
+   */
+  public function tag($tag = NULL) {
+    return $this->field('field_group_tag', LANGUAGE_NONE, 0, 'value', $tag);
+  }
+
+  /**
+   * Update the path alias for the group's profile.
+   */
+  public function setAlias() {
+    $this->alias('group/' . $this->tag());
+    return $this;
+  }
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Misc static methods
 

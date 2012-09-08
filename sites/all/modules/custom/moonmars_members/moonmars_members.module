@@ -638,31 +638,6 @@ function moonmars_members_followees_block() {
 }
 
 /**
- * Common code for when inserting or updating a user.
- *
- * @param $account
- */
-function moonmars_members_user_save($account) {
-  // Update the alias for the member's profile:
-  $member = Member::create($account->uid);
-  $member->setAlias();
-}
-
-/**
- * Implements hook_user_insert().
- */
-function moonmars_members_user_insert(&$edit, $account, $category) {
-  moonmars_members_user_save($account);
-}
-
-/**
- * Implements hook_user_update().
- */
-function moonmars_members_user_update(&$edit, $account, $category) {
-  moonmars_members_user_save($account);
-}
-
-/**
  * Implements hook_mail().
  */
 function moonmars_members_mail($key, &$message, $params) {

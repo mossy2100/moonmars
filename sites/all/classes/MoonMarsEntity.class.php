@@ -95,7 +95,7 @@ class MoonMarsEntity {
     Relation::createNewBinary('has_channel', $entity_type, $entity_id, 'node', $channel->nid());
 
     // Update the channel's alias and title:
-    $channel->updateAliasAndTitle();
+    $channel->setAliasAndTitle();
 
     // Return the Channel:
     return $channel;

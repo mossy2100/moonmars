@@ -121,3 +121,44 @@ function moonmars_actors_ajax_code_check() {
 function moonmars_actors_valid_code($name) {
   return (bool) preg_match("/^[a-z0-9\-\_]{" . MOONMARS_ACTOR_CODE_MIN_LENGTH . "," . MOONMARS_ACTOR_CODE_MAX_LENGTH . "}$/i", $name);
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Functions and hooks for saving members and groups
+
+/**
+ * Common code for inserting or updating members and groups.
+ *
+ * @param $entity
+ * @param $entity_type
+ */
+function moonmars_actors_entity_save($entity, $entity_type) {
+  $entity = MoonMarsEntity::getEntity($entity_type, $entity);
+  if ($entity instanceof Member or $entity instanceof Group) {
+    // Update the alias for the actor:
+    $entity->setAlias();
+
+    // Update the alias and title for the actor's channel:
+    $channel = $entity->channel();
+    $channel->setAliasAndTitle();
+  }
+}
+
+/**
+ * Implements hook_entity_insert().
+ *
+ * Note, we use this hook instead of hook_node_insert() as it gets called later in the cycle, after
+ * pathauto_node_insert_alias() sets the alias according to the pattern. hook_node_insert() is called before.
+ */
+function moonmars_actors_entity_insert($entity, $entity_type) {
+  moonmars_actors_entity_save($entity, $entity_type);
+}
+
+/**
+ * Implements hook_entity_update().
+ *
+ * Note, we use this hook instead of hook_node_update() as it gets called later in the cycle, after
+ * pathauto_node_update_alias() sets the alias according to the pattern. hook_node_update() is called before.
+ */
+function moonmars_actors_entity_update($entity, $entity_type) {
+  moonmars_actors_entity_save($entity, $entity_type);
+}

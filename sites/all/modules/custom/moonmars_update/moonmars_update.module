@@ -5,26 +5,6 @@
  */
 function moonmars_update_menu() {
   $items = array();
-  $items['update/subscriber-relationships'] = array(
-    'page callback'    => 'moonmars_update_subscriber_relationships',
-    'access arguments' => array('administer relation types'),
-    'type'             => MENU_CALLBACK,
-  );
-  $items['named-colors'] = array(
-    'page callback'    => 'moonmars_update_named_colors',
-    'access callback'  => TRUE,
-    'type'             => MENU_CALLBACK,
-  );
-//  $items['update/news-items'] = array(
-//    'page callback'    => 'moonmars_update_news_items',
-//    'access callback'  => TRUE,
-//    'type'             => MENU_CALLBACK,
-//  );
-//  $items['update/channel-item-relation-changed-times'] = array(
-//    'page callback'    => 'moonmars_update_channel_item_relation_changed_times',
-//    'access callback'  => TRUE,
-//    'type'             => MENU_CALLBACK,
-//  );
   $items['update/%'] = array(
     'page callback'   => 'moonmars_update_marshall',
     'page arguments'  => array(1),
@@ -50,6 +30,9 @@ function moonmars_update_marshall($callback) {
   return '';
 }
 
+/**
+ * Update subscriber relationships.
+ */
 function moonmars_update_subscriber_relationships() {
   // Convert all has_follower relationships to has_subscriber:
   $rels = Relation::searchBinary('has_follower');
@@ -276,5 +259,40 @@ function moonmars_update_fix_group_mentions() {
     $item_comment->text($text);
     $item_comment->save();
   }
+}
 
+/**
+ * Set default group tags.
+ */
+function moonmars_update_set_default_group_tags() {
+  $q = db_select('node', 'n')
+    ->fields('n', array('nid'))
+    ->condition('type', 'group');
+  $rs = $q->execute();
+  foreach ($rs as $rec) {
+    $group = Group::create($rec->nid);
+    $tag = $group->tag();
+    if ($tag) {
+      echo "Has a tag:";
+      dbg($tag);
+    }
+    else {
+      $title = $group->title();
+      dbg($title);
+      $words = array_map(function($value) {
+        return strtolower($value);
+      }, explode(' ', $title));
+      foreach ($words as $key => $word) {
+        if (in_array($word, array('for', 'the', 'and', 'of', 'an', 'a'))) {
+          unset($words[$key]);
+        }
+      }
+      echo "New tag:";
+      $tag = implode('-', $words);
+      dbg($tag);
+      $group->tag($tag);
+      $group->save();
+    }
+    echo "<hr>";
+  }
 }

@@ -322,7 +322,7 @@ abstract class EntityBase {
   /**
    * Get/set the path alias to the entity's page.
    *
-   * @return string
+   * @return string|EntityBase
    */
   public function alias($alias = NULL) {
     if ($alias === NULL) {
@@ -335,7 +335,8 @@ abstract class EntityBase {
 
       // Delete any existing aliases for this entity.
       db_delete('url_alias')
-        ->condition('source', $source);
+        ->condition('source', $source)
+        ->execute();
 
       // Insert the new alias:
       db_insert('url_alias')
@@ -345,6 +346,8 @@ abstract class EntityBase {
           'language' => LANGUAGE_NONE,
         ))
         ->execute();
+
+      return $this;
     }
   }
 
