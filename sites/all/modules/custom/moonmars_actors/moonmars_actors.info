@@ -1,0 +1,4 @@
+name = moonmars.com Actors
+description = Support for actors (members and groups) on moonmars.com.
+core = 7.x
+package = moonmars.com

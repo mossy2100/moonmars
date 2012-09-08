@@ -167,13 +167,18 @@ form {
 }
 
 ////////////////////////////////////////////////////////////////////////
-// Check username message - register and profile forms
+// Check actor code message.
+// Forms:
+//   - user register form
+//   - member profile edit form
+//   - group create/edit form
 
-#edit-name-wrapper {
+#actor-code-wrapper {
   height: 24px;
 
   input {
     float: left;
+    width: 200px;
   }
 
   div {
@@ -183,22 +188,32 @@ form {
     float: left;
   }
 
-  #username-check {
+  #actor-code-mark {
+    float: left;
+    margin-left: 0;
+    margin-right: 2px;
+  }
+
+  #actor-code-check {
+    display: none;
     color: $blue3;
     cursor: pointer;
   }
 
-  #username-message {
-    &.username-valid {
+  #actor-code-message {
+    display: none;
+
+    &.actor-code-valid {
       color: $green3;
     }
 
-    &.username-invalid {
+    &.actor-code-invalid {
       color: $red3;
     }
   }
 
-  #username-waiting {
+  #actor-code-waiting {
+    display: none;
     height: 20px;
     width: 16px;
     background: url('../images/loading1.gif') no-repeat right 3px;
@@ -671,4 +686,13 @@ form#moonmars-groups-search-form {
 #autocomplete li.selected {
   background: $red3;
   color: #fff;
+}
+
+
+////////////////////////////
+// Group edit form
+form#group-node-form {
+  .form-item-title {
+    margin-top: 0;
+  }
 }

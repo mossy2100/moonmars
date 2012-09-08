@@ -1,6 +1,10 @@
-
 var $ = jQuery;
 
+$(function() {
+  actorCodeCheckSetup('member', 'edit-name');
+});
+
+/*
 $(function() {
   // Add some HTML around and after the username field:
   $('#edit-name').before("<div id='edit-name-wrapper'></div>").appendTo('#edit-name-wrapper');
@@ -74,6 +78,7 @@ function usernameValid(message) {
   $('#username-waiting').hide();
   $('#username-message').removeClass('username-invalid').addClass('username-valid').text(message).show();
 }
+*/
 
 /**
  * Check if a username is valid.
@@ -83,6 +88,6 @@ function usernameValid(message) {
  * @param $name
  * @return bool
  */
-function validUsername(username) {
-  return username.match(/^[a-z0-9\-\_]{1,60}$/i);
-}
+//function validUsername(username) {
+//  return username.match(/^[a-z0-9\-\_]{1,60}$/i);
+//}

@@ -36,10 +36,22 @@ function moonmars_groups_menu() {
  */
 function moonmars_groups_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'group_node_form') {
-    $form['#attached']['js'][] = drupal_get_path('module', 'moonmars_groups') . '/js/group-edit-form.js';
+
+    // JS:
+    $module_path = drupal_get_path('module', 'moonmars_groups');
+    $form['#attached']['js'][] = "$module_path/js/group-edit-form.js";
+    $form['#attached']['js'][] = drupal_get_path('module', 'moonmars_actors') . "/js/actor-code-check.js";
+    $form['#attached']['js'][] = "$module_path/js/group-tag-check.js";
 
     // Hide the score:
     unset($form['field_score']);
+
+    // Hidden field to contain the nid:
+    $form['nid'] = array(
+      '#type' => 'hidden',
+      '#value' => $form['#node']->nid,
+      '#attributes' => array('id' => 'nid'),
+    );
 
 //    dbg($form);
 
@@ -825,4 +837,18 @@ function theme_moonmars_groups_search_form($vars) {
   }
 
   return $html;
+}
+
+/**
+ * Check if a group code is valid.
+ *
+ * This means:
+ *   - Between 3 and 255 characters.
+ *
+ * @param $name
+ * @return bool
+ */
+function moonmars_groups_valid_name($name) {
+  $len = strlen($name);
+  return 3 <= $len && $len <= 255;
 }

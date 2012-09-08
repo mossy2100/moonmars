@@ -20,12 +20,34 @@ function moonmars_update_menu() {
 //    'access callback'  => TRUE,
 //    'type'             => MENU_CALLBACK,
 //  );
-  $items['update/channel-item-relation-changed-times'] = array(
-    'page callback'    => 'moonmars_update_channel_item_relation_changed_times',
-    'access callback'  => TRUE,
-    'type'             => MENU_CALLBACK,
+//  $items['update/channel-item-relation-changed-times'] = array(
+//    'page callback'    => 'moonmars_update_channel_item_relation_changed_times',
+//    'access callback'  => TRUE,
+//    'type'             => MENU_CALLBACK,
+//  );
+  $items['update/%'] = array(
+    'page callback'   => 'moonmars_update_marshall',
+    'page arguments'  => array(1),
+    'access callback' => TRUE,
+    'type'            => MENU_CALLBACK,
   );
   return $items;
+}
+
+/**
+ * General purpose function for marshalling calls to update functions.
+ * Saves me having to create an entry in hook_menu() every time.
+ *
+ * @param string $callback
+ * @return string
+ */
+function moonmars_update_marshall($callback) {
+  $fn = 'moonmars_update_' . str_replace('-', '_', $callback);
+  if (function_exists($fn)) {
+    return $fn();
+  }
+  drupal_set_message("Invalid callback $callback", 'error');
+  return '';
 }
 
 function moonmars_update_subscriber_relationships() {
@@ -206,4 +228,53 @@ function moonmars_update_channel_item_relation_changed_times() {
   }
   $html .= "</pre>";
   return $html;
+}
+
+/**
+ * Fix group references in item and comment text.
+ */
+function moonmars_update_fix_group_mentions() {
+  // Update item text:
+  $q = db_select('node', 'n')
+    ->fields('n', array('nid'));
+  $q->join('field_data_field_item_text', 'ft', "n.nid = ft.entity_id");
+  $q->condition('field_item_text_value', '%[Group: %', 'LIKE');
+  $rs = $q->execute();
+  foreach ($rs as $rec) {
+    $item = Item::create($rec->nid);
+    $text = $item->text();
+    dbg($text);
+
+    $n = preg_match_all("/\[Group: ([^\]]+)\]/", $text, $matches);
+    dbg($matches);
+
+    $text = preg_replace("/\[Group: ([^\]]+)\]/", "[$1]", $text);
+    dbg($text);
+
+    $item->text($text);
+    $item->save();
+
+  }
+
+  // Now comments:
+  $q = db_select('comment', 'c')
+    ->fields('c', array('cid'));
+  $q->join('field_data_comment_body', 'fcb', "c.cid = fcb.entity_id");
+  $q->condition('comment_body_value', '%[Group: %', 'LIKE');
+  $rs = $q->execute();
+  foreach ($rs as $rec) {
+    $item_comment = ItemComment::create($rec->cid);
+    $text = $item_comment->text();
+    dbg($text);
+
+    $n = preg_match_all("/\[Group: ([^\]]+)\]/", $text, $matches);
+    dbg($matches);
+
+    $text = preg_replace("/\[Group: ([^\]]+)\]/", "[$1]", $text);
+    dbg($text);
+
+    $item_comment->text($text);
+    $item_comment->save();
+  }
+
 }

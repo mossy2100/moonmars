@@ -1,0 +1,123 @@
+<?php
+/**
+ * User: shaun
+ * Date: 2012-09-08
+ * Time: 6:24 AM
+ */
+
+/**
+ * Define the minimum length for an actor code (i.e. username of group tag).
+ *
+ * @var int
+ */
+const MOONMARS_ACTOR_CODE_MIN_LENGTH = 3;
+
+/**
+ * Define the maximum length for an actor code (i.e. username of group tag).
+ *
+ * @var int
+ */
+const MOONMARS_ACTOR_CODE_MAX_LENGTH = USERNAME_MAX_LENGTH;
+
+/**
+ * Implements hook_menu().
+ */
+function moonmars_actors_menu() {
+  $items = array();
+  $items['ajax/actor-code-check'] = array(
+    'page callback'   => 'moonmars_actors_ajax_code_check',
+    'access callback' => TRUE,
+    'type'            => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+/**
+ * AJAX callback to check if a actor code is valid.
+ */
+function moonmars_actors_ajax_code_check() {
+  // Get parameters from the query string:
+  $actor_type = isset($_REQUEST['actorType']) ? $_REQUEST['actorType'] : NULL;
+  $actor_code = isset($_REQUEST['actorCode']) ? $_REQUEST['actorCode'] : NULL;
+  $actor_id = isset($_REQUEST['actorId']) ? $_REQUEST['actorId'] : NULL;
+
+  // Default result:
+  $data = array(
+    'result' => FALSE,
+  );
+
+  // Check for valid parameters:
+  if (!$actor_type || !in_array($actor_type, array('member', 'group')) || !$actor_code) {
+    $data['message'] = "Invalid parameters";
+    echo json_encode($data);
+    return;
+  }
+
+  // Check for valid characters and and length:
+  if (!moonmars_actors_valid_code($actor_code)) {
+    $data['message'] = "Invalid";
+    echo json_encode($data);
+    return;
+  }
+
+  // Check if any other actor of the same type has this code:
+  if ($actor_type == 'member') {
+    // Check if any other member has the same username:
+    $q = db_select('users', 'u')
+      ->fields('u', array('uid'))
+      ->condition('name', $actor_code);
+    // If editing a member, look for a different member with the same username:
+    if ($actor_id) {
+      $q->condition('uid', $actor_id, '!=');
+    }
+  }
+  elseif ($actor_type == 'group') {
+    // Check if any other group has the same tag:
+    $q = db_select('node', 'n')
+      ->fields('n', array('nid'));
+    $q->join('field_data_field_group_tag', 'gt', "n.nid = gt.entity_id");
+    $q->condition('field_group_tag_value', $actor_code);
+    // If editing a group, look for a different group with the same tag:
+    if ($actor_id) {
+      $q->condition('nid', $actor_id, '!=');
+    }
+  }
+
+  // Check if a match was found:
+  if ($q->execute()->rowCount()) {
+    $data['message'] = "Taken";
+    echo json_encode($data);
+    return;
+  }
+
+  // It's ok:
+  $data = array(
+    'result' => TRUE,
+    'message' => "OK",
+  );
+  echo json_encode($data);
+  return;
+}
+
+/**
+ * Check if a member name or group tag is valid.
+ *
+ * This means:
+ *   - Between 3 and 60 (USERNAME_MAX_LENGTH) characters.
+ *   - Letters, digits, hyphens and underscores only.
+ *
+ * This set of rules permits:
+ *   - Drupal will allow it. @see user.module/user_validate_name()
+ *   - Apache will allow it. If a username starts with a period then Apache will show a Forbidden message if their
+ *       profile path is requested.
+ *   - Uses only unreserved characters.
+ *       @see http://www.456bereastreet.com/archive/201006/be_careful_with_non-ascii_characters_in_urls/
+ *   - Member profile alias will match the username exactly, i.e. /member/$username
+ *   - Group profile alias will match the group tag exactly, i.e. /group/$group_tag
+ *
+ * @param $name
+ * @return bool
+ */
+function moonmars_actors_valid_code($name) {
+  return (bool) preg_match("/^[a-z0-9\-\_]{" . MOONMARS_ACTOR_CODE_MIN_LENGTH . "," . MOONMARS_ACTOR_CODE_MAX_LENGTH . "}$/i", $name);
+}

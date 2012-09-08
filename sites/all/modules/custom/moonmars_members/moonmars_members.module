@@ -1,11 +1,6 @@
 <?php
 
 /**
- * Constant to explain username constraints:
- */
-define('MOONMARS_USERNAME_DESCRIPTION', "Usernames may only contain letters, digits, hyphens and underscores (a-z, A-Z, 0-9, -_), and must be between 1 and 60 characters in length.");
-
-/**
  * Implements hook_init().
  */
 function moonmars_members_init() {
@@ -17,6 +12,10 @@ function moonmars_members_init() {
     drupal_add_js(array('moonmars_members' => array('username' => $user->name)), 'setting');
     drupal_add_js("$module_path/js/set-username-menu.js");
   }
+
+  // String to explain username constraints:
+  global $moonmars_username_desc;
+  $moonmars_username_desc = "Usernames may only contain letters, digits, hyphens and underscores (a-z, A-Z, 0-9, -_), and must be between " . MOONMARS_ACTOR_CODE_MIN_LENGTH . " and " . MOONMARS_ACTOR_CODE_MAX_LENGTH . " characters in length.";
 }
 
 /**
@@ -90,21 +89,29 @@ function moonmars_members_levels() {
  * Implements hook_form_alter().
  */
 function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
+  global $moonmars_username_desc;
 
+  // Check for relevant form_ids:
+  if (!in_array($form_id, array('user_register_form', 'user_profile_form'))) {
+    return;
+  }
+
+  // Common JS:
   $module_path = drupal_get_path('module', 'moonmars_members');
+  $form['#attached']['js'][] = "$module_path/js/moon-or-mars.js";
+  $form['#attached']['js'][] = drupal_get_path('module', 'moonmars_actors') . "/js/actor-code-check.js";
+  $form['#attached']['js'][] = "$module_path/js/member-name-check.js";
 
   switch ($form_id) {
     case 'user_register_form':
-      // Add JS for the Moon or Mars field:
-      $form['#attached']['js'][] = "$module_path/js/moon-or-mars.js";
-      $form['#attached']['js'][] = "$module_path/js/check-username.js";
+      // JS:
       $form['#attached']['js'][] = "$module_path/js/register-form.js";
 
       // Change the title:
       drupal_set_title("Join moonmars.com!");
 
       // Update username field description re valid characters:
-      $form['account']['name']['#description'] = MOONMARS_USERNAME_DESCRIPTION;
+      $form['account']['name']['#description'] = $moonmars_username_desc;
 
       // Remove location fieldset description, and province and city fields:
       unset($form['field_user_location'][LANGUAGE_NONE][0]['#description']);
@@ -122,13 +129,13 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
       <li>Be humble and willing to learn from others, regardless of how brilliant and qualified you think you are.</li>
       <li>Be patient, helpful and willing to teach. Space will probably be settled by people younger than you. Teach them.</li>
       <li>No lying, cheating or bullying. Treat others how you like to be treated.</li>
-      <li>Be creative and productive. This is not a social network or a water cooler. We're here to get things done.</li>
-      <li>No porn or other offensive content. In fact, don't share anything that isn't related to space.</li>
+      <li>Be creative and productive. This is not simply an online hangout. We're here to make things happen.</li>
+      <li>No porn or other offensive content. In fact, please don't share anything that isn't related to space.</li>
+      <li>Communicate clearly. Say what you mean, and take the time to use proper punctuation, spelling and grammar.</li>
+      <li>Use English. It may not be perfect, but it's become the <i>lingua franca</i> of Earth, and of the scientific and space community. If you aren't great at English, learn more and practice, and don't be afraid to ask for help. It will be worthwhile to you, and the community.</li>
+      <li>Please refrain from swearing/cursing. It can be funny, but usually there's a more intelligent way to express what you mean.</li>
       <li>Commit wholeheartedly to our shared goal of building settlements on the Moon and Mars.</li>
       <li>Help to make this a positive and successful website and community.</li>
-      <li>Communicate clearly. Say what you mean, and take the time to use proper punctuation, spelling and grammar.</li>
-      <li>Use English. It may not be perfect, but it's become the <i>lingua franca</i> of Earth, and of the scientific and space community. If you aren't great at English, learn more and practice. It will be worthwhile to you, and the community.</li>
-      <li>Swearing/cursing is acceptable, but please keep it to a minimum. It should only be used for the purpose of humour or to make a point; never as abuse.</li>
     </ul>
   </div>
   ",
@@ -149,12 +156,10 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
 
     case 'user_profile_form':
       // Add JS:
-      $form['#attached']['js'][] = "$module_path/js/moon-or-mars.js";
       $form['#attached']['js'][] = "$module_path/js/profile-form.js";
-      $form['#attached']['js'][] = "$module_path/js/check-username.js";
 
       // Update username field description re valid characters:
-      $form['account']['name']['#description'] = MOONMARS_USERNAME_DESCRIPTION;
+      $form['account']['name']['#description'] = $moonmars_username_desc;
       $form['account']['#type'] = 'fieldset';
       $form['account']['#title'] = "Account details";
 
@@ -192,47 +197,45 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
   }
 
   // Order the fields. This should work the same for both forms.
-  if ($form_id == 'user_register_form' || $form_id == 'user_profile_form') {
-    $weight = 0;
+  $weight = 0;
 
-    $form['account']['#weight'] = $weight++;
-    $form['account']['name']['#weight'] = $weight++;
-    $form['account']['mail']['#weight'] = $weight++;
-    $form['account']['current_pass']['#weight'] = $weight++;
-    $form['account']['pass']['#weight'] = $weight++;
-    $form['account']['roles']['#weight'] = $weight++;
-    $form['account']['status']['#weight'] = $weight++;
-    $form['account']['notify']['#weight'] = $weight++;
+  $form['account']['#weight'] = $weight++;
+  $form['account']['name']['#weight'] = $weight++;
+  $form['account']['mail']['#weight'] = $weight++;
+  $form['account']['current_pass']['#weight'] = $weight++;
+  $form['account']['pass']['#weight'] = $weight++;
+  $form['account']['roles']['#weight'] = $weight++;
+  $form['account']['status']['#weight'] = $weight++;
+  $form['account']['notify']['#weight'] = $weight++;
 
-    $form['#fieldgroups']['group_personal']->weight = $weight++;
-    $form['picture']['#weight'] = $weight++;
-    $form['field_first_name']['#weight'] = $weight++;
-    $form['field_last_name']['#weight'] = $weight++;
-    $form['field_date_of_birth']['#weight'] = $weight++;
-    $form['field_gender']['#weight'] = $weight++;
-    $form['field_mobile_phone']['#weight'] = $weight++;
-    $form['field_skype']['#weight'] = $weight++;
-    $form['field_bio']['#weight'] = $weight++;
-    $form['field_moon_or_mars']['#weight'] = $weight++;
+  $form['#fieldgroups']['group_personal']->weight = $weight++;
+  $form['picture']['#weight'] = $weight++;
+  $form['field_first_name']['#weight'] = $weight++;
+  $form['field_last_name']['#weight'] = $weight++;
+  $form['field_date_of_birth']['#weight'] = $weight++;
+  $form['field_gender']['#weight'] = $weight++;
+  $form['field_mobile_phone']['#weight'] = $weight++;
+  $form['field_skype']['#weight'] = $weight++;
+  $form['field_bio']['#weight'] = $weight++;
+  $form['field_moon_or_mars']['#weight'] = $weight++;
 
-    $form['field_user_location']['#weight'] = $weight++;
-    $form['timezone']['#weight'] = $weight++;
+  $form['field_user_location']['#weight'] = $weight++;
+  $form['timezone']['#weight'] = $weight++;
 
 //    $form['links']['#weight'] = $weight++;
 
-    $form['#fieldgroups']['group_preferences']->weight = $weight++;
-    $form['signature']['#weight'] = $weight++;
-    $form['contact']['#weight'] = $weight++;
-    $form['rules']['#weight'] = $weight++;
-    $form['rules-cb']['#weight'] = $weight++;
+  $form['#fieldgroups']['group_preferences']->weight = $weight++;
+  $form['signature']['#weight'] = $weight++;
+  $form['contact']['#weight'] = $weight++;
+  $form['rules']['#weight'] = $weight++;
+  $form['rules-cb']['#weight'] = $weight++;
 
-    //      $keys = array_keys($form);
+  //      $keys = array_keys($form);
 //      foreach ($form as $key => $value) {
 //        if (is_array($value) && isset($value['#weight'])) {
 //          dbg("$key weight {$value['#weight']}");
 //        }
 //      }
-  }
 
 }
 
@@ -254,7 +257,7 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
  * @param $name
  * @return bool
  */
-function moonmars_members_valid_username($name) {
+function moonmars_members_valid_name($name) {
   return (bool) preg_match("/^[a-z0-9\-\_]{1," . USERNAME_MAX_LENGTH . "}$/i", $name);
 }
 
@@ -262,8 +265,9 @@ function moonmars_members_valid_username($name) {
  * Validation handler for the user registration form.
  */
 function moonmars_members_user_register_form_validate($form, &$form_state) {
-  if (!moonmars_members_valid_username($form_state['values']['name'])) {
-    form_set_error('name', MOONMARS_USERNAME_DESCRIPTION);
+  if (!moonmars_members_valid_name($form_state['values']['name'])) {
+    global $moonmars_username_desc;
+    form_set_error('name', $moonmars_username_desc);
   }
 }
 
@@ -317,8 +321,9 @@ function moonmars_members_user_profile_form_after_build($form) {
  * Validation handler for the user account/profile form.
  */
 function moonmars_members_user_profile_form_validate($form, &$form_state) {
-  if (!moonmars_members_valid_username($form_state['values']['name'])) {
-    form_set_error('name', MOONMARS_USERNAME_DESCRIPTION);
+  if (!moonmars_members_valid_name($form_state['values']['name'])) {
+    global $moonmars_username_desc;
+    form_set_error('name', $moonmars_username_desc);
   }
 }
 
@@ -630,52 +635,6 @@ function moonmars_members_followees_block() {
   $html = moonmars_members_render_avatars($member->followeeCount(), $followees);
 
   return $html;
-}
-
-/**
- * AJAX callback to check if a username is valid.
- */
-function moonmars_members_ajax_username_check() {
-  $username = isset($_REQUEST['username']) ? $_REQUEST['username'] : NULL;
-  $uid = isset($_REQUEST['uid']) ? $_REQUEST['uid'] : NULL;
-
-  // Check forvalid characters and and length:
-  if (!moonmars_members_valid_username($username)) {
-    $data = array(
-      'result' => FALSE,
-      'message' => "Invalid",
-    );
-    echo json_encode($data);
-    return;
-  }
-
-  // Check if anyone else has this username:
-  $q = db_select('users', 'u')
-    ->fields('u', array('uid'))
-    ->condition('name', $username);
-
-  // If the user is logged in then look for a different user with this username:
-  if ($uid) {
-    $q->condition('uid', $uid, '!=');
-  }
-
-  // Check if a match was found:
-  if ($q->execute()->rowCount()) {
-    $data = array(
-      'result' => FALSE,
-      'message' => "Taken",
-    );
-    echo json_encode($data);
-    return;
-  }
-
-  // It's ok:
-  $data = array(
-    'result' => TRUE,
-    'message' => "OK",
-  );
-  echo json_encode($data);
-  return;
 }
 
 /**
