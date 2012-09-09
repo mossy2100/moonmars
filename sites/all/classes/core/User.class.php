@@ -59,7 +59,7 @@ class User extends EntityBase {
       // uid provided.
       $uid = $user_param;
 
-      // Only create the new node if not already in the cache:
+      // Only create the new user if not already in the cache:
       if (self::inCache($uid)) {
         return self::getFromCache($uid);
       }
@@ -87,7 +87,7 @@ class User extends EntityBase {
       // Without a uid the user is assumed valid until proven otherwise:
       $user_obj->valid = TRUE;
     }
-    elseif (is_object($user_param)) {
+    elseif ($user_param instanceof stdClass) {
       // Drupal user object provided.
       $user = $user_param;
 
@@ -101,6 +101,10 @@ class User extends EntityBase {
 
       // Reference the provided entity object:
       $user_obj->entity = $user;
+      
+      // Make sure we mark the user as loaded. It may not have been saved yet, and if we load it, any changes to the
+      // user entity would be overwritten.
+      $user_obj->loaded = TRUE;
     }
 
     // If we have a user object, add to cache and return:
@@ -153,7 +157,7 @@ class User extends EntityBase {
     // Set the valid flag:
     $this->valid = (bool) $user;
 
-    // If the comment was successfully loaded, update properties:
+    // If the user was successfully loaded, update properties:
     if ($user) {
       $this->entity = $user;
       $this->loaded = TRUE;

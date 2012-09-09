@@ -152,16 +152,14 @@ function moonmars_actors_valid_code($name) {
  * @param $entity_type
  */
 function moonmars_actors_entity_save($entity, $entity_type) {
-  $entity = moonmars_actors_get_entity($entity_type, $entity);
-  if ($entity instanceof Member || $entity instanceof Group) {
-
-    dpm($entity);
+  $actor = moonmars_actors_get_actor($entity_type, $entity);
+  if ($actor instanceof Member || $actor instanceof Group) {
 
     // Update the alias for the actor:
-    $entity->resetAlias();
+    $actor->resetAlias();
 
     // Update the alias and title for the actor's channel:
-    $channel = $entity->channel();
+    $channel = $actor->channel();
     $channel->resetAliasAndTitle();
   }
 }
@@ -198,7 +196,7 @@ function moonmars_actors_entity_update($entity, $entity_type) {
  * @return EntityBase
  *   EntityBase-derived class, e.g. Member, Group, Item, ItemComment, MoonMarsRelation, etc.
  */
-function moonmars_actors_get_entity($entity_type, $entity) {
+function moonmars_actors_get_actor($entity_type, $entity) {
   switch ($entity_type) {
     case 'user':
       return Member::create($entity);
@@ -254,7 +252,7 @@ function moonmars_actors_get_entity($entity_type, $entity) {
  * @static
  * @return bool
  */
-function moonmars_actors_get_entity_from_url() {
+function moonmars_actors_get_actor_from_url() {
   $valid_entity_types = array(
     'user',
     'node',
@@ -273,7 +271,7 @@ function moonmars_actors_get_entity_from_url() {
   // Check for a normal user/%uid or node/%nid type of path:
   $parts = explode('/', $uri);
   if (count($parts) >= 2 && in_array($parts[0], $valid_entity_types) && is_uint($parts[1])) {
-    return moonmars_actors_get_entity($parts[0], $parts[1]);
+    return moonmars_actors_get_actor($parts[0], $parts[1]);
   }
 
   // Maybe it's an alias. Try converting to normal path from just the first 2 path parts.
@@ -283,7 +281,7 @@ function moonmars_actors_get_entity_from_url() {
   // Check again:
   $parts = explode('/', $path);
   if (count($parts) >= 2 && in_array($parts[0], $valid_entity_types) && is_uint($parts[1])) {
-    return moonmars_actors_get_entity($parts[0], $parts[1]);
+    return moonmars_actors_get_actor($parts[0], $parts[1]);
   }
 
   // Not an entity path:

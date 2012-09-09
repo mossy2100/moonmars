@@ -96,6 +96,10 @@ class Comment extends EntityBase {
 
       // Reference the provided entity object:
       $comment_obj->entity = $comment;
+
+      // Make sure we mark the comment as loaded. It may not have been saved yet, and if we load it, any changes to the
+      // comment entity would be overwritten.
+      $comment_obj->loaded = TRUE;
     }
 
     // If we have a comment object, add to cache and return:

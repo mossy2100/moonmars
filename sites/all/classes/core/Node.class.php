@@ -92,7 +92,7 @@ class Node extends EntityBase {
         $node_obj->entity->nid = $nid;
       }
     }
-    elseif (is_object($node_param)) {
+    elseif ($node_param instanceof stdClass) {
       // Drupal node object provided:
       $node = $node_param;
 
@@ -106,6 +106,10 @@ class Node extends EntityBase {
 
       // Reference the provided entity object:
       $node_obj->entity = $node;
+
+      // Make sure we mark the node as loaded. It may not have been saved yet, and if we load it, any changes to the
+      // node entity would be overwritten.
+      $node_obj->loaded = TRUE;
     }
 
     // If we have a node object, add to cache and return:

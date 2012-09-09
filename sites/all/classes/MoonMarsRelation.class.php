@@ -20,7 +20,7 @@ class MoonMarsRelation extends Relation {
 
     if (isset($this->entity->endpoints[$lang][$delta])) {
       $endpoint = $this->entity->endpoints[$lang][$delta];
-      return moonmars_actors_get_entity($endpoint['entity_type'], $endpoint['entity_id']);
+      return moonmars_actors_get_actor($endpoint['entity_type'], $endpoint['entity_id']);
     }
 
     return NULL;

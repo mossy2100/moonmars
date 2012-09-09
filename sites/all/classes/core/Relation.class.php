@@ -69,7 +69,7 @@ class Relation extends EntityBase {
         $relation_obj->entity->rid = $rid;
       }
     }
-    elseif (is_object($relation_param)) {
+    elseif ($relation_param instanceof stdClass) {
       // Drupal relation object provided:
       $relation = $relation_param;
 
@@ -83,6 +83,10 @@ class Relation extends EntityBase {
 
       // Reference the provided entity object:
       $relation_obj->entity = $relation;
+
+      // Make sure we mark the relation as loaded. It may not have been saved yet, and if we load it, any changes to the
+      // relation entity would be overwritten.
+      $relation_obj->loaded = TRUE;
     }
 
     // If we have a relation object, add to cache and return:
