@@ -109,8 +109,6 @@ class User extends EntityBase {
       return $user_obj;
     }
 
-    dbg($user_param);
-
     trigger_error("Invalid parameter to User::create()", E_USER_ERROR);
   }
 

@@ -248,7 +248,7 @@ class Triumph {
         ->condition('triumph_id', $this->triumphId);
       $rs = $q->execute();
       foreach ($rs as $rec) {
-        $this->actors[$rec->actor_role] = Actor::getEntity($rec->entity_type, $rec->entity_id);
+        $this->actors[$rec->actor_role] = moonmars_actors_get_entity($rec->entity_type, $rec->entity_id);
       }
     }
     return $this->actors;

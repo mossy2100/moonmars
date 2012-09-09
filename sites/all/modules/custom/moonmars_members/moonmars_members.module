@@ -509,7 +509,7 @@ function moonmars_members_menu_block() {
   global $user;
 
   // Check we're on a member page:
-  $profile_member = Actor::getEntityFromUrl();
+  $profile_member = moonmars_actors_get_entity_from_url();
   if (!$profile_member) {
     return '';
   }
@@ -572,7 +572,7 @@ function moonmars_members_menu_block() {
  */
 function moonmars_members_groups_block() {
   // Get the member from the URL:
-  $entity = Actor::getEntityFromUrl();
+  $entity = moonmars_actors_get_entity_from_url();
   $member = ($entity instanceof Member) ? $entity : (($entity instanceof Channel) ? $entity->parentEntity() : FALSE);
   if (!($member instanceof Member)) {
     return '';
@@ -595,7 +595,7 @@ function moonmars_members_groups_block() {
  */
 function moonmars_members_followers_block() {
   // Get the member from the URL:
-  $entity = Actor::getEntityFromUrl();
+  $entity = moonmars_actors_get_entity_from_url();
   $member = ($entity instanceof Member) ? $entity : (($entity instanceof Channel) ? $entity->parentEntity() : FALSE);
   if (!($member instanceof Member)) {
     return '';
@@ -614,7 +614,7 @@ function moonmars_members_followers_block() {
  */
 function moonmars_members_followees_block() {
   // Get the member from the URL:
-  $entity = Actor::getEntityFromUrl();
+  $entity = moonmars_actors_get_entity_from_url();
   $member = ($entity instanceof Member) ? $entity : (($entity instanceof Channel) ? $entity->parentEntity() : FALSE);
   if (!($member instanceof Member)) {
     return '';

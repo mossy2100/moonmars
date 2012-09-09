@@ -77,10 +77,8 @@ class Channel extends MoonMarsNode {
   public function parentEntity() {
     // Check if we remembered the result in the parentEntity property:
     if (!isset($this->parentEntity)) {
-
       // Search for the has_channel relationship:
       $rels = MoonMarsRelation::searchBinary('has_channel', NULL, $this);
-
       if (!empty($rels)) {
         $this->parentEntity = $rels[0]->endpoint(0);
       }
@@ -139,10 +137,6 @@ class Channel extends MoonMarsNode {
     $parent_entity = $this->parentEntity();
     if (!$parent_entity) {
       return FALSE;
-    }
-
-    if ($parent_entity->alias() == 'user/246') {
-      dbg($parent_entity);
     }
 
     // Set the alias:
@@ -204,8 +198,6 @@ class Channel extends MoonMarsNode {
 
     // Add ORDER BY clause:
     $q->orderBy($order_by_field, $order_by_direction);
-
-//    dpm_query($q);
 
     // Get the items:
     $rs = $q->execute();

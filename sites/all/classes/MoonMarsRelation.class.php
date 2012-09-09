@@ -8,19 +8,19 @@
 class MoonMarsRelation extends Relation {
 
   /**
-   * Get an endpoint as an Actor-derived object (e.g. Group, Member, Item, ItemComment).
+   * Get an endpoint as an EntityBase-derived object (e.g. Group, Member, Item, ItemComment).
    * Overrides base class method which only returns an array.
    *
    * @param string $lang
    * @param int $delta
-   * @return Actor
+   * @return EntityBase
    */
   public function endpoint($delta, $lang = LANGUAGE_NONE) {
     $this->load();
 
     if (isset($this->entity->endpoints[$lang][$delta])) {
       $endpoint = $this->entity->endpoints[$lang][$delta];
-      return Actor::getEntity($endpoint['entity_type'], $endpoint['entity_id']);
+      return moonmars_actors_get_entity($endpoint['entity_type'], $endpoint['entity_id']);
     }
 
     return NULL;
@@ -35,7 +35,6 @@ class MoonMarsRelation extends Relation {
 //        $group = $this->endpoint(0);
 //        $member = $this->endpoint(1);
 //        $alias = $member->alias() . '/email-preferences/' . (($group->nid() == MOONMARS_DEFAULT_GROUP_NID) ? 'groups' : $group->alias());
-//        dpm($alias);
 //        $this->alias($alias);
 //        break;
 //

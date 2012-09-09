@@ -376,7 +376,7 @@ class Member extends User {
    */
   public function channel($create = TRUE) {
     if (!isset($this->channel)) {
-      $this->channel = Actor::getEntityChannel($this, $create);
+      $this->channel = moonmars_actors_get_channel($this, $create);
     }
     return $this->channel;
   }
@@ -1556,10 +1556,7 @@ class Member extends User {
           // Update the group's total score:
           $group_new_score = $group_old_score - $old_rating + $new_rating;
           $group->field('field_score', LANGUAGE_NONE, 0, 'value', $group_new_score);
-
-  //        dbg($group);
           $group->save();
-  //        dbg($group);
 
           // Add to result:
           $result['group']['nid'] = $group->nid();

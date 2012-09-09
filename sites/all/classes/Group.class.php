@@ -55,7 +55,7 @@ class Group extends MoonMarsNode {
    */
   public function channel($create = TRUE) {
     if (!isset($this->channel)) {
-      $this->channel = Actor::getEntityChannel($this, $create);
+      $this->channel = moonmars_actors_get_channel($this, $create);
     }
     return $this->channel;
   }
@@ -103,7 +103,7 @@ class Group extends MoonMarsNode {
   /**
    * Update the path alias for the group's profile.
    */
-  public function setAlias() {
+  public function resetAlias() {
     $this->alias('group/' . $this->tag());
     return $this;
   }
