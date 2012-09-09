@@ -3,10 +3,16 @@
  * User: shaun
  * Date: 2012-09-08
  * Time: 6:24 AM
+ *
+ * What is an actor in the context of moonmars.com?
+ * Generally, an actor is an entity with a channel, i.e. a member or a group.
+ * However, I have stretched the definition for triumphs, which call items and comments "actors" also.
+ * This may have to change.
  */
 
 /**
  * Define the minimum length for an actor code (i.e. username of group tag).
+ * I'm using 3 here to prevent meaningless tags, but could be changed to 2 or 1. There's not really any reason not to.
  *
  * @var int
  */
@@ -14,6 +20,7 @@ const MOONMARS_ACTOR_CODE_MIN_LENGTH = 3;
 
 /**
  * Define the maximum length for an actor code (i.e. username of group tag).
+ * Since usernames are actor codes, we'll just use the Drupal default max length which is USERNAME_MAX_LENGTH (60).
  *
  * @var int
  */
@@ -132,8 +139,15 @@ function moonmars_actors_valid_code($name) {
  * @param $entity_type
  */
 function moonmars_actors_entity_save($entity, $entity_type) {
-  $entity = MoonMarsEntity::getEntity($entity_type, $entity);
+
+  dpm(func_get_args());
+
+  $entity = Actor::getEntity($entity_type, $entity);
+
+  dpm($entity);
+
   if ($entity instanceof Member or $entity instanceof Group) {
+
     // Update the alias for the actor:
     $entity->setAlias();
 

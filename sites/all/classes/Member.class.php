@@ -376,7 +376,7 @@ class Member extends User {
    */
   public function channel($create = TRUE) {
     if (!isset($this->channel)) {
-      $this->channel = MoonMarsEntity::getEntityChannel($this, $create);
+      $this->channel = Actor::getEntityChannel($this, $create);
     }
     return $this->channel;
   }

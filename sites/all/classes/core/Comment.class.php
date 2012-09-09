@@ -26,13 +26,6 @@ class Comment extends EntityBase {
   const PRIMARY_KEY = 'cid';
 
   /**
-   * Quick-load properties.
-   *
-   * @var array
-   */
-  protected static $quickLoadProperties = array('subject', 'nid', 'uid');
-
-  /**
    * Constructor.
    */
   protected function __construct() {

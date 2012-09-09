@@ -8,19 +8,19 @@
 class MoonMarsRelation extends Relation {
 
   /**
-   * Get an endpoint as an MoonMarsEntity-derived object (e.g. Group, Member, Item, ItemComment).
+   * Get an endpoint as an Actor-derived object (e.g. Group, Member, Item, ItemComment).
    * Overrides base class method which only returns an array.
    *
    * @param string $lang
    * @param int $delta
-   * @return MoonMarsEntity
+   * @return Actor
    */
   public function endpoint($delta, $lang = LANGUAGE_NONE) {
     $this->load();
 
     if (isset($this->entity->endpoints[$lang][$delta])) {
       $endpoint = $this->entity->endpoints[$lang][$delta];
-      return MoonMarsEntity::getEntity($endpoint['entity_type'], $endpoint['entity_id']);
+      return Actor::getEntity($endpoint['entity_type'], $endpoint['entity_id']);
     }
 
     return NULL;

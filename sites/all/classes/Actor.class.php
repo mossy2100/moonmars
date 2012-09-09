@@ -5,31 +5,18 @@
  * @todo If we move to PHP 5.4 this could be implemented as a trait to be attached to Member, Group, Event, etc.
  * At the moment this class isn't connected to those ones, other than conceptually. Hence only static methods.
  */
-class MoonMarsEntity {
+class Actor {
 
   /**
    * Gets an EntityBase-derived object from a Drupal entity.
    *
    * @static
-   * @param object|string $param1
-   * @param null|object|int $param2
+   * @param string $entity_type
+   * @param object|int $entity
    * @return EntityBase
+   *   EntityBase-derived class, e.g. Member, Group, Item, ItemComment, MoonMarsRelation, etc.
    */
-  public static function getEntity($param1, $param2 = NULL) {
-    // Allow for the first parameter to be an endpoint object:
-    if (is_object($param1)) {
-      $endpoint = $param1;
-      $entity_type = $endpoint->entity_type;
-      $entity = $endpoint->entity_id;
-    }
-    elseif (is_string($param2)) {
-      $entity_type = $param1;
-      $entity = $param2;
-    }
-    else {
-      return FALSE;
-    }
-
+  public static function getEntity($entity_type, $entity) {
     switch ($entity_type) {
       case 'user':
         return Member::create($entity);

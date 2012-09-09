@@ -41,7 +41,7 @@ class Node extends EntityBase {
 
     // Set the node type:
     $class = get_called_class();
-    $this->entity->type = $class::nodeType;
+    $this->entity->type = $class::NODE_TYPE;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -245,8 +245,8 @@ class Node extends EntityBase {
    * @return string|Node
    */
   public function nodeType($type = NULL) {
-    // If getting the nodeType we could return self::NODE_TYPE here. However, one use of this function can be to check
-    // if the node in the class is the correct type.
+    // If getting, we could theoretically just return self::NODE_TYPE here. However, by checking the entity property
+    // this function can be used to check if the node referenced by the $entity property is the correct type.
     return $this->prop('type', $type);
   }
 

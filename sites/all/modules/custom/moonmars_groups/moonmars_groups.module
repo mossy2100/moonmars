@@ -318,7 +318,7 @@ function moonmars_groups_menu_block() {
   }
 
   // Get the group from the URL:
-  $entity = MoonMarsEntity::getEntityFromUrl();
+  $entity = Actor::getEntityFromUrl();
   $group = ($entity instanceof Group) ? $entity : (($entity instanceof Channel) ? $entity->parentEntity() : FALSE);
   if (!($group instanceof Group)) {
     return '';
@@ -366,7 +366,7 @@ function moonmars_groups_menu_block() {
  */
 function moonmars_groups_members_block() {
   // Get the group from the URL:
-  $entity = MoonMarsEntity::getEntityFromUrl();
+  $entity = Actor::getEntityFromUrl();
   $group = ($entity instanceof Group) ? $entity : (($entity instanceof Channel) ? $entity->parentEntity() : FALSE);
   if (!($group instanceof Group)) {
     return '';

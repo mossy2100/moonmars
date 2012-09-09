@@ -33,7 +33,7 @@ class Relation extends EntityBase {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Create and delete.
+  // Create/delete
 
   /**
    * Create a new Relation object.
@@ -102,7 +102,7 @@ class Relation extends EntityBase {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Load and save.
+  // Load/save
 
   /**
    * Load the relation object.
@@ -155,17 +155,7 @@ class Relation extends EntityBase {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Get and set.
-
-  /**
-   * Get the quick-load properties.
-   *
-   * @static
-   * @return array
-   */
-  protected static function quickLoadProperties() {
-    return array();
-  }
+  // Get/set
 
   /**
    * Get/set the rid.

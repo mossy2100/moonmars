@@ -74,11 +74,13 @@ abstract class EntityBase {
 
   /**
    * Get the quick-load properties.
+   * Can't make this abstract for some reason.
    *
-   * @static
    * @return array
    */
-  abstract protected static function quickLoadProperties();
+  protected static function quickLoadProperties() {
+    return array();
+  }
 
   /**
    * Get the entity object.

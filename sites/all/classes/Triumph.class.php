@@ -243,12 +243,12 @@ class Triumph {
   public function actors() {
     if (!isset($this->actors) && $this->triumphId) {
       // Get the actors:
-      $q = db_select('moonmars_triumph_actor', 'te')
-        ->fields('te')
+      $q = db_select('moonmars_triumph_actor', 'ta')
+        ->fields('ta', array('actor_role', 'entity_type', 'entity_id'))
         ->condition('triumph_id', $this->triumphId);
       $rs = $q->execute();
       foreach ($rs as $rec) {
-        $this->actors[$rec->actor_role] = MoonMarsEntity::getEntity($rec->entity_type, $rec->entity_id);
+        $this->actors[$rec->actor_role] = Actor::getEntity($rec->entity_type, $rec->entity_id);
       }
     }
     return $this->actors;

@@ -82,7 +82,7 @@ function moonmars_ratings_ajax_rate() {
   }
 
   // Update the rating:
-  $result = $current_member->rating(MoonMarsEntity::getEntity($entity_type, $entity_id), $rating);
+  $result = $current_member->rating(Actor::getEntity($entity_type, $entity_id), $rating);
 //  dbg($result);
 
   // Update result:

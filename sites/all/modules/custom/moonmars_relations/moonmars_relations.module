@@ -111,7 +111,7 @@ function moonmars_relations_cleanup() {
 //  if ($entity_type == 'relation') {
 //
 //    // Get the MoonMarsRelation object:
-//    $relation = MoonMarsEntity::getEntity($entity_type, $entity);
+//    $relation = Actor::getEntity($entity_type, $entity);
 //
 //    // Reset the alias:
 //    $relation->resetAlias();
