@@ -66,20 +66,23 @@ function moonmars_members_menu() {
   return $items;
 }
 
-/**
- * Get the level roles, with the level number (which equals the multiplier) as keys.
- *
- * @return array
- */
-function moonmars_members_levels() {
-  return array(
-    1 => 'iron',
-    2 => 'copper',
-    3 => 'silver',
-    4 => 'gold',
-    5 => 'platinum'
-  );
-}
+///**
+// * Get the level roles, with the level number (which equals the multiplier) as keys.
+// *
+// * @return array
+// */
+//function moonmars_members_levels() {
+//  return array(
+//    1 => 'iron',
+//    2 => 'copper',
+//    3 => 'silver',
+//    4 => 'gold',
+//    5 => 'platinum'
+//  );
+//}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Forms
 
 /**
  * Implements hook_form_alter().
@@ -336,6 +339,9 @@ function moonmars_members_user_profile_form_submit($form, &$form_state) {
   $form_state['redirect'] = $member->alias();
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Follow/unfollow
+
 /**
  * Create a follows relationship between the logged in user and the user specified in the parameter.
  *
@@ -393,6 +399,9 @@ function moonmars_members_unfollow($member2_uid) {
   drupal_goto($member2->alias());
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Redirects
+
 /**
  * Go to the member's profile.
  */
@@ -406,6 +415,22 @@ function moonmars_members_profile() {
 function moonmars_members_profile_edit() {
   drupal_goto(Member::currentMember()->editAlias());
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Rule callbacks
+
+/**
+ * Called from the rule "Create triumph for new site member".
+ *
+ * @param $account
+ */
+function moonmars_members_user_account_validated($account) {
+  $member = Member::create($account);
+  Triumph::newMember($member);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Blocks
 
 /**
  * Render some member avatars in a sidebar block.
@@ -444,9 +469,6 @@ function moonmars_members_render_avatars(array $members, $max_n_display = 12, $v
 
   return $html;
 }
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Blocks
 
 /**
  * Implementation of hook_block_info().

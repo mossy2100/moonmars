@@ -40,7 +40,7 @@ function moonmars_nxn_mail($key, &$message, $params) {
     case 'nxn':
       $message['subject'] = $params['subject'];
       $message['body'][] = $params['summary'];
-      $message['body'][] = $params['details'];
+      $message['body'][] = $params['message'];
       $message['headers']['Content-Type'] = "text/html; charset='utf-8';";
       break;
   }
@@ -286,6 +286,32 @@ function moonmars_nxn_definitions() {
 }
 
 /**
+ * Get all the triumph types.
+ *
+ * @return array
+ */
+function moonmars_nxn_triumph_types() {
+  static $triumph_types;
+
+  if (isset($triumph_types)) {
+    return $triumph_types;
+  }
+
+  $triumph_types = array();
+  $definitions = moonmars_nxn_definitions();
+
+  foreach ($definitions as $nxn_category_info) {
+    foreach ($nxn_category_info['triumph types'] as $triumph_type => $nxn_info) {
+      if (!in_array($triumph_type, $triumph_types)) {
+        $triumph_types[] = $triumph_type;
+      }
+    }
+  }
+
+  return $triumph_types;
+}
+
+/**
  * List a member's notifications.
  *
  * @return string
@@ -495,10 +521,10 @@ function moonmars_nxn_form_submit($form, &$form_state) {
  */
 function moonmars_nxn_send_outstanding() {
   // Scan triumphs and create notifications:
-  $n_created = Triumph::createNxnsAllOutstanding();
+  $n_created = Triumph::createOutstandingNxns();
 
   // Send outstanding notifications:
-  $n_sent = Nxn2::sendAllOutstanding();
+  $n_sent = Nxn2::sendOutstanding();
 
   // Some info in watchdog:
   watchdog('moonmars_nxn', "Creating and sending outstanding nxns. $n_created nxns created. $n_sent nxns sent.");

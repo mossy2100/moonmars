@@ -55,7 +55,7 @@ class Member extends User {
   protected $groups;
 
   /**
-   * If the member wants none, all or some of a certain type of notification.
+   * The member's notification preferences.
    *
    * @var array
    */
@@ -82,10 +82,28 @@ class Member extends User {
   // Get and set methods.
 
   /**
+   * Get/set the user's name.
+   *
+   * @param null|string $name
+   * @param bool $include_at
+   * @return string|User
+   */
+  public function name($name = NULL, $include_at = FALSE) {
+    if ($name === NULL) {
+      // Get the username:
+      return ($include_at ? '@' : '') . $this->prop('name');
+    }
+    else {
+      // Set the username:
+      return $this->prop('name', $name);
+    }
+  }
+
+  /**
    * Get a link to the user's profile.
    */
   public function link($label = NULL, $include_at = FALSE, $absolute = FALSE) {
-    $label = ($include_at ? '@' : '') . (($label === NULL) ? $this->name() : $label);
+    $label = ($label === NULL) ? $this->name($include_at) : $label;
     return l($label, $this->url($absolute));
   }
 
@@ -788,12 +806,15 @@ class Member extends User {
     // Create or update the follow relationship:
     MoonMarsRelation::updateBinary('follows', $this, $member);
 
-    // Notify the followee, if they want to be notified:
-    if ($member->wantsNxn('site', 'new-follower')) {
-      $subject = "You have a new follower!";
-      $summary = $this->link() . " followed you. They're really cool, you could " . l('follow them back', $this->alias() . '/follow') . ".";
-      $member->notify($summary, NULL, $this, $member->channel());
-    }
+//    // Notify the followee, if they want to be notified:
+//    if ($member->nxnPrefWants('site', 'new-follower')) {
+//      $subject = "You have a new follower!";
+//      $summary = $this->link() . " followed you. They're really cool, you could " . l('follow them back', $this->alias() . '/follow') . ".";
+//      $member->notify($summary, NULL, $this, $member->channel());
+//    }
+
+    // Create a triumph:
+    Triumph::newFollower($this, $member);
   }
 
   /**
@@ -816,33 +837,36 @@ class Member extends User {
    */
   public function joinGroup(Group $group) {
     // Create or update the membership relationship.
-    // We're calling updateBinary() here instead of createBinary(), just in case, but basically this method should never
-    // be called if they're already a member of the group.
+    // We're calling updateBinary() here instead of createBinary(), just in case, but actually this method should never
+    // be called if they're already a member of the group. See logic in moonmars_groups_join().
     MoonMarsRelation::updateBinary('has_member', $group, $this);
 
-    //////////////////
-    // Notifications
+    // Create the triumph:
+    Triumph::newMember($this, $group);
 
-    // Nxn summary:
-    $summary = "Guess what! " . $this->link() . " joined the group " . $group->link() . ".";
-
-    // 1. Notify group members:
-    $members = $group->members();
-    foreach ($members as $member) {
-      // If they want to be notified, notify them:
-      if ($member->wantsNxn('group', 'new-member')) {
-        $member->notify($summary, $group, $this);
-      }
-    }
-
-    // 2. Notify the member's followers:
-    $members = $this->followers();
-    foreach ($members as $member) {
-      // If they want to be notified, notify them:
-      if ($member->wantsNxn('followee', 'join-group')) {
-        $member->notify($summary, $group, $this);
-      }
-    }
+//    //////////////////
+//    // Notifications
+//
+//    // Nxn summary:
+//    $summary = "Guess what! " . $this->link() . " joined the group " . $group->link() . ".";
+//
+//    // 1. Notify group members:
+//    $members = $group->members();
+//    foreach ($members as $member) {
+//      // If they want to be notified, notify them:
+//      if ($member->nxnPrefWants('group', 'new-member')) {
+//        $member->notify($summary, $group, $this);
+//      }
+//    }
+//
+//    // 2. Notify the member's followers:
+//    $members = $this->followers();
+//    foreach ($members as $member) {
+//      // If they want to be notified, notify them:
+//      if ($member->nxnPrefWants('followee', 'join-group')) {
+//        $member->notify($summary, $group, $this);
+//      }
+//    }
   }
 
   /**
@@ -858,44 +882,44 @@ class Member extends User {
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Notifications
 
-  /**
-   * Send a notification message to a member.
-   *
-   * @param string $summary
-   * @param EntityBase $thing
-   *   The thing (member, group, item or comment) that the notification is about.
-   * @param Member $actor
-   * @param Channel $channel
-   * @param Item $item
-   * @param ItemComment $comment
-   */
-  public function notify($summary, $thing = NULL, Member $actor = NULL) {
-    $subject = strip_tags($summary);
-
-    // Create the notification node:
-    $notification_summary = "
-      <p class='notification-summary'>
-        $summary
-      </p>
-      <p class='notification-teaser'>
-       " . moonmars_text_trim($thing->text(), 100) . "
-      </p>
-    ";
-    $notification = Nxn::create();
-    $notification->uid($this->uid());
-    $notification->title($subject);
-    $notification->field('field_notification_summary', LANGUAGE_NONE, 0, 'value', $notification_summary);
-    $notification->save();
-
-    $text = $thing->textScan()->html();
-
-    $params = array(
-      'subject' => "[moonmars.com] $subject",
-      'summary' => "<p style='margin: 0 0 10px; color: #919191;'>$summary</p>",
-      'text'    => "<p style='margin: 0;'>$text</p>",
-    );
-    drupal_mail('moonmars_nxn', 'notification', $this->mail(), language_default(), $params);
-  }
+//  /**
+//   * Send a notification message to a member.
+//   *
+//   * @param string $summary
+//   * @param EntityBase $thing
+//   *   The thing (member, group, item or comment) that the notification is about.
+//   * @param Member $actor
+//   * @param Channel $channel
+//   * @param Item $item
+//   * @param ItemComment $comment
+//   */
+//  public function notify($summary, $thing = NULL, Member $actor = NULL) {
+//    $subject = strip_tags($summary);
+//
+//    // Create the notification node:
+//    $notification_summary = "
+//      <p class='notification-summary'>
+//        $summary
+//      </p>
+//      <p class='notification-teaser'>
+//       " . moonmars_text_trim($thing->text(), 100) . "
+//      </p>
+//    ";
+//    $notification = Nxn::create();
+//    $notification->uid($this->uid());
+//    $notification->title($subject);
+//    $notification->field('field_notification_summary', LANGUAGE_NONE, 0, 'value', $notification_summary);
+//    $notification->save();
+//
+//    $text = $thing->textScan()->html();
+//
+//    $params = array(
+//      'subject' => "[moonmars.com] $subject",
+//      'summary' => "<p style='margin: 0 0 10px; color: #919191;'>$summary</p>",
+//      'text'    => "<p style='margin: 0;'>$text</p>",
+//    );
+//    drupal_mail('moonmars_nxn', 'notification', $this->mail(), language_default(), $params);
+//  }
 
   /**
    * Get the cached/database value for what notifications a member wants of a certain type.

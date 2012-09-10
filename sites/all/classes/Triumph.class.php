@@ -70,16 +70,29 @@ class Triumph {
    *
    * @param $param
    *   This maybe a triumph id for an existing one, or a triumph type for when creating a new one.
+   *
+   * Triumph types:
+   *   new-member
+   *   new-group
+   *   new-item
+   *   new-comment
+   *   new-follower
+   *   new-page
+   *   update-member
+   *   new-admin
+   *   want-admin
+   *   update-group
+   * Check moonmars_nxn_definitions() for definitive list.
    */
   public function __construct($param) {
     if (is_uint($param)) {
       // Existing triumph:
       $this->triumphId    = (int) $param;
     }
-    elseif (is_string($param)) {
+    elseif (is_string($param) && in_array($param, moonmars_nxn_triumph_types())) {
       // New triumph:
       $this->triumphType  = $param;
-      $this->dtCreated    = time();
+      $this->dtCreated    = new StarDateTime();
       $this->nxnsCreated  = FALSE;
       $this->actors       = array();
       $this->recipients   = array();
@@ -144,7 +157,7 @@ class Triumph {
       'triumph_type'    => $this->triumphType,
       'ts_created'      => $this->dtCreated->timestamp(),
       'nxns_created'    => (int) $this->nxnsCreated,
-      'ts_nxns_created' => $this->dtNxnsCreated->timestamp(),
+      'ts_nxns_created' => isset($this->dtNxnsCreated) ? $this->dtNxnsCreated->timestamp() : NULL,
     );
 
     if ($this->triumphId) {
@@ -550,7 +563,7 @@ class Triumph {
    * @return int
    *   The total number of nxns created.
    */
-  public static function createNxnsAllOutstanding() {
+  public static function createOutstandingNxns() {
     // Look for any triumphs for which we didn't create nxns yet:
     $q = db_select('moonmars_triumph', 'mmt')
       ->fields('mmt')

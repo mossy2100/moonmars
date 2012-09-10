@@ -605,7 +605,7 @@ function moonmars_groups_search_form() {
     '#type' => 'checkboxes',
     '#title' => "Group type",
     '#description' => "Select one or more group types to search for.",
-    '#options' => Group::types(),
+    '#options' => Group::groupTypes(),
     '#default_value' => isset($_SESSION['group_search']['params']['type']) ? $_SESSION['group_search']['params']['type'] : array(),
   );
 
@@ -736,6 +736,9 @@ function moonmars_groups_search_form_update($form, &$form_state) {
   );
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Theming
+
 /**
  * Implements hook_theme().
  *
@@ -848,24 +851,15 @@ function theme_moonmars_groups_search_form($vars) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Saving
+// Saving nodes
 
 /**
  * Implements hook_node_insert().
  */
 function moonmars_groups_node_insert($node) {
-  // Create a new notification:
-  $nxn = Nxn::create();
-  $nxn->subject("New group created");
-  $group = Group::create($node);
-  $nxn->message("
-    <p>A new group has been created: " . $group->link() . ". Here's the description:</p>
-    <p>" . $group->description() . "</p>");
-  // @todo Add group topics.
-
-  // Notify everyone who may want to know about new groups.
-  $members = Nxn::mayWantNxnNew('site', 'group');
-  $recipients = array();
-  Nxn::collectRecipients('site', 'new-group', $group, $members, $recipients);
-  $nxn->send($recipients);
+  if ($node->type == 'group') {
+    // Create a triumph for the new group:
+    $group = Group::create($node);
+    Triumph::newGroup($group);
+  }
 }

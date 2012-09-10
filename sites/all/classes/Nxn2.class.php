@@ -113,7 +113,7 @@ class Nxn2 {
     );
     if ($this->nxnId) {
       // Update existing nxn:
-      $q = db_update('moonmars_nxn', 'nxn')
+      $q = db_update('moonmars_nxn')
         ->fields($fields)
         ->condition('nxn_id', $this->nxnId);
       $q->execute();
@@ -121,7 +121,7 @@ class Nxn2 {
     else {
       // Insert new nxn:
       $fields['ts_created'] = time();
-      $q = db_insert('moonmars_nxn', 'nxn')
+      $q = db_insert('moonmars_nxn')
         ->fields($fields);
       $this->nxnId = $q->execute();
     }
@@ -153,17 +153,47 @@ class Nxn2 {
    * @return string
    */
   public function renderDetails(array $values) {
-    $html = "<table style='background: none; padding: 0; border: 0; margin: 0;'>\n";
-    $grey3 = '#919191';
-    $style = "padding: 2px; margin: 0; border: 0; font-size: 11px; font-family: Helvetica, Arial, Tahoma, Verdana, sans-serif;";
+    $html = "<table style='background: none; padding: 0; border: 0; margin: 0; border-spacing: 0;'>\n";
+    $grey3 = '#616161';
+    $td_style = "
+      padding: 5px 10px 5px 0;
+      margin: 0;
+      border: 0;
+      font-size: 12px;
+      font-family: Helvetica, Arial, Tahoma, Verdana, sans-serif;
+      vertical-align: top;
+    ";
     foreach ($values as $label => $value) {
       $html .= "<tr>\n";
-      $html .= "<td style='$style color: $grey3;'>$label:</td>\n";
-      $html .= "<td style='$style color: black;'>$value</td>\n";
+      $html .= "<td style='$td_style color: $grey3;'>$label:</td>\n";
+      $html .= "<td style='$td_style color: black;'>$value</td>\n";
       $html .= "</tr>\n";
     }
     $html .= "</table>";
     return $html;
+  }
+
+  /**
+   * Get an array of group details.
+   *
+   * @static
+   * @param Group $group
+   * @return array
+   */
+  public static function groupDetails(Group $group) {
+    $details = array(
+      'Group name' => "<strong>" . $group->title() . "</strong>",
+      'Group tag' => '#' . $group->tag(),
+      'Group page' => $group->link($group->url(TRUE), TRUE),
+      'Group type' => $group->groupType(NULL, 'name'),
+    );
+    if ($group->description()) {
+      $details['Group description'] = $group->description();
+    }
+    if ($group->icon()) {
+      $details['Group image'] = $group->icon();
+    }
+    return $details;
   }
 
   /**
@@ -175,10 +205,10 @@ class Nxn2 {
     $group = $this->triumph->actor('group');
 
     // Details:
-    $details['Member name'] = $member->link(NULL, TRUE, TRUE);
-    $details['Member page'] = $member->link($member->url(TRUE), FALSE, TRUE);
+    $details['Username'] = "<strong>" . $member->name() ."</strong>";
+    $details['Profile'] = $member->link($member->url(TRUE), FALSE, TRUE);
     if ($member->fullName()) {
-      $details['Name'] = $member->fullName();
+      $details['Full name'] = $member->fullName();
     }
     if ($member->age()) {
       $details['Age'] = $member->age();
@@ -198,19 +228,18 @@ class Nxn2 {
       $summary = "<p>moonmars.com has a new member!</p>";
     }
     else {
-      $subject = "New member of the " . $group->title() . " group";
-      $summary = "<p>The " . $group->title() . " group on moonmars.com has a new member!</p>";
+      $group_name = $group->title();
+      $subject = "New member of the $group_name group";
+      $summary = "<p>The <strong>$group_name</strong> group on moonmars.com has a new member!</p>";
 
       // Additional group details:
-      $details['Group name'] = $group->link(NULL, TRUE);
-      $details['Group page'] = $group->link($group->url(TRUE), TRUE);
-      $details['Number of members'] = $group->memberCount();
+      $details = array_merge($details, self::groupDetails($group));
     }
 
     return array(
       'subject' => $subject,
       'summary' => $summary,
-      'details' => $details,
+      'message' => self::renderDetails($details),
     );
   }
 
@@ -223,36 +252,32 @@ class Nxn2 {
     $parent_group = $this->triumph->actor('parent group');
 
     // Subject:
-    $subject = "New group created";
+    $group_name = $group->title();
+    $subject = "New group created: $group_name";
 
     // Summary:
     $summary = "moonmars.com has a new group!";
 
     // Details:
-    $details['Group name'] = $group->link(NULL, TRUE);
-    $details['Group page'] = $group->link($group->url(TRUE), TRUE);
-    if ($group->description()) {
-      $details['Description'] = $group->description();
-    }
-    if ($group->icon()) {
-      $details['Logo'] = $group->icon();
-    }
+    $details = self::groupDetails($group);
 
     // Additional details for subgroups:
     if ($parent_group) {
       $summary .= " This is a subgroup of " . $parent_group->link(NULL, TRUE) . ".</p>";
       $details['Parent group name'] = $parent_group->link(NULL, TRUE);
       $details['Parent group page'] = $parent_group->link($parent_group->url(TRUE), TRUE);
-      $details['Number of members'] = $parent_group->memberCount();
     }
 
-    $join_link = l("Join the " . $group->title() . " group!", $group->url(TRUE) . '/join');
-    $summary = "<p>$summary <strong>$join_link</strong></p>";
+    // Get HTML for details:
+    $message = self::renderDetails($details);
+    $message .= "<p><strong>" . l("Join the $group_name group", $group->url(TRUE) . '/join') . "</strong></p>";
+
+    $summary = "<p>$summary</p>";
 
     return array(
       'subject' => $subject,
       'summary' => $summary,
-      'details' => $details,
+      'message' => $message,
     );
   }
 
@@ -263,7 +288,7 @@ class Nxn2 {
 //    return array(
 //      'subject' => $subject,
 //      'summary' => $summary,
-//      'details' => $details,
+//      'message' => $message,
 //    );
   }
 
@@ -274,7 +299,7 @@ class Nxn2 {
 //    return array(
 //      'subject' => $subject,
 //      'summary' => $summary,
-//      'details' => $details,
+//      'message' => $message,
 //    );
   }
 
@@ -314,7 +339,7 @@ class Nxn2 {
    * @return int
    *   The number of nxns sent.
    */
-  public static function sendAllOutstanding() {
+  public static function sendOutstanding() {
     // Look for any nxns we didn't send yet:
     $q = db_select('moonmars_nxn', 'mmn')
       ->fields('mmn')

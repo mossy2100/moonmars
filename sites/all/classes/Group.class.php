@@ -195,10 +195,27 @@ class Group extends MoonMarsNode {
    * Get/set the group type.
    *
    * @param string $type
+   * @param string $key_or_name
+   *   'key' for the key, e.g. 'topic', 'society', 'business'
+   *   'name' for the name, e.g. 'Topic', 'Society', 'Business'
    * @return string|Group
    */
-  public function groupType($type = NULL) {
-    return $this->field('field_group_type', LANGUAGE_NONE, 0, 'value', $type);
+  public function groupType($value = NULL, $key_or_name = 'key') {
+    if ($value == NULL) {
+      // Get the group type:
+      $group_type = $this->field('field_group_type', LANGUAGE_NONE, 0, 'value');
+      if ($key_or_name == 'name') {
+        $group_types = Group::groupTypes();
+        return $group_types[$group_type];
+      }
+      else {
+        return $group_type;
+      }
+    }
+    else {
+      // Set the group type:
+      return $this->field('field_group_type', LANGUAGE_NONE, 0, 'value', $value);
+    }
   }
 
   /**
@@ -428,44 +445,44 @@ class Group extends MoonMarsNode {
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Notifications
 
-  /***
-   * Send a notification message to all the members of a group.
-   *
-   * @param string $summary
-   * @param string $text
-   * @param Member $actor
-   * @param Channel $channel
-   * @param Item $item
-   * @param ItemComment $comment
-   */
-  public function notifyMembers($summary, $text = NULL, Member $actor = NULL, Channel $channel = NULL, Item $item = NULL, ItemComment $comment = NULL) {
-    $members = $this->members();
-    foreach ($members as $member) {
-      // Notify everyone in the group except the actor:
-      if (!Member::equals($member, $actor)) {
-        $member->notify($summary, $text, $actor, $channel, $item, $comment);
-      }
-    }
-  }
+//  /***
+//   * Send a notification message to all the members of a group.
+//   *
+//   * @param string $summary
+//   * @param string $text
+//   * @param Member $actor
+//   * @param Channel $channel
+//   * @param Item $item
+//   * @param ItemComment $comment
+//   */
+//  public function notifyMembers($summary, $text = NULL, Member $actor = NULL, Channel $channel = NULL, Item $item = NULL, ItemComment $comment = NULL) {
+//    $members = $this->members();
+//    foreach ($members as $member) {
+//      // Notify everyone in the group except the actor:
+//      if (!Member::equals($member, $actor)) {
+//        $member->notify($summary, $text, $actor, $channel, $item, $comment);
+//      }
+//    }
+//  }
 
-  /***
-   * Send a notification message to all the admins of a group.
-   *
-   * @param string $summary
-   * @param string $text
-   * @param Member $actor
-   * @param Channel $channel
-   * @param Item $item
-   * @param ItemComment $comment
-   */
-  public function notifyAdmins($summary, $text = NULL, Member $actor = NULL, Channel $channel = NULL, Item $item = NULL, ItemComment $comment = NULL) {
-    $admins = $this->admins();
-    foreach ($admins as $admin) {
-      // Notify all admins except the actor:
-      if (!Member::equals($admin, $actor)) {
-        $admin->notify($summary, $text, $actor, $channel, $item, $comment);
-      }
-    }
-  }
+//  /***
+//   * Send a notification message to all the admins of a group.
+//   *
+//   * @param string $summary
+//   * @param string $text
+//   * @param Member $actor
+//   * @param Channel $channel
+//   * @param Item $item
+//   * @param ItemComment $comment
+//   */
+//  public function notifyAdmins($summary, $text = NULL, Member $actor = NULL, Channel $channel = NULL, Item $item = NULL, ItemComment $comment = NULL) {
+//    $admins = $this->admins();
+//    foreach ($admins as $admin) {
+//      // Notify all admins except the actor:
+//      if (!Member::equals($admin, $actor)) {
+//        $admin->notify($summary, $text, $actor, $channel, $item, $comment);
+//      }
+//    }
+//  }
 
 }
