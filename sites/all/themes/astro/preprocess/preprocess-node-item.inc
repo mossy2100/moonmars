@@ -7,6 +7,13 @@
  */
 function astro_alpha_preprocess_node_item(&$vars) {
 
+  // JS:
+  // This is also in preprocess-node-channel.inc, but it doesn't matter because Drupal won't add it twice.
+  // Basically sometimes we have a channel without items (when it's a new channel), and sometimes we have
+  // an item by itself (on the item node page).
+  drupal_add_js(drupal_get_path('module', 'moonmars_channels') . '/js/moonmars-channels.js');
+  drupal_add_js(drupal_get_path('module', 'moonmars_ratings') . '/js/ratings.js');
+
   // Get the current logged-in member:
   $current_member = Member::currentMember();
   $vars['current_member'] = $current_member;
