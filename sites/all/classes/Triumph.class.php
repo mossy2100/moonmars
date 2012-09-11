@@ -43,7 +43,7 @@ class Triumph {
 
   /**
    * Nxns created for about this triumph.
-   * Keys are nxn_ids. Values are Nxn2 objeects.
+   * Keys are nxn_ids. Values are Nxn objeects.
    *
    * @var array
    */
@@ -356,14 +356,14 @@ class Triumph {
               case 'new-member':
                 // Only if the member is joining the site, not a group:
                 if (!$this->actor('group')) {
-                  $candidates = Nxn2::mayWant($nxn_category, $this->triumphType);
+                  $candidates = Nxn::mayWant($nxn_category, $this->triumphType);
                 }
                 break;
 
               case 'new-group':
               case 'new-item':
               case 'new-comment':
-                $candidates = Nxn2::mayWant($nxn_category, $this->triumphType);
+                $candidates = Nxn::mayWant($nxn_category, $this->triumphType);
                 break;
 
               case 'new-follower':
@@ -376,7 +376,7 @@ class Triumph {
           case 'news':
             // If something was posted in the News channel, lookup who may wants News notifications.
             if ($channel && $channel->nid() == MOONMARS_NEWS_CHANNEL_NID) {
-              $candidates = Nxn2::mayWant($nxn_category, $this->triumphType);
+              $candidates = Nxn::mayWant($nxn_category, $this->triumphType);
             }
             break;
 
@@ -547,7 +547,7 @@ class Triumph {
   public function createNxns() {
     $n = 0;
     foreach ($this->recipients() as $recipient) {
-      $nxn = new Nxn2($this, $recipient);
+      $nxn = new Nxn($this, $recipient);
       $nxn->save();
       $n++;
     }
@@ -593,7 +593,7 @@ class Triumph {
         ->condition('triumph_id', $this->triumphId);
       $rs = $q->execute();
       foreach ($rs as $rec) {
-        $this->nxns[$rec->nxn_id] = new Nxn2($rec->nxn_id);
+        $this->nxns[$rec->nxn_id] = new Nxn($rec->nxn_id);
       }
     }
     return $this->nxns;

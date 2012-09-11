@@ -294,7 +294,7 @@ class Channel extends MoonMarsNode {
       $this->addItem($item);
       $channel = $this;
 
-      // For new items, create the triumph:
+      // For new items, create a triumph:
       Triumph::newItem($item);
     }
     else {
@@ -305,114 +305,6 @@ class Channel extends MoonMarsNode {
       // It would mean adding 'update-item' and 'update-comment' triumph types, which is ok, but it also means
       // a lot of additional checkboxes, and I don't think people want to be notified about updates so much.
     }
-
-    // @todo Everything below this line needs to be moved into Triumph and Nxn classes, then removed.
-//
-//    // Get the parent entity:
-//    $parent_entity = $channel->parentEntity();
-//
-//
-//    ////////////////////////////////////////////////
-//    // NOTIFICATIONS
-//
-//    $recipients = array();
-//
-//    // Do these in the same order as the notifications form.
-//    // @see members_notifications_form().
-//
-//    // Site-wide preferences.
-//    // Get all members who want to be notified about at least some of the new items posted on the site.
-//    Nxn::collectRecipients('site', 'new-item', $item, Notification::mayWantNxnNew('site', 'item'), $recipients);
-//
-//    // Channel preferences.
-//    // If this is a member's channel, check if they want to be notified.
-//    if ($parent_entity instanceof Member) {
-//      Nxn::collectRecipients('channel', 'new-item', $item, $parent_entity, $recipients);
-//    }
-//
-//    // Followee preferences.
-//    // Get the followers of the poster and notify those who want to be notified.
-//    Nxn::collectRecipients('followee', 'new-item', $item, $item_poster->followers(), $recipients);
-//
-//    // Group preferences.
-//    // If this is a group channel, get the members of the group and notify those who want to be notified.
-//    if ($parent_entity instanceof Group) {
-//      Nxn::collectRecipients('group', 'new-item', $item, $parent_entity->members(), $recipients);
-//    }
-//
-////    // 1. If the item is being posted in a member's channel, notify that member.
-////    if ($parent_entity instanceof Member) {
-////      $recipients[$parent_entity->uid()] = $parent_entity;
-////    }
-////
-////    // 2. If an admin edited a member's item, tell them.
-////    $recipients[$item_poster->uid()] = $item_poster;
-////
-////    // 3. Everyone subscribed to this channel:
-////    $subscribers = $channel->subscribers();
-////    foreach ($subscribers as $subscriber) {
-////      $recipients[$subscriber->uid()] = $subscriber;
-////    }
-////
-////    // 4. Everyone mentioned in the item text.
-////    $item_mentions = moonmars_text_referenced_members($item->text());
-////    foreach ($item_mentions as $member) {
-////      $recipients[$member->uid()] = $member;
-////    }
-////
-////    // 5. Everyone following a hash tag that appears in the item text. @todo
-//
-//    /////////////////////////////////////////////////////////////////////////////
-//    // Create notifications.
-//
-//    // Get a link to the item:
-//    $item_link = $item->link("item");
-//
-//    // Notify each recipient:
-//    foreach ($recipients as $recipient_uid => $recipient) {
-//
-//      // No need to notify the current member:
-//      if (Member::equals($recipient, $current_member)) {
-//        continue;
-//      }
-//
-//      // Get a readable link to the channel:
-//      if ($parent_entity instanceof Member) {
-//        if (Member::equals($parent_entity, $recipient)) {
-//          $channel_link = $recipient->link("your channel");
-//        }
-//        elseif (Member::equals($parent_entity, $current_member)) {
-//          $channel_link = $current_member->link("their channel");
-//        }
-//        else {
-//          $channel_link = $parent_entity->link($parent_entity->name() . "'s channel");
-//        }
-//      }
-//      else {
-//        $channel_link = $channel->parentEntityLink();
-//      }
-//
-//      // Create a summary of the notification:
-//      $summary = '';
-//      if ($is_new) {
-//        $summary .= "$current_member_link posted a new $item_link in $channel_link.";
-//      }
-//      else {
-//        $summary .= "$current_member_link edited an $item_link";
-//        if (Member::equals($recipient, $item_poster)) {
-//          $summary .= " you posted";
-//        }
-//        $summary .= " in $channel_link.";
-//      }
-//
-//      // Add the mention part of the message:
-//      if (array_key_exists($recipient_uid, $item_mentions)) {
-//        $summary .= " You were mentioned in the $item_link.";
-//      }
-//
-//      // Send the notification
-//      $recipient->notify($summary, $item->text(), $current_member, $channel, $item);
-//    }
   }
 
   /**

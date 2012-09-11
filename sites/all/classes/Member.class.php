@@ -103,7 +103,7 @@ class Member extends User {
    * Get a link to the user's profile.
    */
   public function link($label = NULL, $include_at = FALSE, $absolute = FALSE) {
-    $label = ($label === NULL) ? $this->name($include_at) : $label;
+    $label = ($label === NULL) ? $this->name(NULL, $include_at) : $label;
     return l($label, $this->url($absolute));
   }
 

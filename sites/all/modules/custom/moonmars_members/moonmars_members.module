@@ -102,6 +102,9 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
   $form['#attached']['js'][] = "$module_path/js/member-name-check.js";
 
   switch ($form_id) {
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Registration form
     case 'user_register_form':
       // JS:
       $form['#attached']['js'][] = "$module_path/js/register-form.js";
@@ -151,8 +154,20 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
       // Add a validation handler. Need to put this first so that our username rules get checked before Drupal core's.
       array_unshift($form['#validate'], 'moonmars_members_user_register_form_validate');
 
+      // Order fields:
+      $weight = 0;
+      $form['account']['#weight'] = $weight++;
+      $form['account']['name']['#weight'] = $weight++;
+      $form['account']['mail']['#weight'] = $weight++;
+      $form['field_moon_or_mars']['#weight'] = $weight++;
+      $form['field_user_location']['#weight'] = $weight++;
+      $form['rules']['#weight'] = $weight++;
+      $form['rules-cb']['#weight'] = $weight++;
+
       break;
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // User profile form
     case 'user_profile_form':
       // Add JS:
       $form['#attached']['js'][] = "$module_path/js/profile-form.js";
@@ -225,8 +240,6 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
       $form['#fieldgroups']['group_preferences']->weight = $weight++;
       $form['signature']['#weight'] = $weight++;
       $form['contact']['#weight'] = $weight++;
-      $form['rules']['#weight'] = $weight++;
-      $form['rules-cb']['#weight'] = $weight++;
 
 //      // Notifications tab:
 //      $form['buttons']['#weight'] = $weight++;
@@ -237,15 +250,15 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
 
 //      dpm($form);
 
-      //      $keys = array_keys($form);
-//      foreach ($form as $key => $value) {
-//        if (is_array($value) && isset($value['#weight'])) {
-//          dbg("$key weight {$value['#weight']}");
-//        }
-//      }
-
       break;
   }
+
+//  foreach ($form as $key => $value) {
+//    if (is_array($value) && isset($value['#weight'])) {
+//      dbg("$key weight {$value['#weight']}");
+//    }
+//  }
+
 }
 
 /**
@@ -414,19 +427,6 @@ function moonmars_members_profile() {
  */
 function moonmars_members_profile_edit() {
   drupal_goto(Member::currentMember()->editAlias());
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Rule callbacks
-
-/**
- * Called from the rule "Create triumph for new site member".
- *
- * @param $account
- */
-function moonmars_members_user_account_validated($account) {
-  $member = Member::create($account);
-  Triumph::newMember($member);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -709,3 +709,30 @@ function moonmars_members_activity_redirect() {
 ////  $profile_member = Member::create($uid);
 ////  $rel = MoonMarsRelation::searchBinary('rates', 'user', $current_member->uid(), 'user', $profile_member->uid());
 //}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Rule callbacks
+
+// This function shouldn't be needed any more because we'll use hook_user_insert() instead.
+///**
+// * Called from the rule "Create triumph for new site member".
+// *
+// * @param $account
+// */
+//function moonmars_members_user_account_validated($account) {
+//  $member = Member::create($account);
+//  Triumph::newMember($member);
+//}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// User saving hooks
+
+/**
+ * Implements hook_user_insert().
+ */
+function moonmars_members_user_insert(&$edit, $account, $category) {
+  dpm($account, "moonmars_members_user_insert");
+  $member = Member::create($account);
+  Triumph::newMember($member);
+}

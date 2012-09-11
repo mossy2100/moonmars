@@ -147,7 +147,7 @@ class TextScan {
   }
 
   /**
-   * Checks if an item mentions a member.
+   * Checks if the text mentions a member.
    *
    * @param Member $member
    * @return bool

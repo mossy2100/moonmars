@@ -41,6 +41,7 @@ function moonmars_nxn_mail($key, &$message, $params) {
       $message['subject'] = $params['subject'];
       $message['body'][] = $params['summary'];
       $message['body'][] = $params['message'];
+      $message['body'][] = $params['unsubscribe'];
       $message['headers']['Content-Type'] = "text/html; charset='utf-8';";
       break;
   }
@@ -524,7 +525,7 @@ function moonmars_nxn_send_outstanding() {
   $n_created = Triumph::createOutstandingNxns();
 
   // Send outstanding notifications:
-  $n_sent = Nxn2::sendOutstanding();
+  $n_sent = Nxn::sendOutstanding();
 
   // Some info in watchdog:
   watchdog('moonmars_nxn', "Creating and sending outstanding nxns. $n_created nxns created. $n_sent nxns sent.");

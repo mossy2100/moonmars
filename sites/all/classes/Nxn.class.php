@@ -4,7 +4,7 @@
  * Date: 2012-08-30
  * Time: 5:29 AM
  */
-class Nxn2 {
+class Nxn {
 
   /**
    * The unique nxn id.
@@ -82,7 +82,7 @@ class Nxn2 {
   /**
    * Load a nxn from the db.
    *
-   * @return Nxn2
+   * @return Nxn
    */
   public function load() {
     if ($this->nxnId) {
@@ -102,7 +102,7 @@ class Nxn2 {
   /**
    * Save a nxn to the db.
    *
-   * @return Nxn2
+   * @return Nxn
    */
   public function save() {
     $fields = array(
@@ -154,7 +154,7 @@ class Nxn2 {
    */
   public function renderDetails(array $values) {
     $html = "<table style='background: none; padding: 0; border: 0; margin: 0; border-spacing: 0;'>\n";
-    $grey3 = '#616161';
+    $grey3 = '#777';
     $td_style = "
       padding: 5px 10px 5px 0;
       margin: 0;
@@ -285,11 +285,62 @@ class Nxn2 {
    * Generate text for a new-item nxn.
    */
   public function newItemEmail() {
-//    return array(
-//      'subject' => $subject,
-//      'summary' => $summary,
-//      'message' => $message,
-//    );
+    // Get the item:
+    $item = $this->triumph()->actor('item');
+
+    // Get the poster:
+    $poster = $item->creator();
+
+    // Get the item's channel:
+    $channel = $item->channel();
+
+    // Get the parent entity:
+    $parent_entity = $channel ? $channel->parentEntity() : NULL;
+
+    // Get a user-friendly name for the channel:
+    if ($parent_entity) {
+      if ($parent_entity instanceof Member) {
+        if (Member::equals($parent_entity, $this->recipient)) {
+          $channel_name = 'your channel';
+        }
+        elseif (Member::equals($parent_entity, $poster)) {
+          $channel_name = "their channel";
+        }
+        else {
+          $channel_name = $parent_entity->name() . "'s channel";
+        }
+      }
+      elseif ($parent_entity instanceof Group) {
+        $channel_name = "the " . $parent_entity->title() . " group";
+      }
+    }
+
+    // Subject:
+    $subject = $poster->name() . " posted in new item in $channel_name";
+
+    // Get a link to the item:
+    $item_link = $item->link("item");
+
+    // Create a summary of the notification:
+    $summary = $poster->link() . " posted a new $item_link in " . $parent_entity->link($channel_name) . ".";
+
+    // Add the mention part of the message:
+    if ($item->textScan()->mentions($this->recipient_uid)) {
+      $summary .= " You were mentioned in the $item_link.";
+    }
+
+    // @todo add a note to the summary if the item mentions a #topic they're interested in
+
+    // @todo Add item text and comments.
+    //$message = self::renderItem($item);
+    // For now just show the HTML:
+    $message = $item->textScan()->html();
+
+    return array(
+      'subject' => $subject,
+      'summary' => "<p>$summary</p>",
+      'message' => $message,
+    );
   }
 
   /**
@@ -309,12 +360,19 @@ class Nxn2 {
    * @return array
    */
   function generateEmail() {
-    // Get the function name and call it.
+    // Get the function name.
     // This probably seems like a weird way to do it, but I didn't want one function (this one) with about 1000 lines
     // of code to generate emails for every triumph type. So I made one method per triumph type.
     $triumphTypeParts = explode('-', $this->triumph->triumphType());
     $fn = $triumphTypeParts[0] . ucfirst($triumphTypeParts[1]) . 'Email';
-    return $this->$fn();
+
+    // Get the email parts:
+    $email = $this->$fn();
+
+    // Add the mandatory unsubscribe message:
+    $email['unsubscribe'] = "<p>" . l("Update your notification preferences or unsubscribe from all emails.", $this->recipient->alias() . '/notifications/preferences') . "</p>";
+
+    return $email;
   }
 
   /**
@@ -341,24 +399,33 @@ class Nxn2 {
    */
   public static function sendOutstanding() {
     // Look for any nxns we didn't send yet:
-    $q = db_select('moonmars_nxn', 'mmn')
-      ->fields('mmn')
+    $q = db_select('moonmars_nxn', 'nxn')
+      ->fields('nxn')
       ->condition('sent', 0)
       ->orderBy('nxn_id');
     $rs = $q->execute();
     // Create the nxns:
+    $n_sent = 0;
     foreach ($rs as $rec) {
       // Reset the time limit so the script doesn't time out while sending emails.
-      // Let's assume 60 seconds will be ample time for a single iteration of this loop.
+      // Let's assume 60 seconds will be well-and-truly enough time to send a single email!
       set_time_limit(60);
 
-      // Create an nxn object:
-      $nxn = new Nxn2($rec);
+      // Create an Nxn object:
+      $nxn = new Nxn($rec);
+
       // Send the email and update the sent and dtSent properties:
-      $nxn->send();
+      $sent = $nxn->send();
+
+      // If it sent ok, count it:
+      if ($sent) {
+        $n_sent++;
+      }
+
       // Save the nxn to update the sent and ts_sent fields in the db record:
       $nxn->save();
     }
+    return $n_sent;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -392,24 +459,4 @@ class Nxn2 {
     return $members;
   }
 
-//  /**
-//   * Get the unsent nxns.
-//   *
-//   * @todo add $daily_digest flag so we can filter for people who just want the once-per-day email, or not.
-//   *
-//   * @static
-//   * @return array
-//   */
-//  public static function getUnsent() {
-//    $q = db_select('moonmars_nxn', 'nxn')
-//      ->fields('nxn')
-//      ->condition('sent', FALSE)
-//      ->orderBy('ts_created');
-//    $rs = $q->execute();
-//    $nxns = array();
-//    foreach ($rs as $rec) {
-//      $nxns[$rec->nxn_id] = new Nxn2($rec);
-//    }
-//    return $nxns;
-//  }
 }
