@@ -132,9 +132,21 @@ class Nxn {
   // Get/set
 
   /**
-   * Get the nxn recipient.
+   * Get the triumph.
    *
-   * @return Member|null
+   * @return Triumph
+   */
+  public function triumph() {
+    if (!isset($this->triumph)) {
+      $this->load();
+    }
+    return $this->triumph;
+  }
+
+  /**
+   * Get the recipient.
+   *
+   * @return Member
    */
   public function recipient() {
     if (!isset($this->recipient)) {
@@ -152,8 +164,9 @@ class Nxn {
    * @param array $values
    * @return string
    */
-  public function renderDetails(array $values) {
-    $html = "<table style='background: none; padding: 0; border: 0; margin: 0; border-spacing: 0;'>\n";
+  public function renderDetails(array $values, $title = NULL) {
+    $html = $title ? "<h3>$title</h3>" : "";
+    $html .= "<table style='background: none; padding: 0; border: 0; margin: 0; border-spacing: 0;'>\n";
     $grey3 = '#777';
     $td_style = "
       padding: 5px 10px 5px 0;
@@ -174,6 +187,35 @@ class Nxn {
   }
 
   /**
+   * Get an array of member details.
+   *
+   * @static
+   * @param Member $member
+   * @return array
+   */
+  public static function memberDetails(Member $member) {
+    $details = array(
+      'Username' => "<strong>" . $member->name(NULL, TRUE) ."</strong>",
+      'Profile'  => $member->link($member->url(TRUE), FALSE, TRUE),
+    );
+    if ($member->fullName()) {
+      $details['Full name'] = $member->fullName();
+    }
+    if ($member->age()) {
+      $details['Age'] = $member->age();
+    }
+    if ($member->gender()) {
+      $details['Gender'] = $member->gender(TRUE);
+    }
+    if (array_filter($member->location())) {
+      $details['Location'] = $member->locationStr(TRUE);
+    }
+    // Add a list of topics that the member is interested in:
+//    $details['Interests'] = $member->interests();
+    return $details;
+  }
+
+  /**
    * Get an array of group details.
    *
    * @static
@@ -183,7 +225,7 @@ class Nxn {
   public static function groupDetails(Group $group) {
     $details = array(
       'Group name' => "<strong>" . $group->title() . "</strong>",
-      'Group tag' => '#' . $group->tag(),
+      'Group tag'  => '#' . $group->tag(),
       'Group page' => $group->link($group->url(TRUE), TRUE),
       'Group type' => $group->groupType(NULL, 'name'),
     );
@@ -197,6 +239,26 @@ class Nxn {
   }
 
   /**
+   * Generate an HTML table of member details.
+   *
+   * @param Member $member
+   * @return string
+   */
+  public function renderMemberDetails(Member $member, $title = NULL) {
+    return self::renderDetails(self::memberDetails($member, $title));
+  }
+
+  /**
+   * Generate an HTML table of group details.
+   *
+   * @param Group $group
+   * @return string
+   */
+  public function renderGroupDetails(Group $group, $title = NULL) {
+    return self::renderDetails(self::groupDetails($group, $title));
+  }
+
+  /**
    * Generate text for a new-member nxn.
    */
   public function newMemberEmail() {
@@ -204,42 +266,28 @@ class Nxn {
     $member = $this->triumph->actor('member');
     $group = $this->triumph->actor('group');
 
-    // Details:
-    $details['Username'] = "<strong>" . $member->name() ."</strong>";
-    $details['Profile'] = $member->link($member->url(TRUE), FALSE, TRUE);
-    if ($member->fullName()) {
-      $details['Full name'] = $member->fullName();
-    }
-    if ($member->age()) {
-      $details['Age'] = $member->age();
-    }
-    if ($member->gender()) {
-      $details['Gender'] = $member->gender(TRUE);
-    }
-    if (array_filter($member->location())) {
-      $details['Location'] = $member->locationStr(TRUE);
-    }
+    // Create message:
+    $message = self::renderMemberDetails($member, "Member details");
 
-    // Check if it's a new member of a group, or of the site:
-    $new_member_of = $group ? 'group' : 'site';
-
-    if ($new_member_of == 'site') {
+    if (!$group) {
+      // New member of the site:
       $subject = "New member of moonmars.com";
-      $summary = "<p>moonmars.com has a new member!</p>";
+      $summary = "moonmars.com has a new member!";
     }
     else {
+      // New member of a group:
       $group_name = $group->title();
       $subject = "New member of the $group_name group";
-      $summary = "<p>The <strong>$group_name</strong> group on moonmars.com has a new member!</p>";
+      $summary = "The <strong>$group_name</strong> group on moonmars.com has a new member!";
 
       // Additional group details:
-      $details = array_merge($details, self::groupDetails($group));
+      $message .= self::renderGroupDetails($group, "Group details");
     }
 
     return array(
       'subject' => $subject,
       'summary' => $summary,
-      'message' => self::renderDetails($details),
+      'message' => $message,
     );
   }
 
@@ -259,20 +307,16 @@ class Nxn {
     $summary = "moonmars.com has a new group!";
 
     // Details:
-    $details = self::groupDetails($group);
+    $message = self::renderGroupDetails($group, "Group details");
 
     // Additional details for subgroups:
     if ($parent_group) {
-      $summary .= " This is a subgroup of " . $parent_group->link(NULL, TRUE) . ".</p>";
-      $details['Parent group name'] = $parent_group->link(NULL, TRUE);
-      $details['Parent group page'] = $parent_group->link($parent_group->url(TRUE), TRUE);
+      $summary .= " This is a subgroup of " . $parent_group->link(NULL, TRUE) . ".";
+      $message .= self::renderGroupDetails($parent_group, "Parent group details");
     }
 
-    // Get HTML for details:
-    $message = self::renderDetails($details);
+    // Add a convenient "join group" link:
     $message .= "<p><strong>" . l("Join the $group_name group", $group->url(TRUE) . '/join') . "</strong></p>";
-
-    $summary = "<p>$summary</p>";
 
     return array(
       'subject' => $subject,
@@ -325,7 +369,7 @@ class Nxn {
     $summary = $poster->link() . " posted a new $item_link in " . $parent_entity->link($channel_name) . ".";
 
     // Add the mention part of the message:
-    if ($item->textScan()->mentions($this->recipient_uid)) {
+    if ($item->textScan()->mentions($this->recipient)) {
       $summary .= " You were mentioned in the $item_link.";
     }
 
@@ -338,7 +382,7 @@ class Nxn {
 
     return array(
       'subject' => $subject,
-      'summary' => "<p>$summary</p>",
+      'summary' => $summary,
       'message' => $message,
     );
   }
@@ -352,6 +396,36 @@ class Nxn {
 //      'summary' => $summary,
 //      'message' => $message,
 //    );
+  }
+
+  /**
+   * Generate text for a new-follower nxn.
+   */
+  public function newFollowerEmail() {
+    // Get the actors:
+    $follower = $this->triumph()->actor('follower');
+    $followee = $this->triumph()->actor('followee');
+
+    if (Member::equals($followee, $this->recipient)) {
+      $followee_name = "you";
+      // If the followee is receiving the nxn they they'll be interested in the follower's details:
+      $message = self::renderMemberDetails($follower, "Follower details");
+    }
+    else {
+      $followee_name = $followee->name();
+      // If someone is receiving a nxn about their followee following someone, then they'll be interested in the
+      // followee's details:
+      $message = self::renderMemberDetails($followee, "Followee details");
+    }
+
+    $subject = $follower->name() . " is now following $followee_name";
+    $summary = $follower->link() . " is now following " . $followee->link($followee_name) . ".";
+
+    return array(
+      'subject' => $subject,
+      'summary' => $summary,
+      'message' => $message,
+    );
   }
 
   /**
@@ -370,7 +444,7 @@ class Nxn {
     $email = $this->$fn();
 
     // Add the mandatory unsubscribe message:
-    $email['unsubscribe'] = "<p>" . l("Update your notification preferences or unsubscribe from all emails.", $this->recipient->alias() . '/notifications/preferences') . "</p>";
+    $email['message'] .= "<p style='font-size: 10px; color: #777;'>" . l("Update your notification preferences or unsubscribe from all emails", $this->recipient->alias() . '/notifications/preferences') . "</p>";
 
     return $email;
   }

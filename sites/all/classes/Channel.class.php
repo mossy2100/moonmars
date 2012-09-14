@@ -565,4 +565,16 @@ class Channel extends MoonMarsNode {
     return $html;
   }
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // News
+
+  /**
+   * Check if this is the Site News channel.
+   *
+   * @return bool
+   */
+  public function isNewsChannel() {
+    return $this->nid() == MOONMARS_NEWS_CHANNEL_NID;
+  }
+
 }

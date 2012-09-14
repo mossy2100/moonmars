@@ -61,7 +61,7 @@ class Triumph {
    * Recipients of nxns about this triumph.
    * Keys are uids. Values are Member objects.
    *
-   * @var array
+   * @var MemberSet
    */
   protected $recipients;
 
@@ -95,7 +95,7 @@ class Triumph {
       $this->dtCreated    = new StarDateTime();
       $this->nxnsCreated  = FALSE;
       $this->actors       = array();
-      $this->recipients   = array();
+      $this->recipients   = NULL;
     }
     elseif ($param instanceof stdClass) {
       // Assume this is a database record:
@@ -293,19 +293,9 @@ class Triumph {
   // Recipients
 
   /**
-   * Add a nxn recipient.
-   *
-   * @param Member $member
-   * @return Triumph
-   */
-  public function addRecipient(Member $member) {
-    // By using the member uid as the key, we prevent duplicates.
-    $this->recipients[$member->uid()] = $member;
-    return $this;
-  }
-
-  /**
    * Get the nxn recipients for this triumph.
+   *
+   * @return MemberSet
    */
   protected function recipients() {
     // Check if we already did this:
@@ -331,11 +321,15 @@ class Triumph {
     $parent_entity = $channel ? $channel->parentEntity() : NULL;
 
     // Initialise recipients array:
-    $this->recipients = array();
+    $this->recipients = new MemberSet();
 
     // Scan through our nxn definitions looking for matching triumph types:
     $definitions = moonmars_nxn_definitions();
+
+    // Go through each nxn category:
     foreach ($definitions as $nxn_category => $nxn_category_info) {
+
+      // Go through each triumph type, acting on matches:
       foreach ($nxn_category_info['triumph types'] as $triumph_type => $triumph_type_info) {
 
         // Check if the triumph type matches:
@@ -343,119 +337,187 @@ class Triumph {
           continue;
         }
 
-        // Default to no recipient candidates:
-        $candidates = NULL;
+        // Initialise set of recipient candidates:
+        $candidates = new MemberSet();
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // FILTER: Which members may want to be notified about this triumph? These are $candidates.
+        // Step 1.
+        // Find which members MAY want to be notified about this triumph? These are stored in $candidates.
         // This logic spares us from checking every single member of the site, saving time before we check conditions.
-
         switch ($nxn_category) {
           case 'site':
             switch ($this->triumphType) {
               case 'new-member':
-                // Only if the member is joining the site, not a group:
+                // Only add recipients if the member is joining the site, not a group:
                 if (!$this->actor('group')) {
-                  $candidates = Nxn::mayWant($nxn_category, $this->triumphType);
+                  $candidates->add(Nxn::mayWant($nxn_category, $this->triumphType));
                 }
                 break;
 
               case 'new-group':
               case 'new-item':
               case 'new-comment':
-                $candidates = Nxn::mayWant($nxn_category, $this->triumphType);
+                $candidates->add(Nxn::mayWant($nxn_category, $this->triumphType));
                 break;
 
               case 'new-follower':
-                $candidates = array($this->actor('followee'));
+                $candidates->add($this->actor('followee'));
                 break;
-            }
-
+            } // switch triumph type
             break;
 
           case 'news':
-            // If something was posted in the News channel, lookup who may wants News notifications.
-            if ($channel && $channel->nid() == MOONMARS_NEWS_CHANNEL_NID) {
-              $candidates = Nxn::mayWant($nxn_category, $this->triumphType);
+            // If something was posted in the News channel, lookup who may want News notifications.
+            // Note that $channel will be NULL unless this is a new-item or new-comment.
+            if ($channel && $channel->isNewsChannel()) {
+              $candidates->add(Nxn::mayWant($nxn_category, $this->triumphType));
             }
             break;
 
           case 'channel':
             // The only member to consider is the one whose channel the item or comment is being posted in.
+            // Note that $parent_entity will be NULL unless this is a new-item or new-comment.
             if ($parent_entity && $parent_entity instanceof Member) {
-              $candidates = array($parent_entity);
+              $candidates->add($parent_entity);
             }
             break;
 
           case 'followee':
+            // Get the member whose followers may want to be notified.
+            $followee = NULL;
+
             switch ($this->triumphType) {
               case 'new-item':
+                // The member who posted the new item:
                 $followee = $this->actor('item')->creator();
                 break;
 
               case 'new-comment':
+                // The member who posted the new comment:
                 $followee = $this->actor('comment')->creator();
                 break;
 
-              case 'new-member':
-                // Only if the member is joining a group, not the site:
-                $followee = $this->actor('group') ? $this->actor('member') : NULL;
+              case 'new-follower':
+                // The member who followed someone:
+                $followee = $this->actor('follower');
                 break;
 
-              case 'update-member':
+              case 'new-member':
+                // The member who joined the group or site:
+                // (Although a member joining the site will not have any followers yet.)
                 $followee = $this->actor('member');
                 break;
 
-              default:
-                $followee = NULL;
+              case 'update-member':
+                // The member whose profile was updated:
+                $followee = $this->actor('member');
+                break;
             }
+
+            // Add the member's followers:
             if ($followee) {
-              $candidates = $followee->followers();
+              $candidates->add($followee->followers());
             }
             break;
 
           case 'group':
+            // Get the group that the triumph has occurred in or to.
+            $group = NULL;
+
             switch ($this->triumphType) {
+              case 'new-member':
+                // The group with the new member.
+                $group = $this->actor('group');
+                break;
+
+              case 'new-group':
+                // The group with the new subgroup.
+                // Note: if the new group is not a subgroup then $this->actor('parent group') will be NULL, which is OK.
+                $group = $this->actor('parent group');
+                break;
+
               case 'new-item':
               case 'new-comment':
+                // If a new item or comment is posted in a group channel, the group:
                 if ($parent_entity && $parent_entity instanceof Group) {
                   $group = $parent_entity;
                 }
                 break;
 
-              case 'new-group':
-                // Note: if the new group is not a subgroup then $group will be NULL, which is OK.
-                $group = $this->actor('parent group');
-                break;
-
-              case 'new-member':
               case 'update-group':
+                // The group being updated.
                 // Note: if the triumph type is 'new-member', but the member is joining the site, not a group, then
                 // $group will be NULL, which is OK.
                 $group = $this->actor('group');
                 break;
+            } // switch
 
-              default:
-                $group = NULL;
-            }
+            // Add the group members:
             if ($group) {
-              $candidates = $group->members();
+              $candidates->add($group->members());
             }
             break;
         } // switch nxn_category
 
-        // If we didn't find any nxn recipient candidates yet, continue:
-        if (!$candidates) {
+        // If we didn't find any recipient candidates, continue:
+        if (!$candidates->count()) {
           continue;
         }
 
-        // Now check who really does want a nxn, based on their preferences:
-        foreach ($candidates as $member) {
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Step 2.
+        // Remove the member responsible for the triumph from the recipient candidates, since they already know.
+        switch ($this->triumphType) {
+          case 'new-member':
+            // No need to notify the new member:
+            $candidates->remove($this->actor('member'));
+            break;
+
+          case 'new-group':
+            // No need to notify the group creator:
+            $candidates->remove($this->actor('group')->creator());
+            break;
+
+          case 'new-item':
+            // No need to notify the poster of the item:
+            $candidates->remove($this->actor('item')->creator());
+            break;
+
+          case 'new-comment':
+            // No need to notify the poster of the comment:
+            $candidates->remove($this->actor('comment')->creator());
+            break;
+
+          case 'new-follower':
+            // No need to notify the follower:
+            $candidates->remove($this->actor('follower'));
+            break;
+
+          case 'update-member':
+            // No need to notify the updater (usually this is the member whose profile has been updated):
+            $candidates->remove($this->actor('updater'));
+            break;
+
+          case 'update-group':
+            // No need to notify the updater (this will be a group or site admin):
+            $candidates->remove($this->actor('updater'));
+            break;
+        }
+
+        // If there aren't any candidates left, continue:
+        if (!$candidates->count()) {
+          continue;
+        }
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Step 3.
+        // Check who really does want a nxn, based on their preferences.
+        foreach ($candidates->members() as $member) {
+
           // Get the member's preferences for this type of triumph in this nxn category.
           $nxn_prefs = $member->nxnPref($nxn_category, $this->triumphType);
 
           switch ($nxn_prefs['wants']) {
-
             case MOONMARS_NXN_NO:
               // Do not add member to recipients.
               // This case block is just here for completeness and readability.
@@ -463,7 +525,7 @@ class Triumph {
 
             case MOONMARS_NXN_YES:
               // Add them to the recipients:
-              $this->addRecipient($member);
+              $this->recipients->add($member);
               break;
 
             case MOONMARS_NXN_SOME:
@@ -475,7 +537,7 @@ class Triumph {
                     // Applies to triumph types: new-member
                     // Notify the member of the new member is from the same country as them.
                     if ($this->actor('member')->countryCode() == $member->countryCode()) {
-                      $this->addRecipient($member);
+                      $this->recipients->add($member);
                     }
                     break;
 
@@ -483,17 +545,18 @@ class Triumph {
                   case 'project':
                     // Applies to triumph types: new-group
                     // Notify the member if the group type matches.
-                    // Could be extended to all group types.
+                    // Could perhaps be extended to all group types, not just events and projects.
                     if ($this->actor('group')->groupType() == $nxn_condition) {
-                      $this->addRecipient($member);
+                      $this->recipients->add($member);
                     }
                     break;
 
                   case 'mention':
-                    // Applies to triumph types: new-item, new-comment
+                    // Applies to triumph types: new-item, new-comment.
+                    // Get the actor role 'item' or 'comment':
                     $actor_role = substr($this->triumphType, 4);
-                    if ($this->actors[$actor_role]->textScan()->mentions($member)) {
-                      $this->addRecipient($member);
+                    if ($this->actor($actor_role)->textScan()->mentions($member)) {
+                      $this->recipients->add($member);
                     }
                     break;
 
@@ -502,16 +565,15 @@ class Triumph {
                     // @todo
       //              $actor_role = substr($this->triumphType, 4);
                     //        if ($this->actors[$actor_role]->matchesMemberTopics($member)) {
-                    //         $this->addRecipient($member);
+                    //         $this->recipients->add($member);
                     //        }
                     break;
 
                   case 'item':
                     // Applies to triumph types: new-comment
-                    // Applies to new comments.
                     // Notify the member if the comment is on an item they posted:
-                    if ($this->actor('comment')->item()->uid() == $member->uid()) {
-                      $this->addRecipient($member);
+                    if (Member::equals($member, $this->actor('comment')->item()->creator())) {
+                      $this->recipients->add($member);
                     }
                     break;
 
@@ -519,7 +581,7 @@ class Triumph {
                     // Applies to triumph types: new-comment
                     // Notify the member if the comment is on an item they've commented on:
                     if ($member->commentedOn($this->actor('comment')->item())) {
-                      $this->addRecipient($member);
+                      $this->recipients->add($member);
                     }
                     break;
 
@@ -546,7 +608,7 @@ class Triumph {
    */
   public function createNxns() {
     $n = 0;
-    foreach ($this->recipients() as $recipient) {
+    foreach ($this->recipients()->members() as $recipient) {
       $nxn = new Nxn($this, $recipient);
       $nxn->save();
       $n++;
@@ -685,22 +747,24 @@ class Triumph {
    * @static
    * @param Member $member
    */
-  public static function updateMember(Member $member) {
+  public static function updateMember(Member $member, Member $updater) {
     $triumph = new Triumph('update-member');
     $triumph->addActor('member', $member);
+    $triumph->addActor('updater', $updater);
     $triumph->save();
     return $triumph;
   }
-  
+
   /**
    * Create an update-group triumph.
    *
    * @static
    * @param Group $group
    */
-  public static function updateGroup(Group $group) {
+  public static function updateGroup(Group $group, Member $updater) {
     $triumph = new Triumph('update-group');
     $triumph->addActor('group', $group);
+    $triumph->addActor('updater', $updater);
     $triumph->save();
     return $triumph;
   }

@@ -38,10 +38,16 @@ function moonmars_nxn_menu() {
 function moonmars_nxn_mail($key, &$message, $params) {
   switch ($key) {
     case 'nxn':
+      // The subject is plain text:
       $message['subject'] = $params['subject'];
-      $message['body'][] = $params['summary'];
+
+      // Wrap the summary in a <p> tag for the email:
+      $message['body'][] = "<p>{$params['summary']}</p>";
+
+      // The message is already HTML because it only appears in the email:
       $message['body'][] = $params['message'];
-      $message['body'][] = $params['unsubscribe'];
+
+      // Send HTML email:
       $message['headers']['Content-Type'] = "text/html; charset='utf-8';";
       break;
   }
@@ -210,6 +216,12 @@ function moonmars_nxn_definitions() {
           'description' => "Do you want to be notified when they create a new page?",
           'default'     => MOONMARS_NXN_YES,
           'enabled'     => FALSE,
+        ),
+        'new-follower' => array(
+          'title'       => 'Follows someone',
+          'description' => "Do you want to be notified when they follow someone?",
+          'default'     => MOONMARS_NXN_YES,
+          'enabled'     => TRUE,
         ),
         'new-member' => array(
           'title'       => 'Joined group',

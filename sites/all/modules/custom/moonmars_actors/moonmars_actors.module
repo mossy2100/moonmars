@@ -146,25 +146,17 @@ function moonmars_actors_valid_code($name) {
 // Functions and hooks for saving members and groups
 
 /**
- * Common code for inserting or updating members and groups.
+ * Common code for resetting aliases when saving members and groups.
  *
- * @param $entity
- * @param $entity_type
+ * @param EntityBase $actor
  */
-function moonmars_actors_entity_save($entity, $entity_type) {
-  // Do stuff for members and groups:
-  if ($entity_type == 'user' || ($entity_type == 'node' && $entity->type == 'group')) {
+function moonmars_actors_reset_aliases($actor) {
+  // Update the alias for the actor:
+  $actor->resetAlias();
 
-    // Get the actor:
-    $actor = moonmars_actors_get_actor($entity_type, $entity);
-
-    // Update the alias for the actor:
-    $actor->resetAlias();
-
-    // Update the alias and title for the actor's channel:
-    $channel = $actor->channel();
-    $channel->resetAliasAndTitle();
-  }
+  // Update the alias and title for the actor's channel:
+  $channel = $actor->channel();
+  $channel->resetAliasAndTitle();
 }
 
 /**
@@ -174,7 +166,23 @@ function moonmars_actors_entity_save($entity, $entity_type) {
  * pathauto_node_insert_alias() sets the alias according to the pattern. hook_node_insert() is called before.
  */
 function moonmars_actors_entity_insert($entity, $entity_type) {
-  moonmars_actors_entity_save($entity, $entity_type);
+  // Check if it's a member or group:
+  if ($entity_type == 'user' || ($entity_type == 'node' && $entity->type == 'group')) {
+
+    // Get the actor:
+    $actor = moonmars_actors_get_actor($entity_type, $entity);
+
+    // Create triumphs:
+    if ($actor instanceof Member) {
+      Triumph::newMember($actor);
+    }
+    elseif ($actor instanceof Group) {
+      Triumph::newGroup($actor);
+    }
+
+    // Update the actor alias and channel alias and title:
+    moonmars_actors_reset_aliases($actor);
+  }
 }
 
 /**
@@ -184,7 +192,24 @@ function moonmars_actors_entity_insert($entity, $entity_type) {
  * pathauto_node_update_alias() sets the alias according to the pattern. hook_node_update() is called before.
  */
 function moonmars_actors_entity_update($entity, $entity_type) {
-  moonmars_actors_entity_save($entity, $entity_type);
+  // Check if it's a member or group:
+  if ($entity_type == 'user' || ($entity_type == 'node' && $entity->type == 'group')) {
+
+    // Get the actor:
+    $actor = moonmars_actors_get_actor($entity_type, $entity);
+
+    // Create triumphs:
+    $current_member = Member::currentMember();
+    if ($actor instanceof Member) {
+      Triumph::updateMember($actor, $current_member);
+    }
+    elseif ($actor instanceof Group) {
+      Triumph::updateGroup($actor, $current_member);
+    }
+
+    // Update the actor alias and channel alias and title:
+    moonmars_actors_reset_aliases($actor);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

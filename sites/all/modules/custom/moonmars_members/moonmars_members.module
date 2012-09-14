@@ -732,7 +732,6 @@ function moonmars_members_activity_redirect() {
  * Implements hook_user_insert().
  */
 function moonmars_members_user_insert(&$edit, $account, $category) {
-  dpm($account, "moonmars_members_user_insert");
   $member = Member::create($account);
   Triumph::newMember($member);
 }
