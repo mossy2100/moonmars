@@ -61,7 +61,7 @@ class Triumph {
    * Recipients of nxns about this triumph.
    * Keys are uids. Values are Member objects.
    *
-   * @var MemberSet
+   * @var EntitySet
    */
   protected $recipients;
 
@@ -295,7 +295,7 @@ class Triumph {
   /**
    * Get the nxn recipients for this triumph.
    *
-   * @return MemberSet
+   * @return EntitySet
    */
   protected function recipients() {
     // Check if we already did this:
@@ -321,7 +321,7 @@ class Triumph {
     $parent_entity = $channel ? $channel->parentEntity() : NULL;
 
     // Initialise recipients array:
-    $this->recipients = new MemberSet();
+    $this->recipients = new EntitySet();
 
     // Scan through our nxn definitions looking for matching triumph types:
     $definitions = moonmars_nxn_definitions();
@@ -338,7 +338,7 @@ class Triumph {
         }
 
         // Initialise set of recipient candidates:
-        $candidates = new MemberSet();
+        $candidates = new EntitySet();
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Step 1.
@@ -512,7 +512,7 @@ class Triumph {
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Step 3.
         // Check who really does want a nxn, based on their preferences.
-        foreach ($candidates->members() as $member) {
+        foreach ($candidates->entities() as $member) {
 
           // Get the member's preferences for this type of triumph in this nxn category.
           $nxn_prefs = $member->nxnPref($nxn_category, $this->triumphType);
@@ -608,7 +608,7 @@ class Triumph {
    */
   public function createNxns() {
     $n = 0;
-    foreach ($this->recipients()->members() as $recipient) {
+    foreach ($this->recipients()->entities() as $recipient) {
       $nxn = new Nxn($this, $recipient);
       $nxn->save();
       $n++;

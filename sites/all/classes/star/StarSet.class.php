@@ -1,15 +1,15 @@
 <?php
 /**
- * Set class. Emulates sets, i.e. unordered collections with no duplicates.
+ * StarSet class. Emulates sets, i.e. unordered collections with no duplicates.
  */
-class Set {
+class StarSet {
 
   /**
    * Items in the set.
    *
    * @var array
    */
-  private $items;
+  protected $items;
 
   /**
    * Constructor.
@@ -18,7 +18,6 @@ class Set {
   public function __construct(array $arr = array()) {
     $this->items = array_values(array_unique($arr));
   }
-
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Standard set operations. Instance methods.
@@ -46,10 +45,10 @@ class Set {
    * Add an item to the set.
    *
    * @param mixed $item
-   * @return Set
+   * @return StarSet
    */
   public function add($item) {
-    if (!in_array($item, $this->items)) {
+    if (!in_array($item, $this->items, TRUE)) {
       $this->items[] = $item;
     }
     return $this;
@@ -59,13 +58,12 @@ class Set {
    * Remove an item from the set.
    *
    * @param mixed $item
-   * @return Set
+   * @return StarSet
    */
   public function remove($item) {
     $this->items = array_values(array_diff($this->items, array($item)));
     return $this;
   }
-
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Standard set operations. Class methods.
@@ -73,43 +71,43 @@ class Set {
   /**
    * Union of two sets.
    *
-   * @param Set $set1
-   * @param Set $set2
-   * @return Set
+   * @param StarSet $set1
+   * @param StarSet $set2
+   * @return StarSet
    */
-  public static function union(Set $set1, Set $set2) {
-    return new Set(array_merge($set1->items, $set2->items));
+  public static function union(StarSet $set1, StarSet $set2) {
+    return new StarSet(array_merge($set1->items, $set2->items));
   }
 
   /**
    * Difference between two sets.
    *
-   * @param Set $set1
-   * @param Set $set2
-   * @return Set
+   * @param StarSet $set1
+   * @param StarSet $set2
+   * @return StarSet
    */
-  public static function diff(Set $set1, Set $set2) {
-    return new Set(array_diff($set1->items, $set2->items));
+  public static function diff(StarSet $set1, StarSet $set2) {
+    return new StarSet(array_diff($set1->items, $set2->items));
   }
 
   /**
    * Intersection between two sets.
    *
-   * @param Set $set1
-   * @param Set $set2
-   * @return Set
+   * @param StarSet $set1
+   * @param StarSet $set2
+   * @return StarSet
    */
-  public static function intersect(Set $set1, Set $set2) {
-    return new Set(array_intersect($set1->items, $set2->items));
+  public static function intersect(StarSet $set1, StarSet $set2) {
+    return new StarSet(array_intersect($set1->items, $set2->items));
   }
 
   /**
    * Checks if 2 sets are equal.
    *
-   * @param Set $set2
-   * @return Set
+   * @param StarSet $set2
+   * @return StarSet
    */
-  public function equal(Set $set2) {
+  public function equal(StarSet $set2) {
     return ($this->count() == $set2->count()) && $this->subset($set2);
   }
 
@@ -120,10 +118,10 @@ class Set {
   /**
    * Checks if a set is a subset of another set.
    *
-   * @param Set $set2
-   * @return Set
+   * @param StarSet $set2
+   * @return StarSet
    */
-  public function subset(Set $set2) {
+  public function subset(StarSet $set2) {
     foreach ($this->items as $item) {
       if (!$set2->in($item)) {
         return FALSE;
@@ -135,33 +133,32 @@ class Set {
   /**
    * Checks if a set is a proper subset of another set.
    *
-   * @param Set $set2
-   * @return Set
+   * @param StarSet $set2
+   * @return StarSet
    */
-  public function properSubset(Set $set2) {
+  public function properSubset(StarSet $set2) {
     return ($this->count() < $set2->count()) && $this->subset($set2);
   }
 
   /**
    * Checks if a set is a superset of another set.
    *
-   * @param Set $set2
-   * @return Set
+   * @param StarSet $set2
+   * @return StarSet
    */
-  public function superset(Set $set2) {
+  public function superset(StarSet $set2) {
     return $set2->subset($this);
   }
 
   /**
    * Checks if a set is a proper superset of another set.
    *
-   * @param Set $set2
-   * @return Set
+   * @param StarSet $set2
+   * @return StarSet
    */
-  public function properSuperset(Set $set2) {
+  public function properSuperset(StarSet $set2) {
     return $set2->properSubset($this);
   }
-
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Conversion methods.
@@ -169,18 +166,41 @@ class Set {
   /**
    * Convert set to a string.
    *
+   * @todo needs improvement such as quotes around string values.
+   *  Could perhaps use code from object_to_string() or array_to_string()
+   *
+   * @return string
+   */
+  function toString($glue = ', ', $left_bracket = '{', $right_bracket = '}') {
+    return $left_bracket . implode($glue, $this->items) . $right_bracket;
+  }
+
+  /**
+   * Magic method providing default behaviour for converting a set to a string.
+   *
    * @return string
    */
   function __toString() {
-    return implode(',', $this->items);
+    return $this->toString();
+  }
+
+  /**
+   * Get the items.
+   *
+   * @return array
+   */
+  function items() {
+    return $this->items;
   }
 
   /**
    * Convert set to an array.
+   * (Alias for items())
    *
    * @return array
    */
   function toArray() {
     return $this->items;
   }
+
 }
