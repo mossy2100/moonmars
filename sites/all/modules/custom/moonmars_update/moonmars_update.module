@@ -162,30 +162,32 @@ function moonmars_update_fix_aliases() {
 function moonmars_update_remove_subscriber_relationships() {
   // Convert all has_subscriber relationships to has_member and follows relationships:
   $rels = MoonMarsRelation::searchBinary('has_subscriber');
-  foreach ($rels as $rel) {
 
+  foreach ($rels as $rel) {
     // Get the endpoints as objects:
     $channel = $rel->endpoint(0);
     $member = $rel->endpoint(1);
 
-    dbg("Channel " . $channel->title() . " has subscriber " . $member->name());
+    if ($channel) {
+      dbg("Channel " . $channel->title() . " has subscriber " . $member->name());
 
-    $parent_entity = $channel->parentEntity();
+      $parent_entity = $channel->parentEntity();
 
-    if ($parent_entity instanceof Member) {
-      // Follows:
-      dbg("Creating/updating relationship: Member " . $member->name() . " follows " . $parent_entity->name());
-      Relation::updateBinary('follows', $member, $parent_entity);
-    }
-    else {
-      // Member of a group:
-      dbg("Creating/updating relationship: Group " . $parent_entity->title() . " has member " . $member->name());
-      Relation::updateBinary('has_member', $parent_entity, $member);
+      if ($parent_entity instanceof Member) {
+        // Follows:
+        dbg("Creating/updating relationship: Member " . $member->name() . " follows " . $parent_entity->name());
+        Relation::updateBinary('follows', $member, $parent_entity);
+      }
+      elseif ($parent_entity instanceof Group) {
+        // Member of a group:
+        dbg("Creating/updating relationship: Group " . $parent_entity->title() . " has member " . $member->name());
+        Relation::updateBinary('has_member', $parent_entity, $member);
+      }
     }
   }
 
   // Delete all the has_subscriber relationships:
-//  Relation::deleteBinary('has_subscriber');
+  Relation::deleteBinary('has_subscriber');
 }
 
 /**
@@ -381,5 +383,35 @@ function moonmars_update_set_default_group_tags() {
       $group->save();
     }
     echo "<hr>";
+  }
+}
+
+/**
+ * Delete any relations with invalid endpoints.
+ */
+function moonmars_update_clean_up_relationships() {
+  $q = db_select('relation', 'r')
+    ->fields('r', array('rid'));
+  $rs = $q->execute();
+  foreach ($rs as $rec) {
+    $delete = FALSE;
+    $rel = relation_load($rec->rid);
+    dbg($rel->endpoints);
+    if (!$rel->endpoints || !$rel->endpoints[LANGUAGE_NONE]) {
+      dbg("No endpoints, delete relation $rec->rid");
+      $delete = TRUE;
+    }
+    else {
+      foreach ($rel->endpoints[LANGUAGE_NONE] as $endpoint) {
+        $entity = entity_load_single($endpoint['entity_type'], $endpoint['entity_id']);
+        if (!$entity) {
+          dbg("Entity {$endpoint['entity_type']}:{$endpoint['entity_id']} not found, delete relation $rec->rid");
+          $delete = TRUE;
+        }
+      }
+    }
+    if ($delete) {
+      relation_delete($rec->rid);
+    }
   }
 }

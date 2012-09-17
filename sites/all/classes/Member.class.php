@@ -62,6 +62,13 @@ class Member extends User {
   protected $nxnPrefs;
 
   /**
+   * Gender options.
+   *
+   * @var array
+   */
+  protected static $genders;
+
+  /**
    * Constructor.
    */
   protected function __construct() {
@@ -143,6 +150,25 @@ class Member extends User {
   }
 
   /**
+   * Get the genders.
+   *
+   * @static
+   * @return array
+   */
+  public static function genders() {
+    if (!isset(self::$genders)) {
+      $rec = db_select('field_config', 'fc')
+        ->fields('fc', array('data'))
+        ->condition('field_name', 'field_gender')
+        ->execute()
+        ->fetch();
+      $data = unserialize($rec->data);
+      self::$genders = $data['settings']['allowed_values'];
+    }
+    return self::$genders;
+  }
+
+  /**
    * Get the user's gender.
    *
    * @param bool $full
@@ -151,10 +177,13 @@ class Member extends User {
    */
   public function gender($full = FALSE) {
     $gender = $this->field('field_gender');
-    if ($gender) {
-      return $full ? (($gender == 'M') ? 'Male' : 'Female') : $gender;
+    if ($gender && $full) {
+      $genders = self::genders();
+      if (isset($genders[$gender])) {
+        return $genders[$gender];
+      }
     }
-    return NULL;
+    return $gender;
   }
 
   /**
@@ -196,7 +225,6 @@ class Member extends User {
         // Check the file exists:
         $path = drupal_realpath($this->entity->picture->uri);
         if (file_exists($path)) {
-
           // Render the icon:
           $image = array(
             'style_name' => 'icon-40x40',
@@ -205,7 +233,6 @@ class Member extends User {
             'attributes' => array('class' => array('avatar-icon')),
           );
           $html = theme('image_style', $image);
-
         }
       }
 
@@ -1071,11 +1098,11 @@ class Member extends User {
       // A member can post in their own channel, or in the channel of someone who follows them:
 //      return self::equals($parent_entity, $this) || $parent_entity->follows($this);
     }
-    else if ($parent_entity instanceof Group) {
-      // No-one can post items in the News channel.
+    elseif ($parent_entity instanceof Group) {
+      // Only administrators can post items in the News channel.
       // @todo This should be controlled by group permission settings.
       if ($channel->nid() == MOONMARS_NEWS_CHANNEL_NID) {
-        return FALSE;
+        return $this->hasRole('administrator') || $this->hasRole('site administrator');
       }
 
       // Only members of the group can post in the group's channel:

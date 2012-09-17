@@ -45,7 +45,7 @@ class Channel extends MoonMarsNode {
       ->condition('type', 'channel')
       ->execute()
       ->fetch();
-    return $rec ? self::create($rec->nid) : FALSE;
+    return $rec ? new self($rec->nid) : FALSE;
   }
 
   /**

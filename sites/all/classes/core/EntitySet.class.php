@@ -3,9 +3,25 @@
  * User: shaun
  * Date: 2012-09-14
  * Time: 12:08 PM
- * To change this template use File | Settings | File Templates.
  */
-class EntitySet extends StarSet {
+class EntitySet {
+
+  /**
+   * Array of entities.
+   *
+   * @var array
+   */
+  protected $entities;
+
+  /**
+   * Add an entity to the set.
+   *
+   * @param EntityBase $entity
+   */
+  public function addSingle(EntityBase $entity) {
+    // By using the entity path as the array key, we prevent duplicates.
+    $this->items[$entity->path()] = $entity;
+  }
 
   /**
    * Add entities to the set.
@@ -13,40 +29,22 @@ class EntitySet extends StarSet {
    * @param array $entities
    */
   public function addMultiple(array $entities) {
-    // Add each entity in the array:
     foreach ($entities as $entity) {
-      if (!$entity instanceof EntityBase) {
-        trigger_error("EntitySet::addMultiple() - Items to add must be EntityBase objects.", E_USER_WARNING);
-      }
-      // By using the entity type and id as the key, we prevent duplicates.
-      $key = $entity->entityType() . ':' . $entity->id();
-      $this->items[$key] = $entity;
+      $this->addSingle($entity);
     }
   }
 
   /**
-   * Add an entity to the set.
+   * Add one or more entities to the set.
    *
-   * @param EntityBase $entity
+   * @param array|EntityBase $entity
    */
-  public function add(EntityBase $entity) {
-    $this->addMultiple(array($entity));
-  }
-
-  /**
-   * Remove entities from the set.
-   *
-   * @param array $entities
-   */
-  public function removeMultiple(array $entities) {
-    // Remove each entity in the array:
-    foreach ($entities as $entity) {
-      if (!$entity instanceof EntityBase) {
-        trigger_error("EntitySet::removeMultiple() - Items to remove must be EntityBase objects.", E_USER_WARNING);
-      }
-      // By using the entity type and id as the key, it's easy to find the entity to remove.
-      $key = $entity->entityType() . ':' . $entity->id();
-      unset($this->entities[$key]);
+  public function add($entities) {
+    if (is_array($entities)) {
+      $this->addMultiple($entities);
+    }
+    else {
+      $this->addSingle($entities);
     }
   }
 
@@ -55,8 +53,34 @@ class EntitySet extends StarSet {
    *
    * @param EntityBase $entity
    */
-  public function remove(EntityBase $entity) {
-    return $this->removeMultiple(array($entity));
+  public function removeSingle(EntityBase $entity) {
+    // By using the entity path as the array key, it's easy to find the entity to remove.
+    unset($this->entities[$entity->path()]);
+  }
+
+  /**
+   * Remove entities from the set.
+   *
+   * @param array $entities
+   */
+  public function removeMultiple(array $entities) {
+    foreach ($entities as $entity) {
+      $this->removeSingle($entity);
+    }
+  }
+
+  /**
+   * Remove one or more entities from the set.
+   *
+   * @param array|EntityBase $entities
+   */
+  public function remove($entities) {
+    if (is_array($entities)) {
+      $this->removeMultiple($entities);
+    }
+    else {
+      $this->removeSingle($entities);
+    }
   }
 
   /**
@@ -65,7 +89,16 @@ class EntitySet extends StarSet {
    * @return array
    */
   public function entities() {
-    return $this->items;
+    return $this->entities;
+  }
+
+  /**
+   * Get the number entities in the set.
+   *
+   * @return int
+   */
+  public function count() {
+    return count($this->entities);
   }
 
 }

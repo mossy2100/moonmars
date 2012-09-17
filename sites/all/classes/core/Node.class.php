@@ -225,8 +225,7 @@ class Node extends EntityBase {
    * @return stdClass
    */
   public function node() {
-    $this->load();
-    return $this->entity;
+    return $this->entity();
   }
 
   /**

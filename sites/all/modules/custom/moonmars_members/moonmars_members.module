@@ -45,24 +45,37 @@ function moonmars_members_menu() {
     'access callback' => 'user_is_logged_in',
     'type' => MENU_NORMAL_ITEM
   );
-  $items['user/%/follow'] = array(
+  $items['member/%/follow'] = array(
     'page callback'    => 'moonmars_members_follow',
     'page arguments'   => array(1),
     'access callback'  => 'user_is_logged_in',
     'type'             => MENU_CALLBACK,
   );
-  $items['user/%/unfollow'] = array(
+  $items['member/%/unfollow'] = array(
     'page callback'    => 'moonmars_members_unfollow',
     'page arguments'   => array(1),
     'access callback'  => 'user_is_logged_in',
     'type'             => MENU_CALLBACK,
   );
-//  $items['user/%/activity'] = array(
-//    'page callback'    => 'moonmars_members_activity',
-//    'page arguments'   => array(1),
-//    'access callback'  => 'user_is_logged_in',
-//    'type'             => MENU_CALLBACK,
-//  );
+
+  // Edit forms:
+  $items['member/%/edit/profile'] = array(
+    'title' => 'Edit Profile',
+    'page callback'   => 'moonmars_members_edit_profile_form',
+    'access callback' => 'moonmars_members_access_private',
+    'type'            => MENU_CALLBACK,
+  );
+  $items['member/%/edit/links'] = array(
+    'title' => 'Edit Links',
+    'page callback'   => 'moonmars_members_edit_links_form',
+    'access callback' => 'moonmars_members_access_private',
+    'type'            => MENU_CALLBACK,
+  );
+  $items['member/%/edit/notifications'] = array(
+    'page callback'   => 'moonmars_members_edit_nxn_prefs_form',
+    'access callback' => 'moonmars_members_access_private',
+    'type'            => MENU_CALLBACK,
+  );
   return $items;
 }
 
@@ -80,6 +93,58 @@ function moonmars_members_menu() {
 //    5 => 'platinum'
 //  );
 //}
+
+/**
+ * Check if the member is trying to access their own page.
+ *
+ * @return bool
+ */
+function moonmars_members_access_private() {
+  $current_member = Member::currentMember();
+  $page_member = moonmars_actors_get_actor_from_url();
+  return Member::equals($current_member, $page_member);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Theming
+
+/**
+ * Implementation of hook_theme().
+ */
+function moonmars_members_theme() {
+  $hooks['moonmars_members_edit_menu'] = array();
+  return $hooks;
+}
+
+/**
+ * Create the member edit menu.
+ */
+function theme_moonmars_members_edit_menu() {
+  $current_member = Member::currentMember();
+  if (!$current_member) {
+    return FALSE;
+  }
+
+  $edit_base = $current_member->alias() . '/edit';
+
+  $tabs = array(
+    "$edit_base/profile"       => 'Profile',
+    "$edit_base/links"         => 'Links',
+    "$edit_base/notifications" => 'Notifications',
+  );
+
+  $html = "<ul id='actor-edit-tabs'>";
+  foreach ($tabs as $url => $label) {
+    $html .= "<li><a href='/$url'";
+    if (current_path() == $url) {
+      $html .= " class='selected'";
+    }
+    $html .= ">$label</a></li>";
+  }
+  $html .= "</ul>";
+
+  return $html;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Forms
@@ -163,12 +228,18 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
       $form['field_user_location']['#weight'] = $weight++;
       $form['rules']['#weight'] = $weight++;
       $form['rules-cb']['#weight'] = $weight++;
-
       break;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // User profile form
     case 'user_profile_form':
+      // Make sure we're at the right URL:
+      $current_member = Member::currentMember();
+      $edit_profile_path = $current_member->editAlias() . '/profile';
+      if (current_path() != $edit_profile_path) {
+        drupal_goto($edit_profile_path);
+      }
+
       // Add JS:
       $form['#attached']['js'][] = "$module_path/js/profile-form.js";
 
@@ -350,6 +421,45 @@ function moonmars_members_user_profile_form_submit($form, &$form_state) {
 
   // Go back to the user's profile:
   $form_state['redirect'] = $member->alias();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Member edit forms
+
+/**
+ * Display form for editing profile.
+ *
+ * @return array
+ */
+function moonmars_members_edit_profile_form() {
+  $member = moonmars_actors_get_actor_from_url();
+  drupal_set_title(t('<em>@username:</em> edit profile', array('@username' => $member->name())), PASS_THROUGH);
+  require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'user') . '/user.pages.inc';
+  return drupal_get_form('user_profile_form', $member->user());
+}
+
+/**
+ * Display form for editing links.
+ *
+ * @return array
+ */
+function moonmars_members_edit_links_form() {
+  $member = moonmars_actors_get_actor_from_url();
+  $channel = $member->channel();
+  drupal_set_title(t('<em>@username:</em> edit links', array('@username' => $member->name())), PASS_THROUGH);
+  require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'node') . '/node.pages.inc';
+  return drupal_get_form('channel_node_form', $channel->node());
+}
+
+/**
+ * Display form for editing nxn prefs.
+ *
+ * @return array
+ */
+function moonmars_members_edit_nxn_prefs_form() {
+  $member = moonmars_actors_get_actor_from_url();
+  drupal_set_title(t('<em>@username:</em> edit notification preferences', array('@username' => $member->name())), PASS_THROUGH);
+  return drupal_get_form('moonmars_nxn_prefs_form');
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -577,10 +687,10 @@ function moonmars_members_menu_block() {
   // Administration links, for if the member is on their own profile page, or for admins.
   if ($own_profile || user_access('administer users', $user)) {
     // Edit profile link:
-    $html .= "<li>" . l('Edit profile', $profile_member->editAlias()) . "</li>";
+    $html .= "<li>" . l('Edit profile', $profile_member->editAlias() . '/profile') . "</li>";
 
     // Edit links:
-    $html .= "<li>" . l('Edit links', $profile_member->channel()->editAlias()) . "</li>";
+//    $html .= "<li>" . l('Edit links', $profile_member->channel()->editAlias()) . "</li>";
   }
 
   $html .= "</ul>";

@@ -189,8 +189,7 @@ class Relation extends EntityBase {
    * @return stdClass
    */
   public function relation() {
-    $this->load();
-    return $this->entity;
+    return $this->entity();
   }
 
   /**

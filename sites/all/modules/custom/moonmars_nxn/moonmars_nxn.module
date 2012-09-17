@@ -12,16 +12,10 @@ const MOONMARS_NXN_SOME = 2;
  */
 function moonmars_nxn_menu() {
   $items = array();
-  $items['user/%/notifications'] = array(
+  $items['member/%/notifications'] = array(
     'page callback'   => 'moonmars_nxn_list',
     'page arguments'  => array(1),
-    'access callback' => 'user_is_logged_in',
-    'type'            => MENU_CALLBACK,
-  );
-  $items['member/%/notifications/preferences'] = array(
-    'page callback'   => 'drupal_get_form',
-    'page arguments'  => array('moonmars_nxn_form', 1),
-    'access callback' => 'user_is_logged_in',
+    'access callback' => 'moonmars_members_access_private',
     'type'            => MENU_CALLBACK,
   );
   $items['service/send-nxns'] = array(
@@ -64,6 +58,7 @@ function moonmars_nxn_definitions() {
     'country' => array(
       'label'   => "Members from the same country as me",
       'default' => TRUE,
+      'enabled' => TRUE,
     ),
   );
 
@@ -71,14 +66,17 @@ function moonmars_nxn_definitions() {
     'event'   => array(
       'label'   => "New events",
       'default' => TRUE,
+      'enabled' => TRUE,
     ),
     'project' => array(
       'label'   => "New projects",
       'default' => TRUE,
+      'enabled' => TRUE,
     ),
     'topic'   => array(
       'label'   => "Groups about a topic I'm interested in",
       'default' => TRUE,
+      'enabled' => FALSE,
     ),
   );
 
@@ -86,10 +84,12 @@ function moonmars_nxn_definitions() {
     'mention' => array(
       'label'   => "Items that mention me",
       'default' => TRUE,
+      'enabled' => TRUE,
     ),
     'topic'   => array(
       'label'   => "Items about a topic I'm interested in",
       'default' => TRUE,
+      'enabled' => FALSE,
     ),
   );
 
@@ -97,18 +97,22 @@ function moonmars_nxn_definitions() {
     'mention' => array(
       'label'   => "Comments that mention me",
       'default' => TRUE,
+      'enabled' => TRUE,
     ),
     'item'    => array(
       'label'   => "Comments on an item I shared",
       'default' => TRUE,
+      'enabled' => TRUE,
     ),
     'comment' => array(
       'label'   => "Comments on an item I also commented on",
       'default' => TRUE,
+      'enabled' => TRUE,
     ),
     'topic'   => array(
       'label'   => "Comments about a topic I'm interested in",
       'default' => TRUE,
+      'enabled' => FALSE,
     ),
   );
 
@@ -330,12 +334,7 @@ function moonmars_nxn_triumph_types() {
  * @return string
  */
 function moonmars_nxn_list($uid) {
-  // Make sure the user is looking at their own notifications and not someone else's.
   $current_member = Member::currentMember();
-  if ($current_member->uid() != $uid) {
-    drupal_access_denied();
-  }
-
   drupal_set_title('Your Notifications');
 
   $html = "
@@ -354,16 +353,8 @@ function moonmars_nxn_list($uid) {
  *
  * @return array
  */
-function moonmars_nxn_form($form, &$form_state, $uid) {
-  // Make sure the user is looking at their own notifications and not someone else's.
+function moonmars_nxn_prefs_form() {
   $current_member = Member::currentMember();
-  $profile_member = Member::create($uid);
-  if (!Member::equals($current_member, $profile_member)) {
-    drupal_access_denied();
-  }
-
-  // Set the title:
-  drupal_set_title("Edit notifications preferences");
 
   // Start building the form:
   $form = array(

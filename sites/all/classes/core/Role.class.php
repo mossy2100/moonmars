@@ -64,7 +64,7 @@ class Role {
    * @param null|string $role_name
    * @return Role
    */
-  public function create($role_param = NULL, $role_name = NULL) {
+  public static function create($role_param = NULL, $role_name = NULL) {
     // If provided with a rid, check the object cache:
     if (is_uint($role_param) && isset(self::$cache[$role_param])) {
       return self::$cache[$role_param];
@@ -96,8 +96,10 @@ class Role {
     }
 
     if ($role) {
-      $this->rid = $role['rid'];
-      $this->name = $role['name'];
+      // Copy the fields:
+      foreach ($role as $key => $value) {
+        $this->$key = $value;
+      }
     }
 
     return $this;

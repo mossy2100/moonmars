@@ -27,11 +27,11 @@ const MOONMARS_ACTOR_CODE_MIN_LENGTH = 3;
 
 /**
  * Define the maximum length for an actor code (i.e. username of group tag).
- * Since usernames are actor codes, we'll just use the Drupal default max length which is USERNAME_MAX_LENGTH (60).
+ * Since usernames are actor codes, we'll just use the Drupal default max length which is 60 (USERNAME_MAX_LENGTH).
  *
  * @var int
  */
-const MOONMARS_ACTOR_CODE_MAX_LENGTH = USERNAME_MAX_LENGTH;
+const MOONMARS_ACTOR_CODE_MAX_LENGTH = 60;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Core hooks
@@ -275,7 +275,7 @@ function moonmars_actors_get_actor($entity_type, $entity) {
 }
 
 /**
- * Get the entity with current focus from the URL.
+ * Get the actor whose page it is, from the current URL.
  *
  * @static
  * @return bool
@@ -312,7 +312,7 @@ function moonmars_actors_get_actor_from_url() {
     return moonmars_actors_get_actor($parts[0], $parts[1]);
   }
 
-  // Not an entity path:
+  // Not an actor path:
   return FALSE;
 }
 

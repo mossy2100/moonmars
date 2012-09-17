@@ -88,6 +88,7 @@ abstract class EntityBase {
    * @return stdClass
    */
   public function entity() {
+    $this->load();
     return $this->entity;
   }
 
@@ -168,7 +169,6 @@ abstract class EntityBase {
       }
 
       return isset($this->entity->{$property}) ? $this->entity->{$property} : NULL;
-
     }
     else {
       // Set a property's value.
@@ -380,7 +380,7 @@ abstract class EntityBase {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Get datetimes
+  // Datetimes
 
   /**
    * Get the created datetime.
@@ -398,6 +398,13 @@ abstract class EntityBase {
    */
   public function changed() {
     return new StarDateTime($this->prop('changed'));
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Conversion
+
+  public function toArray() {
+    return (array) $this;
   }
 
 }

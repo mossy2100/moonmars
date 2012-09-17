@@ -223,7 +223,7 @@ class User extends EntityBase {
    * @return stdClass
    */
   public function user() {
-    return $this->entity;
+    return $this->entity();
   }
 
   /**
