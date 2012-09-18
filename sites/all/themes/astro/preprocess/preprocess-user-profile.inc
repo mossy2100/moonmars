@@ -9,11 +9,11 @@ function astro_alpha_preprocess_user_profile(&$vars) {
   $vars['profile_member'] = $profile_member;
 
   // Get the current member:
-  $current_member = Member::currentMember();
-  $vars['current_member'] = $current_member;
+  $logged_in_member = Member::loggedInMember();
+  $vars['logged_in_member'] = $logged_in_member;
 
   // Is the current member viewing their own profile?
-  $vars['viewing_own_profile'] = $current_member && ($profile_member->uid() == $current_member->uid());
+  $vars['viewing_own_profile'] = $logged_in_member && ($profile_member->uid() == $logged_in_member->uid());
 
   // Get the profile member's channel:
   $channel = $profile_member->channel();

@@ -85,7 +85,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Notifications preferences form
 
-form#moonmars-nxn-form {
+form#moonmars-nxn-prefs-form {
   @include blank-container;
 
   // Set up fieldsets:
@@ -117,6 +117,42 @@ form#moonmars-nxn-form {
   .form-type-checkboxes {
     margin: 0 0 0 20px;
   }
-
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Nxn list
+
+table#table-nxns {
+  padding: 0;
+  border: 0;
+  margin: 0;
+
+  tr {
+    padding: 0;
+    border: 0;
+    margin: 0;
+    border-bottom: solid 1px $grey5;
+
+    td {
+      padding: 5px;
+      border: 0;
+      margin: 0;
+
+      &.nxn-created {
+        color: $grey3;
+        // This width is somewhat arbitrary value less than the minimum width of the datestamp.
+        // In combination with the white-space setting below, it will cause the date column to have the min width
+        // required to contain the date in one line.
+        width: 100px;
+        white-space: nowrap;
+      }
+
+      .nxn-summary {
+      }
+
+      .nxn-preview {
+        color: $red4;
+      }
+    }
+  }
+}

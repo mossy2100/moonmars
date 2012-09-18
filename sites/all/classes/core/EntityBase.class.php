@@ -360,14 +360,28 @@ abstract class EntityBase {
   }
 
   /**
-   * Get the entity's URL.
-   * If $absolute is TRUE, it will begin with the base URL, i.e. http://example.com/alias
-   * If $absolute is FALSE, it will begin with a '/',       i.e. /alias
+   * Get a URL for the entity.
+   * This is not the same as alias(), regardless of the value of $absolute.
+   * If $absolute is TRUE, it will begin with the base URL, i.e. http://example.com/the-alias
+   * If $absolute is FALSE, it will begin with a '/',       i.e. /the-alias
    *
    * @return string
    */
   public function url($absolute = FALSE) {
     return ($absolute ? $GLOBALS['base_url'] : '') . '/' . $this->alias();
+  }
+
+  /**
+   * Get a link to the entity.
+   *
+   * @param null|string $label
+   * @param bool $absolute
+   * @return string
+   */
+  public function link($label = NULL, $absolute = FALSE) {
+    $url = $absolute ? $this->url($absolute) : $this->alias();
+    $label = ($label === NULL) ? $url : $label;
+    return l($label, $url);
   }
 
   /**

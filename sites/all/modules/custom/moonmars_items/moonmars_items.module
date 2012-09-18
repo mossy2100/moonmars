@@ -266,7 +266,7 @@ function moonmars_items_ajax_edit() {
   $text = trim($_REQUEST['text']);
 
   // Get the current member:
-  $current_member = Member::currentMember();
+  $logged_in_member = Member::loggedInMember();
 
   // Begin the data array:
   $data = array(
@@ -275,7 +275,7 @@ function moonmars_items_ajax_edit() {
   );
 
   // Check we have all the necessary params:
-  if (!$item_nid || !$text || !$current_member) {
+  if (!$item_nid || !$text || !$logged_in_member) {
     // Encode result and send:
     $data['result'] = FALSE;
     $data['error'] = 'Invalid parameters';
@@ -287,7 +287,7 @@ function moonmars_items_ajax_edit() {
   $item = Item::create($item_nid);
 
   // Check this member has permission to edit this item:
-  if (!$current_member->canEditItem($item)) {
+  if (!$logged_in_member->canEditItem($item)) {
     // Complete data array, encode and send:
     $data['result'] = FALSE;
     $data['error'] = 'Access denied';
@@ -327,7 +327,7 @@ function moonmars_items_ajax_delete() {
 //  $item_node_page = isset($_REQUEST['item_node_page']) ? ((bool) $_REQUEST['item_node_page']) : FALSE;
 
   // Get the current member:
-  $current_member = Member::currentMember();
+  $logged_in_member = Member::loggedInMember();
 
   // Begin the data array:
   $data = array(
@@ -335,7 +335,7 @@ function moonmars_items_ajax_delete() {
   );
 
   // Check we have all the necessary params:
-  if (!$item_nid || !$current_member) {
+  if (!$item_nid || !$logged_in_member) {
     // Complete data array, encode and send:
     $data['result'] = FALSE;
     $data['error'] = 'Invalid parameters';
@@ -347,7 +347,7 @@ function moonmars_items_ajax_delete() {
   $item = Item::create($item_nid);
 
   // Check this member has permission to delete this item:
-  if (!$current_member->canDeleteItem($item)) {
+  if (!$logged_in_member->canDeleteItem($item)) {
     // Complete data array, encode and send:
     $data['result'] = FALSE;
     $data['error'] = 'Access denied';
@@ -376,7 +376,7 @@ function moonmars_items_ajax_remove() {
   $item_nid = (int) $_REQUEST['item_nid'];
 
   // Get the current member:
-  $current_member = Member::currentMember();
+  $logged_in_member = Member::loggedInMember();
 
   // Get the current channel:
   $current_channel = Channel::currentChannel();
@@ -387,7 +387,7 @@ function moonmars_items_ajax_remove() {
   );
 
   // Check we have all the necessary params:
-  if (!$item_nid || !$current_member) {
+  if (!$item_nid || !$logged_in_member) {
     // Complete data array, encode and send:
     $data['result'] = FALSE;
     $data['error'] = 'Invalid parameters';
@@ -399,7 +399,7 @@ function moonmars_items_ajax_remove() {
   $item = Item::create($item_nid);
 
   // Check this member has permission to remove this item:
-  if (!$current_member->canRemoveItem($item, $current_channel)) {
+  if (!$logged_in_member->canRemoveItem($item, $current_channel)) {
     // Complete data array, encode and send:
     $data['result'] = FALSE;
     $data['error'] = 'Access denied';

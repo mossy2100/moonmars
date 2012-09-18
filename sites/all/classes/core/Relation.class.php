@@ -95,7 +95,7 @@ class Relation extends EntityBase {
       return $relation_obj;
     }
 
-    trigger_error("Invalid parameter to self::create()", E_USER_ERROR);
+    trigger_error("Relation::create() - Invalid parameter.", E_USER_WARNING);
   }
 
   /**

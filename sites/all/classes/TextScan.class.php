@@ -62,7 +62,7 @@ class TextScan {
         $member = Member::searchByName($name);
         if ($member) {
           $members[$member->uid()] = $member;
-          $html = preg_replace("/(^|\s)(\@$name)\b/i", "$1" . $member->link(), $html);
+          $html = preg_replace("/(^|\s)(\@$name)\b/i", "$1" . $member->atLink(), $html);
         }
       }
     }
@@ -77,7 +77,7 @@ class TextScan {
 //      $tag = Member::create($name);
 //      if ($tag) {
 //        $tags[$tag->uid()] = $tag;
-//        $html = preg_replace("/(^|\s)(\@$name)\b/i", "$1" . $tag->link(NULL, TRUE), $html);
+//        $html = preg_replace("/(^|\s)(\@$name)\b/i", "$1" . $tag->hashLink(NULL, TRUE), $html);
 //      }
 //    }
 //  }
@@ -90,7 +90,7 @@ class TextScan {
         $group = Group::createByTitle($group_title);
         if ($group) {
           $groups[$group->nid()] = $group;
-          $html = str_replace("[$group_title]", $group->link(), $html);
+          $html = str_replace("[$group_title]", $group->hashLink(), $html);
         }
       }
     }

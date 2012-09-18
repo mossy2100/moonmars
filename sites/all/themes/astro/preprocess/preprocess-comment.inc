@@ -43,7 +43,7 @@ function astro_alpha_preprocess_comment(&$vars) {
   $vars['content']['comment_body'][0]['#markup'] = $item_comment->textScan()->html();
 
   // Get the current member:
-  $current_member = Member::currentMember();
+  $logged_in_member = Member::loggedInMember();
 
   // Remove the default links:
   unset($vars['content']['links']);
@@ -52,12 +52,12 @@ function astro_alpha_preprocess_comment(&$vars) {
   $links = '';
   if (user_is_logged_in()) {
     // delete link:
-    if ($current_member->canDeleteComment($item_comment)) {
+    if ($logged_in_member->canDeleteComment($item_comment)) {
       $links .= "<li class='comment-delete'><a href='javascript:deleteComment($cid)'>delete</a></li>";
     }
 
     // edit link:
-    if ($current_member->canEditComment($item_comment)) {
+    if ($logged_in_member->canEditComment($item_comment)) {
       $links .= "<li class='comment-edit'><a href='javascript:editComment($cid)'>edit</a></li>";
     }
 
@@ -73,7 +73,7 @@ function astro_alpha_preprocess_comment(&$vars) {
   $vars['links'] = $links;
 
   // Add a form for editing the comment if the user is allowed to edit it:
-  if ($current_member && $current_member->canEditComment($item_comment)) {
+  if ($logged_in_member && $logged_in_member->canEditComment($item_comment)) {
 //    dbg($vars['content']['comment_body'][0]['#markup']);
     $vars['edit_comment_form'] = "
       <form class='comment-form edit-comment-form'>
@@ -95,8 +95,8 @@ function astro_alpha_preprocess_comment(&$vars) {
   // Ratings:
   // To rate an item, the member must be logged in, and it must have been created by someone else.
   // @todo Update this to a Member::canRateComment() method.
-  $can_rate = $current_member && !Member::equals($current_member, $poster);
-  $vars['rating_buttons'] = $can_rate ? moonmars_ratings_buttons($current_member, $item_comment) : '';
+  $can_rate = $logged_in_member && !Member::equals($logged_in_member, $poster);
+  $vars['rating_buttons'] = $can_rate ? moonmars_ratings_buttons($logged_in_member, $item_comment) : '';
 
   // Path to theme:
   $vars['theme_path'] = drupal_get_path('theme', 'astro');

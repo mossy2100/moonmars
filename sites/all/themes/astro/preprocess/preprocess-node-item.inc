@@ -8,8 +8,8 @@
 function astro_alpha_preprocess_node_item(&$vars) {
 
   // Get the current logged-in member:
-  $current_member = Member::currentMember();
-  $vars['current_member'] = $current_member;
+  $logged_in_member = Member::loggedInMember();
+  $vars['logged_in_member'] = $logged_in_member;
 
   // Get the node:
   $node = $vars['node'];
@@ -90,21 +90,21 @@ function astro_alpha_preprocess_node_item(&$vars) {
   $links1 = '';
   $links2 = '';
 
-  if ($current_member) {
+  if ($logged_in_member) {
     // These links are in right-to-left order because they're floated right:
 
     // delete link:
-    if ($current_member->canDeleteItem($item)) {
+    if ($logged_in_member->canDeleteItem($item)) {
       $links1 .= "<li class='item-delete'><a href='javascript:deleteItem($item_nid)'>delete</a></li>";
     }
 
 //    // remove link:
-//    if ($current_channel && $current_member->canRemoveItem($item, $current_channel)) {
+//    if ($current_channel && $logged_in_member->canRemoveItem($item, $current_channel)) {
 //      $links1 .= "<li class='item-remove'><a href='javascript:removeItem($item_nid)'>remove</a></li>";
 //    }
 
     // edit link:
-    if ($current_member->canEditItem($item)) {
+    if ($logged_in_member->canEditItem($item)) {
       $links1 .= "<li class='item-edit'><a href='javascript:editItem($item_nid)'>edit</a></li>";
     }
 
@@ -114,7 +114,7 @@ function astro_alpha_preprocess_node_item(&$vars) {
 //    }
 
     // comment link - show at top and bottom:
-    if ($current_member->canPostComment($item)) {
+    if ($logged_in_member->canPostComment($item)) {
       $links1 .= "<li class='item-comment item-comment-$item_nid'><a href='javascript:showNewCommentForm($item_nid)'>comment</a></li>";
 
       // Only show the bottom comment link if there are some comments. Otherwise they can use the top one.
@@ -146,8 +146,8 @@ function astro_alpha_preprocess_node_item(&$vars) {
   // Ratings:
   // To rate an item, the member must be logged in, and it must have been created by someone else.
   // @todo Update this to a Member::canRateItem() method.
-  $can_rate = $current_member && !Member::equals($current_member, $poster);
-  $vars['rating_buttons'] = $can_rate ? moonmars_ratings_buttons($current_member, $item) : '';
+  $can_rate = $logged_in_member && !Member::equals($logged_in_member, $poster);
+  $vars['rating_buttons'] = $can_rate ? moonmars_ratings_buttons($logged_in_member, $item) : '';
 
   // Path to theme:
   $vars['theme_path'] = drupal_get_path('theme', 'astro');

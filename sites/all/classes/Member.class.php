@@ -81,7 +81,7 @@ class Member extends User {
    * @static
    * @return Member|null
    */
-  public static function currentMember() {
+  public static function loggedInMember() {
     return user_is_logged_in() ? self::create($GLOBALS['user']->uid) : NULL;
   }
 
@@ -108,10 +108,23 @@ class Member extends User {
 
   /**
    * Get a link to the user's profile.
+   *
+   * @param null|string $label
+   * @param bool $absolute
+   * @return string
    */
-  public function link($label = NULL, $include_at = FALSE, $absolute = FALSE) {
-    $label = ($label === NULL) ? $this->name(NULL, $include_at) : $label;
-    return l($label, $this->url($absolute));
+  public function link($label = NULL, $absolute = FALSE) {
+    $label = ($label === NULL) ? $this->name() : $label;
+    return parent::link($label, $absolute);;
+  }
+
+  /**
+   * Get a link to the user's profile with a '@' prefix on the username.
+   *
+   * @return string
+   */
+  public function atLink($absolute = FALSE) {
+    return $this->link('@' . $this->name(), $absolute);
   }
 
   /**

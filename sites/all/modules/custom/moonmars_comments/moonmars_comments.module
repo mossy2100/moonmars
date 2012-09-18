@@ -49,7 +49,7 @@ function moonmars_comments_ajax_post() {
   $text = trim($_REQUEST['text']);
 
   // Get the logged-in member:
-  $current_member = Member::currentMember();
+  $logged_in_member = Member::loggedInMember();
 
   // Begin the data array:
   $data = array(
@@ -58,7 +58,7 @@ function moonmars_comments_ajax_post() {
   );
 
   // Check we have all the necessary params:
-  if (!$item_nid || !$text || !$current_member) {
+  if (!$item_nid || !$text || !$logged_in_member) {
     // Complete data array, encode and send:
     $data['result'] = FALSE;
     $data['error'] = 'Invalid parameters';
@@ -70,7 +70,7 @@ function moonmars_comments_ajax_post() {
   $item = Item::create($item_nid);
 
   // Check this member has permission to edit this comment:
-  if (!$current_member->canPostComment($item)) {
+  if (!$logged_in_member->canPostComment($item)) {
     // Complete data array, encode and send:
     $data['result'] = FALSE;
     $data['error'] = 'Access denied';
@@ -84,9 +84,9 @@ function moonmars_comments_ajax_post() {
   // Create a new comment:
   $comment = entity_create('comment', array('type' => 'comment'));
   $comment->pid = 0;
-  $comment->uid = $current_member->uid();
-  $comment->name = $current_member->name();
-  $comment->mail = $current_member->mail();
+  $comment->uid = $logged_in_member->uid();
+  $comment->name = $logged_in_member->name();
+  $comment->mail = $logged_in_member->mail();
   $comment->is_anonymous = FALSE;
   $comment->nid = $item_nid;
   $comment->status = 1;
@@ -124,7 +124,7 @@ function moonmars_comments_ajax_edit() {
   $text = trim($_REQUEST['text']);
 
   // Get the logged-in member:
-  $current_member = Member::currentMember();
+  $logged_in_member = Member::loggedInMember();
 
   // Begin the data array:
   $data = array(
@@ -134,7 +134,7 @@ function moonmars_comments_ajax_edit() {
   );
 
   // Check we have all the necessary params:
-  if (!$cid || !$item_nid || !$text || !$current_member) {
+  if (!$cid || !$item_nid || !$text || !$logged_in_member) {
     // Complete data array, encode and send:
     $data['result'] = FALSE;
     $data['error'] = 'Invalid parameters';
@@ -146,7 +146,7 @@ function moonmars_comments_ajax_edit() {
   $item_comment = ItemComment::create($cid);
 
   // Check this member has permission to edit this comment:
-  if (!$current_member->canEditComment($item_comment)) {
+  if (!$logged_in_member->canEditComment($item_comment)) {
     // Complete data array, encode and send:
     $data['result'] = FALSE;
     $data['error'] = 'Access denied';
@@ -181,7 +181,7 @@ function moonmars_comments_ajax_delete() {
   $cid = (int) $_REQUEST['cid'];
 
   // Get the logged-in member:
-  $current_member = Member::currentMember();
+  $logged_in_member = Member::loggedInMember();
 
   // Create the data array:
   $data = array(
@@ -189,7 +189,7 @@ function moonmars_comments_ajax_delete() {
   );
 
   // Check we have all the necessary params:
-  if (!$cid || !$current_member) {
+  if (!$cid || !$logged_in_member) {
     // Complete data array, encode and send:
     $data['result'] = FALSE;
     $data['error'] = 'Invalid parameters';
@@ -201,7 +201,7 @@ function moonmars_comments_ajax_delete() {
   $item_comment = ItemComment::create($cid);
 
   // Check this member has permission to delete this comment:
-  if (!$current_member->canDeleteComment($item_comment)) {
+  if (!$logged_in_member->canDeleteComment($item_comment)) {
     // Complete data array, encode and send:
     $data['result'] = FALSE;
     $data['error'] = 'Access denied';

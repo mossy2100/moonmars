@@ -26,7 +26,7 @@ require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'node') . '/node.page
     }
 
     // If the logged-in member can post items in this channel, show the new item form.
-    if (!$viewing_activity && $current_member && $current_member->canPostItem($channel)) {
+    if (!$viewing_activity && $logged_in_member && $logged_in_member->canPostItem($channel)) {
       ?>
       <div class='post-form-wrapper'>
         <h2>Share something</h2>
@@ -34,7 +34,7 @@ require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'node') . '/node.page
         <div class='post-article-body'>
 
           <div class='user-picture'>
-            <?php echo $current_member->avatarTooltip(); ?>
+            <?php echo $logged_in_member->avatarTooltip(); ?>
           </div>
 
           <div class='post-content-wrapper' <?php print $content_attributes; ?>>
@@ -43,7 +43,7 @@ require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'node') . '/node.page
               <div class='who_where_when_posted'>
                 <?php
                 // Current member's username with link and tooltip:
-                echo $current_member->tooltipLink();
+                echo $logged_in_member->tooltipLink();
                 ?>
               </div>
 

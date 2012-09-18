@@ -40,7 +40,9 @@ class ItemComment extends Comment {
   /**
    * Get a link to the comment, which is really a link to the item with the comment highlighted.
    *
-   * @param null|string $text
+   * @param null|string $label
+   * @param bool $absolute
+   * @return string
    */
   public function link($label = NULL, $absolute = FALSE) {
     $label = ($label === NULL) ? $this->subject() : $label;
@@ -48,22 +50,22 @@ class ItemComment extends Comment {
     return l($label, $this->item()->url($absolute), array('query' => array('cid' => $cid), 'fragment' => "comment-$cid"));
   }
 
-  /**
-   * Get/set the comment alias.
-   *
-   * @param array
-   */
-  public function alias($alias = NULL) {
-    if ($alias === NULL) {
-      // Get the comment alias:
-      $cid = $this->cid();
-      return $this->item()->alias() . "?cid=$cid#comment-$cid";
-    }
-    else {
-      // Set the comment alias:
-      return parent::alias($alias);
-    }
-  }
+//  /**
+//   * Get/set the comment alias.
+//   *
+//   * @param array
+//   */
+//  public function alias($alias = NULL) {
+//    if ($alias === NULL) {
+//      // Get the comment alias:
+//      $cid = $this->cid();
+//      return $this->item()->alias() . "?cid=$cid#comment-$cid";
+//    }
+//    else {
+//      // Set the comment alias:
+//      return parent::alias($alias);
+//    }
+//  }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Text

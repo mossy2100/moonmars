@@ -119,10 +119,21 @@ function moonmars_update_fix_aliases() {
     drupal_set_message("Updated member alias to <em>" . $member->alias() . "</em>");
   }
 
+  // Groups:
+  $q = db_select('node', 'n')
+    ->fields('n', array('nid'))
+    ->condition('type', 'group');
+  $rs = $q->execute();
+  foreach ($rs as $rec) {
+    $group = Group::create($rec->nid);
+    $group->resetAlias();
+    drupal_set_message("Updated group alias to <em>" . $group->alias() . "</em>");
+  }
+
   // Channels and notifications:
   $q = db_select('node', 'n')
     ->fields('n', array('nid', 'type'))
-    ->condition('type', array('channel', 'notification', 'item'))
+    ->condition('type', array('channel', 'item'))
     ->orderBy('type')
     ->orderBy('nid');
   $rs = $q->execute();
@@ -138,19 +149,39 @@ function moonmars_update_fix_aliases() {
         }
         break;
 
-      case 'notification':
-        $nxn = Nxn::create($rec->nid);
-        $alias = pathauto_create_alias('node', 'return', "node/$rec->nid", array('node' => $nxn->node()), 'notification');
-        $nxn->alias($alias);
-        drupal_set_message("Updated notification alias to <em>" . $nxn->alias() . "</em>");
-        break;
-
       case 'item':
         $item = Item::create($rec->nid);
         $alias = pathauto_create_alias('node', 'return', "node/$rec->nid", array('node' => $item->node()), 'item');
         $item->alias($alias);
         drupal_set_message("Updated item alias to <em>" . $item->alias() . "</em>");
         break;
+    }
+  }
+  return '';
+}
+
+/**
+ * Delete channels with no parents.
+ */
+function moonmars_update_clean_up_channels() {
+  $q = db_select('node', 'n')
+    ->fields('n', array('nid'))
+    ->condition('type', 'channel');
+  $rs = $q->execute();
+  foreach ($rs as $rec) {
+    $channel = Channel::create($rec->nid);
+    $parent_entity = $channel->parentEntity();
+    if (!$parent_entity) {
+      dpm("Channel " . $channel->nid() . " title: " . $channel->title() . " has no parent");
+
+      $items = $channel->items();
+      dpm("It contains " . count($items) . " items");
+
+      if (count($items) == 0) {
+        dpm("Deleting channel");
+        $channel->delete();
+      }
+
     }
   }
   return '';

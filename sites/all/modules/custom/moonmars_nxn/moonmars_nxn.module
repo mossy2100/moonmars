@@ -3,8 +3,8 @@
 /**
  * Constant for specifying notifications of a certain type.
  */
-const MOONMARS_NXN_NO   = 0;
-const MOONMARS_NXN_YES  = 1;
+const MOONMARS_NXN_NO = 0;
+const MOONMARS_NXN_YES = 1;
 const MOONMARS_NXN_SOME = 2;
 
 /**
@@ -12,13 +12,24 @@ const MOONMARS_NXN_SOME = 2;
  */
 function moonmars_nxn_menu() {
   $items = array();
+
+  // Why isn't this callback working?
   $items['member/%/notifications'] = array(
     'page callback'   => 'moonmars_nxn_list',
     'page arguments'  => array(1),
-    'access callback' => 'moonmars_members_access_private',
+    'access callback' => 'moonmars_nxn_list_access',
     'type'            => MENU_CALLBACK,
   );
-  $items['service/send-nxns'] = array(
+  // But this one does?
+  $items['user/%/notifications'] = array(
+    'page callback'   => 'moonmars_nxn_list',
+    'page arguments'  => array(1),
+    'access callback' => 'moonmars_nxn_list_access',
+    'type'            => MENU_CALLBACK,
+  );
+
+  // Callback to be called from a shell script to create and send notifications.
+  $items['service/send-notifications'] = array(
     'page callback'   => 'moonmars_nxn_send_outstanding',
     'access callback' => TRUE,
     'type'            => MENU_CALLBACK,
@@ -333,19 +344,65 @@ function moonmars_nxn_triumph_types() {
  *
  * @return string
  */
-function moonmars_nxn_list($uid) {
-  $current_member = Member::currentMember();
-  drupal_set_title('Your Notifications');
+function moonmars_nxn_list($user) {
+  // Create the member from the uid or name:
+  $member = Member::create($user);
 
+  // Set the title:
+  drupal_set_title(t('<em>@username:</em> Notifications', array('@username' => $member->name())), PASS_THROUGH);
+
+  // Show the edit nxn prefs button:
   $html = "
     <div id='notifications-form-buttons'>
-      <a class='button' href='/" . $current_member->alias() . "/notifications/preferences'>Edit notifications preferences</a>
-    </div>
-  ";
+      <a class='button' href='/" . $member->alias() . "/edit/notifications'>Edit notifications preferences</a>
+    </div>";
+//  $html .= views_embed_view('notifications', 'page', $member->uid());
 
-  $html .= views_embed_view('notifications', 'page', $uid);
+  $html .= "<table id='table-nxns'>";
+
+  $page = isset($_GET['page']) ? ((int) $_GET['page']) : 0;
+  $q = db_select('moonmars_nxn', 'nxn')
+    ->fields('nxn', array('nxn_id'))
+    ->orderBy('created', 'DESC')
+    ->range($page * 25, 25);
+  $rs = $q->execute();
+  foreach ($rs as $rec) {
+    $nxn = new Nxn($rec->nxn_id);
+    $nxn->load();
+
+    $html .= "<tr>";
+    $html .= "<td class='nxn-created'>" . $nxn->created()->format(MoonMarsDateTime::FORMAT_DATETIME_LONG) . "</td>";
+    $html .= "<td class='nxn-details'>";
+    $html .= "<div class='nxn-summary'>" . $nxn->summary() . "</div>";
+    $html .= "<div class='nxn-preview'>" . $nxn->preview() . "</div>";
+    $html .= "</td>";
+    $html .= "</tr>";
+  }
+
+  $html .= "</table>";
 
   return $html;
+}
+
+/**
+ * Check if the user can access the notifications list.
+ *
+ * @return bool
+ */
+function moonmars_nxn_list_access() {
+  // Check the user is logged in:
+  if (!user_is_logged_in()) {
+    return FALSE;
+  }
+
+  // Check we're at the correct URL and redirect if necessary:
+  $uri = trim($_SERVER['REQUEST_URI'], '/');
+  $nxn_list_link = Member::loggedInMember()->alias() . '/notifications';
+  if ($uri != $nxn_list_link) {
+    drupal_goto($nxn_list_link);
+  }
+
+  return moonmars_members_access_private();
 }
 
 /**
@@ -354,7 +411,7 @@ function moonmars_nxn_list($uid) {
  * @return array
  */
 function moonmars_nxn_prefs_form() {
-  $current_member = Member::currentMember();
+  $logged_in_member = Member::loggedInMember();
 
   // Start building the form:
   $form = array(
@@ -365,7 +422,7 @@ function moonmars_nxn_prefs_form() {
     ),
     'uid' => array(
       '#type'  => 'hidden',
-      '#value' => $current_member->uid(),
+      '#value' => $logged_in_member->uid(),
     ),
     'entity_id' => array(
       '#type'  => 'hidden',
@@ -415,7 +472,7 @@ function moonmars_nxn_prefs_form() {
           MOONMARS_NXN_NO  => 'No',
           MOONMARS_NXN_YES => 'Yes',
         ),
-        '#default_value' => $current_member->nxnPrefWants($nxn_category, $triumph_type),
+        '#default_value' => $logged_in_member->nxnPrefWants($nxn_category, $triumph_type),
       );
 
       // If there are conditions...
@@ -428,12 +485,14 @@ function moonmars_nxn_prefs_form() {
         $form[$nxn_category][$nxn_cond_key] = array(
           '#type'          => 'checkboxes',
           '#title'         => 'Just notify me about:',
-          '#default_value' => array_keys(array_filter($current_member->nxnPrefConditions($nxn_category, $triumph_type))),
+          '#default_value' => array_keys(array_filter($logged_in_member->nxnPrefConditions($nxn_category, $triumph_type))),
         );
 
         // Add the options:
         foreach ($nxn_info['conditions'] as $nxn_condition => $nxn_condition_info) {
-          $form[$nxn_category][$nxn_cond_key]['#options'][$nxn_condition] = $nxn_condition_info['label'];
+          if ($nxn_condition_info['enabled']) {
+            $form[$nxn_category][$nxn_cond_key]['#options'][$nxn_condition] = $nxn_condition_info['label'];
+          }
         }
       }
     }

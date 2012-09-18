@@ -66,18 +66,18 @@
 
     <?php
       // New comment form:
-      if ($current_member && $current_member->canPostComment($item)) {
+      if ($logged_in_member && $logged_in_member->canPostComment($item)) {
       ?>
       <article id="new-comment-form-article-<?php echo $node->nid; ?>" class="new-comment-form-article comment comment-new comment-by-viewer clearfix" data-nid="<?php echo $node->nid; ?>">
-        <div class='post-article-body' <?php echo $current_member->commentStyle(); ?>>
+        <div class='post-article-body' <?php echo $logged_in_member->commentStyle(); ?>>
           <div class='user-picture'>
-            <?php echo $current_member->avatarTooltip(); ?>
+            <?php echo $logged_in_member->avatarTooltip(); ?>
           </div>
           <div class='post-content-wrapper'>
             <div class='post-content'>
 
               <div class='who_where_when_posted'>
-                <?php echo $current_member->tooltipLink(); ?>
+                <?php echo $logged_in_member->tooltipLink(); ?>
               </div>
 
               <form class='comment-form new-comment-form clearfix'>
@@ -94,7 +94,7 @@
       </article>
       <?php
     }
-    elseif (!$current_member && isset($parent_entity) && ($parent_entity instanceof Group) && $parent_entity->mode() == 'open') {
+    elseif (!$logged_in_member && isset($parent_entity) && ($parent_entity instanceof Group) && $parent_entity->mode() == 'open') {
       // Tell the user they can comment if they login or register:
       ?>
       <p class='comment-instruction'>

@@ -266,7 +266,7 @@ class StarColor {
 
     }
 
-    trigger_error("Invalid parameters for StarColor constructor.", E_USER_WARNING);
+    trigger_error("StarColor::__construct() - Invalid parameters.", E_USER_WARNING);
   }
 
   ///////////////////////////////////////////////////////////////////////////

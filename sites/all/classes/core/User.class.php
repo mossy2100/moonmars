@@ -26,6 +26,13 @@ class User extends EntityBase {
   const PRIMARY_KEY = 'uid';
 
   /**
+   * The user's timezone.
+   *
+   * @var DateTimeZone
+   */
+  protected $timezone;
+
+  /**
    * Constructor.
    */
   protected function __construct() {
@@ -38,14 +45,14 @@ class User extends EntityBase {
   /**
    * Create a new User object.
    *
-   * @param null|int|stdClass $user_param
+   * @param null|int|string|stdClass $param
    * @return User
    */
-  public static function create($user_param = NULL) {
+  public static function create($param = NULL) {
     // Get the class of the object we want to create:
     $class = get_called_class();
 
-    if (is_null($user_param)) {
+    if (is_null($param)) {
       // Create new user:
       $user_obj = new $class;
 
@@ -55,9 +62,9 @@ class User extends EntityBase {
       // Without a uid the user is assumed valid until proven otherwise:
       $user_obj->valid = TRUE;
     }
-    elseif (is_uint($user_param)) {
+    elseif (is_uint($param)) {
       // uid provided.
-      $uid = $user_param;
+      $uid = $param;
 
       // Only create the new user if not already in the cache:
       if (self::inCache($uid)) {
@@ -71,9 +78,9 @@ class User extends EntityBase {
         $user_obj->entity->uid = $uid;
       }
     }
-    elseif (is_string($user_param)) {
-      // name provided.
-      $name = $user_param;
+    elseif (is_string($param)) {
+      // Username provided.
+      $name = $param;
 
       // Create new user:
       $user_obj = new $class;
@@ -87,9 +94,9 @@ class User extends EntityBase {
       // Without a uid the user is assumed valid until proven otherwise:
       $user_obj->valid = TRUE;
     }
-    elseif ($user_param instanceof stdClass) {
+    elseif ($param instanceof stdClass) {
       // Drupal user object provided.
-      $user = $user_param;
+      $user = $param;
 
       // Get the User object:
       if (isset($user->uid) && $user->uid && self::inCache($user->uid)) {
@@ -113,7 +120,7 @@ class User extends EntityBase {
       return $user_obj;
     }
 
-    trigger_error("Invalid parameter to User::create()", E_USER_ERROR);
+    trigger_error("User::create() - Invalid parameter.", E_USER_WARNING);
   }
 
   /**
@@ -249,11 +256,25 @@ class User extends EntityBase {
   /**
    * Get a link to the user's profile.
    *
+   * @param null|string $label
+   * @param bool $absolute
    * @return string
    */
   public function link($label = NULL, $absolute = FALSE) {
     $label = ($label === NULL) ? $this->name() : $label;
-    return l($label, $this->url($absolute));
+    return parent::link($label, $absolute);
+  }
+
+  /**
+   * Get the user's timezone.
+   *
+   * @return DateTimeZone
+   */
+  public function timezone() {
+    if (!isset($this->timezone)) {
+      $this->timezone = new DateTimeZone($this->prop('timezone'));
+    }
+    return $this->timezone;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -314,9 +335,13 @@ class User extends EntityBase {
       $role = Role::create($role);
     }
 
-    foreach ($this->entity->roles as $rid => $name) {
-      if ($rid == $role->rid()) {
-        return TRUE;
+    $this->load();
+
+    if (isset($this->entity->roles) && is_array($this->entity->roles)) {
+      foreach ($this->entity->roles as $rid => $name) {
+        if ($rid == $role->rid()) {
+          return TRUE;
+        }
       }
     }
 
@@ -330,6 +355,15 @@ class User extends EntityBase {
    */
   public function isAdmin() {
     return $this->hasRole('administrator');
+  }
+
+  /**
+   * Check if the user is the superuser.
+   *
+   * @return bool
+   */
+  public function isSuperUser() {
+    return $this->uid() == 1;
   }
 
 }

@@ -7,7 +7,7 @@ function moonmars_members_init() {
   // If we're at 'user', and the user is logged in, forward the person to their profile.
   // I don't really want people using that path.
   if (user_is_logged_in() && trim($_SERVER['REQUEST_URI'], '/') == 'user') {
-    drupal_goto(Member::currentMember()->alias());
+    drupal_goto(Member::loggedInMember()->alias());
   }
 
   // Add some JS:
@@ -62,17 +62,20 @@ function moonmars_members_menu() {
   $items['member/%/edit/profile'] = array(
     'title' => 'Edit Profile',
     'page callback'   => 'moonmars_members_edit_profile_form',
+    'page arguments'  => array(1),
     'access callback' => 'moonmars_members_access_private',
     'type'            => MENU_CALLBACK,
   );
   $items['member/%/edit/links'] = array(
     'title' => 'Edit Links',
     'page callback'   => 'moonmars_members_edit_links_form',
+    'page arguments'  => array(1),
     'access callback' => 'moonmars_members_access_private',
     'type'            => MENU_CALLBACK,
   );
   $items['member/%/edit/notifications'] = array(
     'page callback'   => 'moonmars_members_edit_nxn_prefs_form',
+    'page arguments'  => array(1),
     'access callback' => 'moonmars_members_access_private',
     'type'            => MENU_CALLBACK,
   );
@@ -95,14 +98,22 @@ function moonmars_members_menu() {
 //}
 
 /**
- * Check if the member is trying to access their own page.
+ * Access callback for private member pages.
  *
  * @return bool
  */
 function moonmars_members_access_private() {
-  $current_member = Member::currentMember();
+  // Get the logged-in member and the member whose page it is:
+  $logged_in_member = Member::loggedInMember();
   $page_member = moonmars_actors_get_actor_from_url();
-  return Member::equals($current_member, $page_member);
+
+  // If either of these is missing, no access:
+  if (!$logged_in_member || !$page_member) {
+    return FALSE;
+  }
+
+  // Administrators can access any member's pages. Members can access their own pages.
+  return $logged_in_member->isAdmin() || Member::equals($logged_in_member, $page_member);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -120,12 +131,12 @@ function moonmars_members_theme() {
  * Create the member edit menu.
  */
 function theme_moonmars_members_edit_menu() {
-  $current_member = Member::currentMember();
-  if (!$current_member) {
+  $logged_in_member = Member::loggedInMember();
+  if (!$logged_in_member) {
     return FALSE;
   }
 
-  $edit_base = $current_member->alias() . '/edit';
+  $edit_base = $logged_in_member->alias() . '/edit';
 
   $tabs = array(
     "$edit_base/profile"       => 'Profile',
@@ -234,8 +245,8 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
     // User profile form
     case 'user_profile_form':
       // Make sure we're at the right URL:
-      $current_member = Member::currentMember();
-      $edit_profile_path = $current_member->editAlias() . '/profile';
+      $logged_in_member = Member::loggedInMember();
+      $edit_profile_path = $logged_in_member->editAlias() . '/profile';
       if (current_path() != $edit_profile_path) {
         drupal_goto($edit_profile_path);
       }
@@ -429,11 +440,12 @@ function moonmars_members_user_profile_form_submit($form, &$form_state) {
 /**
  * Display form for editing profile.
  *
+ * @param int|string $user
  * @return array
  */
-function moonmars_members_edit_profile_form() {
-  $member = moonmars_actors_get_actor_from_url();
-  drupal_set_title(t('<em>@username:</em> edit profile', array('@username' => $member->name())), PASS_THROUGH);
+function moonmars_members_edit_profile_form($user) {
+  $member = Member::create($user);
+  drupal_set_title(t('<em>@username:</em> Edit profile', array('@username' => $member->name())), PASS_THROUGH);
   require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'user') . '/user.pages.inc';
   return drupal_get_form('user_profile_form', $member->user());
 }
@@ -441,12 +453,13 @@ function moonmars_members_edit_profile_form() {
 /**
  * Display form for editing links.
  *
+ * @param int|string $user
  * @return array
  */
-function moonmars_members_edit_links_form() {
-  $member = moonmars_actors_get_actor_from_url();
+function moonmars_members_edit_links_form($user) {
+  $member = Member::create($user);
   $channel = $member->channel();
-  drupal_set_title(t('<em>@username:</em> edit links', array('@username' => $member->name())), PASS_THROUGH);
+  drupal_set_title(t('<em>@username:</em> Edit links', array('@username' => $member->name())), PASS_THROUGH);
   require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'node') . '/node.pages.inc';
   return drupal_get_form('channel_node_form', $channel->node());
 }
@@ -454,11 +467,12 @@ function moonmars_members_edit_links_form() {
 /**
  * Display form for editing nxn prefs.
  *
+ * @param int|string $user
  * @return array
  */
-function moonmars_members_edit_nxn_prefs_form() {
-  $member = moonmars_actors_get_actor_from_url();
-  drupal_set_title(t('<em>@username:</em> edit notification preferences', array('@username' => $member->name())), PASS_THROUGH);
+function moonmars_members_edit_nxn_prefs_form($user) {
+  $member = Member::create($user);
+  drupal_set_title(t('<em>@username:</em> Edit notification preferences', array('@username' => $member->name())), PASS_THROUGH);
   return drupal_get_form('moonmars_nxn_prefs_form');
 }
 
@@ -529,14 +543,14 @@ function moonmars_members_unfollow($member2_uid) {
  * Go to the member's profile.
  */
 function moonmars_members_profile() {
-  drupal_goto(Member::currentMember()->alias());
+  drupal_goto(Member::loggedInMember()->alias());
 }
 
 /**
  * Go to the member's profile edit form.
  */
 function moonmars_members_profile_edit() {
-  drupal_goto(Member::currentMember()->editAlias());
+  drupal_goto(Member::loggedInMember()->editAlias());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -652,8 +666,8 @@ function moonmars_members_menu_block() {
   }
 
   // Get the current member and check if they're looking at their own profile:
-  $current_member = Member::currentMember();
-  $own_profile = Member::equals($current_member, $profile_member);
+  $logged_in_member = Member::loggedInMember();
+  $own_profile = Member::equals($logged_in_member, $profile_member);
 
   // Start generating HTML:
   $html = "<ul id='member-menu' class='menu'>";
@@ -675,7 +689,7 @@ function moonmars_members_menu_block() {
     // Links for when you're on someone else's profile.
 
     // Follow/unfollow link:
-    if ($current_member->follows($profile_member)) {
+    if ($logged_in_member->follows($profile_member)) {
       $follow_link = l('Unfollow', $profile_member->alias() . '/unfollow');
     }
     else {
@@ -801,23 +815,23 @@ function moonmars_members_notifications($uid) {
 //  }
 //
 //  drupal_set_title('Activity');
-//  Member::currentMember()->channel()->render();
+//  Member::loggedInMember()->channel()->render();
 //}
 
 /**
  * Display the member's activity.
  */
 function moonmars_members_activity_redirect() {
-  drupal_goto(Member::currentMember()->alias() . '/activity');
+  drupal_goto(Member::loggedInMember()->alias() . '/activity');
 }
 
 ///**
 // * Show rating buttons for the specified member.
 // */
 //function moonmars_members_rating_buttons($uid) {
-////  $current_member = Member::currentMember();
+////  $logged_in_member = Member::loggedInMember();
 ////  $profile_member = Member::create($uid);
-////  $rel = MoonMarsRelation::searchBinary('rates', 'user', $current_member->uid(), 'user', $profile_member->uid());
+////  $rel = MoonMarsRelation::searchBinary('rates', 'user', $logged_in_member->uid(), 'user', $profile_member->uid());
 //}
 
 

@@ -14,15 +14,15 @@ function moonmars_test_menu() {
 }
 
 function moonmars_test_wants_nxn() {
-  $member = Member::currentMember();
-  $member->load();
+  $logged_in_member = Member::loggedInMember();
+  $logged_in_member->load();
 
   $definitions = moonmars_nxn_definitions();
 
   foreach ($definitions as $nxn_category => $nxn_category_info) {
     foreach ($nxn_category_info['triumph types'] as $triumph_type => $triumph_type_info) {
       dbg("category = $nxn_category, type = $triumph_type");
-      dbg($member->nxnPref($nxn_category, $triumph_type));
+      dbg($logged_in_member->nxnPref($nxn_category, $triumph_type));
       echo "<hr>";
     }
   }

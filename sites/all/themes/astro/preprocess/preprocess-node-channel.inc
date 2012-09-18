@@ -12,8 +12,8 @@ function astro_alpha_preprocess_node_channel(&$vars) {
   drupal_add_js(drupal_get_path('module', 'moonmars_ratings') . '/js/ratings.js');
 
   // Get the current logged-in member:
-  $current_member = Member::currentMember();
-  $vars['current_member'] = $current_member;
+  $logged_in_member = Member::loggedInMember();
+  $vars['logged_in_member'] = $logged_in_member;
 
   // Get the node:
   $node = $vars['node'];

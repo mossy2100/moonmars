@@ -108,7 +108,7 @@ class Comment extends EntityBase {
       return $comment_obj;
     }
 
-    trigger_error("Invalid parameter to Comment::create()", E_USER_ERROR);
+    trigger_error("Comment::create() - Invalid parameter.", E_USER_WARNING);
   }
 
   /**

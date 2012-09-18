@@ -238,7 +238,7 @@ class Channel extends MoonMarsNode {
 
       // Check the item wasn't posted in a different channel; if so, it's an error:
       if (EntityBase::equals($rel->endpoint(0), $this)) {
-        trigger_error("Item has already been posted in another channel.", E_USER_WARNING);
+        trigger_error("Channel::addItem() - Item has already been posted in another channel.", E_USER_WARNING);
         return FALSE;
       }
 
@@ -270,17 +270,11 @@ class Channel extends MoonMarsNode {
 
   /**
    * Post or edit an item, and notify the appropriate people.
+   * @todo Refactor into Channel::postNewItem() and Item::update()
    *
    * @param Item $item
    */
   public function postItem($item) {
-    // Get the current member (the poster or editor of the item).
-    $current_member = Member::currentMember();
-    $current_member_link = $current_member->link();
-
-    // Get the original item poster:
-    $item_poster = $item->creator();
-
     // Get the item's channel. Note, this will be NULL for a new item.
     // In the future, if/when we support cross-posting, it could be an array of channels.
     $channel = $item->channel();
@@ -292,7 +286,6 @@ class Channel extends MoonMarsNode {
     if ($is_new) {
       // It's a new item, so add it to the channel:
       $this->addItem($item);
-      $channel = $this;
 
       // For new items, create a triumph:
       Triumph::newItem($item);
@@ -301,22 +294,22 @@ class Channel extends MoonMarsNode {
       // It's been edited, so bump it:
       $channel->bumpItem($item);
 
-      // Note: for edited items, we won't create a new triumph for now.
-      // It would mean adding 'update-item' and 'update-comment' triumph types, which is ok, but it also means
-      // a lot of additional checkboxes, and I don't think people want to be notified about updates so much.
+      // For edited items, we won't create a new triumph for now.
+      // Updates about edits are often annoying since the content is substantially the same.
     }
   }
 
   /**
    * Post or edit a comment, and notify the appropriate people.
+   * @todo Refactor into Item::postNewComment() and ItemComment::update()
    *
    * @param ItemComment $comment
    * @parem bool $is_new
    */
   public function postComment(ItemComment $comment, $is_new) {
     // Get the current member (the poster or editor of the comment).
-    $current_member = Member::currentMember();
-    $current_member_link = $current_member->link();
+    $logged_in_member = Member::loggedInMember();
+    $logged_in_member_link = $logged_in_member->link();
 
     // Get the original item and its poster:
     $item = $comment->item();
@@ -411,7 +404,7 @@ class Channel extends MoonMarsNode {
 //    foreach ($recipients as $recipient_uid => $recipient) {
 //
 //      // No need to notify the current member:
-//      if (Member::equals($recipient, $current_member)) {
+//      if (Member::equals($recipient, $logged_in_member)) {
 //        continue;
 //      }
 //
@@ -420,8 +413,8 @@ class Channel extends MoonMarsNode {
 //        if (Member::equals($parent_entity, $recipient)) {
 //          $channel_link = $recipient->link("your channel");
 //        }
-//        elseif (Member::equals($parent_entity, $current_member)) {
-//          $channel_link = $current_member->link("their channel");
+//        elseif (Member::equals($parent_entity, $logged_in_member)) {
+//          $channel_link = $logged_in_member->link("their channel");
 //        }
 //        else {
 //          $channel_link = $parent_entity->link($parent_entity->name() . "'s channel");
@@ -434,14 +427,14 @@ class Channel extends MoonMarsNode {
 //      // Create a summary of the notification:
 //      $summary = '';
 //      if ($is_new) {
-//        $summary .= "$current_member_link posted a new $comment_link on an $item_link";
+//        $summary .= "$logged_in_member_link posted a new $comment_link on an $item_link";
 //        if (Member::equals($recipient, $item_poster)) {
 //          $summary .= " you posted";
 //        }
 //        $summary .= " in $channel_link.";
 //      }
 //      else {
-//        $summary .= "$current_member_link edited a $comment_link";
+//        $summary .= "$logged_in_member_link edited a $comment_link";
 //        if (Member::equals($recipient, $comment_poster)) {
 //          $summary .= " you posted";
 //        }
@@ -467,7 +460,7 @@ class Channel extends MoonMarsNode {
 //      }
 //
 //      // Send the notification
-//      $recipient->notify($summary, $comment->text(), $current_member, $channel, $item, $comment);
+//      $recipient->notify($summary, $comment->text(), $logged_in_member, $channel, $item, $comment);
 //    }
   }
 

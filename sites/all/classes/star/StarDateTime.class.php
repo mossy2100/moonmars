@@ -8,7 +8,7 @@ class StarDateTime extends DateTime {
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Constants
 
-  // These values are based on average Gregorian calendar month and year lengths.
+  // These values are based on average Gregorian calendar month and year lengths, and are exact.
   const SECONDS_PER_MINUTE  = 60;
   const SECONDS_PER_HOUR    = 3600;
   const SECONDS_PER_DAY     = 86400;
@@ -35,7 +35,6 @@ class StarDateTime extends DateTime {
   const WEEKS_PER_YEAR      = 52.1775;
   
   const MONTHS_PER_YEAR     = 12;
-
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Static methods
@@ -111,20 +110,20 @@ class StarDateTime extends DateTime {
     }
     elseif ($n_args <= 4) {
       // Args are assumed to be: $year, $month, $day, [$timezone].
-      $date = self::zero_pad($args[0], 4) . '-' . self::zero_pad($args[1]) . '-' . self::zero_pad($args[2]);
+      $date = self::zeroPad($args[0], 4) . '-' . self::zeroPad($args[1]) . '-' . self::zeroPad($args[2]);
       $time = '00:00:00';
       $datetime = "$date $time";
       $timezone = isset($args[3]) ? $args[3] : NULL;
     }
     elseif ($n_args >= 6 && $n_args <= 7) {
       // Args are assumed to be: $year, $month, $day, [$timezone].
-      $date = self::zero_pad($args[0], 4) . '-' . self::zero_pad($args[1]) . '-' . self::zero_pad($args[2]);
-      $time = self::zero_pad($args[3]) . ':' . self::zero_pad($args[4]) . ':' . self::zero_pad($args[5]);
+      $date = self::zeroPad($args[0], 4) . '-' . self::zeroPad($args[1]) . '-' . self::zeroPad($args[2]);
+      $time = self::zeroPad($args[3]) . ':' . self::zeroPad($args[4]) . ':' . self::zeroPad($args[5]);
       $datetime = "$date $time";
       $timezone = isset($args[6]) ? $args[6] : NULL;
     }
     else {
-      trigger_error(E_USER_WARNING, "Invalid number of arguments to StarDateTime constructor.");
+      trigger_error("StarDateTime::__construct() - Invalid number of paremeters.", E_USER_WARNING);
     }
 
     // Support string timezones:
@@ -134,7 +133,7 @@ class StarDateTime extends DateTime {
 
     // Check we have a valid timezone:
     if ($timezone !== NULL && !($timezone instanceof DateTimeZone)) {
-      trigger_error(E_USER_WARNING, "Invalid timezone provided to StarDateTime constructor.");
+      trigger_error("StarDateTime::__construct() - Invalid timezone.", E_USER_WARNING);
     }
 
     // Call parent constructor:
@@ -148,7 +147,7 @@ class StarDateTime extends DateTime {
    * @param int $w
    * @return string
    */
-  protected static function zero_pad($n, $w = 2) {
+  protected static function zeroPad($n, $w = 2) {
     return str_pad((int) $n, $w, '0', STR_PAD_LEFT);
   }
 
@@ -162,7 +161,7 @@ class StarDateTime extends DateTime {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Getters/setters for date and time.
+  // Date and time parts
 
   /**
    * Gets or sets the date.
@@ -189,12 +188,12 @@ class StarDateTime extends DateTime {
    * @param int $hour
    * @param int $minute
    * @param int $second
-   * @return DateInterval|DateTime
+   * @return StarTime|DateTime
    */
   public function time($hour = 0, $minute = 0, $second = 0) {
     if (func_num_args() == 0) {
       // Get the time:
-      return new DateInterval('PT' . $this->format('His'));
+      return new StarTime($this->hour(), $this->minute(), $this->second());
     }
     else {
       // Set the time:
@@ -203,7 +202,48 @@ class StarDateTime extends DateTime {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Getters/setters for standard datetime parts.
+  // Timestamp
+
+  /**
+   * Get/set the timestamp.
+   *
+   * @param null|int
+   * @return int
+   */
+  public function timestamp($ts = NULL) {
+    if ($ts === NULL) {
+      return $this->getTimestamp();
+    }
+    else {
+      return $this->setTimestamp($ts);
+    }
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Timezone
+
+  /**
+   * Get/set the timezone.
+   *
+   * @param null|string|DateTimeZone $tz
+   * @return DateTimeZone
+   */
+  public function timezone($tz = NULL) {
+    if ($tz === NULL) {
+      // Get the timezone:
+      return $this->getTimezone();
+    }
+    else {
+      // Set the timezone:
+      if (is_string($tz)) {
+        $tz = new DateTimeZone($tz);
+      }
+      return $this->setTimezone($tz);
+    }
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Standard datetime parts
 
   /**
    * Get or set the year.
@@ -309,15 +349,6 @@ class StarDateTime extends DateTime {
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Additional handy getters.
-
-  /**
-   * Get the timestamp.
-   *
-   * @return int
-   */
-  public function timestamp() {
-    return $this->getTimestamp();
-  }
 
   /**
    * Get the week of the year as an integer (1.. 52).
@@ -500,7 +531,34 @@ class StarDateTime extends DateTime {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Miscellaneous useful functions.
+  // Day counts
+
+  /**
+   * Calculate the Julian Day for the datetime.
+   *
+   * @return float
+   */
+  function julianDay() {
+    $d = $this->day();
+    $m = $this->month();
+    $y = $this->year();
+    $s = $this->time()->days();
+    return (367 * $y) - floor(7 * ($y + floor(($m + 9) / 12)) / 4) -
+      floor(3 * (floor(($y + ($m - 9) / 7) / 100) + 1) / 4) +
+      floor(275 * $m / 9) + $d + 1721028.5 + $s;
+  }
+
+  /**
+   * Calculate the Modified Julian Day for the date part of the datetime.
+   *
+   * @return int
+   */
+  function modifiedJulianDay() {
+    return $this->julianDay() - 2400000.5;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Miscellaneous
 
   /**
    * Clamp the year to a specified range.
@@ -534,7 +592,7 @@ class StarDateTime extends DateTime {
 
     // Check time is in the past:
     if ($seconds < 0) {
-      trigger_error("StarDateTime::aboutHowLongAgo() only works with datetimes in the past.", E_USER_WARNING);
+      trigger_error("StarDateTime::aboutHowLongAgo() - Datetimes must be in the past.", E_USER_WARNING);
       return FALSE;
     }
 
@@ -605,6 +663,27 @@ class StarDateTime extends DateTime {
    */
   function diffSeconds(StarDateTime $datetime2, $absolute = FALSE) {
     $diff = $this->timestamp() - $datetime2->timestamp();
+    if ($absolute) {
+      $diff = abs($diff);
+    }
+    return $diff;
+  }
+
+  /**
+   * Calculate the difference in days between two dates.
+   *
+   * The signature is identical to
+   * @see DateTime::diff(), which returns a DateInterval.
+   *
+   * The result is not necessarily the same as $this->diffSeconds() / self::SECONDS_PER_DAY,
+   * or even the floor() or round() of that, because the time parts of the datetimes are discarded.
+   *
+   * @param StarDateTime $datetime
+   * @param bool $absolute
+   *   If TRUE then the absolute value of the difference is returned.
+   */
+  function diffDays(StarDateTime $datetime, $absolute = FALSE) {
+    $diff = $this->unixDay() - $datetime->unixDay();
     if ($absolute) {
       $diff = abs($diff);
     }

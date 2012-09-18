@@ -199,12 +199,12 @@ function moonmars_actors_entity_update($entity, $entity_type) {
     $actor = moonmars_actors_get_actor($entity_type, $entity);
 
     // Create triumphs:
-    $current_member = Member::currentMember();
+    $logged_in_member = Member::loggedInMember();
     if ($actor instanceof Member) {
-      Triumph::updateMember($actor, $current_member);
+      Triumph::updateMember($actor, $logged_in_member);
     }
     elseif ($actor instanceof Group) {
-      Triumph::updateGroup($actor, $current_member);
+      Triumph::updateGroup($actor, $logged_in_member);
     }
 
     // Update the actor alias and channel alias and title:
@@ -274,6 +274,16 @@ function moonmars_actors_get_actor($entity_type, $entity) {
   return FALSE;
 }
 
+function moonmars_actors_looks_like_entity_path(array $uri_parts) {
+  $valid_entity_types = array(
+    'user',
+    'node',
+    'comment',
+    'relation'
+  );
+  return count($uri_parts) >= 2 && in_array($uri_parts[0], $valid_entity_types) && is_uint($uri_parts[1]);
+}
+
 /**
  * Get the actor whose page it is, from the current URL.
  *
@@ -281,35 +291,34 @@ function moonmars_actors_get_actor($entity_type, $entity) {
  * @return bool
  */
 function moonmars_actors_get_actor_from_url() {
-  $valid_entity_types = array(
-    'user',
-    'node',
-    'comment',
-    'relation'
-  );
-
   // Look for the entity type and id in the request_uri:
   $uri = trim($_SERVER['REQUEST_URI'], '/');
 
   // If we're at 'user' then the entity is the current logged-in user:
-  if ($uri == 'user' && user_is_logged_in()) {
-    return Member::currentMember();
+  if (in_array($uri, array('user', 'profile', 'activity', 'notifications')) && user_is_logged_in()) {
+    return Member::loggedInMember();
   }
 
   // Check for a normal user/%uid or node/%nid type of path:
-  $parts = explode('/', $uri);
-  if (count($parts) >= 2 && in_array($parts[0], $valid_entity_types) && is_uint($parts[1])) {
-    return moonmars_actors_get_actor($parts[0], $parts[1]);
+  $uri_parts = explode('/', $uri);
+  if (moonmars_actors_looks_like_entity_path($uri_parts)) {
+    return moonmars_actors_get_actor($uri_parts[0], $uri_parts[1]);
   }
 
-  // Maybe it's an alias. Try converting to normal path from just the first 2 path parts.
-  $entity_alias = $parts[0] . (isset($parts[1]) ? ('/' . $parts[1]) : '');
-  $path = drupal_get_normal_path($entity_alias);
+  // Look for a matching alias:
+  while (count($uri_parts) >= 1) {
+    // Maybe it's an alias. Try converting to normal path.
+    $alias = drupal_get_normal_path($uri);
 
-  // Check again:
-  $parts = explode('/', $path);
-  if (count($parts) >= 2 && in_array($parts[0], $valid_entity_types) && is_uint($parts[1])) {
-    return moonmars_actors_get_actor($parts[0], $parts[1]);
+    // Check again:
+    $alias_parts = explode('/', $alias);
+    if (moonmars_actors_looks_like_entity_path($alias_parts)) {
+      return moonmars_actors_get_actor($alias_parts[0], $alias_parts[1]);
+    }
+
+    // Remove the last URI part and try again.
+    unset($uri_parts[count($uri_parts) - 1]);
+    $uri = implode('/', $uri_parts);
   }
 
   // Not an actor path:

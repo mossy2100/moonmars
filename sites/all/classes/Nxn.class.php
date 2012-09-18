@@ -14,6 +14,13 @@ class Nxn {
   protected $nxnId;
 
   /**
+   * Has the nxn been loaded?
+   *
+   * @var bool
+   */
+  protected $loaded;
+  
+  /**
    * The triumph.
    *
    * @var Triumph
@@ -28,37 +35,78 @@ class Nxn {
   protected $recipient;
 
   /**
-   * Has the nxn email been sent?
+   * When was the nxn created? FALSE if not created yet.
    *
-   * @var bool
+   * @var bool|MoonMarsDateTime
+   */
+  protected $created;
+
+  /**
+   * When was the nxn sent? FALSE if not sent yet.
+   *
+   * @var bool|MoonMarsDateTime
    */
   protected $sent;
 
   /**
-   * When was the nxn email sent? NULL if $sent is FALSE.
+   * The nxn subject.
    *
-   * @var StarDateTime
+   * @var string
    */
-  protected $dtSent;
+  protected $subject;
+
+  /**
+   * The nxn summary, with links.
+   *
+   * @var string
+   */
+  protected $summary;
+
+  /**
+   * The nxn preview, which is a line of text.
+   *
+   * @var string
+   */
+  protected $preview;
+
+  /**
+   * The full nxn message, with details, comments, etc.
+   *
+   * @var string
+   */
+  protected $message;
+
+  /**
+   * Has the nxn been generated?
+   *
+   * @var bool
+   */
+  protected $generated = FALSE;
 
   /**
    * Constructor
    *
-   * @param null|int|Triumph $param1
-   * @param null|Member $param2
+   * @param null|int $param1
    */
-  public function __construct($param1 = NULL, $param2 = NULL) {
-    if (is_uint($param1)) {
-      $this->nxnId = (int) $param2;
+  public function __construct($param1 = NULL) {
+    if ($param1 === NULL) {
+      // New nxn:
+      $this->loaded = FALSE;
+      $this->created = FALSE;
+      $this->sent = FALSE;
     }
-    elseif ($param1 instanceof Triumph && $param2 instanceof Member) {
-      // New triumph:
-      $this->triumph = $param1;
-      $this->recipient = $param2;
+    elseif (is_uint($param1)) {
+      // nxn_id provided:
+      $this->nxnId = (int) $param1;
+      $this->loaded = FALSE;
     }
     elseif ($param1 instanceof stdClass) {
       // Copy db record:
       $this->copyRec($param1);
+      $this->loaded = TRUE;
+    }
+    else {
+      trigger_error("Nxn::__construct() - Invalid parameter.", E_USER_WARNING);
     }
   }
 
@@ -74,9 +122,8 @@ class Nxn {
     $this->nxnId = (int) $rec->nxn_id;
     $this->triumph = new Triumph($rec->triumph_id);
     $this->recipient = Member::create($rec->recipient_uid);
-    $this->dtCreated = new StarDateTime($rec->ts_created);
-    $this->sent = (bool) $rec->sent;
-    $this->dtSent = is_null($rec->ts_sent) ? NULL : new StarDateTime($rec->ts_sent);
+    $this->created = new MoonMarsDateTime($rec->created);
+    $this->sent = $rec->sent ? (new MoonMarsDateTime($rec->sent)) : FALSE;
   }
 
   /**
@@ -85,7 +132,7 @@ class Nxn {
    * @return Nxn
    */
   public function load() {
-    if ($this->nxnId) {
+    if (!$this->loaded && $this->nxnId) {
       $q = db_select('moonmars_nxn', 'nxn')
         ->fields('nxn')
         ->condition('nxn_id', $this->nxnId);
@@ -94,8 +141,11 @@ class Nxn {
       if ($rec) {
         // Copy values from the record into the properties:
         $this->copyRec($rec);
+        // The nxn has been loaded:
+        $this->loaded = TRUE;
       }
     }
+
     return $this;
   }
 
@@ -108,8 +158,7 @@ class Nxn {
     $fields = array(
       'triumph_id'    => $this->triumph->id(),
       'recipient_uid' => $this->recipient->uid(),
-      'sent'          => (int) $this->sent,
-      'ts_sent'       => isset($this->dtSent) ? $this->dtSent->timestamp() : NULL,
+      'sent'          => $this->sent ? $this->sent->timestamp() : NULL,
     );
     if ($this->nxnId) {
       // Update existing nxn:
@@ -120,7 +169,7 @@ class Nxn {
     }
     else {
       // Insert new nxn:
-      $fields['ts_created'] = time();
+      $fields['created'] = time();
       $q = db_insert('moonmars_nxn')
         ->fields($fields);
       $this->nxnId = $q->execute();
@@ -136,11 +185,17 @@ class Nxn {
    *
    * @return Triumph
    */
-  public function triumph() {
-    if (!isset($this->triumph)) {
+  public function triumph($value = NULL) {
+    if ($value === NULL) {
+      // Get:
       $this->load();
+      return $this->triumph;
     }
-    return $this->triumph;
+    else {
+      // Set:
+      $this->triumph = $value;
+      return $this;
+    }
   }
 
   /**
@@ -148,12 +203,69 @@ class Nxn {
    *
    * @return Member
    */
-  public function recipient() {
-    if (!isset($this->recipient)) {
+  public function recipient($value = NULL) {
+    if ($value === NULL) {
+      // Get:
       $this->load();
+      return $this->recipient;
     }
-    return $this->recipient;
+    else {
+      // Set:
+      $this->recipient = $value;
+      return $this;
+    }
   }
+
+  /**
+   * Get the created datetime
+   *
+   * @return MoonMarsDateTime
+   */
+  public function created() {
+    $this->load();
+    return $this->created;
+  }
+
+  /**
+   * Get the notification subject.
+   *
+   * @return string
+   */
+  public function subject() {
+    $this->generate();
+    return $this->subject;
+  }
+
+  /**
+   * Get the notification summary.
+   *
+   * @return string
+   */
+  public function summary() {
+    $this->generate();
+    return $this->summary;
+  }
+
+  /**
+   * Get the notification preview.
+   *
+   * @return string
+   */
+  public function preview() {
+    $this->generate();
+    return $this->preview;
+  }
+
+  /**
+   * Get the notification message.
+   *
+   * @return string
+   */
+  public function message() {
+    $this->generate();
+    return $this->message;
+  }
+
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Emails
@@ -196,7 +308,7 @@ class Nxn {
   public static function memberDetails(Member $member) {
     $details = array(
       'Username' => "<strong>" . $member->name(NULL, TRUE) ."</strong>",
-      'Profile'  => $member->link($member->url(TRUE), FALSE, TRUE),
+      'Profile'  => $member->link(),
     );
     if ($member->fullName()) {
       $details['Full name'] = $member->fullName();
@@ -226,7 +338,7 @@ class Nxn {
     $details = array(
       'Group name' => "<strong>" . $group->title() . "</strong>",
       'Group tag'  => '#' . $group->tag(),
-      'Group page' => $group->link($group->url(TRUE), TRUE),
+      'Group page' => $group->link(),
       'Group type' => $group->groupType(NULL, 'name'),
     );
     if ($group->description()) {
@@ -259,9 +371,11 @@ class Nxn {
   }
 
   /**
-   * Generate text for a new-member nxn.
+   * Generate a new-member nxn.
    */
-  public function newMemberEmail() {
+  public function generateNewMember() {
+    global $base_url;
+
     // Get the actors:
     $member = $this->triumph->actor('member');
     $group = $this->triumph->actor('group');
@@ -272,13 +386,12 @@ class Nxn {
     if (!$group) {
       // New member of the site:
       $subject = "New member of moonmars.com";
-      $summary = "moonmars.com has a new member!";
+      $summary = "<a href='$base_url'>moonmars.com</a> has a new member!";
     }
     else {
       // New member of a group:
-      $group_name = $group->title();
-      $subject = "New member of the $group_name group";
-      $summary = "The <strong>$group_name</strong> group on moonmars.com has a new member!";
+      $subject = "New member of the " . $group->title() . " group";
+      $summary = "The " . $group->link() . " group on <a href='$base_url'>moonmars.com</a> has a new member!";
 
       // Additional group details:
       $message .= self::renderGroupDetails($group, "Group details");
@@ -292,9 +405,11 @@ class Nxn {
   }
 
   /**
-   * Generate text for a new-group nxn.
+   * Generate a new-group nxn.
    */
-  public function newGroupEmail() {
+  public function generateNewGroup() {
+    global $base_url;
+
     // Get the actors:
     $group = $this->triumph->actor('group');
     $parent_group = $this->triumph->actor('parent group');
@@ -302,21 +417,22 @@ class Nxn {
     // Subject:
     $group_name = $group->title();
     $subject = "New group created: $group_name";
+    $group_link = $group->link();
 
     // Summary:
-    $summary = "moonmars.com has a new group!";
+    $summary = "<a href='$base_url'>moonmars.com</a> has a new group: $group_link";
 
     // Details:
     $message = self::renderGroupDetails($group, "Group details");
 
     // Additional details for subgroups:
     if ($parent_group) {
-      $summary .= " This is a subgroup of " . $parent_group->link(NULL, TRUE) . ".";
+      $summary .= " This is a subgroup of " . $parent_group->link() . ".";
       $message .= self::renderGroupDetails($parent_group, "Parent group details");
     }
 
     // Add a convenient "join group" link:
-    $message .= "<p><strong>" . l("Join the $group_name group", $group->url(TRUE) . '/join') . "</strong></p>";
+    $message .= "<p><strong>" . l("Join the $group_name group", $group->alias() . '/join') . "</strong></p>";
 
     return array(
       'subject' => $subject,
@@ -326,9 +442,9 @@ class Nxn {
   }
 
   /**
-   * Generate text for a new-item nxn.
+   * Generate a new-item nxn.
    */
-  public function newItemEmail() {
+  public function generateNewItem() {
     // Get the item:
     $item = $this->triumph()->actor('item');
 
@@ -383,25 +499,27 @@ class Nxn {
     return array(
       'subject' => $subject,
       'summary' => $summary,
+      'preview' => moonmars_text_trim($item->text()),
       'message' => $message,
     );
   }
 
   /**
-   * Generate text for a new-comment nxn.
+   * Generate a new-comment nxn.
    */
-  public function newCommentEmail() {
+  public function generateNewComment() {
 //    return array(
 //      'subject' => $subject,
 //      'summary' => $summary,
+//'preview' => moonmars_text_trim($comment->text()),
 //      'message' => $message,
 //    );
   }
 
   /**
-   * Generate text for a new-follower nxn.
+   * Generate a new-follower nxn.
    */
-  public function newFollowerEmail() {
+  public function generateNewFollower() {
     // Get the actors:
     $follower = $this->triumph()->actor('follower');
     $followee = $this->triumph()->actor('followee');
@@ -433,21 +551,33 @@ class Nxn {
    *
    * @return array
    */
-  function generateEmail() {
-    // Get the function name.
-    // This probably seems like a weird way to do it, but I didn't want one function (this one) with about 1000 lines
-    // of code to generate emails for every triumph type. So I made one method per triumph type.
-    $triumphTypeParts = explode('-', $this->triumph->triumphType());
-    $fn = $triumphTypeParts[0] . ucfirst($triumphTypeParts[1]) . 'Email';
+  public function generate() {
+    if (!$this->generated) {
+      // Get the function name.
+      // This probably seems like a weird way to do it, but I didn't want one function (this one) with about 1000 lines
+      // of code to generate emails for every triumph type. So I made one method per triumph type.
+      $triumphTypeParts = explode('-', $this->triumph->triumphType());
+      $fn = 'generate' . ucfirst($triumphTypeParts[0]) . ucfirst($triumphTypeParts[1]);
 
-    // Get the email parts:
-    $email = $this->$fn();
+      // Get the email parts:
+      $email = $this->$fn();
 
-    // Add the mandatory unsubscribe message:
-    $email['message'] .= "<p style='font-size: 10px; color: #777;'>" . l("Update your notification preferences or unsubscribe from all emails", $this->recipient->alias() . '/notifications/preferences') . "</p>";
+      // Copy into properties:
+      $this->subject = $email['subject'];
+      $this->summary = $email['summary'];
+      $this->preview = isset($email['preview']) ? $email['preview'] : '';
+      $this->message = $email['message'];
 
-    return $email;
+      // Add the unsubscribe message:
+      $this->message .= "<p style='font-size: 10px; color: #777;'>" . l("Update your notification preferences, or unsubscribe from all emails", $this->recipient->alias() . '/edit/notifications') . "</p>";
+
+      // Remember we've done this:
+      $this->generated = TRUE;
+    }
   }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Sending
 
   /**
    * Send the nxn.
@@ -456,12 +586,18 @@ class Nxn {
    *   TRUE on success, else FALSE
    */
   public function send() {
-    // Generate and send the email:
-    drupal_mail('moonmars_nxn', 'nxn', $this->recipient()->mail(), language_default(), $this->generateEmail());
+    $this->generate();
+    $email_array = array(
+      'subject' => $this->subject,
+      'summary' => $this->summary,
+      'message' => $this->message,
+    );
 
-    // Update the sent properties:
-    $this->sent = TRUE;
-    $this->dtSent = StarDateTime::now();
+    // Generate and send the email:
+    drupal_mail('moonmars_nxn', 'nxn', $this->recipient()->mail(), language_default(), $email_array);
+
+    // Update the sent property:
+    $this->sent = MoonMarsDateTime::now();
   }
 
   /**
@@ -488,7 +624,7 @@ class Nxn {
       // Create an Nxn object:
       $nxn = new Nxn($rec);
 
-      // Send the email and update the sent and dtSent properties:
+      // Send the email and update the sent property:
       $sent = $nxn->send();
 
       // If it sent ok, count it:
@@ -496,7 +632,7 @@ class Nxn {
         $n_sent++;
       }
 
-      // Save the nxn to update the sent and ts_sent fields in the db record:
+      // Save the nxn to update the sent field in the db record:
       $nxn->save();
     }
     return $n_sent;

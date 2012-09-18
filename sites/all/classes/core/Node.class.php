@@ -33,6 +33,11 @@ class Node extends EntityBase {
   const COMMENT_CLASS = 'Comment';
 
   /**
+   * The node type.
+   */
+  const NODE_TYPE = NULL;
+
+  /**
    * Constructor.
    */
   protected function __construct() {
@@ -118,7 +123,7 @@ class Node extends EntityBase {
       return $node_obj;
     }
 
-    trigger_error("Invalid parameter to Node::create()", E_USER_ERROR);
+    trigger_error("Node::create() - Invalid parameter.", E_USER_WARNING);
   }
 
   /**
@@ -275,11 +280,13 @@ class Node extends EntityBase {
   /**
    * Get a link to the node's page.
    *
+   * @param null|string $label
+   * @param bool $absolute
    * @return string
    */
   public function link($label = NULL, $absolute = FALSE) {
     $label = ($label === NULL) ? $this->title() : $label;
-    return l($label, $this->url($absolute));
+    return parent::link($label, $absolute);
   }
 
   /**

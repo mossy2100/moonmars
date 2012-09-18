@@ -64,7 +64,7 @@ function moonmars_ratings_ajax_rate() {
   $rating       = isset($_REQUEST['rating'])      ? ((int) $_REQUEST['rating'])     : NULL;
 
   // Get the logged-in member:
-  $current_member = Member::currentMember();
+  $logged_in_member = Member::loggedInMember();
 
   // Begin the data array:
   $data = array(
@@ -74,7 +74,7 @@ function moonmars_ratings_ajax_rate() {
   );
 
   // Check params:
-  if (!$entity_type || !$entity_id || is_null($rating) || !array_key_exists($rating, moonmars_ratings_names()) || !$current_member) {
+  if (!$entity_type || !$entity_id || is_null($rating) || !array_key_exists($rating, moonmars_ratings_names()) || !$logged_in_member) {
     $data['result'] = FALSE;
     $data['error'] = 'Invalid parameters';
     echo json_encode($data);
@@ -82,7 +82,7 @@ function moonmars_ratings_ajax_rate() {
   }
 
   // Update the rating:
-  $result = $current_member->rating(moonmars_actors_get_actor($entity_type, $entity_id), $rating);
+  $result = $logged_in_member->rating(moonmars_actors_get_actor($entity_type, $entity_id), $rating);
 //  dbg($result);
 
   // Update result:

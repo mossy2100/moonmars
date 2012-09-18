@@ -21,8 +21,8 @@ function moonmars_channels_form_alter(&$form, &$form_state, $form_id) {
 
     // Make sure we're at the right URL:
     if ($parent_entity instanceof Member) {
-      $current_member = Member::currentMember();
-      $edit_links_path = $current_member->editAlias() . '/links';
+      $logged_in_member = Member::loggedInMember();
+      $edit_links_path = $logged_in_member->editAlias() . '/links';
       if (current_path() != $edit_links_path) {
         drupal_goto($edit_links_path);
       }
@@ -32,7 +32,7 @@ function moonmars_channels_form_alter(&$form, &$form_state, $form_id) {
     unset($form['title']);
 
     // Is the user on their own profile?
-    $own_profile = ($parent_entity instanceof Member) && Member::equals($parent_entity, Member::currentMember());
+    $own_profile = ($parent_entity instanceof Member) && Member::equals($parent_entity, Member::loggedInMember());
 
     $social_links = moonmars_channels_social_links();
     foreach ($social_links as $social_link => $social_link_info) {

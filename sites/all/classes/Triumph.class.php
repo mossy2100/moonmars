@@ -14,6 +14,13 @@ class Triumph {
   protected $triumphId;
 
   /**
+   * Has the triumph been loaded?
+   *
+   * @var bool
+   */
+  protected $loaded;
+
+  /**
    * The triumph type, e.g. new-item, update-group, etc.
    *
    * @var string
@@ -21,25 +28,18 @@ class Triumph {
   protected $triumphType;
 
   /**
-   * When the triumph was created.
+   * When was the triumph created? FALSE if not created yet.
    *
-   * @var StarDateTime
+   * @var bool|StarDateTime
    */
-  protected $dtCreated;
+  protected $created;
 
   /**
-   * Whether or not notifications have been created yet.
+   * When where the notifications created? FALSE if not created yet.
    *
-   * @var bool
+   * @var bool|StarDateTime
    */
   protected $nxnsCreated;
-
-  /**
-   * When the notifications were created.
-   *
-   * @var StarDateTime
-   */
-  protected $dtNxnsCreated;
 
   /**
    * Nxns created for about this triumph.
@@ -92,7 +92,7 @@ class Triumph {
     elseif (is_string($param) && in_array($param, moonmars_nxn_triumph_types())) {
       // New triumph:
       $this->triumphType  = $param;
-      $this->dtCreated    = new StarDateTime();
+      $this->created      = StarDateTime::now();
       $this->nxnsCreated  = FALSE;
       $this->actors       = array();
       $this->recipients   = NULL;
@@ -102,7 +102,7 @@ class Triumph {
       $this->copyRec($param);
     }
     else {
-      trigger_error("Invalid parameter to Triumph constructor.", E_USER_WARNING);
+      trigger_error("Triumph::__construct() - Invalid parameter.", E_USER_WARNING);
     }
   }
 
@@ -117,9 +117,8 @@ class Triumph {
   public function copyRec($rec) {
     $this->triumphId = (int) $rec->triumph_id;
     $this->triumphType = $rec->triumph_type;
-    $this->dtCreated = new StarDateTime($rec->ts_created);
-    $this->nxnsCreated = (bool) $rec->nxns_created;
-    $this->dtNxnsCreated = new StarDateTime($rec->nxns_created);
+    $this->created = new StarDateTime($rec->created);
+    $this->nxnsCreated = $rec->nxns_created ? (new StarDateTime($rec->nxns_created)) : FALSE;
     return $this;
   }
 
@@ -127,7 +126,7 @@ class Triumph {
    * Load the triumph.
    */
   public function load() {
-    if ($this->triumphId) {
+    if (!$this->loaded && $this->triumphId) {
       // Get the triumph record:
       $q = db_select('moonmars_triumph', 'mmt')
         ->fields('mmt')
@@ -138,13 +137,15 @@ class Triumph {
       if ($rec) {
         // Set properties:
         $this->copyRec($rec);
+        // The triumph has been loaded:
+        $this->loaded = TRUE;
       }
       else {
-        trigger_error("Triumph::load() -> Triumph $this->triumphId not found.", E_USER_WARNING);
+        trigger_error("Triumph::load() - Triumph $this->triumphId not found.", E_USER_WARNING);
       }
     }
     else {
-      trigger_error("Triumph:load() -> Can't load the triumph without an id.", E_USER_WARNING);
+      trigger_error("Triumph::load() - Can't load the triumph without an id.", E_USER_WARNING);
     }
   }
 
@@ -154,10 +155,9 @@ class Triumph {
   public function save() {
     // Save the triumph record:
     $fields = array(
-      'triumph_type'    => $this->triumphType,
-      'ts_created'      => $this->dtCreated->timestamp(),
-      'nxns_created'    => (int) $this->nxnsCreated,
-      'ts_nxns_created' => isset($this->dtNxnsCreated) ? $this->dtNxnsCreated->timestamp() : NULL,
+      'triumph_type' => $this->triumphType,
+      'created'      => $this->created->timestamp(),
+      'nxns_created' => $this->nxnsCreated ? $this->nxnsCreated->timestamp() : NULL,
     );
 
     if ($this->triumphId) {
@@ -200,19 +200,6 @@ class Triumph {
   // Get/set
 
   /**
-   * Get the triumph type.
-   *
-   * @return string
-   */
-  public function triumphType() {
-    if (!isset($this->triumphType)) {
-      $this->load();
-    }
-
-    return $this->triumphType;
-  }
-
-  /**
    * Get the triumph id.
    *
    * @return int
@@ -222,28 +209,32 @@ class Triumph {
   }
 
   /**
+   * Get the triumph type.
+   *
+   * @return string
+   */
+  public function triumphType() {
+    $this->load();
+    return $this->triumphType;
+  }
+
+  /**
    * Get the datetime when the triumph was created.
    *
    * @return StarDateTime
    */
-  public function dtCreated() {
-    if (!isset($this->dtCreated)) {
-      $this->load();
-    }
-
-    return $this->dtCreated;
+  public function created() {
+    $this->load();
+    return $this->created;
   }
 
   /**
-   * Check if the nxns have been created yet.
+   * Get the datetime when the nxns were created, or FALSE if they haven't been created yet.
    *
-   * @return bool
+   * @return StarDateTime|bool
    */
   public function nxnsCreated() {
-    if (!isset($this->nxnsCreated)) {
-      $this->load();
-    }
-
+    $this->load();
     return $this->nxnsCreated;
   }
 
@@ -609,12 +600,13 @@ class Triumph {
   public function createNxns() {
     $n = 0;
     foreach ($this->recipients()->entities() as $recipient) {
-      $nxn = new Nxn($this, $recipient);
+      $nxn = new Nxn();
+      $nxn->triumph($this);
+      $nxn->recipient($recipient);
       $nxn->save();
       $n++;
     }
-    $this->nxnsCreated = TRUE;
-    $this->dtNxnsCreated = StarDateTime::now();
+    $this->nxnsCreated = StarDateTime::now();
     return $n;
   }
 

@@ -112,24 +112,24 @@ function moonmars_groups_join($group_nid) {
   $group_alias = $group->alias();
 
   // Get the current member:
-  $current_member = Member::currentMember();
+  $logged_in_member = Member::loggedInMember();
 
   // Check the user is logged in:
-  if (!$current_member) {
+  if (!$logged_in_member) {
     drupal_set_message("Please <a href='/user/login'>login</a> or <a href='/register'>register</a> before joining a group.");
     drupal_goto('user/login', array('query' => array('destination' => "$group_alias/join")));
     return;
   }
 
   // Check if the user can join this group:
-  if (!$current_member->canJoinGroup($group)) {
+  if (!$logged_in_member->canJoinGroup($group)) {
     drupal_set_message("Sorry, you don't have permission to join this group.");
     drupal_goto($group_alias);
     return;
   }
 
   // Check if they're already a member:
-  if ($group->hasMember($current_member)) {
+  if ($group->hasMember($logged_in_member)) {
     drupal_set_message("You're already a member of this group.");
     drupal_goto($group_alias);
     return;
@@ -139,7 +139,7 @@ function moonmars_groups_join($group_nid) {
   // All good, add them to the group.
 
   // Add the member to the group:
-  $current_member->joinGroup($group);
+  $logged_in_member->joinGroup($group);
 
   // Reload the group page:
   drupal_set_message("You have been added to the group " . $group->title() . ".");
@@ -165,24 +165,24 @@ function moonmars_groups_leave($group_nid) {
   $group_alias = $group->alias();
 
   // Get the current member:
-  $current_member = Member::currentMember();
+  $logged_in_member = Member::loggedInMember();
 
   // Check the user is logged in:
-  if (!$current_member) {
+  if (!$logged_in_member) {
     drupal_set_message("You need to <a href='/user/login'>login</a> before leaving a group.");
     drupal_goto('user/login', array('query' => array('destination' => "$group_alias/join")));
     return;
   }
 
   // Check if they're actually a member:
-  if (!$group->hasMember($current_member)) {
+  if (!$group->hasMember($logged_in_member)) {
     drupal_set_message("You are not a member of this group.");
     drupal_goto($group_alias);
     return;
   }
 
   // Remove the user from the group:
-  $current_member->leaveGroup($group);
+  $logged_in_member->leaveGroup($group);
 
   // Reload the group page:
   drupal_set_message("You have been removed from the group " . $group->title() . ".");
@@ -325,15 +325,15 @@ function moonmars_groups_menu_block() {
   }
 
   // Get the current member:
-  $current_member = Member::currentMember();
+  $logged_in_member = Member::loggedInMember();
 
   // If the user isn't logged in, no menu:
-  if (!$current_member) {
+  if (!$logged_in_member) {
     return "<p><a href='/user/login'>Login</a> or <a href='/register'>register</a> to join this group.</p>";
   }
 
   // Check if they're a member of the group:
-  $is_member = $group->hasMember($current_member);
+  $is_member = $group->hasMember($logged_in_member);
 
   // Show different options if the member is in the group or not:
   $html = "<ul id='group-menu' class='menu'>";
@@ -345,7 +345,7 @@ function moonmars_groups_menu_block() {
   }
 
   // Editing links:
-  if ($group->hasAdmin($current_member)) {
+  if ($group->hasAdmin($logged_in_member)) {
     $html .= "<li>" . l('Edit profile', $group->editAlias()) . "</li>";
     $html .= "<li>" . l('Edit links', $group->channel()->editAlias()) . "</li>";
   }
@@ -581,7 +581,7 @@ function moonmars_groups_search_form() {
   }
 
   // Get the current member:
-  $current_member = Member::currentMember();
+  $logged_in_member = Member::loggedInMember();
 
   // Create the form:
   $form = array();
@@ -651,7 +651,7 @@ function moonmars_groups_search_form() {
   );
 
   // If we have a current member, show checkboxes for the groups so they bulk join/leave:
-  if ($current_member) {
+  if ($logged_in_member) {
     for ($i = 0; $i < MOONMARS_GROUP_SEARCH_PAGE_SIZE; $i++) {
       $n = $_SESSION['group_search']['page'] * MOONMARS_GROUP_SEARCH_PAGE_SIZE + $i;
 
@@ -666,7 +666,7 @@ function moonmars_groups_search_form() {
       // Join/leave checkbox:
       $form['group']["member-of-group-$group_nid"] = array(
         '#type' => 'checkbox',
-        '#default_value' => $group->hasMember($current_member),
+        '#default_value' => $group->hasMember($logged_in_member),
       );
     }
   }
@@ -690,7 +690,7 @@ function moonmars_groups_search_form() {
  * @param $form_state
  */
 function moonmars_groups_search_form_update($form, &$form_state) {
-  $current_member = Member::currentMember();
+  $logged_in_member = Member::loggedInMember();
 
   // Look for "member-of-group" checkboxes:
   foreach ($form_state['values'] as $key => $value) {
@@ -698,13 +698,13 @@ function moonmars_groups_search_form_update($form, &$form_state) {
       $group_nid = (int) substr($key, 16);
       $group = Group::create($group_nid);
 
-      if ($value && !$group->hasMember($current_member)) {
+      if ($value && !$group->hasMember($logged_in_member)) {
         // If they're not a member but want to be, add them to the group:
-        $current_member->joinGroup($group);
+        $logged_in_member->joinGroup($group);
       }
-      elseif (!$value && $group->hasMember($current_member)) {
+      elseif (!$value && $group->hasMember($logged_in_member)) {
         // If they're a member but don't want to be, remove them from the group:
-        $current_member->leaveGroup($group);
+        $logged_in_member->leaveGroup($group);
       }
 
     }
@@ -777,8 +777,8 @@ function theme_moonmars_groups_search_form($vars) {
   );
 
   // If the user is logged in, add the member column:
-  $current_member = Member::currentMember();
-  if ($current_member) {
+  $logged_in_member = Member::loggedInMember();
+  if ($logged_in_member) {
     $header[] =
       array(
         'data'  => "<input type='checkbox' id='groups-select-all'> Member?",
@@ -824,7 +824,7 @@ function theme_moonmars_groups_search_form($vars) {
       );
 
       // If the user is logged in, add the member column:
-      if ($current_member) {
+      if ($logged_in_member) {
         $row[] = array(
           'data'  => render($form['group']["member-of-group-$group_nid"]),
           'class' => array('groups-column-member'),
