@@ -11,29 +11,29 @@ const MOONMARS_NXN_SOME = 2;
  * Implements hook_menu().
  */
 function moonmars_nxn_menu() {
-  $items = array();
+  $items = [];
 
   // Why isn't this callback working?
-  $items['member/%/notifications'] = array(
+  $items['member/%/notifications'] = [
     'page callback'   => 'moonmars_nxn_list',
-    'page arguments'  => array(1),
+    'page arguments'  => [1],
     'access callback' => 'moonmars_nxn_list_access',
     'type'            => MENU_CALLBACK,
-  );
+  ];
   // But this one does?
-  $items['user/%/notifications'] = array(
+  $items['user/%/notifications'] = [
     'page callback'   => 'moonmars_nxn_list',
-    'page arguments'  => array(1),
+    'page arguments'  => [1],
     'access callback' => 'moonmars_nxn_list_access',
     'type'            => MENU_CALLBACK,
-  );
+  ];
 
   // Callback to be called from a shell script to create and send notifications.
-  $items['service/send-notifications'] = array(
+  $items['service/send-notifications'] = [
     'page callback'   => 'moonmars_nxn_send_outstanding',
     'access callback' => TRUE,
     'type'            => MENU_CALLBACK,
-  );
+  ];
   return $items;
 }
 
@@ -65,252 +65,252 @@ function moonmars_nxn_mail($key, &$message, $params) {
  */
 function moonmars_nxn_definitions() {
 
-  $new_member_conditions = array(
-    'country' => array(
+  $new_member_conditions = [
+    'country' => [
       'label'   => "Members from the same country as me",
       'default' => TRUE,
       'enabled' => TRUE,
-    ),
-  );
+    ],
+  ];
 
-  $new_group_conditions = array(
-    'event'   => array(
+  $new_group_conditions = [
+    'event'   => [
       'label'   => "New events",
       'default' => TRUE,
       'enabled' => TRUE,
-    ),
-    'project' => array(
+    ],
+    'project' => [
       'label'   => "New projects",
       'default' => TRUE,
       'enabled' => TRUE,
-    ),
-    'topic'   => array(
+    ],
+    'topic'   => [
       'label'   => "Groups about a topic I'm interested in",
       'default' => TRUE,
       'enabled' => FALSE,
-    ),
-  );
+    ],
+  ];
 
-  $new_item_conditions = array(
-    'mention' => array(
+  $new_item_conditions = [
+    'mention' => [
       'label'   => "Items that mention me",
       'default' => TRUE,
       'enabled' => TRUE,
-    ),
-    'topic'   => array(
+    ],
+    'topic'   => [
       'label'   => "Items about a topic I'm interested in",
       'default' => TRUE,
       'enabled' => FALSE,
-    ),
-  );
+    ],
+  ];
 
-  $new_comment_conditions = array(
-    'mention' => array(
+  $new_comment_conditions = [
+    'mention' => [
       'label'   => "Comments that mention me",
       'default' => TRUE,
       'enabled' => TRUE,
-    ),
-    'item'    => array(
+    ],
+    'item'    => [
       'label'   => "Comments on an item I shared",
       'default' => TRUE,
       'enabled' => TRUE,
-    ),
-    'comment' => array(
+    ],
+    'comment' => [
       'label'   => "Comments on an item I also commented on",
       'default' => TRUE,
       'enabled' => TRUE,
-    ),
-    'topic'   => array(
+    ],
+    'topic'   => [
       'label'   => "Comments about a topic I'm interested in",
       'default' => TRUE,
       'enabled' => FALSE,
-    ),
-  );
+    ],
+  ];
 
-  return array(
-    'site'     => array(
+  return [
+    'site'     => [
       'title' => "Site",
       'description' => "Select your notification preferences for the whole site. This excludes closed groups that you aren't a member of.",
-      'triumph types'  => array(
-        'new-member'   => array(
+      'triumph types'  => [
+        'new-member'   => [
           'title'       => 'New members',
           'description' => "Do you want to be notified about new members?",
           'default'     => MOONMARS_NXN_NO,
           'conditions'  => $new_member_conditions,
           'enabled'     => TRUE,
-        ),
-        'new-group'    => array(
+        ],
+        'new-group'    => [
           'title'       => 'New groups',
           'description' => "Do you want to be notified about new groups?",
           'default'     => MOONMARS_NXN_YES,
           'conditions'  => $new_group_conditions,
           'enabled'     => TRUE,
-        ),
-        'new-item'     => array(
+        ],
+        'new-item'     => [
           'title'       => 'New items',
           'description' => "Do you want to be notified about new items?",
           'default'     => MOONMARS_NXN_SOME,
           'conditions'  => $new_item_conditions,
           'enabled'     => TRUE,
-        ),
-        'new-comment'  => array(
+        ],
+        'new-comment'  => [
           'title'       => 'New comments',
           'description' => "Do you want to be notified about new comments?",
           'default'     => MOONMARS_NXN_SOME,
           'conditions'  => $new_comment_conditions,
           'enabled'     => TRUE,
-        ),
-        'new-follower' => array(
+        ],
+        'new-follower' => [
           'title'       => 'New followers',
           'description' => "Do you want to be notified about new followers?",
           'default'     => MOONMARS_NXN_YES,
           'enabled'     => TRUE,
-        ),
-      ),
-    ),
-    'news' => array(
+        ],
+      ],
+    ],
+    'news' => [
       'title' => "News",
       'description' => "Select your notification preferences for the News channel.",
-      'triumph types'  => array(
-        'new-item'     => array(
+      'triumph types'  => [
+        'new-item'     => [
           'title'       => 'New items',
           'description' => "Do you want to be notified about new items?<br><strong>IT'S YOUR CHOICE BUT PLEASE LEAVE AS 'Yes' AS THIS IS HOW I NOTIFY EVERYONE ABOUT UPDATES TO THE SITE.</strong>",
           'default'     => MOONMARS_NXN_YES,
           'conditions'  => $new_item_conditions,
           'enabled'     => TRUE,
-        ),
-        'new-comment'  => array(
+        ],
+        'new-comment'  => [
           'title'       => 'New comments',
           'description' => "Do you want to be notified about new comments?",
           'default'     => MOONMARS_NXN_SOME,
           'conditions'  => $new_comment_conditions,
           'enabled'     => TRUE,
-        ),
-      ),
-    ),
-    'channel'  => array(
+        ],
+      ],
+    ],
+    'channel'  => [
       'title' => "My channel",
       'description' => "Select the notifications you want about your channel.",
-      'triumph types'  => array(
-        'new-item'    => array(
+      'triumph types'  => [
+        'new-item'    => [
           'title'       => 'New items',
           'description' => "Do you want to be notified about new items shared in your channel?",
           'default'     => MOONMARS_NXN_YES,
           'conditions'  => $new_item_conditions,
           'enabled'     => TRUE,
-        ),
-        'new-comment' => array(
+        ],
+        'new-comment' => [
           'title'       => 'New comments',
           'description' => "Do you want to be notified about new comments posted in your channel?",
           'default'     => MOONMARS_NXN_YES,
           'conditions'  => $new_comment_conditions,
           'enabled'     => TRUE,
-        ),
-      ),
-    ),
-    'followee' => array(
+        ],
+      ],
+    ],
+    'followee' => [
       'title' => "My followees",
       'description' => "Select the notifications you want about the members you follow.",
-      'triumph types'  => array(
-        'new-item' => array(
+      'triumph types'  => [
+        'new-item' => [
           'title'       => 'New items',
           'description' => "Do you want to be notified when they share a new item?",
           'default'     => MOONMARS_NXN_YES,
           'conditions'  => $new_item_conditions,
           'enabled'     => TRUE,
-        ),
-        'new-comment' => array(
+        ],
+        'new-comment' => [
           'title'       => 'New comments',
           'description' => "Do you want to be notified when they post a new comment?",
           'default'     => MOONMARS_NXN_YES,
           'conditions'  => $new_comment_conditions,
           'enabled'     => TRUE,
-        ),
-        'new-page' => array(
+        ],
+        'new-page' => [
           'title'       => 'New pages',
           'description' => "Do you want to be notified when they create a new page?",
           'default'     => MOONMARS_NXN_YES,
           'enabled'     => FALSE,
-        ),
-        'new-follower' => array(
+        ],
+        'new-follower' => [
           'title'       => 'Follows someone',
           'description' => "Do you want to be notified when they follow someone?",
           'default'     => MOONMARS_NXN_YES,
           'enabled'     => TRUE,
-        ),
-        'new-member' => array(
+        ],
+        'new-member' => [
           'title'       => 'Joined group',
           'description' => "Do you want to be notified when they join a group?",
           'default'     => MOONMARS_NXN_YES,
           'enabled'     => TRUE,
-        ),
-        'update-member' => array(
+        ],
+        'update-member' => [
           'title'       => 'Profile updated',
           'description' => "Do you want to be notified when they update their profile?",
           'default'     => MOONMARS_NXN_YES,
           'enabled'     => TRUE,
-        ),
-      ),
-    ),
-    'group'    => array(
+        ],
+      ],
+    ],
+    'group'    => [
       'title' => "My groups",
       'description' => "Select the notifications you want about your groups.",
-      'triumph types'  => array(
-        'new-member'        => array(
+      'triumph types'  => [
+        'new-member'        => [
           'title'       => 'New members',
           'description' => "Do you want to be notified when someone joins?",
           'default'     => MOONMARS_NXN_YES,
           'conditions'  => $new_member_conditions,
           'enabled'     => TRUE,
-        ),
-        'new-group'         => array(
+        ],
+        'new-group'         => [
           'title'       => 'New subgroups',
           'description' => "Do you want to be notified when a new subgroup is created?",
           'default'     => MOONMARS_NXN_YES,
           'conditions'  => $new_group_conditions,
           'enabled'     => FALSE,
-        ),
-        'new-item'          => array(
+        ],
+        'new-item'          => [
           'title'       => 'New items',
           'description' => "Do you want to be notified when a new item is shared?",
           'default'     => MOONMARS_NXN_YES,
           'conditions'  => $new_item_conditions,
           'enabled'     => TRUE,
-        ),
-        'new-comment'       => array(
+        ],
+        'new-comment'       => [
           'title'       => 'New comments',
           'description' => "Do you want to be notified when a new comment is posted?",
           'default'     => MOONMARS_NXN_YES,
           'conditions'  => $new_comment_conditions,
           'enabled'     => TRUE,
-        ),
-        'new-page'           => array(
+        ],
+        'new-page'           => [
           'title'       => 'New pages',
           'description' => "Do you want to be notified when a new page is created?",
           'default'     => MOONMARS_NXN_YES,
           'enabled'     => FALSE,
-        ),
-        'new-admin'         => array(
+        ],
+        'new-admin'         => [
           'title'       => 'New administrator',
           'description' => "Do you want to be notified when the group gets a new adminstrator?",
           'default'     => MOONMARS_NXN_YES,
           'enabled'     => FALSE,
-        ),
-        'want-admin'        => array(
+        ],
+        'want-admin'        => [
           'title'       => 'Administrator wanted',
           'description' => "Do you want to be notified when the groups needs a new adminstrator?",
           'default'     => MOONMARS_NXN_YES,
           'enabled'     => FALSE,
-        ),
-        'update-group'    => array(
+        ],
+        'update-group'    => [
           'title'       => 'Profile updated',
           'description' => "Do you want to be notified when the group profile is updated?",
           'default'     => MOONMARS_NXN_YES,
           'enabled'     => TRUE,
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
 }
 
 /**
@@ -325,7 +325,7 @@ function moonmars_nxn_triumph_types() {
     return $triumph_types;
   }
 
-  $triumph_types = array();
+  $triumph_types = [];
   $definitions = moonmars_nxn_definitions();
 
   foreach ($definitions as $nxn_category_info) {
@@ -349,7 +349,7 @@ function moonmars_nxn_list($user) {
   $member = Member::create($user);
 
   // Set the title:
-  drupal_set_title(t('<em>@username:</em> Notifications', array('@username' => $member->name())), PASS_THROUGH);
+  drupal_set_title(t('<em>@username:</em> Notifications', ['@username' => $member->name()]), PASS_THROUGH);
 
   // Show the edit nxn prefs button:
   $html = "
@@ -362,7 +362,7 @@ function moonmars_nxn_list($user) {
 
   $page = isset($_GET['page']) ? ((int) $_GET['page']) : 0;
   $q = db_select('moonmars_nxn', 'nxn')
-    ->fields('nxn', array('nxn_id'))
+    ->fields('nxn', ['nxn_id'])
     ->orderBy('created', 'DESC')
     ->range($page * 25, 25);
   $rs = $q->execute();
@@ -414,21 +414,21 @@ function moonmars_nxn_prefs_form() {
   $logged_in_member = Member::loggedInMember();
 
   // Start building the form:
-  $form = array(
-    '#attached' => array(
-      'js' => array(
+  $form = [
+    '#attached' => [
+      'js' => [
         drupal_get_path('module', 'moonmars_nxn') . '/js/nxn-form.js',
-      ),
-    ),
-    'uid' => array(
+      ],
+    ],
+    'uid' => [
       '#type'  => 'hidden',
       '#value' => $logged_in_member->uid(),
-    ),
-    'entity_id' => array(
+    ],
+    'entity_id' => [
       '#type'  => 'hidden',
       '#value' => 0,
-    ),
-    'buttons' => array(
+    ],
+    'buttons' => [
       '#markup' => "
         <p>These preferences are additive, which is to say, if one preference say 'yes', and another says 'no',
         the result will be 'yes'. For example, if you say you want no notifications about your groups, but you want all
@@ -444,19 +444,19 @@ function moonmars_nxn_prefs_form() {
         var nxnDefinitions = " . json_encode(moonmars_nxn_definitions()) . ";
         </script>
       ",
-    ),
-  );
+    ],
+  ];
 
   // Get the nxn definitions:
   $definitions = moonmars_nxn_definitions();
 
   foreach ($definitions as $nxn_category => $nxn_category_info) {
     // Create a fieldset for the category:
-    $form[$nxn_category] = array(
+    $form[$nxn_category] = [
       '#type'        => 'fieldset',
       '#title'       => $nxn_category_info['title'],
       '#description' => $nxn_category_info['description']
-    );
+    ];
 
     foreach ($nxn_category_info['triumph types'] as $triumph_type => $nxn_info) {
       if (!$nxn_info['enabled']) {
@@ -464,16 +464,16 @@ function moonmars_nxn_prefs_form() {
       }
 
       $nxn_full_key = "nxn-$nxn_category-$triumph_type";
-      $form[$nxn_category][$nxn_full_key] = array(
+      $form[$nxn_category][$nxn_full_key] = [
         '#type'          => 'radios',
         '#title'         => $nxn_info['title'],
         '#description'   => $nxn_info['description'],
-        '#options'       => array(
+        '#options'       => [
           MOONMARS_NXN_NO  => 'No',
           MOONMARS_NXN_YES => 'Yes',
-        ),
+        ],
         '#default_value' => $logged_in_member->nxnPrefWants($nxn_category, $triumph_type),
-      );
+      ];
 
       // If there are conditions...
       if (isset($nxn_info['conditions'])) {
@@ -482,11 +482,11 @@ function moonmars_nxn_prefs_form() {
 
         // Create the checkbox group:
         $nxn_cond_key = $nxn_full_key . '-cond';
-        $form[$nxn_category][$nxn_cond_key] = array(
+        $form[$nxn_category][$nxn_cond_key] = [
           '#type'          => 'checkboxes',
           '#title'         => 'Just notify me about:',
           '#default_value' => array_keys(array_filter($logged_in_member->nxnPrefConditions($nxn_category, $triumph_type))),
-        );
+        ];
 
         // Add the options:
         foreach ($nxn_info['conditions'] as $nxn_condition => $nxn_condition_info) {
@@ -499,13 +499,13 @@ function moonmars_nxn_prefs_form() {
   }
 
   // Submit button:
-  $form['submit'] = array(
+  $form['submit'] = [
     '#prefix' => "<div class='form-actions'>",
     '#type'   => 'submit',
     '#value'  => 'Save',
-    '#submit' => array('moonmars_nxn_form_submit'),
+    '#submit' => ['moonmars_nxn_form_submit'],
     '#suffix' => "</div>",
-  );
+  ];
 
   return $form;
 }
@@ -522,7 +522,7 @@ function moonmars_nxn_form_submit($form, &$form_state) {
   $entity_id = (int) $form_state['values']['entity_id'];
 
   // Remember the prefs:
-  $nxn_prefs = array();
+  $nxn_prefs = [];
 
 //  dpm($form_state['values']);
 
@@ -559,14 +559,14 @@ function moonmars_nxn_form_submit($form, &$form_state) {
   foreach ($nxn_prefs as $nxn_category => $triumph_types) {
     foreach ($triumph_types as $triumph_type => $nxn_pref) {
       $q = db_insert('moonmars_nxn_pref')
-        ->fields(array(
+        ->fields([
           'uid'            => $member->uid(),
           'nxn_category'   => $nxn_category,
           'triumph_type'       => $triumph_type,
           'entity_id'      => $entity_id,
           'nxn_wants'      => $nxn_pref['wants'],
           'nxn_conditions' => isset($nxn_pref['conditions']) ? $nxn_pref['conditions'] : NULL,
-        ));
+        ]);
       $q->execute();
     }
   }

@@ -7,7 +7,7 @@ define('MOONMARS_NEWS_CHANNEL_NID', 467);
 // * Implements hook_menu().
 // */
 //function moonmars_channels_menu() {
-//  $items = array();
+//  $items = [];
 //  return $items;
 //}
 
@@ -63,8 +63,16 @@ function moonmars_channels_form_alter(&$form, &$form_state, $form_id) {
  * @param $form_state
  */
 function moonmars_channels_channel_node_form_submit($form, &$form_state) {
+  // Check the links:
+  $links = moonmars_channels_social_links();
+
+  foreach ($links as $key => $link_info) {
+    $link = $form_state['values'][$link_info['field']];
+    dpm($link);
+  }
+
   $channel = Channel::create($form['#node']);
-  $form_state['redirect'] = $channel->parentEntity()->alias();
+//  $form_state['redirect'] = $channel->parentEntity()->alias();
 }
 
 /**
@@ -73,11 +81,11 @@ function moonmars_channels_channel_node_form_submit($form, &$form_state) {
  * @return array
  */
 function moonmars_channels_node_types() {
-  return array(
+  return [
     'group',
     'event',
     'project'
-  );
+  ];
 }
 
 /**
@@ -86,68 +94,68 @@ function moonmars_channels_node_types() {
  * @return array
  */
 function moonmars_channels_social_links() {
-  return array(
-    'website'     => array(
+  return [
+    'website'     => [
       'name'        => 'Website',
       'field'       => 'field_website',
       'domain'      => '',
       'description' => 'official website',
-    ),
-    'facebook'    => array(
+    ],
+    'facebook'    => [
       'name'        => 'Facebook',
       'field'       => 'field_facebook_link',
       'domain'      => 'facebook.com',
       'description' => 'Facebook profile',
-    ),
-    'linkedin'    => array(
+    ],
+    'linkedin'    => [
       'name'        => 'LinkedIn',
       'field'       => 'field_linkedin_link',
       'domain'      => 'linkedin.com',
       'description' => 'LinkedIn profile',
-    ),
-    'twitter'     => array(
+    ],
+    'twitter'     => [
       'name'        => 'Twitter',
       'field'       => 'field_twitter_link',
       'domain'      => 'twitter.com',
       'description' => 'Twitter profile',
-    ),
-    'google-plus' => array(
+    ],
+    'google-plus' => [
       'name'        => 'Google+',
       'field'       => 'field_google_link',
       'domain'      => 'plus.google.com',
       'description' => 'Google+ profile',
-    ),
-    'youtube'     => array(
+    ],
+    'youtube'     => [
       'name'        => 'YouTube',
       'field'       => 'field_youtube_link',
       'domain'      => 'youtube.com',
       'description' => 'YouTube channel',
-    ),
-    'wikipedia'   => array(
+    ],
+    'wikipedia'   => [
       'name'        => 'Wikipedia',
       'field'       => 'field_wikipedia_link',
       'domain'      => 'wikipedia.org',
       'description' => 'Wikipedia entry',
-    ),
-    'flickr'      => array(
+    ],
+    'flickr'      => [
       'name'        => 'Flickr',
       'field'       => 'field_flickr_link',
       'domain'      => 'flickr.com',
       'description' => 'Flickr profile',
-    ),
-    'meetup'      => array(
+    ],
+    'meetup'      => [
       'name'        => 'Meetup',
       'field'       => 'field_meetup_link',
       'domain'      => 'meetup.com',
       'description' => 'Meetup profile',
-    ),
-    'academia'   => array(
+    ],
+    'academia'   => [
       'name'        => 'Academia',
       'field'       => 'field_academia_link',
       'domain'      => 'academia.edu',
       'description' => 'Academia profile',
-    ),
-  );
+    ],
+  ];
 }
 
 /**

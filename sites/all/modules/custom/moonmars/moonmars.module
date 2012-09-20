@@ -12,22 +12,22 @@ function moonmars_init() {
  * Implements hook_menu().
  */
 function moonmars_menu() {
-  $items = array();
-  $items['home'] = array(
+  $items = [];
+  $items['home'] = [
     'page callback' => 'moonmars_home',
     'access callback' => TRUE,
     'type' => MENU_CALLBACK
-  );
-  $items['admin/phpinfo'] = array(
+  ];
+  $items['admin/phpinfo'] = [
     'page callback' => 'moonmars_phpinfo',
-    'access arguments' => array('execute php code'),
+    'access arguments' => ['execute php code'],
     'type' => MENU_CALLBACK
-  );
-  $items['colors'] = array(
+  ];
+  $items['colors'] = [
     'page callback' => 'moonmars_colors',
     'access callback' => TRUE,
     'type' => MENU_CALLBACK
-  );
+  ];
   return $items;
 }
 

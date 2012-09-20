@@ -4,32 +4,32 @@
  * Implements hook_menu().
  */
 function moonmars_geo_menu() {
-  $items = array();
-  $items['ajax/geo/country'] = array(
+  $items = [];
+  $items['ajax/geo/country'] = [
     'page callback'    => 'moonmars_geo_ajax_lookup_country',
     'access callback'  => TRUE,
     'type'             => MENU_CALLBACK,
-  );
-  $items['ajax/geo/capital'] = array(
+  ];
+  $items['ajax/geo/capital'] = [
     'page callback'    => 'moonmars_geo_ajax_lookup_capital',
     'access callback'  => TRUE,
     'type'             => MENU_CALLBACK,
-  );
-  $items['ajax/geo/province'] = array(
+  ];
+  $items['ajax/geo/province'] = [
     'page callback'    => 'moonmars_geo_ajax_lookup_province',
     'access callback'  => TRUE,
     'type'             => MENU_CALLBACK,
-  );
-  $items['ajax/geo/timezone'] = array(
+  ];
+  $items['ajax/geo/timezone'] = [
     'page callback'    => 'moonmars_geo_ajax_lookup_timezone',
     'access callback'  => TRUE,
     'type'             => MENU_CALLBACK,
-  );
-  $items['ajax/geo/country-timezone'] = array(
+  ];
+  $items['ajax/geo/country-timezone'] = [
     'page callback'    => 'moonmars_geo_ajax_lookup_country_timezone',
     'access callback'  => TRUE,
     'type'             => MENU_CALLBACK,
-  );
+  ];
   return $items;
 }
 
@@ -72,12 +72,12 @@ function moonmars_geo_lookup_capital($country_code) {
   }
   // Get info about the capital city:
   $result = geonames_query('search',
-    array(
+    [
       'name'         => $country->capital,
       'country'      => $country_code,
       'featureClass' => 'P',
       'featureCode'  => 'PPLC',
-    )
+    ]
   );
   return isset($result->results[0]) ? ((object) $result->results[0]) : FALSE;
 }
@@ -105,13 +105,11 @@ function moonmars_geo_ajax_lookup_capital() {
  */
 function moonmars_geo_lookup_province($lat, $lng) {
   // Get info about the capital city:
-  $result = geonames_query('countrysubdivision',
-    array(
-      'lat' => $lat,
-      'lng' => $lng,
-      'level' => 4,
-    )
-  );
+  $result = geonames_query('countrysubdivision', [
+    'lat' => $lat,
+    'lng' => $lng,
+    'level' => 4,
+  ]);
 //  dbg($result);
   return isset($result->results[0]) ? ((object) $result->results[0]) : FALSE;
 }
@@ -139,12 +137,10 @@ function moonmars_geo_ajax_lookup_province() {
  * @return object|bool
  */
 function moonmars_geo_lookup_timezone($lat, $lng) {
-  $result = geonames_query('timezone',
-    array(
-      'lat' => $lat,
-      'lng' => $lng,
-    )
-  );
+  $result = geonames_query('timezone', [
+    'lat' => $lat,
+    'lng' => $lng,
+  ]);
   return isset($result->results[0]) ? ((object) $result->results[0]) : FALSE;
 }
 

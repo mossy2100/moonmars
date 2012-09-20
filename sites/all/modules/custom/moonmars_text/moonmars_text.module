@@ -6,7 +6,7 @@
  * @return array
  */
 function moonmars_text_emoticons() {
-  return array(
+  return [
     'smile'     => ':)',
     'sad'       => ':(',
     'meh'       => ':|',
@@ -16,7 +16,7 @@ function moonmars_text_emoticons() {
     'kiss'      => ':*',
     'wink'      => ';)',
     'heart'     => '&lt;3',
-  );
+  ];
 }
 
 /**
@@ -182,5 +182,5 @@ function moonmars_text_trim($text, $maxlen = 40) {
  * @return string
  */
 function moonmars_text_fix_hearts($text) {
-  return str_replace(array('<3', '&amp;lt;3'), '&lt;3', $text);
+  return str_replace(['<3', '&amp;lt;3'], '&lt;3', $text);
 }

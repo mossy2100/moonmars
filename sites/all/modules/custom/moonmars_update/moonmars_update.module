@@ -4,13 +4,13 @@
  * Implements hook_menu().
  */
 function moonmars_update_menu() {
-  $items = array();
-  $items['update/%'] = array(
+  $items = [];
+  $items['update/%'] = [
     'page callback'   => 'moonmars_update_marshall',
-    'page arguments'  => array(1),
+    'page arguments'  => [1],
     'access callback' => TRUE,
     'type'            => MENU_CALLBACK,
-  );
+  ];
   return $items;
 }
 
@@ -94,7 +94,7 @@ function moonmars_update_marshall($callback) {
  */
 function moonmars_update_named_colors() {
   $colors = StarColor::colorNames();
-  $colors2 = array();
+  $colors2 = [];
   foreach ($colors as $name => $hex) {
     $colors2[strtolower($name)] = strtoupper($hex);
   }
@@ -110,7 +110,7 @@ function moonmars_update_fix_aliases() {
 
   // Members:
   $q = db_select('users', 'u')
-    ->fields('u', array('uid'))
+    ->fields('u', ['uid'])
     ->condition('uid', 0, '>');
   $rs = $q->execute();
   foreach ($rs as $rec) {
@@ -121,7 +121,7 @@ function moonmars_update_fix_aliases() {
 
   // Groups:
   $q = db_select('node', 'n')
-    ->fields('n', array('nid'))
+    ->fields('n', ['nid'])
     ->condition('type', 'group');
   $rs = $q->execute();
   foreach ($rs as $rec) {
@@ -132,8 +132,8 @@ function moonmars_update_fix_aliases() {
 
   // Channels and notifications:
   $q = db_select('node', 'n')
-    ->fields('n', array('nid', 'type'))
-    ->condition('type', array('channel', 'item'))
+    ->fields('n', ['nid', 'type'])
+    ->condition('type', ['channel', 'item'])
     ->orderBy('type')
     ->orderBy('nid');
   $rs = $q->execute();
@@ -151,7 +151,7 @@ function moonmars_update_fix_aliases() {
 
       case 'item':
         $item = Item::create($rec->nid);
-        $alias = pathauto_create_alias('node', 'return', "node/$rec->nid", array('node' => $item->node()), 'item');
+        $alias = pathauto_create_alias('node', 'return', "node/$rec->nid", ['node' => $item->node()], 'item');
         $item->alias($alias);
         drupal_set_message("Updated item alias to <em>" . $item->alias() . "</em>");
         break;
@@ -165,7 +165,7 @@ function moonmars_update_fix_aliases() {
  */
 function moonmars_update_clean_up_channels() {
   $q = db_select('node', 'n')
-    ->fields('n', array('nid'))
+    ->fields('n', ['nid'])
     ->condition('type', 'channel');
   $rs = $q->execute();
   foreach ($rs as $rec) {
@@ -227,7 +227,7 @@ function moonmars_update_remove_subscriber_relationships() {
 function moonmars_update_news_items() {
   // Look for relationship records:
   $q = db_select('view_channel_has_item', 'vci')
-    ->fields('vci', array('item_nid', 'created'))
+    ->fields('vci', ['item_nid', 'created'])
     ->condition('channel_nid', MOONMARS_NEWS_CHANNEL_NID)
     ->condition('item_status', 1)
     ->orderBy('created', 'DESC');
@@ -275,7 +275,7 @@ function moonmars_update_news_items() {
 function moonmars_update_channel_item_relation_changed_times() {
   // Look for relationship records:
   $q = db_select('view_channel_has_item', 'vci')
-    ->fields('vci', array('rid', 'item_nid', 'created'))
+    ->fields('vci', ['rid', 'item_nid', 'created'])
     ->condition('channel_nid', MOONMARS_NEWS_CHANNEL_NID)
 //    ->range(0, 5)
 //    ->orderBy('created', 'DESC');
@@ -321,7 +321,7 @@ function moonmars_update_channel_item_relation_changed_times() {
       $html .= "<b>Updating relation $rec->rid changed time to $latest</b>\n";
 
       $q2 = db_update('relation')
-        ->fields(array('created' => $latest->timestamp()))
+        ->fields(['created' => $latest->timestamp()])
         ->condition('rid', $rec->rid);
       $html .= dbg_sql($q2) . "\n";
 //      $q2->execute();
@@ -339,7 +339,7 @@ function moonmars_update_channel_item_relation_changed_times() {
 function moonmars_update_fix_group_mentions() {
   // Update item text:
   $q = db_select('node', 'n')
-    ->fields('n', array('nid'));
+    ->fields('n', ['nid']);
   $q->join('field_data_field_item_text', 'ft', "n.nid = ft.entity_id");
   $q->condition('field_item_text_value', '%[Group: %', 'LIKE');
   $rs = $q->execute();
@@ -361,7 +361,7 @@ function moonmars_update_fix_group_mentions() {
 
   // Now comments:
   $q = db_select('comment', 'c')
-    ->fields('c', array('cid'));
+    ->fields('c', ['cid']);
   $q->join('field_data_comment_body', 'fcb', "c.cid = fcb.entity_id");
   $q->condition('comment_body_value', '%[Group: %', 'LIKE');
   $rs = $q->execute();
@@ -386,7 +386,7 @@ function moonmars_update_fix_group_mentions() {
  */
 function moonmars_update_set_default_group_tags() {
   $q = db_select('node', 'n')
-    ->fields('n', array('nid'))
+    ->fields('n', ['nid'])
     ->condition('type', 'group');
   $rs = $q->execute();
   foreach ($rs as $rec) {
@@ -403,7 +403,7 @@ function moonmars_update_set_default_group_tags() {
         return strtolower($value);
       }, explode(' ', $title));
       foreach ($words as $key => $word) {
-        if (in_array($word, array('for', 'the', 'and', 'of', 'an', 'a'))) {
+        if (in_array($word, ['for', 'the', 'and', 'of', 'an', 'a'])) {
           unset($words[$key]);
         }
       }
@@ -422,7 +422,7 @@ function moonmars_update_set_default_group_tags() {
  */
 function moonmars_update_clean_up_relationships() {
   $q = db_select('relation', 'r')
-    ->fields('r', array('rid'));
+    ->fields('r', ['rid']);
   $rs = $q->execute();
   foreach ($rs as $rec) {
     $delete = FALSE;

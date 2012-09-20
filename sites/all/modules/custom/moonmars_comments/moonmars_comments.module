@@ -4,21 +4,21 @@
  * Implements hook_menu().
  */
 function moonmars_comments_menu() {
-  $items['ajax/comment/post'] = array(
+  $items['ajax/comment/post'] = [
     'page callback'    => 'moonmars_comments_ajax_post',
     'access callback'  => 'user_is_logged_in',
     'type'             => MENU_CALLBACK,
-  );
-  $items['ajax/comment/edit'] = array(
+  ];
+  $items['ajax/comment/edit'] = [
     'page callback'    => 'moonmars_comments_ajax_edit',
     'access callback'  => 'user_is_logged_in',
     'type'             => MENU_CALLBACK,
-  );
-  $items['ajax/comment/delete'] = array(
+  ];
+  $items['ajax/comment/delete'] = [
     'page callback'    => 'moonmars_comments_ajax_delete',
     'access callback'  => 'user_is_logged_in',
     'type'             => MENU_CALLBACK,
-  );
+  ];
   return $items;
 }
 
@@ -52,10 +52,10 @@ function moonmars_comments_ajax_post() {
   $logged_in_member = Member::loggedInMember();
 
   // Begin the data array:
-  $data = array(
+  $data = [
     'item_nid' => $item_nid,
     'text'     => $text,
-  );
+  ];
 
   // Check we have all the necessary params:
   if (!$item_nid || !$text || !$logged_in_member) {
@@ -82,7 +82,7 @@ function moonmars_comments_ajax_post() {
   // All good - create the comment.
 
   // Create a new comment:
-  $comment = entity_create('comment', array('type' => 'comment'));
+  $comment = entity_create('comment', ['type' => 'comment']);
   $comment->pid = 0;
   $comment->uid = $logged_in_member->uid();
   $comment->name = $logged_in_member->name();
@@ -127,11 +127,11 @@ function moonmars_comments_ajax_edit() {
   $logged_in_member = Member::loggedInMember();
 
   // Begin the data array:
-  $data = array(
+  $data = [
     'cid'      => $cid,
     'item_nid' => $item_nid,
     'text'     => $text,
-  );
+  ];
 
   // Check we have all the necessary params:
   if (!$cid || !$item_nid || !$text || !$logged_in_member) {
@@ -184,9 +184,9 @@ function moonmars_comments_ajax_delete() {
   $logged_in_member = Member::loggedInMember();
 
   // Create the data array:
-  $data = array(
+  $data = [
     'cid' => $cid,
-  );
+  ];
 
   // Check we have all the necessary params:
   if (!$cid || !$logged_in_member) {

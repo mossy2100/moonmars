@@ -4,12 +4,12 @@
  * Implements hook_menu().
  */
 function moonmars_test_menu() {
-  $items = array();
-  $items['test/wants-nxn'] = array(
+  $items = [];
+  $items['test/wants-nxn'] = [
     'page callback'    => 'moonmars_test_wants_nxn',
     'access callback'  => 'user_is_superuser',
     'type'             => MENU_CALLBACK,
-  );
+  ];
   return $items;
 }
 

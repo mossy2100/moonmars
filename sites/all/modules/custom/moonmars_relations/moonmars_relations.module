@@ -4,12 +4,12 @@
  * Implements hook_menu().
  */
 function moonmars_relations_menu() {
-  $items['admin/content/relation/cleanup'] = array(
+  $items['admin/content/relation/cleanup'] = [
     'page callback'    => 'moonmars_relations_cleanup',
     'access callback'  => 'user_is_admin',
     'type'             => MENU_NORMAL_ITEM,
     'title'            => 'Cleanup',
-  );
+  ];
   return $items;
 }
 
@@ -59,16 +59,16 @@ function moonmars_relations_menu() {
 function moonmars_relations_cleanup() {
   // Get the relation types:
   $rs = db_select('relation_type', 'rt')
-    ->fields('rt', array('relation_type'))
+    ->fields('rt', ['relation_type'])
     ->execute();
-  $relation_types = array();
+  $relation_types = [];
   foreach ($rs as $rec) {
     $relation_types[] = $rec->relation_type;
   }
 
   // Get all relations:
   $rs2 = db_select('relation', 'r')
-    ->fields('r', array('rid'))
+    ->fields('r', ['rid'])
     ->execute();
   $n = 0;
   foreach ($rs2 as $rec2) {

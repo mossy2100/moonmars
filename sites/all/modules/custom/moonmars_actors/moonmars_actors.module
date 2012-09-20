@@ -40,12 +40,12 @@ const MOONMARS_ACTOR_CODE_MAX_LENGTH = 60;
  * Implements hook_menu().
  */
 function moonmars_actors_menu() {
-  $items = array();
-  $items['ajax/check-actor-code'] = array(
+  $items = [];
+  $items['ajax/check-actor-code'] = [
     'page callback'   => 'moonmars_actors_ajax_check_code',
     'access callback' => TRUE,
     'type'            => MENU_CALLBACK,
-  );
+  ];
   return $items;
 }
 
@@ -62,12 +62,12 @@ function moonmars_actors_ajax_check_code() {
   $actor_id = isset($_REQUEST['actorId']) ? $_REQUEST['actorId'] : NULL;
 
   // Default result:
-  $data = array(
+  $data = [
     'result' => FALSE,
-  );
+  ];
 
   // Check for valid parameters:
-  if (!$actor_type || !in_array($actor_type, array('member', 'group')) || !$actor_code) {
+  if (!$actor_type || !in_array($actor_type, ['member', 'group']) || !$actor_code) {
     $data['message'] = "Invalid parameters";
     echo json_encode($data);
     return;
@@ -84,7 +84,7 @@ function moonmars_actors_ajax_check_code() {
   if ($actor_type == 'member') {
     // Check if any other member has the same username:
     $q = db_select('users', 'u')
-      ->fields('u', array('uid'))
+      ->fields('u', ['uid'])
       ->condition('name', $actor_code);
     // If editing a member, look for a different member with the same username:
     if ($actor_id) {
@@ -94,7 +94,7 @@ function moonmars_actors_ajax_check_code() {
   elseif ($actor_type == 'group') {
     // Check if any other group has the same tag:
     $q = db_select('node', 'n')
-      ->fields('n', array('nid'));
+      ->fields('n', ['nid']);
     $q->join('field_data_field_group_tag', 'gt', "n.nid = gt.entity_id");
     $q->condition('field_group_tag_value', $actor_code);
     // If editing a group, look for a different group with the same tag:
@@ -111,10 +111,10 @@ function moonmars_actors_ajax_check_code() {
   }
 
   // It's ok:
-  $data = array(
+  $data = [
     'result' => TRUE,
     'message' => "OK",
-  );
+  ];
   echo json_encode($data);
   return;
 }
@@ -275,12 +275,12 @@ function moonmars_actors_get_actor($entity_type, $entity) {
 }
 
 function moonmars_actors_looks_like_entity_path(array $uri_parts) {
-  $valid_entity_types = array(
+  $valid_entity_types = [
     'user',
     'node',
     'comment',
     'relation'
-  );
+  ];
   return count($uri_parts) >= 2 && in_array($uri_parts[0], $valid_entity_types) && is_uint($uri_parts[1]);
 }
 
@@ -295,7 +295,7 @@ function moonmars_actors_get_actor_from_url() {
   $uri = trim($_SERVER['REQUEST_URI'], '/');
 
   // If we're at 'user' then the entity is the current logged-in user:
-  if (in_array($uri, array('user', 'profile', 'activity', 'notifications')) && user_is_logged_in()) {
+  if (in_array($uri, ['user', 'profile', 'activity', 'notifications']) && user_is_logged_in()) {
     return Member::loggedInMember();
   }
 
@@ -334,10 +334,10 @@ function moonmars_actors_get_actor_from_url() {
 function moonmars_actors_create_channel(EntityBase $entity) {
   // Create the new channel:
   $channel = Channel::create()
-    ->setProperties(array(
-                         'uid'   => $entity->uid(),
-                         'title' => $entity->channelTitle(),
-                    ));
+    ->setProperties([
+      'uid'   => $entity->uid(),
+      'title' => $entity->channelTitle(),
+    ]);
 
   // Save the node for the first time, which will give it a nid, which we need to create the relationship:
   $channel->save();
