@@ -108,6 +108,16 @@ class Group extends MoonMarsNode {
     return $this;
   }
 
+  /**
+   * Create a link for the group using the hash tag.
+   *
+   * @param bool $absolute
+   * @return string
+   */
+  public function hashLink($absolute = FALSE) {
+    return $this->link('#' . $this->tag(), $absolute);
+  }
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Misc static methods
 

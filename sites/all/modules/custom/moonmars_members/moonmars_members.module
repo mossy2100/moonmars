@@ -23,6 +23,11 @@ function moonmars_members_init() {
   // String to explain username constraints:
   global $moonmars_username_desc;
   $moonmars_username_desc = "Usernames may only contain letters, digits, hyphens and underscores (a-z, A-Z, 0-9, -_), and must be between " . MOONMARS_ACTOR_CODE_MIN_LENGTH . " and " . MOONMARS_ACTOR_CODE_MAX_LENGTH . " characters in length.";
+
+  // If looking up provinces for a country, make sure the function user_profile_form_validate() is available:
+  if ($_SERVER['REQUEST_URI'] == '/system/ajax/field_user_location/und/0') {
+    module_load_include('inc', 'user', 'user.pages');
+  }
 }
 
 /**
@@ -178,7 +183,6 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
   $form['#attached']['js'][] = "$module_path/js/member-name-check.js";
 
   switch ($form_id) {
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Registration form
     case 'user_register_form':

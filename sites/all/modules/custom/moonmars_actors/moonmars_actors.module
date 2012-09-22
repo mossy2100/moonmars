@@ -326,6 +326,17 @@ function moonmars_actors_get_actor_from_url() {
 }
 
 /**
+ * Get the uid of the member whose page we're on.
+ * FALSE if not a member page.
+ *
+ * @return int|bool
+ */
+function moonmars_actors_get_uid_from_url() {
+  $actor = moonmars_actors_get_actor_from_url();
+  return ($actor instanceof Member) ? $actor->uid() : FALSE;
+}
+
+/**
  * Creates a new channel for an entity.
  *
  * @param EntityBase $entity

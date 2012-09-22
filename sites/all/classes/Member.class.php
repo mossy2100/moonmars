@@ -121,6 +121,7 @@ class Member extends User {
   /**
    * Get a link to the user's profile with a '@' prefix on the username.
    *
+   * @param bool $absolute
    * @return string
    */
   public function atLink($absolute = FALSE) {

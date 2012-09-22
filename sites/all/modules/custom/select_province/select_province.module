@@ -5,10 +5,10 @@
  */
 function select_province_menu() {
   $items = array();
-  $items['ajax/get-provinces'] = array(
+  $items['select-province/ajax/get-provinces'] = array(
     'access callback' => TRUE,
     'page callback' => 'select_province_get',
-    'page arguments' => array(2),
+    'page arguments' => array(3),
     'type' => MENU_CALLBACK,
   );
   return $items;

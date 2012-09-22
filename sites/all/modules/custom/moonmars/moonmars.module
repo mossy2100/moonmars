@@ -65,7 +65,7 @@ function moonmars_home() {
     drupal_goto('activity');
   }
   else {
-    drupal_goto('news');
+    drupal_goto('group/moonmars');
   }
 }
 

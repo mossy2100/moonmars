@@ -3,50 +3,62 @@ var $ = jQuery;
 /**
  * Request provinces for a given country and update province selector.
  */
-function select_province_get(country_id, province_id, selector_id) {
+function select_province_get(countrySelectorId, provinceAutocompleteId, provinceSelectorId) {
   // Get the selected country code:
-  var countryCode = $('#' + country_id).val();
+  var countryCode = $('#' + countrySelectorId).val();
 
-  // Empty the province selector.
-  var selector = $('#' + selector_id);
-  selector.empty();
+  // Empty the province provinceSelector.
+  var provinceSelector = $('#' + provinceSelectorId);
+  provinceSelector.empty();
 
-  // Add a null option to the selector:
+  // Add a null option to the provinceSelector:
   var nullOption = $("<option value=''></option>");
-  selector.append(nullOption);
+  provinceSelector.append(nullOption);
 
-  // Disable the selector:
-  selector.attr('disabled', 'disabled');
+  // Disable the provinceSelector:
+  provinceSelector.attr('disabled', 'disabled');
+
+  // Get the province autocomplete:
+  var provinceAutocomplete = $('#' + provinceAutocompleteId);
 
   if (countryCode) {
     // Trigger the beginAjax event in case any other scripts want to capture it:
-    selector.trigger('beginAjax');
+    provinceSelector.trigger('beginAjax');
 
     // Ask the user to wait:
     nullOption.text("Please wait...");
 
-    $.get('/ajax/get-provinces/' + countryCode,
+    $.get('/select-province/ajax/get-provinces/' + countryCode,
       function(response) {
+//        alert(response);
         var provinces = JSON.parse(response);
 
         if (!$.isEmptyObject(provinces)) {
-          // Enable the selector:
-          selector.removeAttr('disabled');
+          // Enable the provinceSelector:
+          provinceSelector.removeAttr('disabled');
 
           // Prompt the user to select a province:
           nullOption.text("Please select");
 
-          // Get the current province from the autocomplete field
-          var selectedProvince = $('#' + province_id).val();
+          // Get the current province from the autocomplete field:
+          var selectedProvince = provinceAutocomplete.val();
 
-          // Populate the selector options:
+          // Populate the provinceSelector options:
           var option;
+          var matchFound = false;
           for (var provinceCode in provinces) {
             option = $("<option value='" + provinceCode + "'>" + provinces[provinceCode] + "</option>");
+            // If the province code matches the value from the province autocomplete, select it:
             if (provinceCode == selectedProvince) {
               option.attr('selected', 'selected');
+              matchFound = true;
             }
-            selector.append(option);
+            provinceSelector.append(option);
+          }
+
+          // If no match found, clear the autocomplete.
+          if (!matchFound) {
+            provinceAutocomplete.val('');
           }
         }
         else {
@@ -55,7 +67,7 @@ function select_province_get(country_id, province_id, selector_id) {
         }
 
         // Trigger the endAjax event in case any other scripts want to capture it:
-        selector.trigger('endAjax');
+        provinceSelector.trigger('endAjax');
       }
     );
   }
@@ -68,31 +80,38 @@ function select_province_get(country_id, province_id, selector_id) {
 $(function () {
   // Update the form, replacing all province autocomplete fields with selectors.
   $('.location_auto_province').each(function() {
+    var provinceAutocomplete = $(this);
 
     // Hide the province autocomplete field:
-    $(this).hide();
+    provinceAutocomplete.hide();
 
-    // Add the selector:
-    var province_id = this.id;
-    var selector_id = this.id + '-selector';
-    var selector = $("<select id='" + selector_id + "'></select>");
-    $(this).after(selector);
+    // Get the province field ids:
+    var provinceAutocompleteId = this.id;
+    var provinceSelectorId = this.id + '-selector';
 
-    // Whenever the selector changes, we want to set the value of the autocomplete field:
-    selector.change(function() {
-      $('#' + province_id).val($(this).val());
+    // Add the province selector:
+    var provinceSelector = $("<select id='" + provinceSelectorId + "'></select>");
+    provinceAutocomplete.after(provinceSelector);
+
+    // Whenever the provinceSelector changes, we want to set the value of the autocomplete field:
+    provinceSelector.change(function() {
+      $('#' + provinceAutocompleteId).val($(this).val());
     });
 
     // Get the country selector id:
-    var country = $(this).closest('.location').find('.location_auto_country');
-    var country_id = country.attr('id');
+    var countrySelector = provinceAutocomplete.closest('.location').find('.location_auto_country');
+    var countrySelectorId = countrySelector.attr('id');
 
-    // Initialise the province selector:
-    select_province_get(country_id, province_id, selector_id);
+    // Initialise the province provinceSelector:
+    select_province_get(countrySelectorId, provinceAutocompleteId, provinceSelectorId);
+
+    // Remove any other change events from the country selector. This could be dubious, maybe revisit later if I ever
+    // contrib this module.
+    countrySelector.unbind('change');
 
     // Whenever the country selector changes, update the province selector:
-    country.change(function() {
-      select_province_get(country_id, province_id, selector_id);
+    countrySelector.change(function() {
+      select_province_get(countrySelectorId, provinceAutocompleteId, provinceSelectorId);
     });
   });
 });
