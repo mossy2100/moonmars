@@ -705,6 +705,11 @@ function moonmars_members_menu_block() {
       $follow_link = l('Follow', $profile_member->alias() . '/follow');
     }
     $html .= "<li>$follow_link</li>";
+
+    // Contact link:
+    if ($profile_member->data('contact')) {
+      $html .= "<li>" . l('Contact', $profile_member->alias() . '/contact') . "</li>";
+    }
   }
   $html .= "</ul>";
 

@@ -277,6 +277,26 @@ class User extends EntityBase {
     return $this->timezone;
   }
 
+  /**
+   * Get the user's data.
+   * If key is specified, just get the value of that data item. Otherwise get the whole array.
+   *
+   * @param string $key
+   * @return array
+   */
+  public function data($key = NULL) {
+    $data = $this->prop('data');
+    if (is_string($data)) {
+      $data = @unserialize($data);
+    }
+    // Check for a key:
+    if (is_array($data) && $key) {
+      return isset($data[$key]) ? $data[$key] : NULL;
+    }
+    // Return the whole data array:
+    return $data ?: NULL;
+  }
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Role-related methods.
 
