@@ -131,12 +131,12 @@ function moonmars_members_theme() {
  * Create the member edit menu.
  */
 function theme_moonmars_members_edit_menu() {
-  $logged_in_member = Member::loggedInMember();
-  if (!$logged_in_member) {
+  $page_member = moonmars_actors_get_actor_from_url();
+  if (!$page_member instanceof Member) {
     return FALSE;
   }
 
-  $edit_base = $logged_in_member->alias() . '/edit';
+  $edit_base = $page_member->alias() . '/edit';
 
   $tabs = [
     "$edit_base/profile"       => 'Profile',
@@ -670,8 +670,8 @@ function moonmars_members_menu_block() {
   global $user;
 
   // Check we're on a member page:
-  $profile_member = moonmars_actors_get_actor_from_url();
-  if (!$profile_member || !($profile_member instanceof Member)) {
+  $page_member = moonmars_actors_get_actor_from_url();
+  if (!$page_member || !($page_member instanceof Member)) {
     return '';
   }
 
@@ -682,33 +682,33 @@ function moonmars_members_menu_block() {
 
   // Get the current member and check if they're looking at their own profile:
   $logged_in_member = Member::loggedInMember();
-  $own_profile = Member::equals($logged_in_member, $profile_member);
+  $own_profile = Member::equals($logged_in_member, $page_member);
 
   // Member profile menu links:
   $html = "<ul id='member-menu' class='menu'>";
   if ($own_profile) {
     // Links for when you're on your own profile.
     // Activity:
-    $html .= "<li>" . l('Activity', $profile_member->alias() . '/activity') . "</li>";
+    $html .= "<li>" . l('Activity', $page_member->alias() . '/activity') . "</li>";
     // Profile:
-    $html .= "<li>" . l('Profile', $profile_member->alias()) . "</li>";
+    $html .= "<li>" . l('Profile', $page_member->alias()) . "</li>";
     // View notifications:
-    $html .= "<li>" . l('Notifications', $profile_member->alias() . '/notifications') . "</li>";
+    $html .= "<li>" . l('Notifications', $page_member->alias() . '/notifications') . "</li>";
   }
   else {
     // Links for when you're on someone else's profile.
     // Follow/unfollow link:
-    if ($logged_in_member->follows($profile_member)) {
-      $follow_link = l('Unfollow', $profile_member->alias() . '/unfollow');
+    if ($logged_in_member->follows($page_member)) {
+      $follow_link = l('Unfollow', $page_member->alias() . '/unfollow');
     }
     else {
-      $follow_link = l('Follow', $profile_member->alias() . '/follow');
+      $follow_link = l('Follow', $page_member->alias() . '/follow');
     }
     $html .= "<li>$follow_link</li>";
 
     // Contact link:
-    if ($profile_member->data('contact')) {
-      $html .= "<li>" . l('Contact', $profile_member->alias() . '/contact') . "</li>";
+    if ($page_member->data('contact')) {
+      $html .= "<li>" . l('Contact', $page_member->alias() . '/contact') . "</li>";
     }
   }
   $html .= "</ul>";
@@ -719,9 +719,9 @@ function moonmars_members_menu_block() {
       <div id='member-edit-menu'>
         <h4>Edit:</h4>
         <ul>
-          <li>" . l('Profile', $profile_member->editAlias() . '/profile') . "</li>
-          <li>" . l('Links', $profile_member->editAlias() . '/links') . "</li>
-          <li>" . l('Notifications', $profile_member->editAlias() . '/notifications') . "</li>
+          <li>" . l('Profile', $page_member->editAlias() . '/profile') . "</li>
+          <li>" . l('Links', $page_member->editAlias() . '/links') . "</li>
+          <li>" . l('Notifications', $page_member->editAlias() . '/notifications') . "</li>
         </ul>
       </div>";
   }
@@ -848,8 +848,8 @@ function moonmars_members_activity_redirect() {
 // */
 //function moonmars_members_rating_buttons($uid) {
 ////  $logged_in_member = Member::loggedInMember();
-////  $profile_member = Member::create($uid);
-////  $rel = MoonMarsRelation::searchBinary('rates', 'user', $logged_in_member->uid(), 'user', $profile_member->uid());
+////  $page_member = Member::create($uid);
+////  $rel = MoonMarsRelation::searchBinary('rates', 'user', $logged_in_member->uid(), 'user', $page_member->uid());
 //}
 
 
