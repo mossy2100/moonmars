@@ -51,8 +51,36 @@ function moonmars_channels_form_alter(&$form, &$form_state, $form_id) {
     unset($form['actions']['delete']);
     unset($form['actions']['preview']);
 
-    // Submit handler:
+    // Handler:
+    $form['actions']['submit']['#validate'][] = 'moonmars_channels_channel_node_form_validate';
     $form['actions']['submit']['#submit'][] = 'moonmars_channels_channel_node_form_submit';
+  }
+}
+
+/**
+ * Validation handler for channel_node_form.
+ * Check the links and add http:// if necessary:
+ *
+ * @param $form
+ * @param $form_state
+ */
+function moonmars_channels_channel_node_form_validate($form, &$form_state) {
+  $links = moonmars_channels_social_links();
+  foreach ($links as $link_info) {
+    $field = $link_info['field'];
+    if (!isset($form_state['values'][$field][LANGUAGE_NONE][0]['url'])) {
+      continue;
+    }
+
+    $url = $form_state['values'][$field][LANGUAGE_NONE][0]['url'];
+    if (!$url) {
+      continue;
+    }
+
+    $url_info = parse_url($url);
+    if (!isset($url_info['scheme'])) {
+      $form_state['values'][$field][LANGUAGE_NONE][0]['url'] = 'http://' . $url;
+    }
   }
 }
 
@@ -63,16 +91,9 @@ function moonmars_channels_form_alter(&$form, &$form_state, $form_id) {
  * @param $form_state
  */
 function moonmars_channels_channel_node_form_submit($form, &$form_state) {
-  // Check the links:
-  $links = moonmars_channels_social_links();
-
-  foreach ($links as $key => $link_info) {
-    $link = $form_state['values'][$link_info['field']];
-    dpm($link);
-  }
-
+  // Back to the member or group page:
   $channel = Channel::create($form['#node']);
-//  $form_state['redirect'] = $channel->parentEntity()->alias();
+  $form_state['redirect'] = $channel->parentEntity()->alias();
 }
 
 /**

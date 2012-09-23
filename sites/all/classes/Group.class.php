@@ -121,21 +121,37 @@ class Group extends MoonMarsNode {
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Misc static methods
 
+//  /**
+//   * Get a group given a group title.
+//   *
+//   * @static
+//   * @param $group_title
+//   * @return Channel
+//   */
+//  public static function createByTitle($group_title) {
+//    $rec = db_select('node', 'n')
+//      ->fields('n', array('nid'))
+//      ->condition('type', 'group')
+//      ->condition('title', $group_title)
+//      ->execute()
+//      ->fetch();
+//    return $rec ? self::create($rec->nid) : FALSE;
+//  }
+
   /**
-   * Get a group given a group title.
+   * Get a group given a group tag.
    *
    * @static
-   * @param $group_title
+   * @param $group_tag
    * @return Channel
    */
-  public static function createByTitle($group_title) {
-    $rec = db_select('node', 'n')
-      ->fields('n', array('nid'))
-      ->condition('type', 'group')
-      ->condition('title', $group_title)
+  public static function createByTag($group_tag) {
+    $rec = db_select('field_data_field_group_tag', 'f')
+      ->fields('f', array('entity_id'))
+      ->condition('field_group_tag_value', $group_tag)
       ->execute()
       ->fetch();
-    return $rec ? self::create($rec->nid) : FALSE;
+    return $rec ? self::create($rec->entity_id) : FALSE;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

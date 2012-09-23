@@ -78,6 +78,10 @@ function select_province_get(countrySelectorId, provinceAutocompleteId, province
 }
 
 $(function () {
+  // Unbind change events from country selector. This could be dodgy. After all, they were attached for a reason.
+  // I just can't see what that reason is.
+  $('.location_auto_country').unbind('change');
+
   // Update the form, replacing all province autocomplete fields with selectors.
   $('.location_auto_province').each(function() {
     var provinceAutocomplete = $(this);
@@ -104,10 +108,6 @@ $(function () {
 
     // Initialise the province provinceSelector:
     select_province_get(countrySelectorId, provinceAutocompleteId, provinceSelectorId);
-
-    // Remove any other change events from the country selector. This could be dubious, maybe revisit later if I ever
-    // contrib this module.
-    countrySelector.unbind('change');
 
     // Whenever the country selector changes, update the province selector:
     countrySelector.change(function() {

@@ -617,11 +617,14 @@ class Member extends User {
   }
 
   /**
-   * Renders a Moon or Mars or Both icon, with a flag on top.
+   * Renders a Moon, Mars or Both icon, with a flag on top.
+   * @todo check if this is still used.
    *
    * @return string
    */
   public function moonOrMarsWithFlag() {
+    $this->load();
+
     // If the user doesn't have a picture, use a default icon:
     $icon = $this->field('field_moon_or_mars');
     if (!$icon) {
@@ -630,7 +633,7 @@ class Member extends User {
     $image = array(
       'style_name' => 'icon-40x40',
       'path'       => "avatars/870x870/$icon-870x870.jpg",
-      'alt'        => $this->entity->name,
+      'alt'        => $this->name(),
       'attributes' => array('class' => array('avatar-icon')),
     );
 
@@ -651,6 +654,7 @@ class Member extends User {
 
   /**
    * Create a planet-flag icon for this member.
+   * @todo check if this is still used.
    *
    * @return string
    */
@@ -1036,7 +1040,7 @@ class Member extends User {
         // Scan through the conditions and use default value if not set.
         $nxn_conditions = $nxn_definitions[$nxn_category]['triumph types'][$triumph_type]['conditions'];
         foreach ($nxn_conditions as $nxn_condition => $nxn_condition_info) {
-          if (isset($rec_nxn_conditions)) {
+          if (isset($rec_nxn_conditions[$nxn_condition])) {
             // If specified in the database record, use that value:
             $nxn_pref['conditions'][$nxn_condition] = $rec_nxn_conditions[$nxn_condition];
           }
@@ -1662,15 +1666,7 @@ class Member extends User {
    * @param $name
    * @return Member|bool
    */
-  public static function searchByName($name) {
-    // Check in the cache:
-    foreach (EntityBase::$cache['user'] as $uid => $member) {
-      if ($member->name() == $name) {
-        return $member;
-      }
-    }
-
-    // Check in the database:
+  public static function createByName($name) {
     $q = db_select('users', 'u')
       ->fields('u', array('uid'))
       ->condition('name', $name);

@@ -357,13 +357,13 @@ class Triumph {
             } // switch triumph type
             break;
 
-          case 'news':
-            // If something was posted in the News channel, lookup who may want News notifications.
-            // Note that $channel will be NULL unless this is a new-item or new-comment.
-            if ($channel && $channel->isNewsChannel()) {
-              $candidates->add(Nxn::mayWant($nxn_category, $this->triumphType));
-            }
-            break;
+//          case 'news':
+//            // If something was posted in the News channel, lookup who may want News notifications.
+//            // Note that $channel will be NULL unless this is a new-item or new-comment.
+//            if ($channel && $channel->isNewsChannel()) {
+//              $candidates->add(Nxn::mayWant($nxn_category, $this->triumphType));
+//            }
+//            break;
 
           case 'channel':
             // The only member to consider is the one whose channel the item or comment is being posted in.

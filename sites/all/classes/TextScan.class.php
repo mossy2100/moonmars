@@ -53,44 +53,45 @@ class TextScan {
     $url_rx = "/($scheme)(($domain_name)|($ip_addr))($port_path_query_fragment)?/i";
     $html = preg_replace($url_rx, "<a href='$0' target='_blank'>$0</a>", $html);
 
+    // Regex fragments for actor codes:
+    $code_begin = "(^|[^\w-])";
+    $code_end = "($|[^\w-])";
+    $code = "([\w-]+)";
+
     // Scan for mentioned members:
-    $n_members = preg_match_all("/(^|\s)\@([a-z0-9\_\-]+)\b/i", $html, $matches);
+    $n_members = preg_match_all("/$code_begin@$code$code_end/i", $html, $matches);
     $members = array();
     if ($n_members) {
       foreach ($matches[2] as $name) {
         // Check if we have a member with this name:
-        $member = Member::searchByName($name);
+        $member = Member::createByName($name);
         if ($member) {
+          // Remember the member:
           $members[$member->uid()] = $member;
-          $html = preg_replace("/(^|\s)(\@$name)\b/i", "$1" . $member->atLink(), $html);
+          // Replace the member reference with a link:
+          $html = preg_replace("/$code_begin@($name)$code_end/i", '$1' . $member->atLink() . '$3', $html);
         }
       }
     }
 
-//  // Scan for hash tags:
-//  $n_tags = preg_match_all("/(^|\s)\@([a-z0-9\_\-]+)\b/i", $text, $matches);
-    $tags = array();
-//  if ($n_tags) {
-//    $html = $text;
-//    foreach ($matches[2] as $name) {
-//      // Check if we have a tag with this name:
-//      $tag = Member::create($name);
-//      if ($tag) {
-//        $tags[$tag->uid()] = $tag;
-//        $html = preg_replace("/(^|\s)(\@$name)\b/i", "$1" . $tag->hashLink(NULL, TRUE), $html);
-//      }
-//    }
-//  }
-
-    // Scan for mentioned groups:
-    $n_groups = preg_match_all("/\[([^\]]+)\]/", $text, $matches);
+    // Scan for hash tags:
+    $n_tags = preg_match_all("/$code_begin#$code$code_end/i", $text, $matches);
     $groups = array();
-    if ($n_groups) {
-      foreach ($matches[1] as $group_title) {
-        $group = Group::createByTitle($group_title);
+    $tags = array();
+    if ($n_tags) {
+      foreach ($matches[2] as $tag) {
+        $group = Group::createByTag($tag);
         if ($group) {
+          // Remember the group:
           $groups[$group->nid()] = $group;
-          $html = str_replace("[$group_title]", $group->hashLink(), $html);
+          // Replace the group reference with a link:
+          $html = preg_replace("/$code_begin#($tag)$code_end/i", '$1' . $group->hashLink() . '$3', $html);
+        }
+        else {
+          // Remember the tag:
+          $tags[$tag] = $tag;
+          // @todo Replace the tag reference with a link:
+//          $html = preg_replace("/$code_begin#$tag$code_end/i", '$1' . $tag->hashLink() . '$3', $html);
         }
       }
     }

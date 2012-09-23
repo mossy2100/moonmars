@@ -1,3 +1,6 @@
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Mixins for forms
+
 @mixin blank-container {
   background: none;
   border: 0;
@@ -5,23 +8,65 @@
   margin: 0;
 }
 
-@mixin blank-form-style {
-  @include blank-container;
-  margin-bottom: 20px;
-}
-
-@mixin grey-form-style {
+@mixin grey-container {
   background-color: $grey5;
   border: solid 1px $grey4;
-  @include border-radius(3px);
   padding: 10px;
-  margin-bottom: 15px;
+  @include border-radius(3px);
+  margin-bottom: 25px;
+}
+
+@mixin form-without-fieldsets {
+  @include grey-container;
+
+  fieldset {
+    @include blank-container;
+
+    legend {
+      display: none;
+    }
+
+    .fieldset-wrapper {
+      @include blank-container;
+    }
+  }
+}
+
+@mixin form-with-fieldsets {
+  @include blank-container;
+
+  fieldset {
+    @include blank-container;
+
+    legend {
+      color: black;
+      font-size: $fontSizeH3;
+      display: block;
+    }
+
+    .fieldset-wrapper {
+      @include grey-container;
+
+      fieldset {
+        @include blank-container;
+
+        legend {
+          display: none;
+        }
+
+        .fieldset-wrapper {
+          @include blank-container;
+        }
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // All forms
 form {
-  @include grey-form-style;
+  // By default assume no fieldsets, then this can be overridden as required:
+  @include form-without-fieldsets;
 
   div.form-item label,
   span.fieldset-legend {
@@ -29,20 +74,7 @@ form {
   }
 
   fieldset {
-    @include blank-container;
-    margin-bottom: 25px;
-
-    legend {
-      color: black;
-      @include border-radius(3px 3px 0 0);
-      font-size: $fontSizeH3;
-      position: relative;
-      top: -12px;
-    }
-
     div.fieldset-wrapper {
-      padding: 10px;
-
       .date-padding {
         padding: 0;
       }
@@ -58,9 +90,13 @@ form {
   select,
   textarea {
     line-height: 16px;
-    padding: 2px;
     border: solid 1px $blue4;
     @include border-radius(3px);
+  }
+
+  input.form-text,
+  textarea {
+    padding: 2px;
   }
 
   textarea {
@@ -70,10 +106,6 @@ form {
   input.form-text,
   .form-textarea-wrapper textarea {
     width: 278px;
-  }
-
-  .field-name-field-event-price {
-    float: left;
   }
 
   .container-inline-date > .form-item {
@@ -189,337 +221,6 @@ form {
   }
 }
 
-////////////////////////////////////////////////////////////////////////
-// Check actor code message.
-// Forms:
-//   - user register form
-//   - member profile edit form
-//   - group create/edit form
-#actor-code-wrapper {
-  height: 24px;
-
-  input {
-    float: left;
-    width: 200px;
-  }
-
-  div {
-    height: 24px;
-    line-height: 24px;
-    margin-left: 5px;
-    float: left;
-  }
-
-  #actor-code-mark {
-    float: left;
-    margin-left: 0;
-    margin-right: 2px;
-  }
-
-  #actor-code-check {
-    display: none;
-    color: $blue3;
-    cursor: pointer;
-  }
-
-  #actor-code-message {
-    display: none;
-
-    &.actor-code-valid {
-      color: $green3;
-    }
-
-    &.actor-code-invalid {
-      color: $red3;
-    }
-  }
-
-  #actor-code-waiting {
-    display: none;
-    height: 20px;
-    width: 16px;
-    background: url('../images/loading1.gif') no-repeat right 3px;
-  }
-}
-
-///////////////////////////////////////
-// User registration and profile forms
-
-// User profile form
-#user-profile-form {
-  @include blank-form-style;
-
-  fieldset {
-    legend {
-      color: black;
-      top: -5px;
-    }
-
-    .fieldset-wrapper {
-      @include grey-form-style;
-      margin-bottom: 0;
-    }
-
-    // Hide the appearance of nested fieldsets:
-    fieldset {
-      border: 0;
-      padding: 0;
-      margin: 0;
-
-      .fieldset-wrapper {
-        border: 0;
-        padding: 0;
-        margin: 0;
-      }
-
-      legend {
-        display: none;
-      }
-    }
-  }
-
-  .form-item-field-user-location-und-0-country {
-    margin-top: 0;
-  }
-}
-
-// User register form
-#user-register-form {
-  fieldset {
-    margin-bottom: 0;
-
-    .fieldset-wrapper {
-      padding: 0;
-    }
-
-    legend {
-      display: none;
-    }
-  }
-}
-
-// User register and profile forms
-#user-register-form,
-#user-profile-form {
-  // Fieldsets:
-  #edit-account {
-    margin-top: 0;
-
-    .form-item-name {
-      margin-top: 0;
-    }
-
-    .form-item-status {
-      margin-bottom: 0;
-    }
-
-    #edit-current-pass,
-    #edit-pass-pass1,
-    #edit-pass-pass2 {
-      width: 110px;
-      margin-bottom: 0;
-    }
-
-    .form-item-pass-pass2 {
-      margin-bottom: 3px;
-    }
-
-    .form-type-password-confirm {
-      .form-type-password {
-        width: 278px;
-      }
-    }
-
-    .password-strength,
-    div.password-confirm {
-      width: 160px;
-    }
-
-    .password-strength {
-      margin-top: 22px;
-    }
-
-    div.password-confirm {
-      margin-top: 25px;
-    }
-
-    .password-suggestions {
-      width: 268px;
-      padding: 4px;
-      margin-bottom: 0;
-
-      ul {
-        margin-left: 20px;
-      }
-    }
-  }
-
-  #user_user_form_group_personal {
-    #edit-picture {
-      margin-bottom: 0;
-
-      .form-item-files-picture-upload {
-        margin: 0;
-
-        label {
-          display: none;
-        }
-      }
-
-      .user-picture {
-        float: left;
-        margin-right: 10px;
-      }
-
-      legend {
-        display: block;
-        font-size: 12px;
-        top: 0;
-        padding: 3px 0;
-      }
-
-      .form-item-picture-delete {
-        margin-top: 0;
-      }
-    }
-
-    .field-type-datetime {
-      .form-type-date-popup {
-        margin: 0;
-      }
-
-      .form-item-field-date-of-birth-und-0-value-date {
-        .description {
-          padding-bottom: 0;
-        }
-      }
-    }
-  }
-
-  #edit-field-user-location {
-    .location .form-item input {
-      margin-bottom: 0;
-    }
-
-    .form-item-timezone {
-      margin-bottom: 0;
-    }
-  }
-
-  #edit-links {
-    .form-item-field-website-und-0-url {
-      margin-top: 0;
-    }
-
-    .form-item-field-wikipedia-link-und-0-url {
-      margin-bottom: 0;
-    }
-  }
-
-  #user_user_form_group_preferences {
-    margin-bottom: 10px;
-
-    .form-item {
-      margin-top: 0;
-    }
-
-    .form-item-field-background-color-und-0-rgb {
-      margin-bottom: 0;
-    }
-  }
-
-  #site-rules {
-    h3 {
-      margin: 0 0 5px;
-    }
-
-    p {
-      margin: 10px 0;
-    }
-
-    ul {
-      margin: 10px 0 0 20px;
-    }
-  }
-
-  .form-item-rules-cb {
-    margin: 10px 0 15px;
-  }
-
-  .description {
-    margin-left: 0;
-  }
-
-  .location .form-item input,
-  #edit-field-user-location-und-0-country,
-  #edit-field-user-location-und-0-province-selector,
-  #edit-timezone--2 {
-    width: 278px;
-  }
-
-  #edit-field-mobile-phone-und-0-value {
-    width: 150px;
-  }
-
-  #edit-actions {
-    margin-top: 0;
-  }
-
-
-  #edit-field-moon-or-mars {
-    width: 276px;
-
-    .form-item-field-moon-or-mars-und {
-      margin: 0;
-    }
-
-    #edit-field-moon-or-mars-und {
-      height: 104px;
-      margin: 0;
-
-      div.form-item {
-        float: left;
-        width: 88px;
-        margin: 0 2px;
-
-        &:last-child {
-          margin-right: 0;
-        }
-
-        label {
-          display: block;
-          width: 80px;
-          height: 15px;
-          padding: 84px 4px 4px;
-          margin: 0;
-          background-repeat: no-repeat;
-          background-position: 4px 4px;
-          text-align: center;
-          background-color: $grey4;
-          border: solid 1px $grey4;
-          @include border-radius(4px);
-
-          &.selected {
-            border-color: $blue3;
-            background-color: $blue3;
-            color: white;
-          }
-
-          &:hover {
-            border-color: $red3;
-            background-color: $red3;
-            color: white;
-          }
-        }
-
-        input {
-          display: none;
-        }
-      }
-    }
-  }
-}
-
 ////////////////////////////////////
 // Channel node form
 #channel-node-form {
@@ -552,21 +253,10 @@ form {
 .form-actions {
   display: block;
   text-align: right;
+  margin: 0;
 
   .form-submit {
     margin: 3px 0 0 5px;
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// User login form in sidebar
-#user-login-form {
-  input.form-text {
-    width: 100%;
-  }
-
-  #edit-actions {
-    margin-bottom: 0;
   }
 }
 
@@ -575,131 +265,4 @@ form {
 #autocomplete li.selected {
   background: $red3;
   color: #fff;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Groups
-
-// Groups search form
-form#moonmars-groups-search-form {
-  @include blank-form-style;
-
-  fieldset {
-    @include grey-form-style;
-
-    .fieldset-wrapper {
-      padding: 0;
-    }
-
-    .fieldset-wrapper > .form-item > label {
-      margin-bottom: 2px;
-    }
-
-    .description {
-      padding-top: 2px;
-    }
-
-    .form-item-text {
-      margin-top: 0;
-
-      #edit-text {
-        width: 278px;
-        box-sizing: border-box;
-      }
-    }
-
-    .form-type-checkbox,
-    .form-type-radio {
-      //display: inline;
-      margin-right: 10px;
-
-      label {
-        font-weight: normal;
-      }
-
-      .form-checkbox,
-      .form-radio {
-        margin: 0 2px 0 0;
-      }
-    }
-
-    .group-search-member {
-      margin: 15px 0;
-      @include clearfix;
-
-      label.group-search-member-title {
-        font-weight: bold;
-        display: block;
-      }
-
-      div,
-      label {
-        display: inline;
-      }
-
-      label {
-        padding: 0;
-        font-weight: normal;
-      }
-
-      #edit-member {
-        width: 150px;
-        margin-left: 2px;
-        background-position: right 4px;
-      }
-
-      .form-type-radio {
-        margin-right: 0;
-      }
-
-      .form-radio {
-        margin: 0 0 0 3px;
-      }
-    }
-
-    .clear-button {
-      margin-right: 5px;
-    }
-
-  }
-
-  table {
-    .groups-column-group {
-      text-align: center;
-      width: 100px;
-
-      .group-link {
-        a {
-          @include group-link;
-          width: 100px;
-          margin: 0px;
-        }
-      }
-    }
-
-    .group-type,
-    .group-member-count {
-      color: $grey3;
-    }
-
-    .group-description {
-      color: $grey3;
-      font-size: 11px;
-    }
-
-    th {
-      white-space: nowrap;
-    }
-  }
-
-  #edit-update {
-    float: right;
-  }
-}
-
-// Group edit form
-form#group-node-form {
-  .form-item-title {
-    margin-top: 0;
-  }
 }

@@ -553,7 +553,7 @@ function remove_key_from_array($key, &$array, $parent = '') {
  * @param array $form
  * @param array $form_state
  */
-function remove_field_from_form($field, &$form, &$form_state = NULL) {
+function drupal_form_remove_field($field, &$form, &$form_state = NULL) {
   remove_key_from_array($field, $form);
   if ($form_state) {
     remove_key_from_array($field, $form_state);
@@ -566,7 +566,7 @@ function remove_field_from_form($field, &$form, &$form_state = NULL) {
  * @param array $form
  * @param array $form_state
  */
-function remove_group_from_form($group, &$form, &$form_state = NULL) {
+function drupal_form_remove_group($group, &$form, &$form_state = NULL) {
   // remove the fields in the group:
   if (is_array($form[$group])) {
     foreach ($form[$group] as $key => $value) {
@@ -585,6 +585,20 @@ function remove_group_from_form($group, &$form, &$form_state = NULL) {
   if ($form_state) {
     remove_key_from_array($group, $form_state);
   }
+}
+
+/**
+ * Move a field from one fieldset (field group) to another.
+ *
+ * @param $form
+ * @param $field_name
+ * @param $old_group
+ * @param $new_group
+ */
+function drupal_form_move_field(&$form, $field_name, $old_group, $new_group) {
+  $form['#groups'][$old_group]->children = array_diff($form['#groups'][$old_group]->children, [$field_name]);
+  $form['#groups'][$new_group]->children[] = 'field_moon_or_mars';
+  $form['#group_children'][$field_name] = $new_group;
 }
 
 /**

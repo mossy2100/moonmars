@@ -168,26 +168,26 @@ function moonmars_nxn_definitions() {
         ],
       ],
     ],
-    'news' => [
-      'title' => "News",
-      'description' => "Select your notification preferences for the News channel.",
-      'triumph types'  => [
-        'new-item'     => [
-          'title'       => 'New items',
-          'description' => "Do you want to be notified about new items?<br><strong>IT'S YOUR CHOICE BUT PLEASE LEAVE AS 'Yes' AS THIS IS HOW I NOTIFY EVERYONE ABOUT UPDATES TO THE SITE.</strong>",
-          'default'     => MOONMARS_NXN_YES,
-          'conditions'  => $new_item_conditions,
-          'enabled'     => TRUE,
-        ],
-        'new-comment'  => [
-          'title'       => 'New comments',
-          'description' => "Do you want to be notified about new comments?",
-          'default'     => MOONMARS_NXN_SOME,
-          'conditions'  => $new_comment_conditions,
-          'enabled'     => TRUE,
-        ],
-      ],
-    ],
+//    'news' => [
+//      'title' => "News",
+//      'description' => "Select your notification preferences for the News channel.",
+//      'triumph types'  => [
+//        'new-item'     => [
+//          'title'       => 'New items',
+//          'description' => "Do you want to be notified about new items?<br><strong>IT'S YOUR CHOICE, BUT PLEASE LEAVE THIS AS 'Yes' AS IT'S HOW I NOTIFY EVERYONE ABOUT UPDATES TO THE SITE.</strong>",
+//          'default'     => MOONMARS_NXN_YES,
+//          'conditions'  => $new_item_conditions,
+//          'enabled'     => TRUE,
+//        ],
+//        'new-comment'  => [
+//          'title'       => 'New comments',
+//          'description' => "Do you want to be notified about new comments?",
+//          'default'     => MOONMARS_NXN_SOME,
+//          'conditions'  => $new_comment_conditions,
+//          'enabled'     => TRUE,
+//        ],
+//      ],
+//    ],
     'channel'  => [
       'title' => "My channel",
       'description' => "Select the notifications you want about your channel.",
@@ -369,14 +369,14 @@ function moonmars_nxn_list($user) {
   foreach ($rs as $rec) {
     $nxn = new Nxn($rec->nxn_id);
     $nxn->load();
-
-    $html .= "<tr>";
-    $html .= "<td class='nxn-created'>" . $nxn->created()->format(MoonMarsDateTime::FORMAT_DATETIME_LONG) . "</td>";
-    $html .= "<td class='nxn-details'>";
-    $html .= "<div class='nxn-summary'>" . $nxn->summary() . "</div>";
-    $html .= "<div class='nxn-preview'>" . $nxn->preview() . "</div>";
-    $html .= "</td>";
-    $html .= "</tr>";
+    $html .= "
+      <tr>
+        <td class='nxn-created'>" . $nxn->created()->format(MoonMarsDateTime::FORMAT_DATETIME_LONG) . "</td>
+        <td class='nxn-details'>
+          <div class='nxn-summary'>" . $nxn->summary() . "</div>
+          <div class='nxn-preview'>" . $nxn->preview() . "</div>
+        </td>
+      </tr>";
   }
 
   $html .= "</table>";

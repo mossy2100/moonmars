@@ -86,18 +86,7 @@
 // Notifications preferences form
 
 form#moonmars-nxn-prefs-form {
-  @include blank-container;
-
-  // Set up fieldsets:
-  fieldset.form-wrapper {
-    legend {
-      top: -5px;
-    }
-
-    div.fieldset-wrapper {
-      @include grey-form-style;
-    }
-  }
+  @include form-with-fieldsets;
 
   .form-type-radios {
     margin: 15px 0 5px;

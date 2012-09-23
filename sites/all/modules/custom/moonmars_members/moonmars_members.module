@@ -23,11 +23,6 @@ function moonmars_members_init() {
   // String to explain username constraints:
   global $moonmars_username_desc;
   $moonmars_username_desc = "Usernames may only contain letters, digits, hyphens and underscores (a-z, A-Z, 0-9, -_), and must be between " . MOONMARS_ACTOR_CODE_MIN_LENGTH . " and " . MOONMARS_ACTOR_CODE_MAX_LENGTH . " characters in length.";
-
-  // If looking up provinces for a country, make sure the function user_profile_form_validate() is available:
-  if ($_SERVER['REQUEST_URI'] == '/system/ajax/field_user_location/und/0') {
-    module_load_include('inc', 'user', 'user.pages');
-  }
 }
 
 /**
@@ -193,18 +188,31 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
       drupal_set_title("Join moonmars.com!");
 
       // Update username field description re valid characters:
+//      unset($form['#groups']['group_account']->label);
+
       $form['account']['name']['#description'] = $moonmars_username_desc;
+
+      // Move "moon or mars" to the account fieldset:
+      $form['account']['field_moon_or_mars'] = $form['field_moon_or_mars'];
+      unset($form['field_moon_or_mars']);
 
       // Remove location fieldset description, and province and city fields:
       unset($form['field_user_location'][LANGUAGE_NONE][0]['#description']);
       $form['field_user_location'][LANGUAGE_NONE][0]['#location_settings']['form']['fields']['province']['collect'] = 0;
       $form['field_user_location'][LANGUAGE_NONE][0]['#location_settings']['form']['fields']['city']['collect'] = 0;
 
+      // Move location to the account fieldset:
+      $form['account']['field_user_location'] = $form['field_user_location'];
+      unset($form['field_user_location']);
+
       // Site rules:
       $form['rules'] = [
+        '#type' => 'fieldset',
+        '#title' => 'Rules',
+      ];
+      $form['rules']['text'] = [
         '#markup' => "
   <div id='site-rules'>
-    <h3>moonmars.com Rules</h3>
     <p>This is not legal stuff. Please review these and make sure you agree before proceeding.</p>
     <ul>
       <li>Be nice to everyone, regardless of age, religion, race, gender, intelligence level, or political or planetary affiliation.</li>
@@ -222,7 +230,7 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
   </div>
   ",
       ];
-      $form['rules-cb'] = [
+      $form['rules']['agree'] = [
         '#type' => 'checkbox',
         '#title' => "I agree to the Rules.",
         '#required' => TRUE,
@@ -239,10 +247,12 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
       $form['account']['#weight'] = $weight++;
       $form['account']['name']['#weight'] = $weight++;
       $form['account']['mail']['#weight'] = $weight++;
-      $form['field_moon_or_mars']['#weight'] = $weight++;
-      $form['field_user_location']['#weight'] = $weight++;
+      $form['account']['field_moon_or_mars']['#weight'] = $weight++;
+      $form['account']['field_user_location']['#weight'] = $weight++;
       $form['rules']['#weight'] = $weight++;
-      $form['rules-cb']['#weight'] = $weight++;
+      $form['rules']['text']['#weight'] = $weight++;
+      $form['rules']['agree']['#weight'] = $weight++;
+//      dbg($form);
       break;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -284,6 +294,9 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
 
       // Hide the notifications preferences:
       unset($form['field_notifications_preferences']);
+
+      // Remove location fieldset description:
+      unset($form['field_user_location'][LANGUAGE_NONE][0]['#description']);
 
       // Add an after_build handler:
       $form['#after_build'][] = 'moonmars_members_user_profile_form_after_build';
@@ -368,13 +381,8 @@ function moonmars_members_user_register_form_validate($form, &$form_state) {
  * @return array
  */
 function moonmars_members_user_register_form_after_build($form) {
-  // Remove AJAX from the country selector:
-//  unset($form['field_user_location'][LANGUAGE_NONE][0]['country']['#ajax']);
-//  $form['field_user_location'][LANGUAGE_NONE][0]['country']['#attributes']['class'] = array_diff($form['field_user_location'][LANGUAGE_NONE][0]['country']['#attributes']['class'], array('location_auto_country'));
-//  $form['field_user_location'][LANGUAGE_NONE][0]['country']['#process'] = array_diff($form['field_user_location'][LANGUAGE_NONE][0]['country']['#process'], array('ajax_process_form'));
-//  $form['field_user_location'][LANGUAGE_NONE][0]['country']['#ajax_processed'] = FALSE;
-  // This was the only change needed, but let's not delete the other lines yet just in case.
-  unset($form['field_user_location'][LANGUAGE_NONE][0]['country']['#attached']['js'][0]['data']['ajax']);
+  // Make some changes to the location fields that we can't do in hook_form_alter().
+  $form['account']['field_user_location'][LANGUAGE_NONE][0]['country']['#description'] = "Select your country";
 
   return $form;
 }
@@ -396,7 +404,6 @@ function moonmars_members_user_profile_form_after_build($form) {
   }
 
   // Make some changes to the location fields that we can't do in hook_form_alter().
-  unset($form['field_user_location'][LANGUAGE_NONE][0]['#description']);
   $form['field_user_location'][LANGUAGE_NONE][0]['country']['#description'] = "Select your country";
   $form['field_user_location'][LANGUAGE_NONE][0]['province']['#description'] = "Select your state or province";
   $form['field_user_location'][LANGUAGE_NONE][0]['city']['#description'] = "Enter your city";
@@ -677,25 +684,19 @@ function moonmars_members_menu_block() {
   $logged_in_member = Member::loggedInMember();
   $own_profile = Member::equals($logged_in_member, $profile_member);
 
-  // Start generating HTML:
-  $html = "<ul id='member-menu' class='menu'>";
-
   // Member profile menu links:
+  $html = "<ul id='member-menu' class='menu'>";
   if ($own_profile) {
     // Links for when you're on your own profile.
-
     // Activity:
     $html .= "<li>" . l('Activity', $profile_member->alias() . '/activity') . "</li>";
-
     // Profile:
     $html .= "<li>" . l('Profile', $profile_member->alias()) . "</li>";
-
     // View notifications:
     $html .= "<li>" . l('Notifications', $profile_member->alias() . '/notifications') . "</li>";
   }
   else {
     // Links for when you're on someone else's profile.
-
     // Follow/unfollow link:
     if ($logged_in_member->follows($profile_member)) {
       $follow_link = l('Unfollow', $profile_member->alias() . '/unfollow');
@@ -705,17 +706,21 @@ function moonmars_members_menu_block() {
     }
     $html .= "<li>$follow_link</li>";
   }
+  $html .= "</ul>";
 
-  // Administration links, for if the member is on their own profile page, or for admins.
+  // Edit links, for if the member is on their own profile page, or for admins.
   if ($own_profile || user_access('administer users', $user)) {
-    // Edit profile link:
-    $html .= "<li>" . l('Edit profile', $profile_member->editAlias() . '/profile') . "</li>";
-
-    // Edit links:
-//    $html .= "<li>" . l('Edit links', $profile_member->channel()->editAlias()) . "</li>";
+    $html .= "
+      <div id='member-edit-menu'>
+        <h4>Edit:</h4>
+        <ul>
+          <li>" . l('Profile', $profile_member->editAlias() . '/profile') . "</li>
+          <li>" . l('Links', $profile_member->editAlias() . '/links') . "</li>
+          <li>" . l('Notifications', $profile_member->editAlias() . '/notifications') . "</li>
+        </ul>
+      </div>";
   }
 
-  $html .= "</ul>";
   return $html;
 }
 

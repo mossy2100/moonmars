@@ -1,59 +1,3 @@
-@mixin member-grid-avatar {
-  float: left;
-  margin: 0 5px 5px 0;
-}
-
-.view-newest-users {
-	.views-row {
-	  @include member-grid-avatar;
-	}
-
-  .view-footer {
-    clear: both;
-    display: none; // TEMPORARY - until /members page done
-  }
-}
-
-.block-group-info-block {
-
-  .view-group-info {
-    .views-field {
-      margin: 10px 0;
-    }
-
-    .views-field-title {
-      font-size: 20px;
-      font-weight: bold;
-    }
-
-    .views-field-field-description {
-      font-size: 11px;
-      color: $grey3;
-    }
-
-    .views-field-php {
-      font-size: 12px;
-      color: black;
-    }
-
-    #group-user-menu {
-      list-style-type: none;
-    }
-
-    .views-field-field-group-type div {
-      display: inline;
-      color: $grey3;
-    }
-
-    .views-field-field-logo {
-      margin-top: 10px;
-    }
-
-    .views-field-php {
-      margin: 0;
-    }
-  }
-}
 
 #region-sidebar-second {
   .item-list {
@@ -66,171 +10,38 @@
   }
 }
 
-ul.member-grid {
-  list-style-type: none;
-  margin: 3px 0;
+#region-sidebar-first,
+#region-sidebar-second {
+  .block {
+    margin-top: 8px;
 
-  li {
-    @include member-grid-avatar;
-  }
-}
+    ul.menu {
+      list-style-type: none;
 
-@mixin group-link {
-  @include border-radius(3px);
-  display: block;
-  width: 100%;
-  padding: 5px 0;
-  background-color: $grey5;
-  text-align: center;
+      li {
+        list-style-type: none;
+        list-style-image: none;
+        margin: 0;
+        padding: 0;
 
-  &:hover {
-    background-color: $red3;
-    color: white;
-  }
-}
+        a {
+          background-color: $grey5;
+          @include border-radius(3px);
+          width: 100%;
+          padding: 1px 0;
+          margin: 1px 0;
+          display: block;
+          text-align: center;
+          color: $blue3;
+          font-weight: bold;
+          font-size: 12px;
 
-
-.groups-block {
-  .view-all-groups-link {
-    text-align: right;
-  }
-
-  ul.group-list {
-    list-style-type: none;
-    margin: 3px 0 0;
-
-    li {
-      margin-bottom: 3px;
-
-      a {
-        @include group-link;
+          &:hover {
+            background-color: $red3;
+            color: white;
+          }
+        }
       }
-    }
-  }
-}
-
-.view-newest-groups {
-  .views-row {
-    background-color: $grey5;
-    @include border-radius(3px);
-    text-align: center;
-    margin-bottom: 5px;
-    padding: 5px 0;
-  }
-}
-
-.block-user-info-block {
-  .views-field {
-    margin: 10px 0;
-  }
-
-  .views-field-field-moon-or-mars {
-    .field-content {
-      color: $grey3;
-      display: inline;
-    }
-  }
-
-  .views-field-field-bio {
-    color: $grey3;
-  }
-
-  .skype-links {
-    height: 25px;
-    
-    a {
-      display: block;
-      height: 25px;
-      width: 25px;
-      float: left;
-    }
-    
-    .skype-add {
-      background-image: url('../social-icons/skype-add.png');
-    }
-
-    .skype-chat {
-      background-image: url('../social-icons/skype-chat.png');
-    }
-
-    .skype-call {
-      background-image: url('../social-icons/skype-call.png');
-    }
-
-  }
-}
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Channel links.
-
-.block-user-info-block,
-.block-group-info-block {
-
-  .official-website {
-    margin: 10px 0;
-  }
-
-  .social-links {
-    margin: 10px 0;
-    padding: 0;
-
-    a.social-link {
-      display: block;
-      float: left;
-      width: 25px;
-      height: 25px;
-      margin: 0 5px 5px 0;
-      @include border-radius(3px);
-      @include opacity(0.6);
-
-      &:hover {
-        @include opacity(1);
-      }
-    }
-
-    .social-link-website {
-      background-image: url("../images/social-icons/website-25x25.png");
-    }
-
-    .social-link-facebook {
-      background-image: url("../images/social-icons/facebook-25x25.png");
-    }
-
-    .social-link-linkedin {
-      background-image: url("../images/social-icons/linkedin-25x25.png");
-    }
-
-    .social-link-twitter {
-      background-image: url("../images/social-icons/twitter-25x25.png");
-    }
-
-    .social-link-meetup {
-      background-image: url("../images/social-icons/meetup-25x25.png");
-    }
-
-    .social-link-google-plus {
-      background-image: url("../images/social-icons/google-plus-25x25.png");
-    }
-
-    .social-link-youtube {
-      background-image: url("../images/social-icons/youtube-25x25.png");
-    }
-
-    .social-link-flickr {
-      background-image: url("../images/social-icons/flickr-25x25.png");
-    }
-
-    .social-link-wikipedia {
-      background-image: url("../images/social-icons/wikipedia-25x25.png");
-    }
-    
-    .social-link-academia {
-      background-image: url("../images/social-icons/academia-25x25.png");
-    }
-
-    .social-link-skype {
-      background-image: url("../images/social-icons/skype-25x25.png");
     }
   }
 }

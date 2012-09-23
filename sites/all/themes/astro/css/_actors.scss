@@ -1,0 +1,53 @@
+
+////////////////////////////////////////////////////////////////////////
+// Check actor code message.
+// Forms:
+//   - user register form
+//   - member profile edit form
+//   - group create/edit form
+#actor-code-wrapper {
+  height: 24px;
+
+  input {
+    float: left;
+    width: 200px;
+  }
+
+  div {
+    height: 24px;
+    line-height: 24px;
+    margin-left: 5px;
+    float: left;
+  }
+
+  #actor-code-mark {
+    float: left;
+    margin-left: 0;
+    margin-right: 2px;
+  }
+
+  #actor-code-check {
+    display: none;
+    color: $blue3;
+    cursor: pointer;
+  }
+
+  #actor-code-message {
+    display: none;
+
+    &.actor-code-valid {
+      color: $green3;
+    }
+
+    &.actor-code-invalid {
+      color: $red3;
+    }
+  }
+
+  #actor-code-waiting {
+    display: none;
+    height: 20px;
+    width: 16px;
+    background: url('../images/loading1.gif') no-repeat right 3px;
+  }
+}
