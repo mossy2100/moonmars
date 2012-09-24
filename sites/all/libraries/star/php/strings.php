@@ -6,7 +6,7 @@ function println($str = '')
   print $str."\n";
 }
 
-function printbr($str = '', $noBrIfStrEmpty = false)
+function printbr($str = '', $noBrIfStrEmpty = FALSE)
 {
   print $str;
   if ($str != '' || !$noBrIfStrEmpty)
@@ -17,7 +17,7 @@ function extractFilename($path)
 {
   $filename = $path;
   $n = strrpos($path, "/");
-  if ($n !== false)
+  if ($n !== FALSE)
     $filename = substr($filename, $n + 1);
   return $filename;
 }
@@ -28,7 +28,7 @@ function isVowel($ch)
   return in_array($ch, array("a", "e", "i", "o", "u"));
 }
 
-function plural($str, $n = 0, $returnNum = false)
+function plural($str, $n = 0, $returnNum = FALSE)
 {
   // if $n == 1, returns $str (which should be singular form)
   // if $n != 1, returns the plural form of $str
@@ -108,7 +108,7 @@ function simpleNewlines($str)
  * @param bool $add_newlines Set to true if you want newlines after each break tag (default).
  * @return string
  */
-function nl2brs($str, $addNewlines = true) {
+function nl2brs($str, $addNewlines = TRUE) {
   $str = simpleNewlines($str);
   $replace = "<br />" . ($addNewlines ? "\n" : "");
   $str = str_replace("\n", $replace, $str);
@@ -231,10 +231,10 @@ function stripWhitespace($str) {
 function containsDigits($str) {
   for ($i = 0; $i < strlen($str); $i++)  {
     if (ctype_digit($str{$i})) {
-      return true;
+      return TRUE;
     }
   }
-  return false;
+  return FALSE;
 }
 
 /**
@@ -377,9 +377,9 @@ function str2bit($str)
 
 function expandYN($ch, $Y = 'Yes', $N = 'No', $default = 'N')
 {
-  if ($ch === true || $ch == 'Y')
+  if ($ch === TRUE || $ch == 'Y')
     return $Y;
-  else if ($ch === false || $ch == 'N' || $default == 'N')
+  else if ($ch === FALSE || $ch == 'N' || $default == 'N')
     return $N;
   else
     return $default;
@@ -499,9 +499,9 @@ function inStr($needle, $haystack)
   // returns true if $needle is in $haystack otherwise false
   if ($needle == '')
   {
-    return false;
+    return FALSE;
   }
-  return strpos($haystack, $needle) !== false;
+  return strpos($haystack, $needle) !== FALSE;
 }
 
 function html2db($str)
@@ -590,26 +590,30 @@ function endsWith($str, $substr, $ignoreCase = FALSE) {
   return right($str, strlen($substr)) == $substr;
 }
 
-
-function makeList($arr, $conj = "&")
-{
-  // will return a string in the form of "A, B, C & D", constructed from the supplied array:
-  if (count($arr) == 0)
+/**
+ * Will return a string in the form of "A, B, C & D", constructed from the supplied array.
+ *
+ * @param array $arr
+ * @param string $conj
+ * @return string
+ */
+function makeList($arr, $conj = "&") {
+  if (count($arr) == 0) {
     return "";
-  else if (count($arr) == 1)
+  }
+  elseif (count($arr) == 1) {
     return $arr[0];
-  else if (count($arr) == 2)
+  }
+  elseif (count($arr) == 2) {
     return "{$arr[0]} $conj {$arr[1]}";
-  else
-  {
+  }
+  else {
     $first = array_shift($arr);
-    return "$first, ".makeList($arr);
+    return "$first, " . makeList($arr);
   }
 }
 
-
-function editDistance($s, $t)
-{
+function editDistance($s, $t) {
   // note - I did not realise there was a levenshtein function built into PHP
   // when I made this one!
 
@@ -631,24 +635,26 @@ function editDistance($s, $t)
   // Step 1
   $n = strlen($s);
   $m = strlen($t);
-  if ($n == 0)
+  if ($n == 0) {
     return $m;
-  if ($m == 0)
+  }
+  if ($m == 0) {
     return $n;
+  }
 
   // Step 2
-  for ($i = 0; $i <= $n; $i++)
+  for ($i = 0; $i <= $n; $i++) {
     $d[$i][0] = $i;
-  for ($j = 0; $j <= $m; $j++)
+  }
+  for ($j = 0; $j <= $m; $j++) {
     $d[0][$j] = $j;
+  }
 
   // Step 3
-  for ($i = 1; $i <= $n; $i++)
-  {
+  for ($i = 1; $i <= $n; $i++) {
     $s_i = $s{$i - 1};  // the $i'th character of $s
     // Step 4
-    for ($j = 1; $j <= $m; $j++)
-    {
+    for ($j = 1; $j <= $m; $j++) {
       $t_j = $t{$j - 1}; // the $j'th character of $t
 
       // Step 5
@@ -663,18 +669,25 @@ function editDistance($s, $t)
   return $d[$n][$m];
 }
 
+/**
+ * Returns str with only alphanumeric or hyphens, any other chars removed.
+ *
+ * @param string $str
+ * @return string
+ */
 function makeDomainWord($str) {
-  // returns str with only alphanumeric or hyphens, any other chars removed:
   $out = "";
-  for ($i = 0; $i < strlen($str); $i++)
-  {
+  for ($i = 0; $i < strlen($str); $i++) {
     $ch = $str{$i};
     if (ctype_alnum($ch) || ($ch == '-' && $out != ''))
       $out .= $ch;
   }
-  // trim any trailing hyphens:
-  while ($out{strlen($out) - 1} == '-')
+
+  // Trim any trailing hyphens:
+  while ($out[strlen($out) - 1] == '-') {
     $out = left($out, strlen($out) - 1);
+  }
+
   return strtolower($out);
 }
 
@@ -689,14 +702,14 @@ function is_html($text) {
 
 
 /**
- * Normalizes break trags and trims any from the end.
+ * Normalizes break tags and trims any from the end.
  * @param string $text
  * @return string
  */
 function trim_break_tags($text) {
-  $text = str_replace(array("<br />", "<br/>", "<br>", "<BR />", "<BR/>", "<BR>"), "<br />", $text);
+  $text = str_replace(array('<br />', '<br/>', '<br>', '<BR />', '<BR/>', '<BR>'), '<br>', $text);
   $text = trim($text);
-  while (endsWith($text, "<br />")) {
+  while (endsWith($text, '<br>')) {
     $text = trim(left($text, strlen($text) - 6));
   }
   return $text;
@@ -713,7 +726,7 @@ function trim_break_tags($text) {
  * @param mixed $value
  * @return string
  */
-function var_to_string($value, $indent = 0, $objects = array()) {
+function var_to_string($value, $indent = 0, $objects = array(), $html = FALSE) {
   if (is_null($value)) {
     return 'NULL';
   }
@@ -724,7 +737,7 @@ function var_to_string($value, $indent = 0, $objects = array()) {
     return "'" . htmlspecialchars(addslashes($value)) . "'";
   }
   elseif (is_array($value)) {
-    return array_to_string($value, $indent, $objects);
+    return array_to_string($value, $indent, $objects, $html);
   }
   elseif (is_object($value)) {
     if (in_array($value, $objects, TRUE)) {
@@ -732,7 +745,7 @@ function var_to_string($value, $indent = 0, $objects = array()) {
     }
     else {
       $objects[] = $value;
-      return object_to_string($value, $indent, $objects);
+      return object_to_string($value, $indent, $objects, $html);
     }
   }
   else {
@@ -748,18 +761,19 @@ function var_to_string($value, $indent = 0, $objects = array()) {
  * @param int $indent
  * @return string
  */
-function array_to_string($array, $indent = 0, $objects = array()) {
+function array_to_string($array, $indent = 0, $objects = array(), $html = FALSE) {
   if (empty($array)) {
-    return "array()";
+    return '[]';
   }
-  $spaces = str_repeat(' ', $indent);
+  $space = $html ? '&nbsp;' : ' ';
+  $spaces = str_repeat($space, $indent);
   $lines = array();
-  $lines[] = "array(";
+  $lines[] = '[';
   foreach ($array as $key => $value) {
-    $lines[] = "$spaces  " . var_to_string($key, 0, $objects) . " => " . var_to_string($value, $indent + 2, $objects) . ",";
+    $lines[] = $spaces . $space . $space . var_to_string($key, 0, $objects, $html) . $space . '=>' . $space . var_to_string($value, $indent + 2, $objects, $html) . ',';
   }
-  $lines[] = "$spaces)";
-  return implode("\n", $lines);
+  $lines[] = "$spaces]";
+  return implode($html ? '<br>' : "\n", $lines);
 }
 
 /**
@@ -769,10 +783,11 @@ function array_to_string($array, $indent = 0, $objects = array()) {
  * @param int $indent
  * @return string
  */
-function object_to_string($object, $indent = 0, $objects = array()) {
-  $spaces = str_repeat(' ', $indent);
+function object_to_string($object, $indent = 0, $objects = array(), $html = FALSE) {
+  $space = $html ? '&nbsp;' : ' ';
+  $spaces = str_repeat($space, $indent);
   $lines = array();
-  $lines[] = get_class($object) . " {";
+  $lines[] = get_class($object) . $space . '{';
   
   // Get the object's property values:
   if (method_exists($object, 'toArray')) {
@@ -785,11 +800,11 @@ function object_to_string($object, $indent = 0, $objects = array()) {
   
   // Loop through properties:
   foreach ($properties as $key => $value) {
-    $lines[] = "$spaces  $key: " . var_to_string($value, $indent + 2, $objects) . ",";
+    $lines[] = $spaces . $space . $space . $key . ':' . $space . var_to_string($value, $indent + 2, $objects) . ',';
   }
   
   $lines[] = "$spaces}";
-  return implode("\n", $lines);
+  return implode($html ? '<br>' : "\n", $lines);
 }
 
 
@@ -800,14 +815,13 @@ function object_to_string($object, $indent = 0, $objects = array()) {
  * @return string Indented version of the original JSON string.
  */
 function format_json($json) {
-
     $result      = '';
     $pos         = 0;
     $strLen      = strlen($json);
     $indentStr   = '  ';
     $newLine     = "\n";
     $prevChar    = '';
-    $outOfQuotes = true;
+    $outOfQuotes = TRUE;
 
     for ($i=0; $i<=$strLen; $i++) {
 
@@ -820,7 +834,8 @@ function format_json($json) {
         
         // If this character is the end of an element, 
         // output a new line and indent the next line.
-        } else if(($char == '}' || $char == ']') && $outOfQuotes) {
+        }
+        elseif (($char == '}' || $char == ']') && $outOfQuotes) {
             $result .= $newLine;
             $pos --;
             for ($j=0; $j<$pos; $j++) {

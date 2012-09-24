@@ -23,5 +23,4 @@ function astro_alpha_preprocess_page(&$vars) {
   if (alias_arg(2) == 'activity') {
     $vars['title'] = 'Activity';
   }
-
 }

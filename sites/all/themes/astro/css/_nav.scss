@@ -25,7 +25,8 @@ nav.navigation {
         font-weight: bold;
         text-decoration: none;
 
-        &:hover {
+        &:hover,
+        &.active {
           background-color: $red3;
         }
       }

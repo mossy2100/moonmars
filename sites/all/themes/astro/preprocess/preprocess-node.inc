@@ -7,7 +7,6 @@
  * @param $vars
  */
 function astro_alpha_preprocess_node(&$vars) {
-
   // Get the node:
   $node = $vars['node'];
 
@@ -20,5 +19,4 @@ function astro_alpha_preprocess_node(&$vars) {
       $function($vars);
     }
   }
-
 }

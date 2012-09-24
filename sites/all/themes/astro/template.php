@@ -11,6 +11,12 @@
  * for more information on this topic.
  */
 
+/**
+ * Format a datetime in terms of how long ago it was.
+ *
+ * @param mixed $datetime
+ * @return string
+ */
 function astro_format_about_how_long_ago($datetime) {
   $datetime = new StarDateTime($datetime);
   $time_ago = $datetime->aboutHowLongAgo();

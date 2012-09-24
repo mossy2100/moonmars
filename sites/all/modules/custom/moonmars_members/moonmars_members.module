@@ -98,22 +98,27 @@ function moonmars_members_menu() {
 //}
 
 /**
+ * Checks if the logged-in user is on one of their own pages.
+ *
+ * @return bool
+ */
+function moonmars_members_on_own_page() {
+  // Get the logged-in member and the member whose page it is:
+  $logged_in_member = Member::loggedInMember();
+  $page_member = moonmars_actors_get_actor_from_url();
+
+  // Administrators can access any member's pages. Members can access their own pages.
+  return $logged_in_member && $page_member && Member::equals($logged_in_member, $page_member);
+}
+
+/**
  * Access callback for private member pages.
  *
  * @return bool
  */
 function moonmars_members_access_private() {
-  // Get the logged-in member and the member whose page it is:
   $logged_in_member = Member::loggedInMember();
-  $page_member = moonmars_actors_get_actor_from_url();
-
-  // If either of these is missing, no access:
-  if (!$logged_in_member || !$page_member) {
-    return FALSE;
-  }
-
-  // Administrators can access any member's pages. Members can access their own pages.
-  return $logged_in_member->isAdmin() || Member::equals($logged_in_member, $page_member);
+  return $logged_in_member && ($logged_in_member->isAdmin() || moonmars_members_on_own_page());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
