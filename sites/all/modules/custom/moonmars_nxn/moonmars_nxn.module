@@ -330,9 +330,7 @@ function moonmars_nxn_triumph_types() {
 
   foreach ($definitions as $nxn_category_info) {
     foreach ($nxn_category_info['triumph types'] as $triumph_type => $nxn_info) {
-      if (!in_array($triumph_type, $triumph_types)) {
-        $triumph_types[] = $triumph_type;
-      }
+      $triumph_types[$triumph_type] = $triumph_type;
     }
   }
 

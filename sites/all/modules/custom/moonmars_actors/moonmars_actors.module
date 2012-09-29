@@ -162,8 +162,8 @@ function moonmars_actors_reset_aliases($actor) {
 /**
  * Implements hook_entity_insert().
  *
- * Note, we use this hook instead of hook_node_insert() as it gets called later in the cycle, after
- * pathauto_node_insert_alias() sets the alias according to the pattern. hook_node_insert() is called before.
+ * Note, we use this hook instead of hook_node_insert() or hook_user_insert() as it gets called later in the cycle,
+ * after pathauto_node_insert_alias() sets the alias according to the pattern.
  */
 function moonmars_actors_entity_insert($entity, $entity_type) {
   // Check if it's a member or group:

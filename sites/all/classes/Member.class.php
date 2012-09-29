@@ -1161,6 +1161,11 @@ class Member extends User {
 //      return TRUE;
 //    }
 
+    // An administrator can delete any item:
+    if ($this->isAdmin()) {
+      return TRUE;
+    }
+
     // A member can delete an item if they posted it.
     if (self::equals($this, $item->creator())) {
       return TRUE;

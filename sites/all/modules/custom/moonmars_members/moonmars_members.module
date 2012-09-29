@@ -856,29 +856,3 @@ function moonmars_members_activity_redirect() {
 ////  $page_member = Member::create($uid);
 ////  $rel = MoonMarsRelation::searchBinary('rates', 'user', $logged_in_member->uid(), 'user', $page_member->uid());
 //}
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Rule callbacks
-
-// This function shouldn't be needed any more because we'll use hook_user_insert() instead.
-///**
-// * Called from the rule "Create triumph for new site member".
-// *
-// * @param $account
-// */
-//function moonmars_members_user_account_validated($account) {
-//  $member = Member::create($account);
-//  Triumph::newMember($member);
-//}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// User saving hooks
-
-/**
- * Implements hook_user_insert().
- */
-function moonmars_members_user_insert(&$edit, $account, $category) {
-  $member = Member::create($account);
-  Triumph::newMember($member);
-}

@@ -473,7 +473,8 @@ class Channel extends MoonMarsNode {
     // Look for relationship records:
     $q = db_select('view_channel_has_item', 'vci')
       ->fields('vci', array('item_nid'))
-      ->condition('channel_nid', $this->nid());
+      ->condition('channel_nid', $this->nid())
+      ->condition('item_status', 1);
 
     // Get the items and return the count:
     $rs = $q->execute();

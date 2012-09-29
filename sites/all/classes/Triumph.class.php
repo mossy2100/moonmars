@@ -87,15 +87,15 @@ class Triumph {
   public function __construct($param) {
     if (is_uint($param)) {
       // Existing triumph:
-      $this->triumphId    = (int) $param;
+      $this->triumphId = (int) $param;
     }
     elseif (is_string($param) && in_array($param, moonmars_nxn_triumph_types())) {
       // New triumph:
-      $this->triumphType  = $param;
-      $this->created      = StarDateTime::now();
-      $this->nxnsCreated  = FALSE;
-      $this->actors       = array();
-      $this->recipients   = NULL;
+      $this->triumphType = $param;
+      $this->created = StarDateTime::now();
+      $this->nxnsCreated = FALSE;
+      $this->actors = array();
+      $this->recipients = NULL;
     }
     elseif ($param instanceof stdClass) {
       // Assume this is a database record:
@@ -654,7 +654,7 @@ class Triumph {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // High-level static methods for creating new Triumphs and associated notifications.
+  // High-level static methods for creating new Triumphs.
 
   /**
    * Create a new-member triumph.
@@ -662,7 +662,8 @@ class Triumph {
    * @static
    * @param Member $member
    * @param Group $group
-   *   The group when a member joins a group, NULL when a member joins the site.
+   *   The group when a member joins a group, or NULL when a member joins the site.
+   * @return Triumph
    */
   public static function newMember(Member $member, Group $group = NULL) {
     $triumph = new Triumph('new-member');
@@ -680,7 +681,8 @@ class Triumph {
    * @static
    * @param Group $group
    * @param Group $parent_group
-   *   The parent group when a sub group is created, NULL when a top-level group is created.
+   *   The parent group when a sub group is created, or NULL when a top-level group is created.
+   * @return Triumph
    */
   public static function newGroup(Group $group, Group $parent_group = NULL) {
     $triumph = new Triumph('new-group');
@@ -696,9 +698,10 @@ class Triumph {
    * Create a new-item triumph.
    *
    * @static
-   * @param $item
+   * @param Item $item
+   * @return Triumph
    */
-  public static function newItem($item) {
+  public static function newItem(Item $item) {
     $triumph = new Triumph('new-item');
     $triumph->addActor('item', $item);
     $triumph->save();
@@ -709,9 +712,10 @@ class Triumph {
    * Create a new-comment triumph.
    *
    * @static
-   * @param $comment
+   * @param ItemComment $comment
+   * @return Triumph
    */
-  public static function newComment($comment) {
+  public static function newComment(ItemComment $comment) {
     $triumph = new Triumph('new-comment');
     $triumph->addActor('comment', $comment);
     $triumph->save();
@@ -724,6 +728,7 @@ class Triumph {
    * @static
    * @param Member $follower
    * @param Member $followee
+   * @return Triumph
    */
   public static function newFollower(Member $follower, Member $followee) {
     $triumph = new Triumph('new-follower');
@@ -734,10 +739,26 @@ class Triumph {
   }
 
   /**
+   * Create a new-page triumph.
+   *
+   * @static
+   * @param Page $page
+   * @return Triumph
+   */
+  public static function newPage(Member $page) {
+    $triumph = new Triumph('new-page');
+    $triumph->addActor('page', $page);
+    $triumph->save();
+    return $triumph;
+  }
+
+  /**
    * Create an update-member triumph.
    *
    * @static
    * @param Member $member
+   * @param Member $updater
+   * @return Triumph
    */
   public static function updateMember(Member $member, Member $updater) {
     $triumph = new Triumph('update-member');
@@ -752,6 +773,8 @@ class Triumph {
    *
    * @static
    * @param Group $group
+   * @param Member $updater
+   * @return Triumph
    */
   public static function updateGroup(Group $group, Member $updater) {
     $triumph = new Triumph('update-group');
@@ -761,4 +784,34 @@ class Triumph {
     return $triumph;
   }
 
-} // class
+  /**
+   * Create a new-admin triumph.
+   *
+   * @static
+   * @param Group $group
+   * @param Member $admin
+   * @return Triumph
+   */
+  public static function newAdmin(Group $group, Member $admin) {
+    $triumph = new Triumph('new-admin');
+    $triumph->addActor('group', $group);
+    $triumph->addActor('admin', $admin);
+    $triumph->save();
+    return $triumph;
+  }
+
+  /**
+   * Create a want-admin triumph.
+   *
+   * @static
+   * @param Group $group
+   * @return Triumph
+   */
+  public static function wantAdmin(Group $group) {
+    $triumph = new Triumph('want-admin');
+    $triumph->addActor('group', $group);
+    $triumph->save();
+    return $triumph;
+  }
+
+} // class Triumph

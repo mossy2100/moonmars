@@ -184,3 +184,163 @@ function moonmars_text_trim($text, $maxlen = 40) {
 function moonmars_text_fix_hearts($text) {
   return str_replace(['<3', '&amp;lt;3'], '&lt;3', $text);
 }
+
+/**
+ * Convert a string from whatever encoding to ASCII with HTML entities.
+ * Converts any non-ASCII dashes to normal hyphen-minuses.
+ * HTML-encodes the usual special chars such as <>&'".
+ *
+ * @param $str
+ */
+function moonmars_text_html_entities($str) {
+  // Convert string to UTF-8.
+  $str = mb_convert_encoding($str, 'UTF-8');
+
+  // Create the UTF-8 dash characters if not done already:
+  static $utf8_dashes;
+  if (!$utf8_dashes) {
+    // Get the UTF-8 equivalents of dashes:
+    foreach (array('2010', '2011', '2012', '2013', '2014', '2015') as $dash_utf16) {
+      $utf8_dashes[] = mb_convert_encoding("&#x$dash_utf16;", 'UTF-8', 'HTML-ENTITIES');
+    }
+  }
+
+  // Replace all dashes with ASCII hyphen-minus:
+  $str = str_replace($utf8_dashes, '-', $str);
+
+  // Convert to HTML entities:
+  $str = htmlentities(mb_convert_encoding($str, 'HTML-ENTITIES'), ENT_QUOTES, 'UTF-8', FALSE);
+
+  return $str;
+}
+
+/**
+ * Get the regular expression to match HTTP URLs.
+ *
+ * @see http://www.ietf.org/rfc/rfc3986.txt
+ *
+ * @todo Add support for domain names with non-ASCII characters (Greek, Cyrillic, etc.)
+ *
+ * @return string
+ */
+function moonmars_text_url_rx() {
+  static $url_rx;
+  if ($url_rx) {
+    return $url_rx;
+  }
+
+  // Scheme can be http:// or https://
+  $scheme = "https?:\/\/";
+
+  // A domain name part ("label") must begin and end with a letter or digit, and may have up to 61 letters, digits
+  // and/or hyphens in between, for a maximum length of 63 characters.
+  $label = "[a-z\d]([a-z\d\-]{0,61}[a-z\d])?";
+
+  // A top-level domain is 2-6 letters.
+  $tld = "[a-z]{2,6}";
+
+  // A full domain name is one or more labels plus a tld, separated by dots. The max length is 253 characters, which we won't check.
+  $domain_name = "($label\.)+$tld";
+  // A domain name can be recognised as a URL with or without a scheme:
+  $domain_site = "($scheme)?$domain_name";
+
+  // A local URL does not need a tld, but does need a scheme to be recognised (otherwise every word would look like a local site).
+  $local_site = "$scheme$label";
+
+  // An IP address is a series of 4 numbers from 0..255. We won't check the range (permit up to 999) and we'll also
+  // permit numbers other than 0 beginning with a 0, e.g. 01, 000.
+  $dec3 = "\d{1,3}";
+  $ipv4address = "$dec3\.$dec3\.$dec3\.$dec3";
+  // An IPv4 address URL must have a scheme to be recognised as a URL.
+  $ipv4site = "$scheme$ipv4address";
+
+  // IPv6.
+  // This simplified regex will allow strings that aren't valid IPv6 addresses, but it's good enough for our needs.
+  $ipv6address = "[\da-f:\.]+";
+  $ipv6site = "$scheme\[$ipv6address\]";
+
+  // Base (scheme + domain)
+  $base = "($domain_site)|($local_site)|($ipv4site)|($ipv6site)";
+
+  // Port is optional and can be from 0 to 65535. For simplicity we'll permit any sequence of digits.
+  $port = ":\d+";
+
+  // In RC 3986, the "unreserved" set of characters does not include the '%'. The "pct-encoded" set does.
+  // Here we'll combine unreserved and pct-encoded into one set.
+  $unreserved = "\w\-\.~%";
+
+  // In RFC 3986, sub-delims includes round brackets.
+  // However, we'll exclude them here because URLs are often enclosed in round brackets, which we don't want interpreted as part of the URL.
+  // What we can do is only accept a right bracket if it's preceded by a left bracket.
+  // We handle this below in the patterns for $path, $query and $fragment. Nested brackets aren't supported.
+  $sub_delims = "!\$&'\*\+,;=";
+
+  // Don't need these now, keep for reference/interest.
+//  $gen_delims = ":\/\?#\[\]@";
+//  $reserved = "$gen_delims$sub_delims";
+
+  // Path.
+  // Square brackets are not normally allowed in the path, query or fragment.
+  // However, we sometimes see them in URLs, in paths and queries, so we'll accept them anyway.
+  // A web browser will encode them automatically.
+  // We could include other "unsafe" characters, but let's wait and see if it comes up.
+  // Note, we may need to do the same thing as with round brackets to ensure only pairs of square brackets are accepted,
+  // but let's see if it comes up. People usually put URLs in round brackets.
+  // I've also add / to $pchar, which does not match the "pchar" definition in RFC 3986.
+  // This is imperfect because it permits double slash // but it's simpler and good enough for our needs.
+  $pchar = "$unreserved$sub_delims:@\/\[\]";
+  $path = "\/([$pchar]|(\([$pchar]*\)))*";
+
+  // Query.
+  // No need to add the / character here, as we already included it in the $pchar set.
+  $qchar = "$pchar\?";
+  $query = "\?([$qchar]|(\([$qchar]*\)))*";
+
+  // Fragment.
+  // Legal characters for fragment are the same as for query.
+  $fragment = "#([$qchar]|(\([$qchar]*\)))*";
+
+  // Full RX for URLs. Only the base is required, every other part is optional.
+  $url_rx = "/($base)($port)?($path)?($query)?($fragment)?/i";
+
+  return $url_rx;
+}
+
+/**
+ * Convert URLs in a piece of text into links.
+ *
+ * @param string $str
+ * @return string
+ */
+function moonmars_text_embed_links($str) {
+  // Get the regex to match URLs:
+  $url_rx = moonmars_text_url_rx();
+
+  // Mark the URLs. I do this so I can loop through and prepend the http:// scheme if necessary.
+  $html = preg_replace($url_rx, "<url>$0</url>", $str);
+
+  // Replace URLs with links.
+  $n_urls = preg_match_all("/<url>(.+)<\/url>/U", $html, $matches);
+  $urls = array();
+  if ($n_urls) {
+    foreach ($matches[1] as $url) {
+      $lc_url = strtolower($url);
+      // if there's no scheme, append http://
+      if (substr($lc_url, 0, 7) !== 'http://' && substr($lc_url, 0, 8) !== 'https://') {
+        $href = "http://$url";
+      }
+      else {
+        $href = $url;
+      }
+      // Remember the URL:
+      $urls[] = $href;
+      // Replace the URL with a link:
+      $html = str_replace("<url>$url</url>", "<a href='$href' target='_blank'>$url</a>", $html);
+    }
+  }
+
+  return array(
+    'html' => $html,
+    'urls' => $urls,
+  );
+}

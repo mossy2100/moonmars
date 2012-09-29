@@ -6,6 +6,10 @@
 function moonmars_init() {
   // Activate debugging:
   dbg_on();
+
+  // Set the internal encoding to UTF-8.
+  // @see moonmars_text_html_entities()
+  mb_internal_encoding('UTF-8');
 }
 
 /**

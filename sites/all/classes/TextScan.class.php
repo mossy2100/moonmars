@@ -9,28 +9,42 @@
 class TextScan {
 
   /**
-   * The HTML
+   * The original text.
+   *
+   * @var string
+   */
+  protected $text;
+
+  /**
+   * The HTML version of the provided text.
    *
    * @var string
    */
   protected $html;
 
   /**
-   * Mentioned members
+   * Mentioned URLs.
+   *
+   * @var array
+   */
+  protected $urls;
+
+  /**
+   * Mentioned members.
    *
    * @var array
    */
   protected $members;
 
   /**
-   * Mentioned groups
+   * Mentioned groups.
    *
    * @var array
    */
   protected $groups;
 
   /**
-   * Mentioned [hash] tags/topics (TBD)
+   * Mentioned tags.
    *
    * @var array
    */
@@ -43,15 +57,19 @@ class TextScan {
    * @param bool $emoticons
    */
   public function __construct($text, $emoticons = TRUE) {
-    $html = $text;
+    // Remember the provided text:
+    $this->text = $text;
 
-    // Make URLs into links:
-    $scheme = "https?:\/\/";
-    $domain_name = "[a-z0-9](([a-z0-9\-\.]+)?[a-z0-9])?";
-    $ip_addr = "\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}";
-    $port_path_query_fragment = "[-A-Z0-9+&@#\/%=~_|$?!:,.]*[A-Z0-9+&@#\/%=~_|$]";
-    $url_rx = "/($scheme)(($domain_name)|($ip_addr))($port_path_query_fragment)?/i";
-    $html = preg_replace($url_rx, "<a href='$0' target='_blank'>$0</a>", $html);
+    // Convert to HTML entities:
+    $html = moonmars_text_html_entities($text);
+
+    // Convert URLs to links:
+    $links = moonmars_text_embed_links($html);
+    $html = $links['html'];
+    $urls = $links['urls'];
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Member mentions
 
     // Regex fragments for actor codes:
     $code_begin = "(^|[^\w-])";
@@ -73,6 +91,9 @@ class TextScan {
         }
       }
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Group references and hash tags
 
     // Scan for hash tags:
     $n_tags = preg_match_all("/$code_begin#$code$code_end/i", $text, $matches);
@@ -96,6 +117,9 @@ class TextScan {
       }
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Emoticons, symbols, newlines
+
     // Insert emoticons if requested:
     if ($emoticons) {
       $html = moonmars_text_add_emoticons($html);
@@ -106,6 +130,7 @@ class TextScan {
 
     // Set the properties:
     $this->html = $html;
+    $this->urls = $urls;
     $this->members = $members;
     $this->groups = $groups;
     $this->tags = $tags;
@@ -118,6 +143,15 @@ class TextScan {
    */
   public function html() {
     return $this->html;
+  }
+
+  /**
+   * Get the URLs mentioned in the item text.
+   *
+   * @return array
+   */
+  public function urls() {
+    return $this->urls;
   }
 
   /**
