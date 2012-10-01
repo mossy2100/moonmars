@@ -37,14 +37,14 @@ class Nxn {
   /**
    * When was the nxn created? FALSE if not created yet.
    *
-   * @var bool|MoonMarsDateTime
+   * @var MoonMarsDateTime|bool
    */
   protected $created;
 
   /**
    * When was the nxn sent? FALSE if not sent yet.
    *
-   * @var bool|MoonMarsDateTime
+   * @var MoonMarsDateTime|bool
    */
   protected $sent;
 
@@ -74,7 +74,7 @@ class Nxn {
    *
    * @var string
    */
-  protected $message;
+  protected $details;
 
   /**
    * Has the nxn been generated?
@@ -122,8 +122,8 @@ class Nxn {
     $this->nxnId = (int) $rec->nxn_id;
     $this->triumph = new Triumph($rec->triumph_id);
     $this->recipient = Member::create($rec->recipient_uid);
-    $this->created = new MoonMarsDateTime($rec->created);
-    $this->sent = $rec->sent ? (new MoonMarsDateTime($rec->sent)) : FALSE;
+    $this->created = new MoonMarsDateTime($rec->created, 'UTC');
+    $this->sent = $rec->sent ? (new MoonMarsDateTime($rec->sent, 'UTC')) : FALSE;
   }
 
   /**
@@ -158,7 +158,7 @@ class Nxn {
     $fields = array(
       'triumph_id'    => $this->triumph->id(),
       'recipient_uid' => $this->recipient->uid(),
-      'sent'          => $this->sent ? $this->sent->timestamp() : NULL,
+      'sent'          => $this->sent ? $this->sent->mysqlUTC() : NULL,
     );
     if ($this->nxnId) {
       // Update existing nxn:
@@ -169,7 +169,7 @@ class Nxn {
     }
     else {
       // Insert new nxn:
-      $fields['created'] = time();
+      $fields['created'] = StarDateTime::nowUTC()->mysql();
       $q = db_insert('moonmars_nxn')
         ->fields($fields);
       $this->nxnId = $q->execute();
@@ -268,7 +268,7 @@ class Nxn {
 
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Emails
+  // Generate nxn summaries and emails
 
   /**
    * Render a table of details for an email, i.e. use inline styles and tables.
@@ -336,17 +336,25 @@ class Nxn {
    */
   public static function groupDetails(Group $group) {
     $details = array(
-      'Group name' => "<strong>" . $group->title() . "</strong>",
-      'Group tag'  => '#' . $group->tag(),
-      'Group page' => $group->link(),
-      'Group type' => $group->groupType(NULL, 'name'),
+      'Name'    => "<strong>" . $group->title() . "</strong>",
+      'Tag'     => '#' . $group->tag(),
+      'Profile' => $group->link(),
+      'Type'    => $group->groupType(NULL, 'name'),
     );
     if ($group->description()) {
-      $details['Group description'] = $group->description();
+      $details['Description'] = $group->description();
     }
     if ($group->icon()) {
-      $details['Group image'] = $group->icon();
+      $details['Image'] = $group->icon();
     }
+
+    // Group administrators:
+    $admin_links = array();
+    foreach ($group->admins() as $admin) {
+      $admin_links[] = $admin->link();
+    }
+    $details['Administrators'] = implode('<br>', $admin_links);
+
     return $details;
   }
 
@@ -381,7 +389,7 @@ class Nxn {
     $group = $this->triumph->actor('group');
 
     // Create message:
-    $message = self::renderMemberDetails($member, "Member details");
+    $details = self::renderMemberDetails($member, "Member details");
 
     if (!$group) {
       // New member of the site:
@@ -394,13 +402,13 @@ class Nxn {
       $summary = "The " . $group->link() . " group on <a href='$base_url'>moonmars.com</a> has a new member!";
 
       // Additional group details:
-      $message .= self::renderGroupDetails($group, "Group details");
+      $details .= self::renderGroupDetails($group, "Group details");
     }
 
     return array(
       'subject' => $subject,
       'summary' => $summary,
-      'message' => $message,
+      'details' => $details,
     );
   }
 
@@ -414,6 +422,7 @@ class Nxn {
     $group = $this->triumph->actor('group');
     $parent_group = $this->triumph->actor('parent group');
 
+    // Generate the subject, summary and details.
     // Subject:
     $group_name = $group->title();
     $subject = "New group created: $group_name";
@@ -423,21 +432,21 @@ class Nxn {
     $summary = "<a href='$base_url'>moonmars.com</a> has a new group: $group_link";
 
     // Details:
-    $message = self::renderGroupDetails($group, "Group details");
+    $details = self::renderGroupDetails($group, "Group details");
 
     // Additional details for subgroups:
     if ($parent_group) {
       $summary .= " This is a subgroup of " . $parent_group->link() . ".";
-      $message .= self::renderGroupDetails($parent_group, "Parent group details");
+      $details .= self::renderGroupDetails($parent_group, "Parent group details");
     }
 
     // Add a convenient "join group" link:
-    $message .= "<p><strong>" . l("Join the $group_name group", $group->alias() . '/join') . "</strong></p>";
+    $details .= "<p><strong>" . l("Join the $group_name group", $group->alias() . '/join') . "</strong></p>";
 
     return array(
       'subject' => $subject,
       'summary' => $summary,
-      'message' => $message,
+      'details' => $details,
     );
   }
 
@@ -490,17 +499,17 @@ class Nxn {
     }
 
     // @todo add a note to the summary if the item mentions a #topic they're interested in
-
     // @todo Add item text and comments.
-    //$message = self::renderItem($item);
+    // @todo Add "comment-by-email-reply" feature.
+    //$details = self::renderItem($item);
     // For now just show the HTML:
-    $message = $item->textScan()->html();
+    $details = $item->textScan()->html();
 
     return array(
       'subject' => $subject,
       'summary' => $summary,
       'preview' => moonmars_text_trim($item->text()),
-      'message' => $message,
+      'details' => $details,
     );
   }
 
@@ -512,7 +521,7 @@ class Nxn {
 //      'subject' => $subject,
 //      'summary' => $summary,
 //'preview' => moonmars_text_trim($comment->text()),
-//      'message' => $message,
+//      'details' => $details,
 //    );
   }
 
@@ -524,25 +533,137 @@ class Nxn {
     $follower = $this->triumph()->actor('follower');
     $followee = $this->triumph()->actor('followee');
 
+    // Generate the subject, summary and details:
     if (Member::equals($followee, $this->recipient)) {
       $followee_name = "you";
       // If the followee is receiving the nxn they they'll be interested in the follower's details:
-      $message = self::renderMemberDetails($follower, "Follower details");
+      $details = self::renderMemberDetails($follower, "Follower details");
     }
     else {
       $followee_name = $followee->name();
       // If someone is receiving a nxn about their followee following someone, then they'll be interested in the
       // followee's details:
-      $message = self::renderMemberDetails($followee, "Followee details");
+      $details = self::renderMemberDetails($followee, "Followee details");
     }
-
     $subject = $follower->name() . " is now following $followee_name";
     $summary = $follower->link() . " is now following " . $followee->link($followee_name) . ".";
 
     return array(
       'subject' => $subject,
       'summary' => $summary,
-      'message' => $message,
+      'details' => $details,
+    );
+  }
+
+  /**
+   * Generate a new-page nxn.
+   */
+  public function generateNewPage() {
+    // Get the actors:
+    $page = $this->triumph()->actor('page');
+    $creator = $page->creator();
+
+    // Generate the subject, summary and details:
+    $subject = $creator->name() . " created a new page: " . $page->title();
+    $summary = $creator->link() . " created a new page: " . $page->link() . ".";
+    $details = $page->html();
+
+    return array(
+      'subject' => $subject,
+      'summary' => $summary,
+      'details' => $details,
+    );
+  }
+
+  /**
+   * Generate an update-member nxn.
+   */
+  public function generateUpdateMember() {
+    // Get the actors:
+    $member = $this->triumph()->actor('member');
+
+    // Generate the subject, summary and details:
+    $subject = $member->name() . " updated their profile";
+    $summary = $member->link() . " updated their profile.";
+    $details = self::renderMemberDetails($member, "Member details");
+
+    return array(
+      'subject' => $subject,
+      'summary' => $summary,
+      'details' => $details,
+    );
+  }
+
+  /**
+   * Generate a update-group nxn.
+   */
+  public function generateUpdateGroup() {
+    // Get the actors:
+    $group = $this->triumph()->actor('group');
+    $updater = $this->triumph()->actor('updater');
+
+    // Generate the subject, summary and details:
+    $subject = "The " . $group->title() . " group profile has been updated";
+    $summary = "The " . $group->link() . " group profile was updated by " . $updater->link() . ".";
+    $details = self::renderGroupDetails($group, "Group details");
+
+    return array(
+      'subject' => $subject,
+      'summary' => $summary,
+      'details' => $details,
+    );
+  }
+
+  /**
+   * Generate a new-admin nxn.
+   */
+  public function generateNewAdmin() {
+    // Get the actors:
+    $group = $this->triumph()->actor('group');
+    $admin = $this->triumph()->actor('admin');
+
+    // Generate the subject, summary and details:
+    $subject = "The " . $group->title() . " group has a new administrator";
+    $article = ($group->adminCount() == 1) ? 'the' : 'an';
+    $summary = $admin->link() . " is now $article administrator for the " . $group->link() . " group.";
+    $details = self::renderGroupDetails($group, "Group details");
+
+    return array(
+      'subject' => $subject,
+      'summary' => $summary,
+      'details' => $details,
+    );
+  }
+
+  /**
+   * Generate a want-admin nxn.
+   */
+  public function generateWantAdmin() {
+    // Get the actors:
+    $group = $this->triumph()->actor('group');
+
+    // Generate the subject, summary and details:
+    $subject = "The " . $group->title() . " needs a new administrator";
+    $summary = "The " . $group->link() . " needs a new administrator.";
+
+    $details = "<p>Could it be you?</p>
+      <p>Being a group administrator on moonmars.com is a great way to contribute to the community and does
+      not need to take up a lot of your time. It simply involves:
+      <ul>
+        <li>Maintaining the group profile, such as logo, description and links.</li>
+        <li>Tagging and adding value to shared resources.</li>
+        <li>If the group is restricted or closed, inviting new members or approving requests to join.</li>
+        <li>Moderating content and enforcing rules of conduct if there are any.</li>
+        <li>Warning or kicking trolls, spammers and scammers.</li>
+      </ul>
+      Remember, other group members can and will help you with this work. Plus, you can always add new administrators,
+      and you can step down at any time. Group administrators earn additional points for their efforts.</p>";
+    $details .= self::renderGroupDetails($group, "Group details");
+
+    return array(
+      'subject' => $subject,
+      'summary' => $summary,
+      'details' => $details,
     );
   }
 
@@ -566,7 +687,7 @@ class Nxn {
       $this->subject = $email['subject'];
       $this->summary = $email['summary'];
       $this->preview = isset($email['preview']) ? $email['preview'] : '';
-      $this->message = $email['message'];
+      $this->message = $email['details'];
 
       // Add the unsubscribe message:
       $this->message .= "<p style='font-size: 10px; color: #777;'>" . l("Update your notification preferences, or unsubscribe from all emails", $this->recipient->alias() . '/edit/notifications') . "</p>";
@@ -590,32 +711,39 @@ class Nxn {
     $email_array = array(
       'subject' => $this->subject,
       'summary' => $this->summary,
-      'message' => $this->message,
+      'details' => $this->message,
     );
 
     // Generate and send the email:
-    drupal_mail('moonmars_nxn', 'nxn', $this->recipient()->mail(), language_default(), $email_array);
+    $recipient = $this->recipient()->mail();
+    $message = drupal_mail('moonmars_nxn', 'nxn', $recipient, language_default(), $email_array);
 
-    // Update the sent property:
-    $this->sent = MoonMarsDateTime::now();
+    // If sent ok, update the sent property:
+    if ($message['result']) {
+      $this->sent = MoonMarsDateTime::nowUTC();
+    }
+
+    return $message;
   }
 
   /**
    * Send all outstanding nxns.
    *
    * @static
-   * @return int
-   *   The number of nxns sent.
+   * @return array
    */
   public static function sendOutstanding() {
     // Look for any nxns we didn't send yet:
     $q = db_select('moonmars_nxn', 'nxn')
       ->fields('nxn')
-      ->condition('sent', 0)
+      ->condition(db_or()
+        ->condition('sent', 0)
+        ->condition('sent', NULL))
       ->orderBy('nxn_id');
     $rs = $q->execute();
+
     // Create the nxns:
-    $n_sent = 0;
+    $messages = [];
     foreach ($rs as $rec) {
       // Reset the time limit so the script doesn't time out while sending emails.
       // Let's assume 60 seconds will be well-and-truly enough time to send a single email!
@@ -625,17 +753,12 @@ class Nxn {
       $nxn = new Nxn($rec);
 
       // Send the email and update the sent property:
-      $sent = $nxn->send();
-
-      // If it sent ok, count it:
-      if ($sent) {
-        $n_sent++;
-      }
+      $messages[] = $nxn->send();
 
       // Save the nxn to update the sent field in the db record:
       $nxn->save();
     }
-    return $n_sent;
+    return $messages;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

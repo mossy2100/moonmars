@@ -59,7 +59,7 @@ class MoonMarsDateTime extends StarDateTime {
    *
    * @return string
    */
-  public function format($format) {
+  public function formatMemberTZ($format) {
     // Get the logged-in member's timezone:
     $logged_in_member = Member::loggedInMember();
     $tz = $logged_in_member->timezone();

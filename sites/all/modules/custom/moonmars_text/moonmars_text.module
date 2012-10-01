@@ -1,6 +1,14 @@
 <?php
 
 /**
+ * Language constant for English, which is the default for the site.
+ *
+ * @var string
+ */
+// Don't need this yet, maybe not at all.
+//const LANGUAGE_ENGLISH = 'en';
+
+/**
  * Return an array of supported emoticons.
  *
  * @return array

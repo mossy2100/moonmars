@@ -201,7 +201,11 @@ function moonmars_actors_entity_update($entity, $entity_type) {
     // Create triumphs:
     $logged_in_member = Member::loggedInMember();
     if ($actor instanceof Member) {
-      Triumph::updateMember($actor, $logged_in_member);
+      // Only create a triumph if the member is updating their own profile (i.e., not if an admin is updating someone's
+      // profile).
+      if (Member::equals($actor, $logged_in_member)) {
+        Triumph::updateMember($actor);
+      }
     }
     elseif ($actor instanceof Group) {
       Triumph::updateGroup($actor, $logged_in_member);

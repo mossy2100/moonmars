@@ -2,13 +2,18 @@
 
 /**
  * This class is part of the Star Library, and is designed to extend and improve PHP's built-in DateTime class.
+ *
+ * @todo Abandon DateTime, which is constrained to 1970..2038, and make a DateTime with a wider range.
+ * Use a StarDate class which holds a day number, e.g. MJD or Unix Day, and a StarTime value for the time.
+ * Then a StarDateTime would just have a StarDate date and StarTime time.
+ * Also incorporate support for leap seconds. StarDate::seconds() should return 86400 or 86401 depending on date.
  */
 class StarDateTime extends DateTime {
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Constants
 
-  // These values are based on average Gregorian calendar month and year lengths, and are exact.
+  // These values are exact, based on average Gregorian calendar month and year lengths.
   const SECONDS_PER_MINUTE  = 60;
   const SECONDS_PER_HOUR    = 3600;
   const SECONDS_PER_DAY     = 86400;
@@ -36,6 +41,9 @@ class StarDateTime extends DateTime {
   
   const MONTHS_PER_YEAR     = 12;
 
+  // Formats
+  const MYSQL = 'Y-m-d H:i:s';
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Static methods
 
@@ -50,6 +58,16 @@ class StarDateTime extends DateTime {
   }
 
   /**
+   * The current datetime in the UTC timezone, as an StarDateTime object.
+   *
+   * @return StarDateTime
+   */
+  public static function nowUTC() {
+    // This will call the parent constructor, which defaults to 'now'.
+    return new StarDateTime(NULL, 'UTC');
+  }
+
+  /**
    * Today's date as an StarDateTime object.
    *
    * @return StarDateTime
@@ -59,13 +77,17 @@ class StarDateTime extends DateTime {
     return $now->date();
   }
 
-
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Constructor
 
   /**
    * Constructor for making dates and datetimes.
+   *
    * Time zones may be provided as DateTimeZone objects, or as timezone strings.
+   * The $timezone parameter and the current timezone are ignored when the $time parameter either is a UNIX
+   * timestamp (e.g. @946684800 or 946684800) or specifies a timezone (e.g. 2010-01-28T15:00:00+02:00).
+   * @see http://php.net/manual/en/datetime.construct.php
+   *
    * All arguments are optional.
    *
    * Usage examples:
@@ -140,6 +162,9 @@ class StarDateTime extends DateTime {
     parent::__construct($datetime, $timezone);
   }
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Formatting
+
   /**
    * Pads a number with '0' characters up to a specified width.
    *
@@ -158,6 +183,35 @@ class StarDateTime extends DateTime {
    */
   public function __toString() {
     return $this->format('Y-m-d H:i:s P e');
+  }
+
+  /**
+   * Format the datetime in ISO format, without timezone.
+   * Suitable for MySQL DATETIME columns.
+   *
+   * @return string
+   */
+  public function iso() {
+    return $this->format(self::ISO8601);
+  }
+
+  /**
+   * Format the datetime suitable for MySQL DATETIME columns.
+   * No timezone information is included in the format string, so you may want to set the timezone beforehand.
+   *
+   * @return string
+   */
+  public function mysql() {
+    return $this->format('Y-m-d H:i:s');
+  }
+
+  /**
+   * Sets the timezone to UTC and formats the datetime suitable for MySQL DATETIME columns.
+   *
+   * @return string
+   */
+  public function mysqlUTC() {
+    return $this->timezone('UTC')->mysql();
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,20 +1,29 @@
 <?php
-// useful string functions:
+/**
+ * Useful string functions.
+ *
+ * @todo Many of these should be rolled into String and Number classes.
+ */
 
-function println($str = '')
-{
-  print $str."\n";
+/**
+ * Echo a string with a newline.
+ *
+ * @param string $str
+ */
+function echoln($str = '') {
+  echo "$str\n";
 }
 
-function printbr($str = '', $noBrIfStrEmpty = FALSE)
-{
-  print $str;
-  if ($str != '' || !$noBrIfStrEmpty)
-    print "<br />\n";
+/**
+ * Echo a string with a break tag and a newline.
+ *
+ * @param string $str
+ */
+function echobr($str = '') {
+  echo "$str<br>\n";
 }
 
-function extractFilename($path)
-{
+function extractFilename($path) {
   $filename = $path;
   $n = strrpos($path, "/");
   if ($n !== FALSE)

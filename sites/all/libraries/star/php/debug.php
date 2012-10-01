@@ -26,7 +26,7 @@ function dumpOff() {
 }
 
 function dumpBeginPrint() {
-	print("<pre style='color:Red'>\n");
+	print("<pre style='color: Red'>\n");
 }
 
 function dumpEndPrint() {
@@ -105,14 +105,4 @@ function print_array($array){
     if(is_array($value)) print_array($value);
     else print $value;
   }
-}
-
-function p2fb($print){
-  print "<script>console.log(\"";
-  if(is_string($print)) print $print;
-  elseif(is_array($print)) {
-    print_array($print);
-  } else
-    print $print;
-  print "\")</script>";
 }

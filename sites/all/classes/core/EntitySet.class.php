@@ -93,6 +93,15 @@ class EntitySet {
   }
 
   /**
+   * Get the array of entity paths.
+   *
+   * @return array
+   */
+  public function entityPaths() {
+    return array_keys($this->entities);
+  }
+
+  /**
    * Get the number entities in the set.
    *
    * @return int

@@ -30,20 +30,19 @@ class Triumph {
   /**
    * When was the triumph created? FALSE if not created yet.
    *
-   * @var bool|StarDateTime
+   * @var MoonMarsDateTime|bool
    */
   protected $created;
 
   /**
    * When where the notifications created? FALSE if not created yet.
    *
-   * @var bool|StarDateTime
+   * @var MoonMarsDateTime|bool
    */
   protected $nxnsCreated;
 
   /**
-   * Nxns created for about this triumph.
-   * Keys are nxn_ids. Values are Nxn objeects.
+   * Nxns created for this triumph. Keys are nxn_ids. Values are Nxn objects.
    *
    * @var array
    */
@@ -92,7 +91,7 @@ class Triumph {
     elseif (is_string($param) && in_array($param, moonmars_nxn_triumph_types())) {
       // New triumph:
       $this->triumphType = $param;
-      $this->created = StarDateTime::now();
+      $this->created = MoonMarsDateTime::nowUTC();
       $this->nxnsCreated = FALSE;
       $this->actors = array();
       $this->recipients = NULL;
@@ -117,8 +116,8 @@ class Triumph {
   public function copyRec($rec) {
     $this->triumphId = (int) $rec->triumph_id;
     $this->triumphType = $rec->triumph_type;
-    $this->created = new StarDateTime($rec->created);
-    $this->nxnsCreated = $rec->nxns_created ? (new StarDateTime($rec->nxns_created)) : FALSE;
+    $this->created = new MoonMarsDateTime($rec->created, 'UTC');
+    $this->nxnsCreated = $rec->nxns_created ? (new MoonMarsDateTime($rec->nxns_created, 'UTC')) : FALSE;
     return $this;
   }
 
@@ -156,8 +155,8 @@ class Triumph {
     // Save the triumph record:
     $fields = array(
       'triumph_type' => $this->triumphType,
-      'created'      => $this->created->timestamp(),
-      'nxns_created' => $this->nxnsCreated ? $this->nxnsCreated->timestamp() : NULL,
+      'created'      => $this->created->mysqlUTC(),
+      'nxns_created' => $this->nxnsCreated ? $this->nxnsCreated->mysqlUTC() : NULL,
     );
 
     if ($this->triumphId) {
@@ -221,7 +220,7 @@ class Triumph {
   /**
    * Get the datetime when the triumph was created.
    *
-   * @return StarDateTime
+   * @return MoonMarsDateTime
    */
   public function created() {
     $this->load();
@@ -231,7 +230,7 @@ class Triumph {
   /**
    * Get the datetime when the nxns were created, or FALSE if they haven't been created yet.
    *
-   * @return StarDateTime|bool
+   * @return MoonMarsDateTime|bool
    */
   public function nxnsCreated() {
     $this->load();
@@ -450,6 +449,8 @@ class Triumph {
             break;
         } // switch nxn_category
 
+        dbg($candidates->entityPaths());
+
         // If we didn't find any recipient candidates, continue:
         if (!$candidates->count()) {
           continue;
@@ -485,8 +486,8 @@ class Triumph {
             break;
 
           case 'update-member':
-            // No need to notify the updater (usually this is the member whose profile has been updated):
-            $candidates->remove($this->actor('updater'));
+            // No need to notify the member:
+            $candidates->remove($this->actor('member'));
             break;
 
           case 'update-group':
@@ -494,6 +495,8 @@ class Triumph {
             $candidates->remove($this->actor('updater'));
             break;
         }
+
+        dbg($candidates->entityPaths());
 
         // If there aren't any candidates left, continue:
         if (!$candidates->count()) {
@@ -585,6 +588,8 @@ class Triumph {
       } // for each triumph type
     } // for each nxn category
 
+    dbg($this->recipients->entityPaths());
+
     return $this->recipients;
   } // findRecipients
 
@@ -606,7 +611,7 @@ class Triumph {
       $nxn->save();
       $n++;
     }
-    $this->nxnsCreated = StarDateTime::now();
+    $this->nxnsCreated = MoonMarsDateTime::nowUTC();
     return $n;
   }
 
@@ -621,11 +626,15 @@ class Triumph {
     // Look for any triumphs for which we didn't create nxns yet:
     $q = db_select('moonmars_triumph', 'mmt')
       ->fields('mmt')
-      ->condition('nxns_created', 0);
+      ->condition(db_or()
+        ->condition('nxns_created', 0)
+        ->condition('nxns_created', NULL));
     $rs = $q->execute();
+
     // Create the nxns:
     $n = 0;
     foreach ($rs as $rec) {
+      dbg($rec);
       $triumph = new Triumph($rec);
       // The call to createNxns() followed by save() will update the nxns_created field:
       $n += $triumph->createNxns();
@@ -757,13 +766,11 @@ class Triumph {
    *
    * @static
    * @param Member $member
-   * @param Member $updater
    * @return Triumph
    */
-  public static function updateMember(Member $member, Member $updater) {
+  public static function updateMember(Member $member) {
     $triumph = new Triumph('update-member');
     $triumph->addActor('member', $member);
-    $triumph->addActor('updater', $updater);
     $triumph->save();
     return $triumph;
   }

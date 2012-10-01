@@ -21,6 +21,6 @@ function astro_format_about_how_long_ago($datetime) {
   $datetime = new StarDateTime($datetime);
   $time_ago = $datetime->aboutHowLongAgo();
   $time_ago = $time_ago == 'now' ? 'just now' : "about $time_ago ago";
-  $iso = $datetime->format('Y-m-d\TH:i:s\Z');
+  $iso = $datetime->format(DateTime::ISO8601);
   return "<time datetime='$iso'>$time_ago</time>";
 }

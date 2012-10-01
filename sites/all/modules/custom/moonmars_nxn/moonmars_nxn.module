@@ -49,10 +49,16 @@ function moonmars_nxn_mail($key, &$message, $params) {
       // Wrap the summary in a <p> tag for the email:
       $message['body'][] = "<p>{$params['summary']}</p>";
 
-      // The message is already HTML because it only appears in the email:
-      $message['body'][] = $params['message'];
+      // The details section is already HTML because it only appears in the email:
+      $message['body'][] = $params['details'];
 
       // Send HTML email:
+      $message['headers']['Content-Type'] = "text/html; charset='utf-8';";
+      break;
+
+    case 'report':
+      $message['subject'] = $params['subject'];
+      $message['body'] = $params['body'];
       $message['headers']['Content-Type'] = "text/html; charset='utf-8';";
       break;
   }
@@ -357,7 +363,6 @@ function moonmars_nxn_list($user) {
 //  $html .= views_embed_view('notifications', 'page', $member->uid());
 
   $html .= "<table id='table-nxns'>";
-
   $page = isset($_GET['page']) ? ((int) $_GET['page']) : 0;
   $q = db_select('moonmars_nxn', 'nxn')
     ->fields('nxn', ['nxn_id'])
@@ -369,14 +374,13 @@ function moonmars_nxn_list($user) {
     $nxn->load();
     $html .= "
       <tr>
-        <td class='nxn-created'>" . $nxn->created()->format(MoonMarsDateTime::FORMAT_DATETIME_LONG) . "</td>
+        <td class='nxn-created'>" . $nxn->created()->formatMemberTZ(MoonMarsDateTime::FORMAT_DATETIME_LONG) . "</td>
         <td class='nxn-details'>
           <div class='nxn-summary'>" . $nxn->summary() . "</div>
           <div class='nxn-preview'>" . $nxn->preview() . "</div>
         </td>
       </tr>";
   }
-
   $html .= "</table>";
 
   return $html;
@@ -578,17 +582,71 @@ function moonmars_nxn_form_submit($form, &$form_state) {
 
 /**
  * Callback to create and send outstanding notifications.
- * Should be run virtually continuously.
+ *
+ * This should be running virtually continuously. We'll set it for 1 minute intervals and see how that goes.
+ * This frequency might incur too much of a memory overhead due to loading all the Drupal modules on each call, but we
+ * can tighten this up later using a lightweight bootstrap method.
  */
 function moonmars_nxn_send_outstanding() {
+  $is_cron = substr($_SERVER['HTTP_USER_AGENT'], 0, 4) == 'curl';
+  if (!$is_cron) {
+    echoln("<pre>");
+  }
+
+  // Check for lock:
+  $lock_path = DRUPAL_ROOT . '/' . drupal_get_path('module', 'moonmars_nxn') . '/lock.txt';
+  if (file_exists($lock_path)) {
+    // Read the lock and check the time it was created:
+    if (time() - file_get_contents($lock_path) > 600) {
+      // Queue has been locked for 10 minutes, something could be wrong. Assume that it's stalled and delete the lock.
+      unlink($lock_path);
+    }
+    else {
+      // Lock exists, end.
+      $msg = "Queue already being processed, quitting.";
+      watchdog('moonmars_nxn', $msg);
+      echoln($msg);
+      return NULL;
+    }
+  }
+
+  // Create lock:
+  file_put_contents($lock_path, time());
+
   // Scan triumphs and create notifications:
   $n_created = Triumph::createOutstandingNxns();
 
   // Send outstanding notifications:
-  $n_sent = Nxn::sendOutstanding();
+  $messages = Nxn::sendOutstanding();
 
-  // Some info in watchdog:
-  watchdog('moonmars_nxn', "Creating and sending outstanding nxns. $n_created nxns created. $n_sent nxns sent.");
+  // Some feedback:
+  $body = [];
+  $n_sent = 0;
+  $n_unsent = 0;
+  foreach ($messages as $message) {
+    $body[] = ($message['result'] ? 'SENT' : 'UNSENT') . '|' . $message['to'] . '|' . $message['subject'];
+    if ($message['result']) {
+      $n_sent++;
+    }
+    else {
+      $n_unsent++;
+    }
+  }
+  $subject = "[moonmars.com] Creating and sending outstanding nxns. $n_created nxns created, $n_sent sent, $n_unsent unsent.";
+  $params = array(
+    'subject' => $subject,
+    'body' => $body,
+  );
+//  drupal_mail('moonmars_nxn', 'report', Member::create(1)->mail(), LANGUAGE_NONE, $params);
+  watchdog('moonmars_nxn', $subject);
+  echoln($subject);
+
+  // Delete lock:
+  unlink($lock_path);
+
+  if (!$is_cron) {
+    echoln("</pre>");
+  }
 
   return NULL;
 }
