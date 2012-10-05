@@ -363,7 +363,7 @@ abstract class EntityBase {
    * Get a URL for the entity.
    * This is not the same as alias(), regardless of the value of $absolute.
    * If $absolute is TRUE, it will begin with the base URL, i.e. http://example.com/the-alias
-   * If $absolute is FALSE, it will begin with a '/',       i.e. /the-alias
+   * If $absolute is FALSE, it will begin with a '/', i.e. /the-alias
    *
    * @return string
    */

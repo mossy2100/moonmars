@@ -150,6 +150,8 @@ class Triumph {
 
   /**
    * Save the triumph.
+   *
+   * @return Triumph
    */
   public function save() {
     // Save the triumph record:
@@ -318,6 +320,8 @@ class Triumph {
 
     // Go through each nxn category:
     foreach ($definitions as $nxn_category => $nxn_category_info) {
+      echoln('<hr>');
+      dbg($nxn_category_info['title'], 'nxn category');
 
       // Go through each triumph type, acting on matches:
       foreach ($nxn_category_info['triumph types'] as $triumph_type => $triumph_type_info) {
@@ -326,6 +330,8 @@ class Triumph {
         if ($this->triumphType != $triumph_type) {
           continue;
         }
+
+        dbg($triumph_type_info['title'], 'matching triumph type');
 
         // Initialise set of recipient candidates:
         $candidates = new EntitySet();
@@ -449,7 +455,7 @@ class Triumph {
             break;
         } // switch nxn_category
 
-        dbg($candidates->entityPaths());
+        dbg($candidates->entityPaths(), 'candidates at end of Step 1');
 
         // If we didn't find any recipient candidates, continue:
         if (!$candidates->count()) {
@@ -462,7 +468,9 @@ class Triumph {
         switch ($this->triumphType) {
           case 'new-member':
             // No need to notify the new member:
-            $candidates->remove($this->actor('member'));
+            $member = $this->actor('member');
+            dbg($member, 'member');
+            $candidates->remove($member);
             break;
 
           case 'new-group':
@@ -496,7 +504,7 @@ class Triumph {
             break;
         }
 
-        dbg($candidates->entityPaths());
+        dbg($candidates->entityPaths(), 'candidates at end of Step 2');
 
         // If there aren't any candidates left, continue:
         if (!$candidates->count()) {
@@ -505,15 +513,16 @@ class Triumph {
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Step 3.
-        // Check who really does want a nxn, based on their preferences.
+        // Check candidates preferences to see who really wants a nxn.
         foreach ($candidates->entities() as $member) {
 
           // Get the member's preferences for this type of triumph in this nxn category.
           $nxn_prefs = $member->nxnPref($nxn_category, $this->triumphType);
+          dbg($nxn_prefs);
 
           switch ($nxn_prefs['wants']) {
             case MOONMARS_NXN_NO:
-              // Do not add member to recipients.
+              // Do not add member to recipients, i.e. do nothing.
               // This case block is just here for completeness and readability.
               break;
 
@@ -585,10 +594,13 @@ class Triumph {
 
           } // switch wants
         } // foreach members
+
+        dbg($this->recipients->entityPaths(), 'recipients at end of Step 3');
+
       } // for each triumph type
     } // for each nxn category
 
-    dbg($this->recipients->entityPaths());
+    dbg($this->recipients->entityPaths(), 'recipients at end of outer loop');
 
     return $this->recipients;
   } // findRecipients
@@ -681,6 +693,7 @@ class Triumph {
       $triumph->addActor('group', $group);
     }
     $triumph->save();
+    dbg($triumph, 'triumph');
     return $triumph;
   }
 

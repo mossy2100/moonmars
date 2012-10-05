@@ -14,13 +14,21 @@ class EntitySet {
   protected $entities;
 
   /**
+   * Constructor.
+   */
+  public function __construct() {
+    // Initialise the array of entities:
+    $this->entities = [];
+  }
+
+  /**
    * Add an entity to the set.
    *
    * @param EntityBase $entity
    */
   public function addSingle(EntityBase $entity) {
     // By using the entity path as the array key, we prevent duplicates.
-    $this->items[$entity->path()] = $entity;
+    $this->entities[$entity->path()] = $entity;
   }
 
   /**

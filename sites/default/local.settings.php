@@ -1,13 +1,18 @@
 <?php
 
-// Show all errors, warnings, notices::
-error_reporting(E_ALL | E_STRICT);
+// Report all errors except for notices and strict:
+//error_reporting(E_ALL & ~E_NOTICE & ~E_STRICT);
+
+// Report all errors except for notices:
+error_reporting(E_ALL & ~E_NOTICE);
 
 // Include some PHP:
-require_once DRUPAL_ROOT . '/sites/all/libraries/star/php/strings.php';
-require_once DRUPAL_ROOT . '/sites/all/libraries/star/php/numbers.php';
-require_once DRUPAL_ROOT . '/sites/all/libraries/star/php/arrays.php';
-require_once DRUPAL_ROOT . '/sites/all/libraries/star/php/drupal.php';
+$star_path = DRUPAL_ROOT . "/sites/all/libraries/star";
+require_once "$star_path/php/strings.php";
+require_once "$star_path/php/numbers.php";
+require_once "$star_path/php/arrays.php";
+require_once "$star_path/php/objects.php";
+require_once "$star_path/php/drupal.php";
 
 /**
  * Scan /sites/all/classes to find where all the classes are.

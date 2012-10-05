@@ -325,9 +325,9 @@ class Group extends MoonMarsNode {
    * @return array
    */
   public function admins() {
-    // Get the group's admins in reverse order of that in which they joined.
+    // Get the group's admins in reverse order of that in which they joined the group.
     $q = db_select('view_group_has_member', 'v')
-      ->fields('v', array('admin_uid'))
+      ->fields('v', array('member_uid'))
       ->condition('group_nid', $this->nid())
       ->condition('is_admin', 1)
       ->orderBy('created', 'DESC');
@@ -335,7 +335,7 @@ class Group extends MoonMarsNode {
     $rs = $q->execute();
     $admins = array();
     foreach ($rs as $rec) {
-      $admins[] = Member::create($rec->admin_uid);
+      $admins[] = Member::create($rec->member_uid);
     }
 
     return $admins;

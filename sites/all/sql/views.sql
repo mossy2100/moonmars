@@ -100,11 +100,13 @@ AS select
    n.status AS group_status,
    fde1.endpoints_entity_id AS member_uid,
    u.name AS member_name,
-   u.status AS member_status
+   u.status AS member_status,
+   field_is_admin_value AS is_admin
 from
   relation r
   left join field_data_endpoints fde0 on ((r.rid = fde0.entity_id) and (fde0.endpoints_r_index = 0))
   left join field_data_endpoints fde1 on ((r.rid = fde1.entity_id) and (fde1.endpoints_r_index = 1))
+  left join field_data_field_is_admin ia on r.rid = ia.entity_id
   left join node n on fde0.endpoints_entity_id = n.nid
   left join users u on fde1.endpoints_entity_id = u.uid
 where r.relation_type = 'has_member';

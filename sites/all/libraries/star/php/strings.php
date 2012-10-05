@@ -1,9 +1,8 @@
 <?php
-/**
- * Useful string functions.
- *
- * @todo Many of these should be rolled into String and Number classes.
- */
+// useful string functions:
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Bonus echo functions.
 
 /**
  * Echo a string with a newline.
@@ -23,6 +22,42 @@ function echobr($str = '') {
   echo "$str<br>\n";
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Append functions.
+
+/**
+ * Append one string to another.
+ *
+ * @param string $str
+ * @param string $str_to_append
+ */
+function append(&$str, $str_to_append = '') {
+  $str .= $str_to_append;
+}
+
+/**
+ * Append one string with a newline to another string, i.e. append a line.
+ *
+ * @param string $str
+ * @param string $str_to_append
+ */
+function appendln(&$str, $str_to_append = '') {
+  $str .= "$str_to_append\n";
+}
+
+/**
+ * Append one string with a break tag and a newline to another string, i.e. append an HTML line.
+ *
+ * @param string $str
+ * @param string $str_to_append
+ */
+function appendbr(&$str, $str_to_append = '') {
+  $str .= "$str_to_append<br>\n";
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Probably don't need this one any more.
 function extractFilename($path) {
   $filename = $path;
   $n = strrpos($path, "/");
@@ -31,10 +66,14 @@ function extractFilename($path) {
   return $filename;
 }
 
-function isVowel($ch)
-{
-  $ch = strtolower($ch);
-  return in_array($ch, array("a", "e", "i", "o", "u"));
+/**
+ * Checks if a character is a vowel.
+ *
+ * @param string $ch
+ * @return bool
+ */
+function isVowel($ch) {
+  return in_array(strtolower($ch), array("a", "e", "i", "o", "u"));
 }
 
 function plural($str, $n = 0, $returnNum = FALSE)
@@ -98,30 +137,25 @@ function plural($str, $n = 0, $returnNum = FALSE)
 }
 
 /**
- * Replaces Unix (\r\n) and Mac (\r) newlines with Windows newlines (\n).
+ * Replaces Unix (\r\n) and old Mac (\r) newlines with Windows newlines (\n).
  *
  * @param string $str
  * @return string
  */
-function simpleNewlines($str)
-{
-    $str = str_replace("\r\n", "\n", $str);
-    $str = str_replace("\r", "\n", $str);
-    return $str;
+function simpleNewlines($str) {
+  $str = str_replace("\r\n", "\n", $str);
+  $str = str_replace("\r", "\n", $str);
+  return $str;
 }
 
 /**
- * Converts all newlines (whether from Windows, Mac or Unix) into XHTML break tags.
+ * Converts all newlines, whether from Windows, Mac or Unix, into HTML break tags plus \n.
  *
  * @param string $str
- * @param bool $add_newlines Set to true if you want newlines after each break tag (default).
  * @return string
  */
-function nl2brs($str, $addNewlines = TRUE) {
-  $str = simpleNewlines($str);
-  $replace = "<br />" . ($addNewlines ? "\n" : "");
-  $str = str_replace("\n", $replace, $str);
-  return $str;
+function nl2brs($str) {
+  return str_replace("\n", "<br>\n", simpleNewlines($str));
 }
 
 /**
@@ -131,17 +165,13 @@ function nl2brs($str, $addNewlines = TRUE) {
  * @param string $str
  * @return string
  */
-function nl2commas($str)
-{
-    $str = simpleNewlines($str);
-  $search = array(",\n", "\n");
-  $str = str_replace($search, ", ", $str);
-  return $str;
+function nl2commas($str) {
+  return str_replace(array(",\n", "\n"), ', ', simpleNewlines($str));
 }
 
 /**
- * Backslashes newlines and carriage returns.
- * Useful for outputting strings to JavaScript.
+ * Backslashes newlines and carriage returns. Useful for outputting strings to JavaScript.
+ *
  * e.g.
  *     echo "var str = '".nl2slashn("This string has\nlinefeeds in it.")."';";
  * is the same as
@@ -762,60 +792,6 @@ function var_to_string($value, $indent = 0, $objects = array(), $html = FALSE) {
     return (string) $value;
   }
 }
-
-/**
- * Format an array in the Drupal style.
- *
- * @param array $array
- * @param int $indent
- * @return string
- */
-function array_to_string($array, $indent = 0, $objects = array(), $html = FALSE) {
-  if (empty($array)) {
-    return '[]';
-  }
-  $space = $html ? '&nbsp;' : ' ';
-  $spaces = str_repeat($space, $indent);
-  $lines = array();
-  $lines[] = '[';
-  foreach ($array as $key => $value) {
-    $lines[] = $spaces . $space . $space . var_to_string($key, 0, $objects, $html) . $space . '=>' . $space . var_to_string($value, $indent + 2, $objects, $html) . ',';
-  }
-  $lines[] = "$spaces]";
-  return implode($html ? '<br>' : "\n", $lines);
-}
-
-/**
- * Format an object in a JSON-ish style.
- *
- * @param object $object
- * @param int $indent
- * @return string
- */
-function object_to_string($object, $indent = 0, $objects = array(), $html = FALSE) {
-  $space = $html ? '&nbsp;' : ' ';
-  $spaces = str_repeat($space, $indent);
-  $lines = array();
-  $lines[] = get_class($object) . $space . '{';
-  
-  // Get the object's property values:
-  if (method_exists($object, 'toArray')) {
-    $properties = $object->toArray();
-  }
-  else {
-//    $properties = get_object_vars($object);
-    $properties = object_to_array($object);
-  }
-  
-  // Loop through properties:
-  foreach ($properties as $key => $value) {
-    $lines[] = $spaces . $space . $space . $key . ':' . $space . var_to_string($value, $indent + 2, $objects) . ',';
-  }
-  
-  $lines[] = "$spaces}";
-  return implode($html ? '<br>' : "\n", $lines);
-}
-
 
 /**
  * Indents a flat JSON string to make it more human-readable.

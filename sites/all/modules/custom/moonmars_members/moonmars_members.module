@@ -35,11 +35,6 @@ function moonmars_members_menu() {
     'access callback' => 'user_is_logged_in',
     'type'            => MENU_NORMAL_ITEM
   ];
-  $items['profile/edit'] = [
-    'page callback'   => 'moonmars_members_profile_edit',
-    'access callback' => 'user_is_logged_in',
-    'type'            => MENU_NORMAL_ITEM
-  ];
   $items['activity'] = [
     'page callback'   => 'moonmars_members_activity_redirect',
     'access callback' => 'user_is_logged_in',
@@ -106,8 +101,6 @@ function moonmars_members_on_own_page() {
   // Get the logged-in member and the member whose page it is:
   $logged_in_member = Member::loggedInMember();
   $page_member = moonmars_actors_get_actor_from_url();
-
-  // Administrators can access any member's pages. Members can access their own pages.
   return $logged_in_member && $page_member && Member::equals($logged_in_member, $page_member);
 }
 
@@ -263,13 +256,6 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // User profile form
     case 'user_profile_form':
-      // Make sure we're at the right URL:
-      $logged_in_member = Member::loggedInMember();
-      $edit_profile_path = $logged_in_member->editAlias() . '/profile';
-      if (current_path() != $edit_profile_path) {
-        drupal_goto($edit_profile_path);
-      }
-
       // Add JS:
       $form['#attached']['js'][] = "$module_path/js/profile-form.js";
 
@@ -297,8 +283,8 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
       // Hide the score:
       unset($form['field_score']);
 
-      // Hide the notifications preferences:
-      unset($form['field_notifications_preferences']);
+      // Hide the "Profile updated" checkbox:
+      unset($form['field_profile_updated']);
 
       // Remove location fieldset description:
       unset($form['field_user_location'][LANGUAGE_NONE][0]['#description']);
@@ -564,13 +550,6 @@ function moonmars_members_unfollow($member2_uid) {
  */
 function moonmars_members_profile() {
   drupal_goto(Member::loggedInMember()->alias());
-}
-
-/**
- * Go to the member's profile edit form.
- */
-function moonmars_members_profile_edit() {
-  drupal_goto(Member::loggedInMember()->editAlias());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -855,4 +834,20 @@ function moonmars_members_activity_redirect() {
 ////  $logged_in_member = Member::loggedInMember();
 ////  $page_member = Member::create($uid);
 ////  $rel = MoonMarsRelation::searchBinary('rates', 'user', $logged_in_member->uid(), 'user', $page_member->uid());
+//}
+
+///**
+// * Implement hook_form_user_pass_reset_alter().
+// *
+// * This is called when they hit the password reset form, which means they've validated their email address.
+// * It's at this point I want to create the new-member triumph.
+// */
+//function moonmars_members_form_user_pass_reset_alter(&$form, &$form_state) {
+//  watchdog ('debug', "moonmars_members_user_account_validated");
+//  dbg($form);
+//  dbg($form_state);
+////  // Create a triumph:
+////  $member = Member::create($account);
+////  dbg($member);
+////  Triumph::newMember($member);
 //}

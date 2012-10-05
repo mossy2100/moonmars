@@ -513,9 +513,21 @@ class Member extends User {
 
   /**
    * Get the HTML attribute for the member's comment border style.
+   *
+   * @return string
    */
   public function commentBorderStyle($highlight = FALSE) {
     return "style='border-color: " . ($highlight ? '#919191' : $this->commentBorderColor()->hex()) . ";'";
+  }
+
+  /**
+   * Get/set the value of field_profile_updated.
+   *
+   * @param null $value
+   * @return mixed
+   */
+  public function profileUpdated($value = NULL) {
+    return $this->field('field_profile_updated', LANGUAGE_NONE, 0, 'value', $value);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -967,7 +979,7 @@ class Member extends User {
 //  }
 
   /**
-   * Get the cached/database value for what notifications a member wants of a certain type.
+   * Check what notifications a member wants of a certain type.
    * Returns an array with two keys:
    *    nxn_wants => MOONMARS_NXN_NO, MOONMARS_NXN_YES or MOONMARS_NXN_SOME
    *    nxn_conditions => an array of conditions
@@ -980,7 +992,6 @@ class Member extends User {
    * @return array
    */
   public function nxnPref($nxn_category, $triumph_type, $entity_id = 0) {
-
     // Check if we already got this result:
     if (!isset($this->nxnPrefs[$nxn_category][$triumph_type][$entity_id])) {
 
@@ -1092,7 +1103,21 @@ class Member extends User {
    */
   public function nxnPrefConditions($nxn_category, $triumph_type, $entity_id = 0) {
     $nxn_pref = $this->nxnPref($nxn_category, $triumph_type, $entity_id);
-    return isset($nxn_pref['conditions']) ? $nxn_pref['conditions'] : array();
+    return isset($nxn_pref['conditions']) ? $nxn_pref['conditions'] : [];
+  }
+
+  /**
+   * Check if a member may want a certain notification.
+   *
+   * @param string $nxn_category
+   *   site, channel, followee or group
+   * @param string $triumph_type
+   * @param int $entity_id
+   *   The group_nid or followee_uid
+   * @return bool
+   */
+  public function nxnMayWant($nxn_category, $triumph_type, $entity_id = 0) {
+    return in_array($this->nxnPrefWants($nxn_category, $triumph_type, $entity_id), [MOONMARS_NXN_YES, MOONMARS_NXN_SOME]);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

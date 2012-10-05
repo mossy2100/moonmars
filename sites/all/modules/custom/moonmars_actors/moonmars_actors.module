@@ -173,10 +173,11 @@ function moonmars_actors_entity_insert($entity, $entity_type) {
     $actor = moonmars_actors_get_actor($entity_type, $entity);
 
     // Create triumphs:
-    if ($actor instanceof Member) {
-      Triumph::newMember($actor);
-    }
-    elseif ($actor instanceof Group) {
+//    if ($actor instanceof Member) {
+//      Triumph::newMember($actor);
+//    }
+//    else
+    if ($actor instanceof Group) {
       Triumph::newGroup($actor);
     }
 
@@ -192,20 +193,29 @@ function moonmars_actors_entity_insert($entity, $entity_type) {
  * pathauto_node_update_alias() sets the alias according to the pattern. hook_node_update() is called before.
  */
 function moonmars_actors_entity_update($entity, $entity_type) {
-  // Check if it's a member or group:
+  // Check if the entity is a member or group:
   if ($entity_type == 'user' || ($entity_type == 'node' && $entity->type == 'group')) {
 
     // Get the actor:
     $actor = moonmars_actors_get_actor($entity_type, $entity);
 
     // Create triumphs:
+
+    // Only create an update-member triumph if the member is updating their own profile
+    // (i.e., not if an admin is updating someone else's profile).
     $logged_in_member = Member::loggedInMember();
-    if ($actor instanceof Member) {
-      // Only create a triumph if the member is updating their own profile (i.e., not if an admin is updating someone's
-      // profile).
-      if (Member::equals($actor, $logged_in_member)) {
+    if ($actor instanceof Member && Member::equals($actor, $logged_in_member)) {
+
+      // The first time a member's profile is updated we create the new-member triumph. After that, update-member.
+      if (!$actor->profileUpdated()) {
+        Triumph::newMember($actor);
+        $actor->profileUpdated(TRUE);
+        $actor->save();
+      }
+      else {
         Triumph::updateMember($actor);
       }
+
     }
     elseif ($actor instanceof Group) {
       Triumph::updateGroup($actor, $logged_in_member);

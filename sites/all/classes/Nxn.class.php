@@ -308,7 +308,7 @@ class Nxn {
   public static function memberDetails(Member $member) {
     $details = array(
       'Username' => "<strong>" . $member->name(NULL, TRUE) ."</strong>",
-      'Profile'  => $member->link(),
+      'Profile'  => $member->link($member->url(TRUE)),
     );
     if ($member->fullName()) {
       $details['Full name'] = $member->fullName();
@@ -338,7 +338,7 @@ class Nxn {
     $details = array(
       'Name'    => "<strong>" . $group->title() . "</strong>",
       'Tag'     => '#' . $group->tag(),
-      'Profile' => $group->link(),
+      'Profile' => $group->link($group->url(TRUE)),
       'Type'    => $group->groupType(NULL, 'name'),
     );
     if ($group->description()) {
@@ -503,7 +503,7 @@ class Nxn {
     // @todo Add "comment-by-email-reply" feature.
     //$details = self::renderItem($item);
     // For now just show the HTML:
-    $details = $item->textScan()->html();
+    $details = "<div style='padding: 5px; border: solid 1px #ccc; border-radius: 3px'>" . $item->textScan()->html() . "</div>";
 
     return array(
       'subject' => $subject,
@@ -690,7 +690,10 @@ class Nxn {
       $this->message = $email['details'];
 
       // Add the unsubscribe message:
-      $this->message .= "<p style='font-size: 10px; color: #777;'>" . l("Update your notification preferences, or unsubscribe from all emails", $this->recipient->alias() . '/edit/notifications') . "</p>";
+      $this->message .= "
+        <p style='font-size: 11px; border-top: solid 1px #aaa; padding-top: 5px;'>
+          " . l("Update your notification preferences", $this->recipient->alias() . '/edit/notifications') . "
+        </p>";
 
       // Remember we've done this:
       $this->generated = TRUE;
