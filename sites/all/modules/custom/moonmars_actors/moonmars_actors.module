@@ -198,21 +198,34 @@ function moonmars_actors_entity_update($entity, $entity_type) {
     // Create triumphs:
     $logged_in_member = Member::loggedInMember();
     if ($actor instanceof Member) {
-      // The first time a member's profile is updated we create the new-member triumph. After that, update-member.
-      if (!$actor->profileUpdated()) {
-        Triumph::newMember($actor);
-        $actor->profileUpdated(TRUE);
-        $actor->save();
-        // Put a flag in the session so that an update-member triumph doesn't get created straight after this.
-        // For some weird reason this function is called twice the first time the user updates their profile.
-        $GLOBALS['member_profile_updated'] = 1;
-      }
-      // Only create an update-member triumph if the member is updating their own profile
+      // Only create a new-member or update-member triumph if the member is updating their own profile
       // (i.e., not if an admin is updating someone else's profile).
       // The reason for this is because an administrator won't normally be adding interesting info; they'll most
       // likely just be updating a password or something.
-      elseif (Member::equals($actor, $logged_in_member) && !isset($GLOBALS['member_profile_updated'])) {
-        Triumph::updateMember($actor);
+      if (Member::equals($actor, $logged_in_member)) {
+        // The first time a member's profile is updated we create the new-member triumph. After that, update-member.
+        if (!$actor->profileUpdated()) {
+          Triumph::newMember($actor);
+
+          // We have to update the profile_updated field manually because if we call ->save() or user_save(), we'll
+          // trigger this hook again which will in turn trigger an update-member triumph.
+          // It's a pain in the arse but I can't think of a better way to do this right now.
+
+          // 1. Update the data table for the field:
+          $q = db_update('field_data_field_profile_updated')
+            ->fields(['field_profile_updated_value' => 1])
+            ->condition('entity_id', $actor->uid());
+          $q->execute();
+
+          // 2. Update the revision table for the field:
+          $q = db_update('field_revision_field_profile_updated')
+            ->fields(['field_profile_updated_value' => 1])
+            ->condition('entity_id', $actor->uid());
+          $q->execute();
+        }
+        else {
+          Triumph::updateMember($actor);
+        }
       }
     }
     elseif ($actor instanceof Group) {

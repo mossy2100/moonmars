@@ -630,7 +630,7 @@ function moonmars_nxn_send_outstanding() {
   $n_sent = 0;
   $n_unsent = 0;
   foreach ($messages as $message) {
-    $body[] = ($message['result'] ? 'SENT' : 'UNSENT') . ' | ' . trim($message['to'], ' "') . ' | ' . $message['subject'];
+    $body[] = ($message['result'] ? 'SENT' : 'UNSENT') . ' to ' . trim($message['to'], " \r\n\t\"") . ': ' . $message['subject'];
     if ($message['result']) {
       $n_sent++;
     }

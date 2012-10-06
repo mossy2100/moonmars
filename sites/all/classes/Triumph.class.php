@@ -331,7 +331,7 @@ class Triumph {
           continue;
         }
 
-        dbg($triumph_type_info['title'], 'matching triumph type');
+        dbg($triumph_type, 'matching triumph type');
 
         // Initialise set of recipient candidates:
         $candidates = new EntitySet();
@@ -518,7 +518,7 @@ class Triumph {
 
           // Get the member's preferences for this type of triumph in this nxn category.
           $nxn_prefs = $member->nxnPref($nxn_category, $this->triumphType);
-          dbg($nxn_prefs);
+          dbg($nxn_prefs, "prefs for " . $member->uid());
 
           switch ($nxn_prefs['wants']) {
             case MOONMARS_NXN_NO:
@@ -600,6 +600,7 @@ class Triumph {
       } // for each triumph type
     } // for each nxn category
 
+    echoln("<hr>");
     dbg($this->recipients->entityPaths(), 'recipients at end of outer loop');
 
     return $this->recipients;
