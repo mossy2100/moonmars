@@ -1,4 +1,6 @@
 <?php
+namespace AstroMultimedia\MoonMars;
+
 /**
  * Group class.
  */
@@ -8,6 +10,11 @@ class Group extends MoonMarsNode {
    * The node type.
    */
   const NODE_TYPE = 'group';
+
+  /**
+   * The tag prefix.
+   */
+  const TAG_PREFIX = '&';
 
   /**
    * The group types.
@@ -99,7 +106,7 @@ class Group extends MoonMarsNode {
   public function tag($tag = NULL, $include_prefix = FALSE) {
     if ($tag === NULL) {
       // Get the username:
-      return ($include_prefix ? '#' : '') . $this->field('field_group_tag');
+      return ($include_prefix ? self::TAG_PREFIX : '') . $this->field('field_group_tag');
     }
     else {
       // Set the username:

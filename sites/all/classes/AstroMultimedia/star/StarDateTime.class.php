@@ -1,4 +1,5 @@
 <?php
+namespace AstroMultimedia\Star;
 
 /**
  * This class is part of the Star Library, and is designed to extend and improve PHP's built-in DateTime class.

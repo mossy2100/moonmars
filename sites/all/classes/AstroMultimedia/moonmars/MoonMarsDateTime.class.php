@@ -1,4 +1,6 @@
 <?php
+namespace AstroMultimedia\MoonMars;
+
 /**
  * Created by JetBrains PhpStorm.
  * User: shaun

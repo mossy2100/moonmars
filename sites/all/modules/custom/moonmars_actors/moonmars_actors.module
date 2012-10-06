@@ -154,7 +154,8 @@ function moonmars_actors_reset_aliases($actor) {
   // Update the alias for the actor:
   $actor->resetAlias();
 
-  // Update the alias and title for the actor's channel:
+  // Update the alias and title for the actor's channel.
+  // @todo Remove when channels are made obsolete as entities.
   $channel = $actor->channel();
   $channel->resetAliasAndTitle();
 }

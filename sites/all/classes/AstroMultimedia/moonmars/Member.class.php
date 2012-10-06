@@ -1,9 +1,15 @@
 <?php
+namespace AstroMultimedia\MoonMars;
+
 /**
  * Encapsulates a moonmars.com member.
  */
-
 class Member extends User {
+
+  /**
+   * The tag prefix.
+   */
+  const TAG_PREFIX = '@';
 
   /**
    * The member's age.
@@ -98,7 +104,7 @@ class Member extends User {
   public function name($name = NULL, $include_prefix = FALSE) {
     if ($name === NULL) {
       // Get the username:
-      return ($include_prefix ? '@' : '') . $this->prop('name');
+      return ($include_prefix ? self::TAG_PREFIX : '') . $this->prop('name');
     }
     else {
       // Set the username:

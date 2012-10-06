@@ -1,4 +1,6 @@
 <?php
+namespace AstroMultimedia\Drupal;
+
 /**
  * Encapsulates a user role.
  */

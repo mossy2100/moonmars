@@ -1,4 +1,6 @@
 <?php
+namespace AstroMultimedia\Star;
+
 /**
  * StarSet class. Emulates sets, i.e. unordered collections with no duplicates.
  */

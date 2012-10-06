@@ -1,4 +1,6 @@
 <?php
+namespace AstroMultimedia\Drupal;
+
 /**
  * User: shaun
  * Date: 2012-09-14

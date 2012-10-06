@@ -1,4 +1,6 @@
 <?php
+namespace AstroMultimedia\Drupal;
+
 /**
  * Node class.
  */

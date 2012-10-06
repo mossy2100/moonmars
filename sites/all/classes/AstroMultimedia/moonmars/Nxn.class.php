@@ -1,4 +1,6 @@
 <?php
+namespace AstroMultimedia\MoonMars;
+
 /**
  * User: shaun
  * Date: 2012-08-30
@@ -425,11 +427,11 @@ class Nxn {
     // Generate the subject, summary and details.
     // Subject:
     $group_name = $group->title();
-    $subject = "New group created: $group_name";
+    $subject = "New group created";
     $group_link = $group->link();
 
     // Summary:
-    $summary = "<a href='$base_url'>moonmars.com</a> has a new group: $group_link";
+    $summary = "<a href='$base_url'>moonmars.com</a> has a new group!";
 
     // Details:
     $details = self::renderGroupDetails($group, "Group details");

@@ -1,4 +1,6 @@
 <?php
+namespace AstroMultimedia\MoonMars;
+
 /**
  * User: shaun
  * Date: 2012-08-30
@@ -321,7 +323,7 @@ class Triumph {
     // Go through each nxn category:
     foreach ($definitions as $nxn_category => $nxn_category_info) {
       echoln('<hr>');
-      dbg($nxn_category_info['title'], 'nxn category');
+      dbg($nxn_category, 'nxn category');
 
       // Go through each triumph type, acting on matches:
       foreach ($nxn_category_info['triumph types'] as $triumph_type => $triumph_type_info) {

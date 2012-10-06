@@ -1,4 +1,6 @@
 <?php
+namespace AstroMultimedia\MoonMars;
+
 /**
  * Creator: shaun
  * Date: 2012-08-21

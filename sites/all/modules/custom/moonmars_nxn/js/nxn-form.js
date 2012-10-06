@@ -81,6 +81,16 @@ function nxnSetRadios(nxnCategory, triumphType) {
         });
       }
     });
+
+    // Capture checkbox clicks:
+    $(cbg_id + ' .form-checkbox').click(function() {
+      // How many checkboxes are checked?
+      var nChecked = $(cbg_id + ' .form-checkbox:checked').length;
+      if (!nChecked) {
+        // Zero of the Some checkboxes are checked, which means No. Select the No radio:
+        $(rbg_id + ' .form-radio[value=' + MOONMARS_NXN_NO + ']').check().click();
+      }
+    });
   }
 }
 

@@ -1,4 +1,6 @@
 <?php
+namespace AstroMultimedia\Star;
+
 /**
  * StarColor class.
  *

@@ -48,33 +48,47 @@ function moonmars_scan_classes_dir($dir = NULL) {
 }
 
 /**
- * Custom autoload function.
+ * Custom autoload function, designed to follow PSR-0, which is used in D8.
+ * @see https://gist.github.com/1234504
+ * @see http://drupal.org/node/1240138
  *
  * @param $class
  */
-function moonmars_autoload($class_name) {
-  // Get the location of our classes if not done already:
-  global $moonmars_classes;
-  if (!isset($moonmars_classes)) {
-    // Check the cache:
-    $moonmars_classes_cache = cache_get('moonmars_classes');
-    if ($moonmars_classes_cache) {
-      $moonmars_classes = $moonmars_classes_cache->data;
-    }
-    else {
-      // Not in cache, so scan the classes folder:
-      moonmars_scan_classes_dir();
-      // Cache that shit:
-      cache_set('moonmars_classes', $moonmars_classes, 'cache', CACHE_TEMPORARY);
-    }
+function psr0_autoload($class_name) {
+  $class_name = ltrim($class_name, '\\');
+  $path  = DRUPAL_ROOT . '/sites/all/classes';
+  if ($last_namespace_pos = strripos($class_name, '\\')) {
+    $namespace = substr($class_name, 0, $last_namespace_pos);
+    $class_name = substr($class_name, $last_namespace_pos + 1);
+    $path .= '/' . str_replace('\\', '/', $namespace);
   }
+  $path .= '/' . str_replace('_', '/', $class_name) . '.php';
 
-  // If we have this class, load it:
-  if (array_key_exists($class_name, $moonmars_classes)) {
-    require_once $moonmars_classes[$class_name];
-    return;
-  }
+  require $path;
 }
 
-// Register our autoload function:
-spl_autoload_register('moonmars_autoload');
+// Register the PSR-0 autoload function:
+spl_autoload_register('psr0_autoload');
+
+// Old autoload code:
+//  // Get the location of our classes if not done already:
+//  global $moonmars_classes;
+//  if (!isset($moonmars_classes)) {
+//    // Check the cache:
+//    $moonmars_classes_cache = cache_get('moonmars_classes');
+//    if ($moonmars_classes_cache) {
+//      $moonmars_classes = $moonmars_classes_cache->data;
+//    }
+//    else {
+//      // Not in cache, so scan the classes folder:
+//      moonmars_scan_classes_dir();
+//      // Cache that shit:
+//      cache_set('moonmars_classes', $moonmars_classes, 'cache', CACHE_TEMPORARY);
+//    }
+//  }
+//
+//  // If we have this class, load it:
+//  if (array_key_exists($class_name, $moonmars_classes)) {
+//    require_once $moonmars_classes[$class_name];
+//    return;
+//  }

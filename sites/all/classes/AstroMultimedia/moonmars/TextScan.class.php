@@ -1,4 +1,6 @@
 <?php
+namespace AstroMultimedia\MoonMars;
+
 /**
  * Encapsulates a piece of text as entered in an item or comment.
  *

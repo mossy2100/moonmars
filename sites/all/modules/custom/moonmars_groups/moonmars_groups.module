@@ -845,17 +845,3 @@ function theme_moonmars_groups_search_form($vars) {
 
   return $html;
 }
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Saving nodes
-
-/**
- * Implements hook_node_insert().
- */
-function moonmars_groups_node_insert($node) {
-  if ($node->type == 'group') {
-    // Create a triumph for the new group:
-    $group = Group::create($node);
-    Triumph::newGroup($group);
-  }
-}

@@ -1,4 +1,6 @@
 <?php
+namespace AstroMultimedia\Drupal;
+
 /**
  * A base class for entities.
  *
