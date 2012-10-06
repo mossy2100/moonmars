@@ -213,7 +213,7 @@ function moonmars_items_node_presave($node) {
 }
 
 /**
- * Common stuff to do if the item is inserted or updated from a channel.
+ * Stuff to do if the item is inserted or updated from a channel.
  *
  * @param $node
  */
@@ -224,15 +224,18 @@ function moonmars_items_node_save($node) {
     // Get the item:
     $item = Item::create($node);
 
+    // Reset the item's alias:
+    $item->resetAlias();
+
     // Get the channel:
     $channel = Channel::create($GLOBALS['channel_nid']);
 
-    // Update the alias:
-    require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'pathauto') . '/pathauto.inc';
-    pathauto_create_alias('node', 'insert', $item->path(), ['node' => $node], 'item');
+    // Add the item to the channel:
+    // @todo This won't be needed after the redesign.
+    $channel->addItem($item);
 
-    // Connect the item to the channel (must be done after the alias is created).
-    $channel->postItem($item);
+    // Create a new-item triumph:
+    Triumph::newItem($item);
   }
 }
 
@@ -304,8 +307,11 @@ function moonmars_items_ajax_edit() {
   // Save the item:
   $item->save();
 
-  // Post the item in the current channel:
-  Channel::currentChannel()->postItem($item);
+  // Bump the item to the top of its channel:
+  $item->bump();
+
+  // When items are edited we won't create a new triumph (as opposed to when they're created).
+  // Updates about edits are often annoying since the content is substantially the same.
 
   // Theme the item:
   $html = $item->render();

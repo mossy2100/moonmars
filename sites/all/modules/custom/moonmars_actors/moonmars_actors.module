@@ -166,17 +166,13 @@ function moonmars_actors_reset_aliases($actor) {
  * after pathauto_node_insert_alias() sets the alias according to the pattern.
  */
 function moonmars_actors_entity_insert($entity, $entity_type) {
-  // Check if it's a member or group:
+  // Check if the entity is a member or group:
   if ($entity_type == 'user' || ($entity_type == 'node' && $entity->type == 'group')) {
 
     // Get the actor:
     $actor = moonmars_actors_get_actor($entity_type, $entity);
 
     // Create triumphs:
-//    if ($actor instanceof Member) {
-//      Triumph::newMember($actor);
-//    }
-//    else
     if ($actor instanceof Group) {
       Triumph::newGroup($actor);
     }
@@ -190,7 +186,7 @@ function moonmars_actors_entity_insert($entity, $entity_type) {
  * Implements hook_entity_update().
  *
  * Note, we use this hook instead of hook_node_update() as it gets called later in the cycle, after
- * pathauto_node_update_alias() sets the alias according to the pattern. hook_node_update() is called before.
+ * pathauto_node_update_alias() sets the alias according to the pattern. hook_node_update() is called before then.
  */
 function moonmars_actors_entity_update($entity, $entity_type) {
   // Check if the entity is a member or group:
@@ -200,22 +196,24 @@ function moonmars_actors_entity_update($entity, $entity_type) {
     $actor = moonmars_actors_get_actor($entity_type, $entity);
 
     // Create triumphs:
-
-    // Only create an update-member triumph if the member is updating their own profile
-    // (i.e., not if an admin is updating someone else's profile).
     $logged_in_member = Member::loggedInMember();
-    if ($actor instanceof Member && Member::equals($actor, $logged_in_member)) {
-
+    if ($actor instanceof Member) {
       // The first time a member's profile is updated we create the new-member triumph. After that, update-member.
       if (!$actor->profileUpdated()) {
         Triumph::newMember($actor);
         $actor->profileUpdated(TRUE);
         $actor->save();
+        // Put a flag in the session so that an update-member triumph doesn't get created straight after this.
+        // For some weird reason this function is called twice the first time the user updates their profile.
+        $GLOBALS['member_profile_updated'] = 1;
       }
-      else {
+      // Only create an update-member triumph if the member is updating their own profile
+      // (i.e., not if an admin is updating someone else's profile).
+      // The reason for this is because an administrator won't normally be adding interesting info; they'll most
+      // likely just be updating a password or something.
+      elseif (Member::equals($actor, $logged_in_member) && !isset($GLOBALS['member_profile_updated'])) {
         Triumph::updateMember($actor);
       }
-
     }
     elseif ($actor instanceof Group) {
       Triumph::updateGroup($actor, $logged_in_member);

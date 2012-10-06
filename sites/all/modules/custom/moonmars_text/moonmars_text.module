@@ -244,11 +244,12 @@ function moonmars_text_url_rx() {
   // and/or hyphens in between, for a maximum length of 63 characters.
   $label = "[a-z\d]([a-z\d\-]{0,61}[a-z\d])?";
 
-  // A top-level domain is 2-6 letters.
-  $tld = "[a-z]{2,6}";
+  // Top-level domain. It's tedious to specify each one, and creates a maintenance overhead, but prevents most filenames
+  // from being interpreted as domain names (e.g. 'index.php' or 'image.jpg') because the extensions are usually different.
+  $tld = "[a-z]{2}|aero|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|xxx";
 
   // A full domain name is one or more labels plus a tld, separated by dots. The max length is 253 characters, which we won't check.
-  $domain_name = "($label\.)+$tld";
+  $domain_name = "(\b$label\.)+($tld)\b";
   // A domain name can be recognised as a URL with or without a scheme:
   $domain_site = "($scheme)?$domain_name";
 
@@ -300,12 +301,12 @@ function moonmars_text_url_rx() {
   $path = "\/([$pchar]|(\([$pchar]*\)))*";
 
   // Query.
-  // No need to add the / character here, as we already included it in the $pchar set.
+  // Add '?'. No need to add the / character here, as we already included it in the $pchar set.
   $qchar = "$pchar\?";
   $query = "\?([$qchar]|(\([$qchar]*\)))*";
 
   // Fragment.
-  // Legal characters for fragment are the same as for query.
+  // Valid characters for fragment are the same as for query.
   $fragment = "#([$qchar]|(\([$qchar]*\)))*";
 
   // Full RX for URLs. Only the base is required, every other part is optional.
@@ -333,17 +334,29 @@ function moonmars_text_embed_links($str) {
   if ($n_urls) {
     foreach ($matches[1] as $url) {
       $lc_url = strtolower($url);
-      // if there's no scheme, append http://
+      // If there's no scheme, append http://
       if (substr($lc_url, 0, 7) !== 'http://' && substr($lc_url, 0, 8) !== 'https://') {
         $href = "http://$url";
       }
       else {
         $href = $url;
       }
+
+      // Check the last char. If it ends in '.' or ',' trim it off, because this is probably not part of the URL but
+      // simply punctuation within the text. Difficult to do this with the regex.
+      $last_char = substr($url, -1);
+      if (in_array($last_char, ['.', ','])) {
+        $url = substr($url, 0, strlen($url) - 1);
+      }
+      else {
+        $last_char = '';
+      }
+
       // Remember the URL:
       $urls[] = $href;
+
       // Replace the URL with a link:
-      $html = str_replace("<url>$url</url>", "<a href='$href' target='_blank'>$url</a>", $html);
+      $html = str_replace("<url>$url$last_char</url>", "<a href='$href' target='_blank'>$url</a>$last_char", $html);
     }
   }
 

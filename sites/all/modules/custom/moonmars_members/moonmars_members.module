@@ -835,19 +835,3 @@ function moonmars_members_activity_redirect() {
 ////  $page_member = Member::create($uid);
 ////  $rel = MoonMarsRelation::searchBinary('rates', 'user', $logged_in_member->uid(), 'user', $page_member->uid());
 //}
-
-///**
-// * Implement hook_form_user_pass_reset_alter().
-// *
-// * This is called when they hit the password reset form, which means they've validated their email address.
-// * It's at this point I want to create the new-member triumph.
-// */
-//function moonmars_members_form_user_pass_reset_alter(&$form, &$form_state) {
-//  watchdog ('debug', "moonmars_members_user_account_validated");
-//  dbg($form);
-//  dbg($form_state);
-////  // Create a triumph:
-////  $member = Member::create($account);
-////  dbg($member);
-////  Triumph::newMember($member);
-//}

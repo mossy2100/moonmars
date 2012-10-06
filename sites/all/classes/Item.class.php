@@ -40,7 +40,31 @@ class Item extends MoonMarsNode {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Get and set methods.
+  // Load/save
+
+  /**
+   * Update a channel-has-item relation's 'changed' field so that the item appears at the top of the channel.
+   * This should be called whenever an item is edited, and whenever a comment is posted or edited,
+   * so that the changed value in the relation always holds the time of the most recent change to the item.
+   *
+   * @todo Update this later, because we are updating the data model so that an item doesn't have only one
+   * channel, but can appear in multiple channels based on tags. Instead we will simply calculate the latest change
+   * time when creating the channel.
+   *
+   * @return bool
+   */
+  public function bump() {
+    $rels = MoonMarsRelation::searchBinary('has_item', NULL, $this);
+    if ($rels) {
+      $rels[0]->load();
+      $rels[0]->save();
+      return TRUE;
+    }
+    return FALSE;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Channel
 
   /**
    * Get the channel where this item was posted.
@@ -178,6 +202,19 @@ class Item extends MoonMarsNode {
       $members[$rec->uid] = Member::create($rec->uid);
     }
     return $members;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Aliases
+
+  /**
+   * Reset the alias for the item.
+   *
+   * @return string
+   */
+  public function resetAlias() {
+    require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'pathauto') . '/pathauto.inc';
+    return pathauto_create_alias('node', 'insert', $this->path(), ['node' => $this->node()], 'item');
   }
 
 }

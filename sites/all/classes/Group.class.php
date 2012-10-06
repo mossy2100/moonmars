@@ -96,16 +96,27 @@ class Group extends MoonMarsNode {
    * @param string $tag
    * @return mixed
    */
-  public function tag($tag = NULL) {
-    return $this->field('field_group_tag', LANGUAGE_NONE, 0, 'value', $tag);
+  public function tag($tag = NULL, $include_prefix = FALSE) {
+    if ($tag === NULL) {
+      // Get the username:
+      return ($include_prefix ? '#' : '') . $this->field('field_group_tag');
+    }
+    else {
+      // Set the username:
+      return $this->field('field_group_tag', LANGUAGE_NONE, 0, 'value', $tag);
+    }
   }
 
   /**
-   * Update the path alias for the group's profile.
+   * Get a link to the group's profile.
+   *
+   * @param null|string $label
+   * @param bool $absolute
+   * @return string
    */
-  public function resetAlias() {
-    $this->alias('group/' . $this->tag());
-    return $this;
+  public function link($label = NULL, $absolute = FALSE) {
+    $label = $label ?: $this->tag();
+    return parent::link($label, $absolute);;
   }
 
   /**
@@ -114,8 +125,19 @@ class Group extends MoonMarsNode {
    * @param bool $absolute
    * @return string
    */
-  public function hashLink($absolute = FALSE) {
-    return $this->link('#' . $this->tag(), $absolute);
+  public function tagLink($absolute = FALSE) {
+    return $this->link($this->tag(NULL, TRUE), $absolute);
+  }
+
+  /**
+   * Update the path alias for the group's profile.
+   *
+   * @return string
+   */
+  public function resetAlias() {
+    $alias = 'group/' . $this->tag();
+    $this->alias($alias);
+    return $alias;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

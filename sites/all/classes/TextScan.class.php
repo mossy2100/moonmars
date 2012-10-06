@@ -87,7 +87,7 @@ class TextScan {
           // Remember the member:
           $members[$member->uid()] = $member;
           // Replace the member reference with a link:
-          $html = preg_replace("/$code_begin@($name)$code_end/i", '$1' . $member->atLink() . '$3', $html);
+          $html = preg_replace("/$code_begin@($name)$code_end/i", '$1' . $member->tagLink() . '$3', $html);
         }
       }
     }
@@ -106,13 +106,13 @@ class TextScan {
           // Remember the group:
           $groups[$group->nid()] = $group;
           // Replace the group reference with a link:
-          $html = preg_replace("/$code_begin#($tag)$code_end/i", '$1' . $group->hashLink() . '$3', $html);
+          $html = preg_replace("/$code_begin#($tag)$code_end/i", '$1' . $group->tagLink() . '$3', $html);
         }
         else {
           // Remember the tag:
           $tags[$tag] = $tag;
           // @todo Replace the tag reference with a link:
-//          $html = preg_replace("/$code_begin#$tag$code_end/i", '$1' . $tag->hashLink() . '$3', $html);
+//          $html = preg_replace("/$code_begin#$tag$code_end/i", '$1' . $tag->tagLink() . '$3', $html);
         }
       }
     }

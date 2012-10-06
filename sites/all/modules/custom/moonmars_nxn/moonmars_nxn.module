@@ -613,18 +613,24 @@ function moonmars_nxn_send_outstanding() {
   // Create lock:
   file_put_contents($lock_path, time());
 
-  // Scan triumphs and create notifications:
-  $n_created = Triumph::createOutstandingNxns();
-
-  // Send outstanding notifications:
-  $messages = Nxn::sendOutstanding();
+  $error = FALSE;
+  try {
+    // Scan triumphs and create notifications:
+    $n_created = Triumph::createOutstandingNxns();
+    // Send outstanding notifications:
+    $messages = Nxn::sendOutstanding();
+  }
+  catch (Exception $e) {
+    // There's been an error - remove the lock.
+    $error = TRUE;
+  }
 
   // Some feedback:
   $body = [];
   $n_sent = 0;
   $n_unsent = 0;
   foreach ($messages as $message) {
-    $body[] = ($message['result'] ? 'SENT' : 'UNSENT') . '|' . $message['to'] . '|' . $message['subject'];
+    $body[] = ($message['result'] ? 'SENT' : 'UNSENT') . ' | ' . trim($message['to'], ' "') . ' | ' . $message['subject'];
     if ($message['result']) {
       $n_sent++;
     }
@@ -632,12 +638,15 @@ function moonmars_nxn_send_outstanding() {
       $n_unsent++;
     }
   }
+  if ($error) {
+    $body[] = "ERROR: $php_errormsg";
+  }
   $subject = "[moonmars.com] Creating and sending outstanding nxns. $n_created nxns created, $n_sent sent, $n_unsent unsent.";
   $params = array(
     'subject' => $subject,
     'body' => $body,
   );
-//  drupal_mail('moonmars_nxn', 'report', Member::create(1)->mail(), LANGUAGE_NONE, $params);
+  drupal_mail('moonmars_nxn', 'report', Member::create(1)->mail(), LANGUAGE_NONE, $params);
   watchdog('moonmars_nxn', $subject);
   echoln($subject);
 

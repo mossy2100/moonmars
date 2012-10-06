@@ -95,10 +95,10 @@ class Member extends User {
    * @param bool $include_at
    * @return string|User
    */
-  public function name($name = NULL, $include_at = FALSE) {
+  public function name($name = NULL, $include_prefix = FALSE) {
     if ($name === NULL) {
       // Get the username:
-      return ($include_at ? '@' : '') . $this->prop('name');
+      return ($include_prefix ? '@' : '') . $this->prop('name');
     }
     else {
       // Set the username:
@@ -114,7 +114,7 @@ class Member extends User {
    * @return string
    */
   public function link($label = NULL, $absolute = FALSE) {
-    $label = ($label === NULL) ? $this->name() : $label;
+    $label = $label ?: $this->name();
     return parent::link($label, $absolute);;
   }
 
@@ -124,8 +124,8 @@ class Member extends User {
    * @param bool $absolute
    * @return string
    */
-  public function atLink($absolute = FALSE) {
-    return $this->link('@' . $this->name(), $absolute);
+  public function tagLink($absolute = FALSE) {
+    return $this->link($this->name(NULL, TRUE), $absolute);
   }
 
   /**
@@ -451,9 +451,13 @@ class Member extends User {
 
   /**
    * Update the path alias for the member's profile.
+   *
+   * @return string
    */
   public function resetAlias() {
-    $this->alias('member/' . $this->name());
+    $alias = 'member/' . $this->name();
+    $this->alias($alias);
+    return $alias;
   }
 
   /**
@@ -629,6 +633,16 @@ class Member extends User {
   }
 
   /**
+   * Get the value of the "Moon or Mars" field.
+   *
+   * @return string
+   */
+  public function moonOrMars() {
+    $moon_or_mars = $this->field('field_moon_or_mars');
+    return $moon_or_mars ?: 'both';
+  }
+
+  /**
    * Renders a Moon, Mars or Both icon, with a flag on top.
    * @todo check if this is still used.
    *
@@ -638,13 +652,10 @@ class Member extends User {
     $this->load();
 
     // If the user doesn't have a picture, use a default icon:
-    $icon = $this->field('field_moon_or_mars');
-    if (!$icon) {
-      $icon = 'both';
-    }
+    $moon_or_mars = $this->moonOrMars();
     $image = array(
       'style_name' => 'icon-40x40',
-      'path'       => "avatars/870x870/$icon-870x870.jpg",
+      'path'       => "avatars/870x870/$moon_or_mars-870x870.jpg",
       'alt'        => $this->name(),
       'attributes' => array('class' => array('avatar-icon')),
     );
@@ -673,7 +684,7 @@ class Member extends User {
   public function planetFlagIcon() {
     require_once DRUPAL_ROOT . '/modules/system/image.gd.inc';
 
-    $moon_or_mars = $this->field('field_moon_or_mars');
+    $moon_or_mars = $this->moonOrMars();
     $location = $this->location();
     $country_code = $location['country_code'] ? strtolower($location['country_code']) : NULL;
     $filename = implode('-', array_filter(array($moon_or_mars, $country_code))) . '.png';

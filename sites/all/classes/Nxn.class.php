@@ -307,7 +307,7 @@ class Nxn {
    */
   public static function memberDetails(Member $member) {
     $details = array(
-      'Username' => "<strong>" . $member->name(NULL, TRUE) ."</strong>",
+      'Username' => "<strong>" . $member->name(NULL, TRUE) . "</strong>",
       'Profile'  => $member->link($member->url(TRUE)),
     );
     if ($member->fullName()) {

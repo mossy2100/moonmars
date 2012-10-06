@@ -130,7 +130,7 @@ class Channel extends MoonMarsNode {
   /**
    * Update the path alias for the channel.
    *
-   * @return Channel
+   * @return string
    */
   public function resetAlias() {
     // Get the parent entity:
@@ -140,12 +140,13 @@ class Channel extends MoonMarsNode {
     }
 
     // Set the alias:
-    $this->alias($parent_entity->alias() . '/channel');
+    $alias = $parent_entity->alias() . '/channel';
+    $this->alias($alias);
 
     // Make sure pathauto doesn't clobber the new alias:
     $this->entity->path['pathauto'] = FALSE;
 
-    return $this;
+    return $alias;
   }
 
   /**
@@ -249,53 +250,6 @@ class Channel extends MoonMarsNode {
     else {
       // Create a new relationship:
       return MoonMarsRelation::createNewBinary('has_item', $this, $item);
-    }
-  }
-
-  /**
-   * Update a channel-item relationship's changed field so it appears at the top of the channel.
-   *
-   * @param Item $item
-   * @return int
-   */
-  public function bumpItem(Item $item) {
-    $rels = MoonMarsRelation::searchBinary('has_item', $this, $item);
-    if ($rels) {
-      $rels[0]->load();
-      $rels[0]->save();
-      return TRUE;
-    }
-    return FALSE;
-  }
-
-  /**
-   * Post or edit an item, and notify the appropriate people.
-   * @todo Refactor into Channel::postNewItem() and Item::update()
-   *
-   * @param Item $item
-   */
-  public function postItem($item) {
-    // Get the item's channel. Note, this will be NULL for a new item.
-    // In the future, if/when we support cross-posting, it could be an array of channels.
-    $channel = $item->channel();
-
-    ////////////////////////////////////////////////
-    // Add or bump the item.
-
-    $is_new = !$channel;
-    if ($is_new) {
-      // It's a new item, so add it to the channel:
-      $this->addItem($item);
-
-      // For new items, create a triumph:
-      Triumph::newItem($item);
-    }
-    else {
-      // It's been edited, so bump it:
-      $channel->bumpItem($item);
-
-      // For edited items, we won't create a new triumph for now.
-      // Updates about edits are often annoying since the content is substantially the same.
     }
   }
 

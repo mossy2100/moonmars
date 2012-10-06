@@ -646,6 +646,7 @@ class Triumph {
     // Create the nxns:
     $n = 0;
     foreach ($rs as $rec) {
+      echoln("<hr><h1>Triumph</h1>");
       dbg($rec);
       $triumph = new Triumph($rec);
       // The call to createNxns() followed by save() will update the nxns_created field:
@@ -693,7 +694,6 @@ class Triumph {
       $triumph->addActor('group', $group);
     }
     $triumph->save();
-    dbg($triumph, 'triumph');
     return $triumph;
   }
 
