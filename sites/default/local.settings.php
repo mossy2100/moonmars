@@ -48,7 +48,8 @@ function moonmars_scan_classes_dir($dir = NULL) {
 }
 
 /**
- * Custom autoload function, designed to follow PSR-0, which is used in D8.
+ * Custom autoload function based on the PSR-0 standard, which is used in D8 and other frameworks.
+ *
  * @see https://gist.github.com/1234504
  * @see http://drupal.org/node/1240138
  *
@@ -64,7 +65,6 @@ function psr0_autoload($class_name) {
   }
   $path .= '/' . str_replace('_', '/', $class_name) . '.php';
   if (file_exists($path)) {
-    echobr($path);
     require $path;
   }
 }

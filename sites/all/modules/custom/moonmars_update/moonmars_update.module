@@ -1,5 +1,8 @@
 <?php
-use AstroMultimedia\MoonMars\Member;
+
+use \AstroMultimedia\MoonMars\MoonMarsDateTime;
+use \AstroMultimedia\MoonMars\Member;
+use \AstroMultimedia\MoonMars\Group;
 
 /**
  * Implements hook_menu().
@@ -243,7 +246,7 @@ function moonmars_update_news_items() {
     $item = Item::create($rec->item_nid);
     $html .= "<h1>Item " . $item->nid() . "</h1>\n";
 
-    $relation_changed = new StarDateTime($rec->created);
+    $relation_changed = new MoonMarsDateTime($rec->created);
     $latest = $relation_changed;
     $html .= "Relation changed time: $relation_changed\n";
 
@@ -292,7 +295,7 @@ function moonmars_update_channel_item_relation_changed_times() {
     $item = Item::create($rec->item_nid);
     $html .= "<h1>Relation " . $rec->rid . "</h1>\n";
 
-    $relation_changed = new StarDateTime($rec->created);
+    $relation_changed = new MoonMarsDateTime($rec->created);
     $latest = $relation_changed;
     $html .= "Relation changed time: $relation_changed\n";
 

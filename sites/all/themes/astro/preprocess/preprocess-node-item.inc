@@ -1,5 +1,8 @@
 <?php
-use AstroMultimedia\MoonMars\Member;
+
+use \AstroMultimedia\MoonMars\Member;
+use \AstroMultimedia\MoonMars\Channel;
+use \AstroMultimedia\MoonMars\Item;
 
 /**
  * Preprocess function for item nodes.

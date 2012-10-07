@@ -1,5 +1,7 @@
 <?php
-use AstroMultimedia\MoonMars\Member;
+
+use \AstroMultimedia\MoonMars\Member;
+use \AstroMultimedia\MoonMars\ItemComment;
 
 /**
  * Preprocess function for comments.

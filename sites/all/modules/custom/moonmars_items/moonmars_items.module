@@ -1,6 +1,10 @@
 <?php
 
 use \AstroMultimedia\MoonMars\Member;
+use \AstroMultimedia\MoonMars\Channel;
+use \AstroMultimedia\MoonMars\Item;
+use \AstroMultimedia\MoonMars\Triumph;
+use \AstroMultimedia\MoonMars\MoonMarsRelation;
 
 /**
  * Implements hook_menu().

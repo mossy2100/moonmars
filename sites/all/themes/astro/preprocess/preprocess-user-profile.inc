@@ -1,5 +1,6 @@
 <?php
-use AstroMultimedia\MoonMars\Member;
+
+use \AstroMultimedia\MoonMars\Member;
 
 /**
  * Implement themehook_preprocess_user_profile().

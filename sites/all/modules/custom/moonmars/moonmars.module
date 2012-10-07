@@ -1,5 +1,7 @@
 <?php
 
+use \AstroMultimedia\Star\StarColor;
+
 /**
  * Implements hook_init().
  */
@@ -80,7 +82,7 @@ function moonmars_home() {
  * @return mixed
  */
 function moonmars_get_entity($node) {
-  $class = ucfirst($node->type);
+  $class = '\\AstroMultimedia\\MoonMars\\' . ucfirst($node->type);
   return $class::create($node);
 }
 

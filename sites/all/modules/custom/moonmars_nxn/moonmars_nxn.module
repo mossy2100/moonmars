@@ -1,6 +1,9 @@
 <?php
 
+use \AstroMultimedia\MoonMars\Nxn;
+use \AstroMultimedia\MoonMars\MoonMarsDateTime;
 use \AstroMultimedia\MoonMars\Member;
+use \AstroMultimedia\MoonMars\Triumph;
 
 /**
  * Constant for specifying notifications of a certain type.

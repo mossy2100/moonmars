@@ -1,6 +1,9 @@
 <?php
 
 use \AstroMultimedia\MoonMars\Member;
+use \AstroMultimedia\MoonMars\Item;
+use \AstroMultimedia\MoonMars\ItemComment;
+use \AstroMultimedia\MoonMars\Channel;
 
 /**
  * Implements hook_menu().

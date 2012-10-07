@@ -1,5 +1,7 @@
 <?php
-use AstroMultimedia\MoonMars\Member;
+
+use \AstroMultimedia\MoonMars\Member;
+use \AstroMultimedia\MoonMars\Channel;
 
 /**
  * Implements hook_init().
@@ -836,3 +838,16 @@ function moonmars_members_activity_redirect() {
 ////  $page_member = Member::create($uid);
 ////  $rel = MoonMarsRelation::searchBinary('rates', 'user', $logged_in_member->uid(), 'user', $page_member->uid());
 //}
+
+/**
+ * Get the string for the following column in the Members table.
+ * @todo update this to a checkbox, see how group search works.
+ *
+ * @param $uid
+ * @return string
+ */
+function moonmars_members_following($uid) {
+  $current_member = Member::loggedInMember();
+  $row_member = Member::create($uid);
+  return (!$current_member || Member::equals($current_member, $row_member)) ? 'N/A' : ($current_member->follows($row_member) ? 'Yes' : 'No');
+}

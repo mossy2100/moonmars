@@ -1,5 +1,7 @@
 <?php
 
+use \AstroMultimedia\MoonMars\MoonMarsDateTime;
+
 /**
  * @file
  * This file is empty by default because the base theme chain (Alpha & Omega) provides
@@ -18,7 +20,7 @@
  * @return string
  */
 function astro_format_about_how_long_ago($datetime) {
-  $datetime = new StarDateTime($datetime);
+  $datetime = new MoonMarsDateTime($datetime);
   $time_ago = $datetime->aboutHowLongAgo();
   $time_ago = $time_ago == 'now' ? 'just now' : "about $time_ago ago";
   $iso = $datetime->format(DateTime::ISO8601);

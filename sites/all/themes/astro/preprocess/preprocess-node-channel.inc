@@ -1,5 +1,7 @@
 <?php
-use AstroMultimedia\MoonMars\Member;
+
+use \AstroMultimedia\MoonMars\Member;
+use \AstroMultimedia\MoonMars\Channel;
 
 /**
  * Preprocess function for channel nodes.

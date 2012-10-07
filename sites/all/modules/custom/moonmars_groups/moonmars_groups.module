@@ -1,6 +1,8 @@
 <?php
 
-use \AstroMultimedia\MoonMars;
+use \AstroMultimedia\MoonMars\Member;
+use \AstroMultimedia\MoonMars\Group;
+use \AstroMultimedia\MoonMars\Channel;
 
 /**
  * Number of groups to show per page in a group search.
