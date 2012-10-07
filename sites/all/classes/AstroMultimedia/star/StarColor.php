@@ -225,7 +225,7 @@ class StarColor {
         return;
       }
 
-      if ($param1 instanceof StarColor) {
+      if ($param1 instanceof self) {
         // Copy the object, taking into account the alpha parameter if provided:
         $rgba = $param1->rgba();
         $this->rgba($rgba['red'], $rgba['green'], $rgba['blue'], $rgba['alpha'] * $alpha);
@@ -632,7 +632,7 @@ class StarColor {
     $alpha = ($color1->alpha() * $frac1) + ($color2->alpha() * $frac2);
 
     // Create and return the mixed color:
-    return new StarColor($red, $green, $blue, $alpha);
+    return new self($red, $green, $blue, $alpha);
   }
 
   /**
@@ -667,7 +667,7 @@ class StarColor {
     }
 
     // Create and return new color:
-    return new StarColor($rgb3['red'], $rgb3['green'], $rgb3['blue'], $a3);
+    return new self($rgb3['red'], $rgb3['green'], $rgb3['blue'], $a3);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -896,7 +896,7 @@ class StarColor {
    * @param int|string|StarColor $color
    */
   protected static function normalizeColor($color) {
-    return ($color instanceof StarColor) ? $color : new StarColor($color);
+    return ($color instanceof self) ? $color : new self($color);
   }
 
   /////////////////////////////////////////////////////////////////////////

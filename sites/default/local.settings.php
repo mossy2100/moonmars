@@ -63,8 +63,10 @@ function psr0_autoload($class_name) {
     $path .= '/' . str_replace('\\', '/', $namespace);
   }
   $path .= '/' . str_replace('_', '/', $class_name) . '.php';
-
-  require $path;
+  if (file_exists($path)) {
+    echobr($path);
+    require $path;
+  }
 }
 
 // Register the PSR-0 autoload function:

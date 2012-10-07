@@ -1,6 +1,9 @@
 <?php
 namespace AstroMultimedia\MoonMars;
 
+use \stdClass;
+use \AstroMultimedia\Drupal\EntitySet;
+
 /**
  * User: shaun
  * Date: 2012-08-30

@@ -1,6 +1,9 @@
 <?php
 namespace AstroMultimedia\Star;
 
+use \DateTime;
+use \DateTimeZone;
+
 /**
  * This class is part of the Star Library, and is designed to extend and improve PHP's built-in DateTime class.
  *
@@ -55,7 +58,7 @@ class StarDateTime extends DateTime {
    */
   public static function now() {
     // This will call the parent constructor, which defaults to 'now'.
-    return new StarDateTime();
+    return new self();
   }
 
   /**
@@ -65,7 +68,7 @@ class StarDateTime extends DateTime {
    */
   public static function nowUTC() {
     // This will call the parent constructor, which defaults to 'now'.
-    return new StarDateTime(NULL, 'UTC');
+    return new self(NULL, 'UTC');
   }
 
   /**
@@ -229,7 +232,7 @@ class StarDateTime extends DateTime {
   public function date($year = 1, $month = 1, $day = 1) {
     if (func_num_args() == 0) {
       // Get the date:
-      return new StarDateTime($this->format('Y-m-d'));
+      return new self($this->format('Y-m-d'));
     }
     else {
       // Set the date:
@@ -716,7 +719,7 @@ class StarDateTime extends DateTime {
    * @param bool $absolute
    *   If TRUE then the absolute value of the difference is returned.
    */
-  function diffSeconds(StarDateTime $datetime2, $absolute = FALSE) {
+  function diffSeconds(self $datetime2, $absolute = FALSE) {
     $diff = $this->timestamp() - $datetime2->timestamp();
     if ($absolute) {
       $diff = abs($diff);
@@ -737,7 +740,7 @@ class StarDateTime extends DateTime {
    * @param bool $absolute
    *   If TRUE then the absolute value of the difference is returned.
    */
-  function diffDays(StarDateTime $datetime, $absolute = FALSE) {
+  function diffDays(self $datetime, $absolute = FALSE) {
     $diff = $this->unixDay() - $datetime->unixDay();
     if ($absolute) {
       $diff = abs($diff);

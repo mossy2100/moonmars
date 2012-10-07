@@ -171,7 +171,7 @@ class Nxn {
     }
     else {
       // Insert new nxn:
-      $fields['created'] = StarDateTime::nowUTC()->mysql();
+      $fields['created'] = MoonMarsDateTime::nowUTC()->mysql();
       $q = db_insert('moonmars_nxn')
         ->fields($fields);
       $this->nxnId = $q->execute();

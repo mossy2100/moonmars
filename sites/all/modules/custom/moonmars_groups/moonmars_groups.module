@@ -1,5 +1,7 @@
 <?php
 
+use \AstroMultimedia\MoonMars;
+
 /**
  * Number of groups to show per page in a group search.
  */

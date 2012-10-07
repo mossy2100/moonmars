@@ -72,7 +72,7 @@ class Role {
       return self::$cache[$role_param];
     }
     // Create a new object:
-    return new Role($role_param, $role_name);
+    return new self($role_param, $role_name);
   }
 
   /**

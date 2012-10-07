@@ -77,8 +77,8 @@ class StarSet {
    * @param StarSet $set2
    * @return StarSet
    */
-  public static function union(StarSet $set1, StarSet $set2) {
-    return new StarSet(array_merge($set1->items, $set2->items));
+  public static function union(self $set1, self $set2) {
+    return new self(array_merge($set1->items, $set2->items));
   }
 
   /**
@@ -88,8 +88,8 @@ class StarSet {
    * @param StarSet $set2
    * @return StarSet
    */
-  public static function diff(StarSet $set1, StarSet $set2) {
-    return new StarSet(array_diff($set1->items, $set2->items));
+  public static function diff(self $set1, self $set2) {
+    return new self(array_diff($set1->items, $set2->items));
   }
 
   /**
@@ -99,8 +99,8 @@ class StarSet {
    * @param StarSet $set2
    * @return StarSet
    */
-  public static function intersect(StarSet $set1, StarSet $set2) {
-    return new StarSet(array_intersect($set1->items, $set2->items));
+  public static function intersect(self $set1, self $set2) {
+    return new self(array_intersect($set1->items, $set2->items));
   }
 
   /**
@@ -109,7 +109,7 @@ class StarSet {
    * @param StarSet $set2
    * @return StarSet
    */
-  public function equal(StarSet $set2) {
+  public function equal(self $set2) {
     return ($this->count() == $set2->count()) && $this->subset($set2);
   }
 
@@ -123,7 +123,7 @@ class StarSet {
    * @param StarSet $set2
    * @return StarSet
    */
-  public function subset(StarSet $set2) {
+  public function subset(self $set2) {
     foreach ($this->items as $item) {
       if (!$set2->in($item)) {
         return FALSE;
@@ -138,7 +138,7 @@ class StarSet {
    * @param StarSet $set2
    * @return StarSet
    */
-  public function properSubset(StarSet $set2) {
+  public function properSubset(self $set2) {
     return ($this->count() < $set2->count()) && $this->subset($set2);
   }
 
@@ -148,7 +148,7 @@ class StarSet {
    * @param StarSet $set2
    * @return StarSet
    */
-  public function superset(StarSet $set2) {
+  public function superset(self $set2) {
     return $set2->subset($this);
   }
 
@@ -158,7 +158,7 @@ class StarSet {
    * @param StarSet $set2
    * @return StarSet
    */
-  public function properSuperset(StarSet $set2) {
+  public function properSuperset(self $set2) {
     return $set2->properSubset($this);
   }
 

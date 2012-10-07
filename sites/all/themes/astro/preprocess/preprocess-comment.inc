@@ -1,5 +1,11 @@
 <?php
+use AstroMultimedia\MoonMars\Member;
 
+/**
+ * Preprocess function for comments.
+ *
+ * @param $vars
+ */
 function astro_alpha_preprocess_comment(&$vars) {
 
   // Get the ItemComment object:

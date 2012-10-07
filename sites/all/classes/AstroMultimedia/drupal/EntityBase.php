@@ -1,6 +1,9 @@
 <?php
 namespace AstroMultimedia\Drupal;
 
+use \stdClass;
+use \AstroMultimedia\Star\StarDateTime;
+
 /**
  * A base class for entities.
  *

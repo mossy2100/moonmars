@@ -1,6 +1,8 @@
 <?php
 namespace AstroMultimedia\MoonMars;
 
+use \AstroMultimedia\Drupal\EntityBase;
+
 /**
  * Channel class - encapsulates a channel node.
  */

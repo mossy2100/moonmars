@@ -4,7 +4,7 @@ namespace AstroMultimedia\MoonMars;
 /**
  * Comments posted on items.
  */
-class ItemComment extends Comment {
+class ItemComment extends \AstroMultimedia\Drupal\Comment {
 
   /**
    * Result of text scan.

@@ -7,7 +7,7 @@ namespace AstroMultimedia\MoonMars;
  * @author Shaun Moss (mossy2100)
  * @since 2012-10-07
  */
-class Topic extends Term {
+class Topic extends \AstroMultimedia\Drupal\Term {
 
   /**
    * The tag prefix.

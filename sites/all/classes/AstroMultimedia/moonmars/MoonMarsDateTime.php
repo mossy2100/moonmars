@@ -8,7 +8,7 @@ namespace AstroMultimedia\MoonMars;
  * Time: 7:24 PM
  * To change this template use File | Settings | File Templates.
  */
-class MoonMarsDateTime extends StarDateTime {
+class MoonMarsDateTime extends \AstroMultimedia\Star\StarDateTime {
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Datetime formats

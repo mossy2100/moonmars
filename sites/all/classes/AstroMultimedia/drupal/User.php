@@ -1,6 +1,9 @@
 <?php
 namespace AstroMultimedia\Drupal;
 
+use \DateTimeZone;
+use \stdClass;
+
 /**
  * User object.
  */

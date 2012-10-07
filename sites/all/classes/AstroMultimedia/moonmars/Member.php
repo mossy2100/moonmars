@@ -1,10 +1,13 @@
 <?php
 namespace AstroMultimedia\MoonMars;
 
+use \stdClass;
+use \AstroMultimedia\Star\StarColor;
+
 /**
  * Encapsulates a moonmars.com member.
  */
-class Member extends User {
+class Member extends \AstroMultimedia\Drupal\User {
 
   /**
    * The tag prefix.
@@ -155,8 +158,8 @@ class Member extends User {
       $date_of_birth = $this->field('field_date_of_birth');
 
       if ($date_of_birth) {
-        $date_of_birth = new StarDateTime($date_of_birth);
-        $today = StarDateTime::today();
+        $date_of_birth = new MoonMarsDateTime($date_of_birth);
+        $today = MoonMarsDateTime::today();
         $birth_year = $date_of_birth->year();
         $current_year = $today->year();
         $birthday_this_year = $date_of_birth;
@@ -950,7 +953,7 @@ class Member extends User {
    */
   public function leaveGroup(Group $group) {
     // Delete the membership relationship:
-    Relation::deleteBinary('has_member', $group, $this);
+    MoonMarsRelation::deleteBinary('has_member', $group, $this);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1696,7 +1699,7 @@ class Member extends User {
    */
   public function commentedOn(Item $item) {
     foreach ($item->commenters() as $commenter) {
-      if (Member::equals($commenter, $this)) {
+      if (self::equals($commenter, $this)) {
         return TRUE;
       }
     }
@@ -1719,7 +1722,7 @@ class Member extends User {
       ->condition('name', $name);
     $rs = $q->execute();
     $rec = $rs->fetch();
-    return $rec ? Member::create($rec->uid) : FALSE;
+    return $rec ? self::create($rec->uid) : FALSE;
   }
 
 }

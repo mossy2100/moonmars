@@ -8,7 +8,7 @@ namespace AstroMultimedia\MoonMars;
  * Time: 3:30 PM
  * To change this template use File | Settings | File Templates.
  */
-class MoonMarsNode extends Node {
+class MoonMarsNode extends \AstroMultimedia\Drupal\Node {
 
   /**
    * Get the node's creator as a Member object.

@@ -1,5 +1,7 @@
 <?php
 
+use \AstroMultimedia\MoonMars\Member;
+
 function moonmars_ratings_menu() {
   $items['ajax/rate'] = [
     'page callback'    => 'moonmars_ratings_ajax_rate',

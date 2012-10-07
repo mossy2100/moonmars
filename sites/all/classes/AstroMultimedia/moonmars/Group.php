@@ -260,7 +260,7 @@ class Group extends MoonMarsNode {
       // Get the group type:
       $group_type = $this->field('field_group_type', LANGUAGE_NONE, 0, 'value');
       if ($key_or_name == 'name') {
-        $group_types = Group::groupTypes();
+        $group_types = self::groupTypes();
         return $group_types[$group_type];
       }
       else {
@@ -423,7 +423,7 @@ class Group extends MoonMarsNode {
 
     $groups = array();
     foreach ($rs as $rec) {
-      $groups[] = Group::create($rec->nid);
+      $groups[] = self::create($rec->nid);
     }
     return $groups;
   }
