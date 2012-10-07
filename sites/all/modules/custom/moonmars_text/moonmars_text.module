@@ -208,7 +208,7 @@ function moonmars_text_html_entities($str) {
   static $utf8_dashes;
   if (!$utf8_dashes) {
     // Get the UTF-8 equivalents of dashes:
-    foreach (array('2010', '2011', '2012', '2013', '2014', '2015') as $dash_utf16) {
+    foreach (['2010', '2011', '2012', '2013', '2014', '2015'] as $dash_utf16) {
       $utf8_dashes[] = mb_convert_encoding("&#x$dash_utf16;", 'UTF-8', 'HTML-ENTITIES');
     }
   }
@@ -360,8 +360,8 @@ function moonmars_text_embed_links($str) {
     }
   }
 
-  return array(
+  return [
     'html' => $html,
     'urls' => $urls,
-  );
+  ];
 }

@@ -1,6 +1,8 @@
 <?php
 namespace AstroMultimedia\MoonMars;
 
+use \stdClass;
+
 /**
  * User: shaun
  * Date: 2012-08-30
@@ -751,7 +753,7 @@ class Nxn {
     $messages = [];
     foreach ($rs as $rec) {
       // Reset the time limit so the script doesn't time out while sending emails.
-      // Let's assume 60 seconds will be well-and-truly enough time to send a single email!
+      // Let's assume 60 seconds will be more than enough time to send an email.
       set_time_limit(60);
 
       // Create an Nxn object:
