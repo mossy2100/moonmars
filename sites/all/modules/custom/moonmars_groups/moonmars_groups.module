@@ -49,7 +49,8 @@ function moonmars_groups_form_alter(&$form, &$form_state, $form_id) {
     // JS:
     $module_path = drupal_get_path('module', 'moonmars_groups');
     $form['#attached']['js'][] = "$module_path/js/group-edit-form.js";
-    $form['#attached']['js'][] = drupal_get_path('module', 'moonmars_actors') . "/js/actor-code-check.js";
+    $form['#attached']['js'][] = moonmars_actors_tag_prefixes();
+    $form['#attached']['js'][] = drupal_get_path('module', 'moonmars_actors') . "/js/actor-tag-check.js";
     $form['#attached']['js'][] = "$module_path/js/group-tag-check.js";
 
     // Hide the score:
@@ -345,7 +346,7 @@ function moonmars_groups_menu_block() {
   }
 
   // Editing links:
-  if ($group->hasAdmin($logged_in_member)) {
+  if ($logged_in_member->canAdministerGroup($group)) {
     $html .= "<li>" . l('Edit profile', $group->editAlias()) . "</li>";
     $html .= "<li>" . l('Edit links', $group->channel()->editAlias()) . "</li>";
   }

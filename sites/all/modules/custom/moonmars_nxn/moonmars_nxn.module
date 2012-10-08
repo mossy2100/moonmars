@@ -549,7 +549,7 @@ function moonmars_nxn_form_submit($form, &$form_state) {
     elseif (is_array($value) && $nxn_prefs[$nxn_category][$triumph_type]['wants'] == MOONMARS_NXN_SOME) {
       // Conditions array:
       $nxn_prefs[$nxn_category][$triumph_type]['conditions'] = serialize(array_map(function($x) {
-        return (int) (bool) $x;
+        return (bool) $x;
       }, $value));
     }
   }
@@ -641,7 +641,7 @@ function moonmars_nxn_send_outstanding() {
     'subject' => $subject,
     'body' => $body,
   ];
-  drupal_mail('moonmars_nxn', 'report', Member::create(1)->mail(), LANGUAGE_NONE, $params);
+//  drupal_mail('moonmars_nxn', 'report', Member::create(1)->mail(), LANGUAGE_NONE, $params);
   watchdog('moonmars_nxn', $subject);
   echoln($subject);
 

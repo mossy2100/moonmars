@@ -20,7 +20,7 @@ class EntitySet {
    */
   public function __construct() {
     // Initialise the array of entities:
-    $this->entities = [];
+    $this->entities = array();
   }
 
   /**

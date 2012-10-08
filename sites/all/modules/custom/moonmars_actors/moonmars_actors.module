@@ -6,6 +6,7 @@ use \AstroMultimedia\Drupal\Comment;
 use \AstroMultimedia\MoonMars\Channel;
 use \AstroMultimedia\MoonMars\Member;
 use \AstroMultimedia\MoonMars\Group;
+use \AstroMultimedia\MoonMars\Topic;
 use \AstroMultimedia\MoonMars\Triumph;
 use \AstroMultimedia\MoonMars\MoonMarsRelation;
 
@@ -27,7 +28,7 @@ use \AstroMultimedia\MoonMars\MoonMarsRelation;
 // Constants
 
 /**
- * Define the minimum length for an actor code (i.e. username of group tag).
+ * Define the minimum length for an actor tag.
  * I'm using 3 here to prevent meaningless tags, but could be changed to 2 or 1. There's not really any reason not to.
  *
  * @var int
@@ -35,8 +36,8 @@ use \AstroMultimedia\MoonMars\MoonMarsRelation;
 const MOONMARS_ACTOR_CODE_MIN_LENGTH = 3;
 
 /**
- * Define the maximum length for an actor code (i.e. username of group tag).
- * Since usernames are actor codes, we'll just use the Drupal default max length which is 60 (USERNAME_MAX_LENGTH).
+ * Define the maximum length for an actor tag.
+ * Since usernames are actor tags, we'll just use the Drupal default max length which is 60 (USERNAME_MAX_LENGTH).
  *
  * @var int
  */
@@ -50,8 +51,8 @@ const MOONMARS_ACTOR_CODE_MAX_LENGTH = 60;
  */
 function moonmars_actors_menu() {
   $items = [];
-  $items['ajax/check-actor-code'] = [
-    'page callback'   => 'moonmars_actors_ajax_check_code',
+  $items['ajax/check-actor-tag'] = [
+    'page callback'   => 'moonmars_actors_ajax_check_tag',
     'access callback' => TRUE,
     'type'            => MENU_CALLBACK,
   ];
@@ -59,15 +60,15 @@ function moonmars_actors_menu() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Checking member and group codes
+// Checking member and group tags
 
 /**
- * AJAX callback to check if a actor code is valid.
+ * AJAX callback to check if a actor tag is valid.
  */
-function moonmars_actors_ajax_check_code() {
+function moonmars_actors_ajax_check_tag() {
   // Get parameters from the query string:
   $actor_type = isset($_REQUEST['actorType']) ? $_REQUEST['actorType'] : NULL;
-  $actor_code = isset($_REQUEST['actorCode']) ? $_REQUEST['actorCode'] : NULL;
+  $actor_tag = isset($_REQUEST['actorCode']) ? $_REQUEST['actorCode'] : NULL;
   $actor_id = isset($_REQUEST['actorId']) ? $_REQUEST['actorId'] : NULL;
 
   // Default result:
@@ -76,25 +77,25 @@ function moonmars_actors_ajax_check_code() {
   ];
 
   // Check for valid parameters:
-  if (!$actor_type || !in_array($actor_type, ['member', 'group']) || !$actor_code) {
+  if (!$actor_type || !in_array($actor_type, ['member', 'group']) || !$actor_tag) {
     $data['message'] = "Invalid parameters";
     echo json_encode($data);
     return;
   }
 
   // Check for valid characters and and length:
-  if (!moonmars_actors_valid_code($actor_code)) {
+  if (!moonmars_actors_valid_tag($actor_tag)) {
     $data['message'] = "Invalid";
     echo json_encode($data);
     return;
   }
 
-  // Check if any other actor of the same type has this code:
+  // Check if any other actor of the same type has this tag:
   if ($actor_type == 'member') {
     // Check if any other member has the same username:
     $q = db_select('users', 'u')
       ->fields('u', ['uid'])
-      ->condition('name', $actor_code);
+      ->condition('name', $actor_tag);
     // If editing a member, look for a different member with the same username:
     if ($actor_id) {
       $q->condition('uid', $actor_id, '!=');
@@ -105,7 +106,7 @@ function moonmars_actors_ajax_check_code() {
     $q = db_select('node', 'n')
       ->fields('n', ['nid']);
     $q->join('field_data_field_group_tag', 'gt', "n.nid = gt.entity_id");
-    $q->condition('field_group_tag_value', $actor_code);
+    $q->condition('field_group_tag_value', $actor_tag);
     // If editing a group, look for a different group with the same tag:
     if ($actor_id) {
       $q->condition('nid', $actor_id, '!=');
@@ -147,7 +148,7 @@ function moonmars_actors_ajax_check_code() {
  * @param $name
  * @return bool
  */
-function moonmars_actors_valid_code($name) {
+function moonmars_actors_valid_tag($name) {
   return (bool) preg_match("/^[a-z0-9\-\_]{" . MOONMARS_ACTOR_CODE_MIN_LENGTH . "," . MOONMARS_ACTOR_CODE_MAX_LENGTH . "}$/i", $name);
 }
 
@@ -182,9 +183,12 @@ function moonmars_actors_entity_insert($entity, $entity_type) {
     // Get the actor:
     $actor = moonmars_actors_get_actor($entity_type, $entity);
 
-    // Create triumphs:
+    // If group:
     if ($actor instanceof Group) {
+      // Create triumph:
       Triumph::newGroup($actor);
+      // Add the creator as group admin:
+      $actor->addAdmin(Member::loggedInMember());
     }
 
     // Update the actor alias and channel alias and title:
@@ -419,4 +423,22 @@ function moonmars_actors_get_channel(EntityBase $entity, $create = TRUE) {
   }
 
   return NULL;
+}
+
+/**
+ * Get the settings array for tag prefixes for when we need this on the client in JS.
+ *
+ * @return array
+ */
+function moonmars_actors_tag_prefixes() {
+  return array(
+    'data' => array(
+      'tagPrefixes' => array(
+        'member' => Member::TAG_PREFIX,
+        'group' => Group::TAG_PREFIX,
+        'topic' => Topic::TAG_PREFIX,
+      ),
+    ),
+    'type' => 'setting',
+  );
 }

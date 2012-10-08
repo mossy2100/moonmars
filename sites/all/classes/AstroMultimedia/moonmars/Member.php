@@ -225,6 +225,28 @@ class Member extends \AstroMultimedia\Drupal\User {
   }
 
   /**
+   * Get the member's bio field.
+   *
+   * @return string
+   */
+  public function bio() {
+    return $this->field('field_bio');
+  }
+
+  /**
+   * Get/set the value of field_profile_updated.
+   *
+   * @param null $value
+   * @return mixed
+   */
+  public function profileUpdated($value = NULL) {
+    return $this->field('field_profile_updated', LANGUAGE_NONE, 0, 'value', $value);
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Avatars, tooltips, links
+
+  /**
    * Generate HTML for a member avatar.
    *
    * @return string
@@ -279,7 +301,7 @@ class Member extends \AstroMultimedia\Drupal\User {
    */
   public function avatarLink() {
     return l($this->avatar(), $this->alias(), array(
-                                                   'html'       => TRUE,
+                                                   'html' => TRUE,
                                                    'attributes' => array('class' => array('avatar-link'))
                                               ));
   }
@@ -436,6 +458,9 @@ class Member extends \AstroMultimedia\Drupal\User {
     return array_search($this->level(), moonmars_members_levels());
   }
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Channel
+
   /**
    * Get the member's channel.
    *
@@ -458,6 +483,9 @@ class Member extends \AstroMultimedia\Drupal\User {
     return 'Member: ' . $this->name();
   }
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Alias
+
   /**
    * Update the path alias for the member's profile.
    *
@@ -477,6 +505,9 @@ class Member extends \AstroMultimedia\Drupal\User {
   public function emailPreferencesAlias() {
     return $this->alias() . '/email-preferences';
   }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Style
 
   /**
    * Get the comment background color.
@@ -531,16 +562,6 @@ class Member extends \AstroMultimedia\Drupal\User {
    */
   public function commentBorderStyle($highlight = FALSE) {
     return "style='border-color: " . ($highlight ? '#919191' : $this->commentBorderColor()->hex()) . ";'";
-  }
-
-  /**
-   * Get/set the value of field_profile_updated.
-   *
-   * @param null $value
-   * @return mixed
-   */
-  public function profileUpdated($value = NULL) {
-    return $this->field('field_profile_updated', LANGUAGE_NONE, 0, 'value', $value);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1361,6 +1382,16 @@ class Member extends \AstroMultimedia\Drupal\User {
     return TRUE;
   }
 
+  /**
+   * Check if the member can administer a group.
+   *
+   * @param Group $group
+   * @return bool
+   */
+  public function canAdministerGroup(Group $group) {
+    return $this->isSuperUser() || $this->isAdmin() || $this->isGroupAdmin($group);
+  }
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Rendering
 
@@ -1723,6 +1754,32 @@ class Member extends \AstroMultimedia\Drupal\User {
     $rs = $q->execute();
     $rec = $rs->fetch();
     return $rec ? self::create($rec->uid) : FALSE;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Roles
+
+  /**
+   * Check if the member is a group administrator.
+   *
+   * @return bool
+   */
+  public function isGroupAdmin(Group $group = NULL) {
+    $is_group_admin = $this->hasRole('group administrator');
+
+    // If they don't have this role then they're not a group admin, regardless of the value of $group:
+    if (!$is_group_admin) {
+      return FALSE;
+    }
+
+    // If the group is not specified, but they have this role, then they are a group admin of some group.
+    if (!$group) {
+      return TRUE;
+    }
+
+    // Check if the user is a member of the group, and if they're also an admin.
+    $rels = MoonMarsRelation::searchBinary('has_member', $group, $this);
+    return $rels ? ((bool) $rels[0]->field('field_is_admin')) : FALSE;
   }
 
 }

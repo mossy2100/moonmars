@@ -14,7 +14,7 @@ class Group extends MoonMarsNode {
   /**
    * The tag prefix.
    */
-  const TAG_PREFIX = '&';
+  const TAG_PREFIX = '%';
 
   /**
    * The group types.
@@ -385,20 +385,15 @@ class Group extends MoonMarsNode {
   }
 
   /**
-   * Check if a user is an admin of the group.
+   * Add a new administrator to a group.
    *
    * @param Member $member
-   * @return bool
+   * @return Group
    */
-  public function hasAdmin(Member $member) {
-    // Superuser is admin of every group:
-    if ($member->uid() == 1) {
-      return TRUE;
-    }
-
-    // Check if the user is a member of the group, and if they're also an admin.
-    $rels = MoonMarsRelation::searchBinary('has_member', $this, $member);
-    return $rels ? ((bool) $rels[0]->field('field_is_admin')) : FALSE;
+  public function addAdmin(Member $member) {
+    $rel = MoonMarsRelation::createNewBinary('has_member', $this, $member, FALSE);
+    $rel->field('field_is_admin', LANGUAGE_NONE, 0, 'value', 1);
+    $rel->save();
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

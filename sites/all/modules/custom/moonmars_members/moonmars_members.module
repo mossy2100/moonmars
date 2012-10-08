@@ -175,7 +175,8 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
   // Common JS:
   $module_path = drupal_get_path('module', 'moonmars_members');
   $form['#attached']['js'][] = "$module_path/js/moon-or-mars.js";
-  $form['#attached']['js'][] = drupal_get_path('module', 'moonmars_actors') . "/js/actor-code-check.js";
+  $form['#attached']['js'][] = moonmars_actors_tag_prefixes();
+  $form['#attached']['js'][] = drupal_get_path('module', 'moonmars_actors') . "/js/actor-tag-check.js";
   $form['#attached']['js'][] = "$module_path/js/member-name-check.js";
 
   switch ($form_id) {

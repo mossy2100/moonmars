@@ -5,7 +5,7 @@
 //   - user register form
 //   - member profile edit form
 //   - group create/edit form
-#actor-code-wrapper {
+#actor-tag-wrapper {
   height: 24px;
 
   input {
@@ -20,31 +20,31 @@
     float: left;
   }
 
-  #actor-code-mark {
+  #actor-tag-prefix {
     float: left;
     margin-left: 0;
     margin-right: 2px;
   }
 
-  #actor-code-check {
+  #actor-tag-check {
     display: none;
     color: $blue3;
     cursor: pointer;
   }
 
-  #actor-code-message {
+  #actor-tag-message {
     display: none;
 
-    &.actor-code-valid {
+    &.actor-tag-valid {
       color: $green3;
     }
 
-    &.actor-code-invalid {
+    &.actor-tag-invalid {
       color: $red3;
     }
   }
 
-  #actor-code-waiting {
+  #actor-tag-waiting {
     display: none;
     height: 20px;
     width: 16px;

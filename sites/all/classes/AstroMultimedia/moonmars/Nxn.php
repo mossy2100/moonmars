@@ -310,13 +310,12 @@ class Nxn {
    * @return array
    */
   public static function memberDetails(Member $member) {
-    $details = array(
-      'Username' => "<strong>" . $member->name(NULL, TRUE) . "</strong>",
-      'Profile'  => $member->link($member->url(TRUE)),
-    );
+    $details = array();
     if ($member->fullName()) {
-      $details['Full name'] = $member->fullName();
+      $details['Name'] = $member->fullName();
     }
+    $details['Tag'] = "<strong>" . $member->name(NULL, TRUE) . "</strong>";
+    $details['Profile'] = $member->link($member->url(TRUE));
     if ($member->age()) {
       $details['Age'] = $member->age();
     }
@@ -326,6 +325,11 @@ class Nxn {
     if (array_filter($member->location())) {
       $details['Location'] = $member->locationStr(TRUE);
     }
+    $bio = $member->bio();
+    if ($bio) {
+      $details['Bio'] = "<div style='padding: 0 5px; border: solid 1px #ccc; border-radius: 3px'>$bio</div>";
+    }
+
     // Add a list of topics that the member is interested in:
 //    $details['Interests'] = $member->interests();
     return $details;
@@ -340,13 +344,13 @@ class Nxn {
    */
   public static function groupDetails(Group $group) {
     $details = array(
-      'Name'    => "<strong>" . $group->title() . "</strong>",
-      'Tag'     => '#' . $group->tag(),
+      'Name' => $group->title(),
+      'Tag' => "<strong>" . $group->tag(NULL, TRUE) . "</strong>",
       'Profile' => $group->link($group->url(TRUE)),
-      'Type'    => $group->groupType(NULL, 'name'),
+      'Type' => $group->groupType(NULL, 'name'),
     );
     if ($group->description()) {
-      $details['Description'] = $group->description();
+      $details['Description'] = "<div style='padding: 0 5px; border: solid 1px #ccc; border-radius: 3px'>" . $group->description() . "</div>";
     }
     if ($group->icon()) {
       $details['Image'] = $group->icon();
@@ -357,7 +361,9 @@ class Nxn {
     foreach ($group->admins() as $admin) {
       $admin_links[] = $admin->link();
     }
-    $details['Administrators'] = implode('<br>', $admin_links);
+    if ($admin_links) {
+      $details['Administrators'] = implode('<br>', $admin_links);
+    }
 
     return $details;
   }
@@ -445,7 +451,7 @@ class Nxn {
     }
 
     // Add a convenient "join group" link:
-    $details .= "<p><strong>" . l("Join the $group_name group", $group->alias() . '/join') . "</strong></p>";
+    $details .= "<p><strong>" . l("Join the \"$group_name\" group", $group->alias() . '/join') . "</strong></p>";
 
     return array(
       'subject' => $subject,
@@ -750,7 +756,7 @@ class Nxn {
     $rs = $q->execute();
 
     // Create the nxns:
-    $messages = [];
+    $messages = array();
     foreach ($rs as $rec) {
       // Reset the time limit so the script doesn't time out while sending emails.
       // Let's assume 60 seconds will be more than enough time to send an email.

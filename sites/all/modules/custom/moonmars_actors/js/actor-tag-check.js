@@ -4,19 +4,19 @@ function actorCodeCheckSetup(actorType, actorCodeFieldId) {
   // Get the jQuery object for the text field containing the code:
   var tfActorCode = $('#' + actorCodeFieldId);
 
-  // Get the appropriate mark character for actor type:
-  var mark = actorType == 'member' ? '@' : '#';
+  // Get the appropriate prefix character for the actor type:
+  var prefix = Drupal.settings.tagPrefixes[actorType];
 
-  // Add some HTML around and after the actor code field:
-  tfActorCode.before("<div id='actor-code-wrapper'><div id='actor-code-mark'>" + mark + "</div></div>").appendTo('#actor-code-wrapper');
-  $('#actor-code-wrapper').append(
-    "<div id='actor-code-check'>Check</div>" +
-      "<div id='actor-code-waiting'></div>" +
-      "<div id='actor-code-message'></div>");
+  // Add some HTML around and after the actor tag field:
+  tfActorCode.before("<div id='actor-tag-wrapper'><div id='actor-tag-prefix'>" + prefix + "</div></div>").appendTo('#actor-tag-wrapper');
+  $('#actor-tag-wrapper').append(
+    "<div id='actor-tag-check'>Check</div>" +
+      "<div id='actor-tag-waiting'></div>" +
+      "<div id='actor-tag-message'></div>");
 
   // Add keyup behaviour:
   $('#' + actorCodeFieldId).keyup(function() {
-    // If code is valid, show the check link:
+    // If tag is valid, show the check link:
     if (validActorCode(tfActorCode.val())) {
       actorCodeShowCheckLink();
     }
@@ -25,7 +25,7 @@ function actorCodeCheckSetup(actorType, actorCodeFieldId) {
       actorCodeShowInvalidMessage('Invalid');
     }
   }).blur(function() {
-    // If code is valid, check it:
+    // If tag is valid, check it:
     if (validActorCode(tfActorCode.val())) {
       actorCodeCheck(actorType, tfActorCode);
     }
@@ -37,7 +37,7 @@ function actorCodeCheckSetup(actorType, actorCodeFieldId) {
 }
 
 /**
- * Check the actor code.
+ * Check the actor tag.
  *
  * @param string actorType
  * @param object tfActorCode
@@ -45,7 +45,7 @@ function actorCodeCheckSetup(actorType, actorCodeFieldId) {
 function actorCodeCheck(actorType, tfActorCode) {
 //  console.log('actorCodeCheck');
 
-  // Get the actor code:
+  // Get the actor tag:
   var actorCode = tfActorCode.val();
 
   if (!actorCode) {
@@ -58,13 +58,13 @@ function actorCodeCheck(actorType, tfActorCode) {
     // Get the actorId:
     var actorId = $('#' + (actorType == 'member' ? 'uid' : 'nid')).val();
 
-    // Make an AJAX callback to check the actor code:
-    $.get('/ajax/check-actor-code', {
+    // Make an AJAX callback to check the actor tag:
+    $.get('/ajax/check-actor-tag', {
       actorType: actorType,
       actorCode: actorCode,
       actorId: actorId
     }, function(data, textStatus, jqXHR) {
-      $('#actor-code-message').text(data.reason);
+      $('#actor-tag-message').text(data.reason);
       if (data.result) {
         actorCodeShowValidMessage(data.message);
       }
@@ -79,42 +79,42 @@ function actorCodeCheck(actorType, tfActorCode) {
  * Show the Check link.
  */
 function actorCodeShowCheckLink() {
-  $('#actor-code-message').hide();
-  $('#actor-code-waiting').hide();
-  $('#actor-code-check').show();
+  $('#actor-tag-message').hide();
+  $('#actor-tag-waiting').hide();
+  $('#actor-tag-check').show();
 }
 
 /**
  * Show the Waiting icon.
  */
 function actorCodeShowWaitingIcon() {
-  $('#actor-code-message').hide();
-  $('#actor-code-check').hide();
-  $('#actor-code-waiting').show();
+  $('#actor-tag-message').hide();
+  $('#actor-tag-check').hide();
+  $('#actor-tag-waiting').show();
 }
 
 /**
  * Show an Invalid message.
  */
 function actorCodeShowInvalidMessage(message) {
-  $('#actor-code-check').hide();
-  $('#actor-code-waiting').hide();
-  $('#actor-code-message').removeClass('actor-code-valid').addClass('actor-code-invalid').text(message).show();
+  $('#actor-tag-check').hide();
+  $('#actor-tag-waiting').hide();
+  $('#actor-tag-message').removeClass('actor-tag-valid').addClass('actor-tag-invalid').text(message).show();
 }
 
 /**
  * Show a Valid message.
  */
 function actorCodeShowValidMessage(message) {
-  $('#actor-code-check').hide();
-  $('#actor-code-waiting').hide();
-  $('#actor-code-message').removeClass('actor-code-invalid').addClass('actor-code-valid').text(message).show();
+  $('#actor-tag-check').hide();
+  $('#actor-tag-waiting').hide();
+  $('#actor-tag-message').removeClass('actor-tag-invalid').addClass('actor-tag-valid').text(message).show();
 }
 
 /**
- * Check if a actor code is valid.
+ * Check if a actor tag is valid.
  *
- * @see moonmars_actors_valid_code()
+ * @see moonmars_actors_valid_tag()
  *
  * @param string actorCode
  * @return bool

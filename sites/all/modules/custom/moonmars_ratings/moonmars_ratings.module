@@ -1,5 +1,6 @@
 <?php
 
+use \AstroMultimedia\Drupal\EntityBase;
 use \AstroMultimedia\MoonMars\Member;
 
 function moonmars_ratings_menu() {
