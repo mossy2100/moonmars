@@ -51,22 +51,22 @@ class ItemComment extends \AstroMultimedia\Drupal\Comment {
     return l($label, $this->item()->url($absolute), array('query' => array('cid' => $cid), 'fragment' => "comment-$cid"));
   }
 
-//  /**
-//   * Get/set the comment alias.
-//   *
-//   * @param array
-//   */
-//  public function alias($alias = NULL) {
-//    if ($alias === NULL) {
-//      // Get the comment alias:
-//      $cid = $this->cid();
-//      return $this->item()->alias() . "?cid=$cid#comment-$cid";
-//    }
-//    else {
-//      // Set the comment alias:
-//      return parent::alias($alias);
-//    }
-//  }
+  /**
+   * Get/set the comment alias.
+   *
+   * @param array
+   */
+  public function alias($alias = NULL) {
+    if ($alias === NULL) {
+      // Get the comment alias:
+      $cid = $this->cid();
+      return $this->item()->alias() . "?cid=$cid#comment-$cid";
+    }
+    else {
+      // Set the comment alias:
+      return parent::alias($alias);
+    }
+  }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Text
@@ -98,6 +98,15 @@ class ItemComment extends \AstroMultimedia\Drupal\Comment {
       $this->textScan = new TextScan($this->text());
     }
     return $this->textScan;
+  }
+
+  /**
+   * Get the comment HTML.
+   *
+   * @return string
+   */
+  public function html() {
+    return $this->textScan()->html();
   }
 
 }

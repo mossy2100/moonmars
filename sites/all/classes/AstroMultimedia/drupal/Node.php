@@ -30,13 +30,6 @@ class Node extends EntityBase {
   const PRIMARY_KEY = 'nid';
 
   /**
-   * The class to use for comments.
-   *
-   * @var string
-   */
-  const COMMENT_CLASS = 'Comment';
-
-  /**
    * The node type.
    */
   const NODE_TYPE = NULL;
@@ -300,12 +293,11 @@ class Node extends EntityBase {
    *   NULL for all comments
    *   TRUE for published comments (default)
    *   FALSE for unpublished comments
+   * @param string $comment_class
+   *   The class to use for the comment objects.
+   * @return array
    */
-  public function comments($published = TRUE) {
-    // Get the comment class:
-    $node_class = get_called_class();
-    $comment_class = $node_class::COMMENT_CLASS;
-
+  public function comments($published = TRUE, $comment_class = 'Comment') {
     // Get the comments:
     $q = db_select('comment', 'c')
       ->fields('c', array('cid'))

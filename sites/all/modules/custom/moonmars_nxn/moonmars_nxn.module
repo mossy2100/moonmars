@@ -102,6 +102,14 @@ function moonmars_nxn_definitions() {
     ],
   ];
 
+  $new_topic_conditions = [
+    'sub-topic'   => [
+      'label'   => "Sub-topics of topics I already follow",
+      'default' => TRUE,
+      'enabled' => FALSE,
+    ],
+  ];
+
   $new_item_conditions = [
     'mention' => [
       'label'   => "Items that mention me",
@@ -109,30 +117,41 @@ function moonmars_nxn_definitions() {
       'enabled' => TRUE,
     ],
     'topic'   => [
-      'label'   => "Items about a topic I'm interested in",
+      'label'   => "Items referencing a topic I'm interested in",
       'default' => TRUE,
       'enabled' => FALSE,
     ],
   ];
 
   $new_comment_conditions = [
-    'mention' => [
-      'label'   => "Comments that mention me",
-      'default' => TRUE,
-      'enabled' => TRUE,
-    ],
-    'item'    => [
-      'label'   => "Comments on an item I shared",
+    'item' => [
+      'label' => "Comments on an item I shared",
       'default' => TRUE,
       'enabled' => TRUE,
     ],
     'comment' => [
-      'label'   => "Comments on an item I also commented on",
+      'label' => "Comments on an item I also commented on",
       'default' => TRUE,
       'enabled' => TRUE,
     ],
-    'topic'   => [
-      'label'   => "Comments about a topic I'm interested in",
+    'comment_mention' => [
+      'label' => "Comments that mention me",
+      'default' => TRUE,
+      'enabled' => TRUE,
+    ],
+    'item_mention' => [
+      'label' => "Comments on an item that mentions me",
+      'default' => TRUE,
+      'enabled' => FALSE,
+    ],
+    // @todo These probably belong in a topics section:
+    'topic' => [
+      'label' => "Comments referencing a topic I'm interested in",
+      'default' => TRUE,
+      'enabled' => FALSE,
+    ],
+    'item_topic' => [
+      'label' => "Comments on an item referencing a topic I'm interested in",
       'default' => TRUE,
       'enabled' => FALSE,
     ],
@@ -141,7 +160,8 @@ function moonmars_nxn_definitions() {
   return [
     'site'     => [
       'title' => "Site",
-      'description' => "Select your notification preferences for the whole site. This excludes closed groups that you aren't a member of.",
+      'description' => "Select your notification preferences for the whole site. (This excludes closed groups that you aren't a member of.)",
+      'enabled' => TRUE,
       'triumph types'  => [
         'new-member'   => [
           'title'       => 'New members',
@@ -156,6 +176,13 @@ function moonmars_nxn_definitions() {
           'default'     => MOONMARS_NXN_YES,
           'conditions'  => $new_group_conditions,
           'enabled'     => TRUE,
+        ],
+        'new-topic'    => [
+          'title'       => 'New topics',
+          'description' => "Do you want to be notified about new topics?",
+          'default'     => MOONMARS_NXN_YES,
+          'conditions'  => $new_topic_conditions,
+          'enabled'     => FALSE,
         ],
         'new-item'     => [
           'title'       => 'New items',
@@ -202,6 +229,7 @@ function moonmars_nxn_definitions() {
     'channel'  => [
       'title' => "My channel",
       'description' => "Select the notifications you want about your channel.",
+      'enabled' => TRUE,
       'triumph types'  => [
         'new-item'    => [
           'title'       => 'New items',
@@ -222,6 +250,7 @@ function moonmars_nxn_definitions() {
     'followee' => [
       'title' => "My followees",
       'description' => "Select the notifications you want about the members you follow.",
+      'enabled' => TRUE,
       'triumph types'  => [
         'new-item' => [
           'title'       => 'New items',
@@ -266,6 +295,7 @@ function moonmars_nxn_definitions() {
     'group'    => [
       'title' => "My groups",
       'description' => "Select the notifications you want about your groups.",
+      'enabled' => TRUE,
       'triumph types'  => [
         'new-member'        => [
           'title'       => 'New members',
@@ -303,13 +333,13 @@ function moonmars_nxn_definitions() {
         ],
         'new-admin'         => [
           'title'       => 'New administrator',
-          'description' => "Do you want to be notified when the group gets a new adminstrator?",
+          'description' => "Do you want to be notified when the group gets a new administrator?",
           'default'     => MOONMARS_NXN_YES,
           'enabled'     => FALSE,
         ],
         'want-admin'        => [
           'title'       => 'Administrator wanted',
-          'description' => "Do you want to be notified when the groups needs a new adminstrator?",
+          'description' => "Do you want to be notified when the groups needs a new administrator?",
           'default'     => MOONMARS_NXN_YES,
           'enabled'     => FALSE,
         ],
@@ -318,6 +348,40 @@ function moonmars_nxn_definitions() {
           'description' => "Do you want to be notified when the group profile is updated?",
           'default'     => MOONMARS_NXN_YES,
           'enabled'     => TRUE,
+        ],
+      ],
+    ],
+    'topic'    => [
+      'title' => "My topics",
+      'description' => "Select the notifications you want about topics you follow.",
+      'enabled' => FALSE,
+      'triumph types'  => [
+        'new-member'        => [
+          'title'       => 'New followers',
+          'description' => "Do you want to be notified when another member follows a topic you follow?",
+          'default'     => MOONMARS_NXN_YES,
+          'conditions'  => $new_member_conditions,
+          'enabled'     => TRUE,
+        ],
+        'new-item'          => [
+          'title'       => 'New items',
+          'description' => "Do you want to be notified when a new item is posted referencing a topic you follow?",
+          'default'     => MOONMARS_NXN_YES,
+          'conditions'  => $new_item_conditions,
+          'enabled'     => TRUE,
+        ],
+        'new-comment'       => [
+          'title'       => 'New comments',
+          'description' => "Do you want to be notified when a new comment is posted referencing a topic you follow?",
+          'default'     => MOONMARS_NXN_YES,
+          'conditions'  => $new_comment_conditions,
+          'enabled'     => TRUE,
+        ],
+        'new-admin'         => [
+          'title'       => 'New administrator',
+          'description' => "Do you want to be notified when a topic you follow gets a new administrator?",
+          'default'     => MOONMARS_NXN_YES,
+          'enabled'     => FALSE,
         ],
       ],
     ],
@@ -458,6 +522,10 @@ function moonmars_nxn_prefs_form() {
   $definitions = moonmars_nxn_definitions();
 
   foreach ($definitions as $nxn_category => $nxn_category_info) {
+    if (!$nxn_category_info['enabled']) {
+      continue;
+    }
+
     // Create a fieldset for the category:
     $form[$nxn_category] = [
       '#type'        => 'fieldset',
@@ -510,7 +578,7 @@ function moonmars_nxn_prefs_form() {
     '#prefix' => "<div class='form-actions'>",
     '#type'   => 'submit',
     '#value'  => 'Save',
-    '#submit' => ['moonmars_nxn_form_submit'],
+    '#submit' => ['moonmars_nxn_prefs_form_submit'],
     '#suffix' => "</div>",
   ];
 
@@ -520,7 +588,7 @@ function moonmars_nxn_prefs_form() {
 /**
  * Submit handler for nxn prefs form.
  */
-function moonmars_nxn_form_submit($form, &$form_state) {
+function moonmars_nxn_prefs_form_submit($form, &$form_state) {
   // Get the member:
   $uid = (int) $form_state['values']['uid'];
   $member = Member::create($uid);

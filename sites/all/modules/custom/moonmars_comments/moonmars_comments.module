@@ -174,7 +174,7 @@ function moonmars_comments_ajax_edit() {
 
   // Complete data array, encode and send:
   $data['result'] = TRUE;
-  $data['html'] = $item_comment->textScan()->html();
+  $data['html'] = $item_comment->html();
   echo json_encode($data);
 }
 

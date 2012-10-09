@@ -473,9 +473,7 @@ class Triumph {
         switch ($this->triumphType) {
           case 'new-member':
             // No need to notify the new member:
-            $member = $this->actor('member');
-            dbg($member, 'member');
-            $candidates->remove($member);
+            $candidates->remove($this->actor('member'));
             break;
 
           case 'new-group':

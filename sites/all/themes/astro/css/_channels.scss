@@ -45,6 +45,7 @@ $ratingButtonHeight = 20px;
 
   article.new-comment-form-article {
     display: none;
+    margin-left: 10px;
 
     .post-content-wrapper {
       height: auto;
@@ -107,35 +108,6 @@ article.node-item {
 
   .top-post-controls {
     border-top: solid 1px $grey4;
-  }
-
-  .post-controls {
-    padding-top: 1px;
-
-    ul.action-links {
-      display: block;
-      float: right;
-      height: $ratingButtonHeight;
-      margin-bottom: 0;
-
-      li {
-        padding: 0 0 0 10px;
-        //border-right: solid 1px $grey4;
-        margin: 0;
-        float: right;
-        display: block;
-        height: $ratingButtonHeight;
-        line-height: $ratingButtonHeight;
-
-        a {
-          line-height: $ratingButtonHeight;
-        }
-
-        &.waiting {
-          padding-right: 18px;
-        }
-      }
-    }
   }
 
   .score-more-wrapper {
@@ -201,6 +173,35 @@ article.node-item {
 
       &:hover {
         background-color: $red3;
+      }
+    }
+  }
+}
+
+.post-controls {
+  padding-top: 1px;
+
+  ul.action-links {
+    display: block;
+    float: right;
+    height: $ratingButtonHeight;
+    margin-bottom: 0;
+
+    li {
+      padding: 0 0 0 10px;
+      //border-right: solid 1px $grey4;
+      margin: 0;
+      float: right;
+      display: block;
+      height: $ratingButtonHeight;
+      line-height: $ratingButtonHeight;
+
+      a {
+        line-height: $ratingButtonHeight;
+      }
+
+      &.waiting {
+        padding-right: 18px;
       }
     }
   }

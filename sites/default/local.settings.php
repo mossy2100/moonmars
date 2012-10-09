@@ -13,6 +13,7 @@ require_once "$star_path/php/numbers.php";
 require_once "$star_path/php/arrays.php";
 require_once "$star_path/php/objects.php";
 require_once "$star_path/php/drupal.php";
+require_once "$star_path/php/css.php";
 
 /**
  * Scan /sites/all/classes to find where all the classes are.

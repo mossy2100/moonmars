@@ -106,10 +106,10 @@ function dbg($value, $func_name = '') {
   if ($_dbg_mode) {
     dbg_begin_print();
     if ($func_name != '') {
-      print "<b>$func_name:</b> ";
+      echo "<b>$func_name:</b> ";
     }
     // Requires strings.php:
-    print var_to_string($value);
+    echo var_to_string($value);
     dbg_end_print();
   }
 }

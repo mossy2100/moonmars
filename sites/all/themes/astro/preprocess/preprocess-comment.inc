@@ -43,12 +43,9 @@ function astro_alpha_preprocess_comment(&$vars) {
 //  dbg($vars['content']['comment_body'][0]['#markup']);
 //  dbg($item_comment->text());
 
-
-//  exit;
-
 //  $comment_text = html_entity_decode($vars['content']['comment_body'][0]['#markup']);
 //  $vars['content']['comment_body'][0]['#markup'] = moonmars_text_filter($comment_text, TRUE);
-  $vars['content']['comment_body'][0]['#markup'] = $item_comment->textScan()->html();
+  $vars['content']['comment_body'][0]['#markup'] = $item_comment->html();
 
   // Get the current member:
   $logged_in_member = Member::loggedInMember();

@@ -177,6 +177,34 @@ class Channel extends MoonMarsNode {
     $this->save();
   }
 
+  /**
+   * Get a name for the channel that is meaningful to a notification recipient.
+   *
+   * @param Member $recipient
+   * @param Member $poster
+   * @return string
+   */
+  public function userFriendlyTitle(Member $recipient, Member $poster) {
+    $parent_entity = $this->parentEntity();
+    if ($parent_entity) {
+      if ($parent_entity instanceof Member) {
+        if (Member::equals($parent_entity, $recipient)) {
+          $channel_name = 'your channel';
+        }
+        elseif (Member::equals($parent_entity, $poster)) {
+          $channel_name = "their channel";
+        }
+        else {
+          $channel_name = $parent_entity->name() . "'s channel";
+        }
+      }
+      elseif ($parent_entity instanceof Group) {
+        $channel_name = "the " . $parent_entity->title() . " group";
+      }
+    }
+    return $channel_name;
+  }
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Item-related methods.
 
@@ -284,7 +312,7 @@ class Channel extends MoonMarsNode {
 
     ////////////////////////////////////////////////
     // Bump the item:
-    $channel->bumpItem($item);
+    $item->bump();
 
     // For new comments, create the triumph:
     if ($is_new) {

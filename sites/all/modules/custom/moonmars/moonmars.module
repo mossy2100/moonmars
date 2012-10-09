@@ -217,3 +217,24 @@ function moonmars_color_icons2($bg_color_hex) {
 
   return $html;
 }
+
+
+/**
+ * Generate an inline style attribute for a rounded rectangle.
+ *
+ * @param string $border_color
+ * @param string $background_color
+ * @param int $padding_top
+ * @return string
+ */
+function moonmars_box_inline_style($padding = '5px', $border_color = '#ccc', $background_color = 'transparent') {
+  $styles = [
+    'padding' => $padding,
+    'border' => "solid 1px $border_color",
+    'border-radius' => '3px',
+  ];
+  if ($background_color != 'transparent') {
+    $styles['background-color'] = $background_color;
+  }
+  return array_to_inline_style($styles);
+}

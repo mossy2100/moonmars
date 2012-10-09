@@ -784,7 +784,12 @@ function var_to_string($value, $indent = 0, $objects = array(), $html = FALSE) {
     }
     else {
       $objects[] = $value;
-      return object_to_string($value, $indent, $objects, $html);
+      if ($value instanceof Query) {
+        return dbg_sql($value);
+      }
+      else {
+        return object_to_string($value, $indent, $objects, $html);
+      }
     }
   }
   else {

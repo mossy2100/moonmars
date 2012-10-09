@@ -2,6 +2,7 @@
 namespace AstroMultimedia\MoonMars;
 
 use \stdClass;
+use \AstroMultimedia\Drupal\EntityBase;
 
 /**
  * User: shaun
@@ -284,14 +285,14 @@ class Nxn {
     $html = $title ? "<h3>$title</h3>" : "";
     $html .= "<table style='background: none; padding: 0; border: 0; margin: 0; border-spacing: 0;'>\n";
     $grey3 = '#777';
-    $td_style = "
-      padding: 5px 10px 5px 0;
-      margin: 0;
-      border: 0;
-      font-size: 12px;
-      font-family: Helvetica, Arial, Tahoma, Verdana, sans-serif;
-      vertical-align: top;
-    ";
+    $td_style = array_to_inline_style([
+      'padding' => '5px 10px 5px 0',
+      'margin' => 0,
+      'border' => 0,
+      'font-size' => '12px',
+      'font-family' => 'Helvetica, Arial, Tahoma, Verdana, sans-serif',
+      'vertical-align' => 'top',
+    ]);
     foreach ($values as $label => $value) {
       $html .= "<tr>\n";
       $html .= "<td style='$td_style color: $grey3;'>$label:</td>\n";
@@ -327,7 +328,7 @@ class Nxn {
     }
     $bio = $member->bio();
     if ($bio) {
-      $details['Bio'] = "<div style='padding: 0 5px; border: solid 1px #ccc; border-radius: 3px'>$bio</div>";
+      $details['Bio'] = "<div style='" . moonmars_box_inline_style('0 5px') . "'>$bio</div>";
     }
 
     // Add a list of topics that the member is interested in:
@@ -350,7 +351,7 @@ class Nxn {
       'Type' => $group->groupType(NULL, 'name'),
     );
     if ($group->description()) {
-      $details['Description'] = "<div style='padding: 0 5px; border: solid 1px #ccc; border-radius: 3px'>" . $group->description() . "</div>";
+      $details['Description'] = "<div style='" . moonmars_box_inline_style('0 5px') . "'>" . $group->description() . "</div>";
     }
     if ($group->icon()) {
       $details['Image'] = $group->icon();
@@ -386,6 +387,62 @@ class Nxn {
    */
   public function renderGroupDetails(Group $group, $title = NULL) {
     return self::renderDetails(self::groupDetails($group, $title));
+  }
+
+  /**
+   * Render an item or comment.
+   *
+   * @param \AstroMultimedia\Drupal\EntityBase $actor
+   * @param \AstroMultimedia\Drupal\EntityBase $highlighted_actor
+   * @return string
+   */
+  public function renderItemOrCommentDetails(EntityBase $actor, EntityBase $highlighted_actor) {
+    $poster = $actor->creator();
+    $highlight = EntityBase::equals($actor, $highlighted_actor);
+    // Comments are indented 10px:
+    $margin_left = $actor instanceof Item ? 0 : '10px';
+    $html = "
+      <div style='" . $poster->commentStyle($highlight) . " margin: 0 0 5px $margin_left; border-radius: 3px;'>
+        <table style='padding: 0; border: 0; margin: 0; border-spacing: 0;'>
+          <tr>
+            <td style='padding: 0; border: 0; margin: 0; vertical-align: top;'>" . $poster->avatar() . "</td>
+            <td style='padding: 0 0 0 5px; border: 0; margin: 0; vertical-align: top;'>
+              <div style='margin: 0; font-size: 11px;'>" . $poster->link(NULL, TRUE) . " <span style='color: #919191'>about " . $actor->created()->aboutHowLongAgo() . " ago</span></div>
+              <div style='margin: 10px 0 0; font-size: 12px;'>" . $actor->html() . "</div>
+            </td>
+          </tr>
+        <table>
+      </div>\n";
+    return $html;
+  }
+
+  /**
+   * Generate some HTML to display an item with comments.
+   *
+   * @param Group $group
+   * @return string
+   */
+  public function renderItemDetails(Item $item, EntityBase $highlighted_actor) {
+    $html = '';
+//    $heading_style = "padding: 0; font-size: 13px; font-weight: bold; color: black; margin: 10px 0 5px;";
+
+    // Item:
+//    $html .= "<div style='$heading_style'>Item:</div>";
+    $html .= self::renderItemOrCommentDetails($item, $highlighted_actor);
+
+    // Comments:
+//    $html .= "<div style='$heading_style'>Comments:</div>";
+    $comments = $item->comments();
+    if ($comments) {
+      foreach ($comments as $comment) {
+        $html .= self::renderItemOrCommentDetails($comment, $highlighted_actor);
+      }
+    }
+//    else {
+//      $html .= "<div>None yet.</div>";
+//    }
+
+    return $html;
   }
 
   /**
@@ -436,7 +493,6 @@ class Nxn {
     // Subject:
     $group_name = $group->title();
     $subject = "New group created";
-    $group_link = $group->link();
 
     // Summary:
     $summary = "<a href='$base_url'>moonmars.com</a> has a new group!";
@@ -477,25 +533,10 @@ class Nxn {
     $parent_entity = $channel ? $channel->parentEntity() : NULL;
 
     // Get a user-friendly name for the channel:
-    if ($parent_entity) {
-      if ($parent_entity instanceof Member) {
-        if (Member::equals($parent_entity, $this->recipient)) {
-          $channel_name = 'your channel';
-        }
-        elseif (Member::equals($parent_entity, $poster)) {
-          $channel_name = "their channel";
-        }
-        else {
-          $channel_name = $parent_entity->name() . "'s channel";
-        }
-      }
-      elseif ($parent_entity instanceof Group) {
-        $channel_name = "the " . $parent_entity->title() . " group";
-      }
-    }
+    $channel_name = $channel->userFriendlyTitle($this->recipient, $poster);
 
     // Subject:
-    $subject = $poster->name() . " posted in new item in $channel_name";
+    $subject = $poster->name() . " posted a new item in $channel_name";
 
     // Get a link to the item:
     $item_link = $item->link("item");
@@ -505,15 +546,14 @@ class Nxn {
 
     // Add the mention part of the message:
     if ($item->textScan()->mentions($this->recipient)) {
-      $summary .= " You were mentioned in the $item_link.";
+      $summary .= " You were mentioned in the item.";
     }
 
     // @todo add a note to the summary if the item mentions a #topic they're interested in
-    // @todo Add item text and comments.
     // @todo Add "comment-by-email-reply" feature.
-    //$details = self::renderItem($item);
-    // For now just show the HTML:
-    $details = "<div style='padding: 5px; border: solid 1px #ccc; border-radius: 3px'>" . $item->textScan()->html() . "</div>";
+
+    // Render the item details:
+    $details = self::renderItemDetails($item, $item);
 
     return array(
       'subject' => $subject,
@@ -527,12 +567,52 @@ class Nxn {
    * Generate a new-comment nxn.
    */
   public function generateNewComment() {
-//    return array(
-//      'subject' => $subject,
-//      'summary' => $summary,
-//'preview' => moonmars_text_trim($comment->text()),
-//      'details' => $details,
-//    );
+    // Get the comment:
+    $comment = $this->triumph()->actor('comment');
+
+    // Get the item:
+    $item = $comment->item();
+
+    // Get the item and comment posters:
+    $item_poster = $item->creator();
+    $comment_poster = $comment->creator();
+
+    // Get the item's channel:
+    $channel = $item->channel();
+
+    // Get the parent entity:
+    $parent_entity = $channel ? $channel->parentEntity() : NULL;
+
+    // Get a user-friendly name for the channel:
+    $channel_name = $channel->userFriendlyTitle($this->recipient, $comment_poster);
+
+    // Subject:
+    $subject = $comment_poster->name() . " posted a new comment in $channel_name";
+
+    // Create a summary of the notification:
+    $summary =  $comment_poster->link() . " posted a new " . $comment->link('comment') . " on an " . $item->link('item');
+    if (Member::equals($this->recipient, $item_poster)) {
+      $summary .= " you posted";
+    }
+    $summary .= " in " . $parent_entity->link($channel_name) . ".";
+
+    // Add the mention part of the message:
+    if ($comment->textScan()->mentions($this->recipient)) {
+      $summary .= " You were mentioned in the comment.";
+    }
+
+    // @todo add a note to the summary if the item mentions a #topic they're interested in
+    // @todo Add "comment-by-email-reply" feature.
+
+    // Render the comment details:
+    $details = self::renderItemDetails($item, $comment);
+
+    return array(
+      'subject' => $subject,
+      'summary' => $summary,
+      'preview' => moonmars_text_trim($comment->text()),
+      'details' => $details,
+    );
   }
 
   /**
@@ -694,7 +774,7 @@ class Nxn {
       $email = $this->$fn();
 
       // Copy into properties:
-      $this->subject = $email['subject'];
+      $this->subject = '[moonmars.com] ' . $email['subject'];
       $this->summary = $email['summary'];
       $this->preview = isset($email['preview']) ? $email['preview'] : '';
       $this->message = $email['details'];

@@ -14,13 +14,6 @@ class Item extends MoonMarsNode {
   const NODE_TYPE = 'item';
 
   /**
-   * The class to use for comments.
-   *
-   * @var string
-   */
-  const COMMENT_CLASS = 'ItemComment';
-
-  /**
    * The channel where the item was posted.
    *
    * @var Channel
@@ -92,6 +85,7 @@ class Item extends MoonMarsNode {
    * Get/set the item text.
    *
    * @param null|string $text
+   * @return string
    */
   public function text($text = NULL) {
     if ($text) {
@@ -106,6 +100,7 @@ class Item extends MoonMarsNode {
    * Get the results of the text scan.
    *
    * @param array
+   * @return TextScan
    */
   public function textScan() {
     // If we haven't scanned the text yet, do it now.
@@ -113,6 +108,15 @@ class Item extends MoonMarsNode {
       $this->textScan = new TextScan($this->text());
     }
     return $this->textScan;
+  }
+
+  /**
+   * Get the item HTML.
+   *
+   * @return string
+   */
+  public function html() {
+    return $this->textScan()->html();
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -187,6 +191,17 @@ class Item extends MoonMarsNode {
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Comments
+
+  /**
+   * Get the comments for this item.
+   *
+   * @param bool $published
+   * @param string $comment_class
+   * @return array
+   */
+  public function comments($published = TRUE, $comment_class = '\AstroMultimedia\MoonMars\ItemComment') {
+    return parent::comments($published, $comment_class);
+  }
 
   /**
    * Get the members who commented on this item.

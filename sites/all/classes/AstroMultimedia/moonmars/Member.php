@@ -262,13 +262,14 @@ class Member extends \AstroMultimedia\Drupal\User {
       // If the user has a picture, use it:
       if (isset($this->entity->picture)) {
 
-        // If we just have the fid, load the file:
+        // If we only have the fid, load the file:
         if (is_uint($this->entity->picture)) {
           $this->entity->picture = file_load($this->entity->picture);
         }
 
         // Check the file exists:
         $path = drupal_realpath($this->entity->picture->uri);
+
         if (file_exists($path)) {
           // Render the icon:
           $image = array(
@@ -533,7 +534,7 @@ class Member extends \AstroMultimedia\Drupal\User {
   }
 
   /**
-   * Get the comment border color.
+   * Get the comment border color. Same as the background color except darker.
    *
    * @return StarColor
    */
@@ -545,23 +546,27 @@ class Member extends \AstroMultimedia\Drupal\User {
   }
 
   /**
-   * Get the HTML attribute for the member's comment style.
-   */
-  public function commentStyle($highlight = FALSE) {
-    // Style:
-    $style = array();
-    $style[] = "background-color: " . ($highlight ? 'white' : $this->commentBackgroundColor()->hex()) . ";";
-    $style[] = "border-color: " . ($highlight ? '#919191' : $this->commentBorderColor()->hex()) . ";";
-    return "style='" . implode(' ', $style) . "'";
-  }
-
-  /**
    * Get the HTML attribute for the member's comment border style.
    *
    * @return string
    */
   public function commentBorderStyle($highlight = FALSE) {
-    return "style='border-color: " . ($highlight ? '#919191' : $this->commentBorderColor()->hex()) . ";'";
+    $style = [
+      'border-color' => $this->commentBorderColor()->hex(),
+    ];
+    return array_to_inline_style($style);
+  }
+
+  /**
+   * Get the HTML attribute for the member's post or comment style.
+   */
+  public function commentStyle($highlight = FALSE) {
+    $style = [
+      'padding' => ($highlight ? 4 : 5) . 'px',
+      'border' => 'solid ' . ($highlight ? 2 : 1) . 'px ' . $this->commentBorderColor()->hex(),
+      'background-color' => ($highlight ? 'white' : $this->commentBackgroundColor()->hex()),
+    ];
+    return array_to_inline_style($style);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1009,7 +1014,7 @@ class Member extends \AstroMultimedia\Drupal\User {
 //    $notification->field('field_notification_summary', LANGUAGE_NONE, 0, 'value', $notification_summary);
 //    $notification->save();
 //
-//    $text = $thing->textScan()->html();
+//    $text = $thing->html();
 //
 //    $params = array(
 //      'subject' => "[moonmars.com] $subject",

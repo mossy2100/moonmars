@@ -71,53 +71,67 @@ class TextScan {
     $urls = $links['urls'];
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Member mentions
+    // Member tags
 
-    // Regex fragments for actor codes:
-    $code_begin = "(^|[^\w-])";
-    $code_end = "($|[^\w-])";
-    $code = "([\w-]+)";
+    // Regex fragments for actor tags:
+    $rx_tag_begin = "(^|[^\w-])";
+    $rx_tag_end = "($|[^\w-])";
+    $rx_tag = "([\w-]+)";
 
-    // Scan for mentioned members:
-    $n_members = preg_match_all("/$code_begin@$code$code_end/i", $html, $matches);
+    // Scan for member tags:
+    $n_members = preg_match_all("/$rx_tag_begin" . Member::TAG_PREFIX . "$rx_tag$rx_tag_end/i", $html, $matches);
     $members = array();
     if ($n_members) {
-      foreach ($matches[2] as $name) {
-        // Check if we have a member with this name:
-        $member = Member::createByName($name);
+      foreach ($matches[2] as $tag) {
+        // Check if we have a member with this tag:
+        $member = Member::createByName($tag);
         if ($member) {
           // Remember the member:
           $members[$member->uid()] = $member;
           // Replace the member reference with a link:
-          $html = preg_replace("/$code_begin@($name)$code_end/i", '$1' . $member->tagLink() . '$3', $html);
+          $html = preg_replace("/$rx_tag_begin" . Member::TAG_PREFIX . "($tag)$rx_tag_end/i", '$1' . $member->tagLink() . '$3', $html);
         }
       }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Group references and hash tags
+    // Group tags
 
-    // Scan for hash tags:
-    $n_tags = preg_match_all("/$code_begin#$code$code_end/i", $text, $matches);
+    // Scan for tags:
+    $n_groups = preg_match_all("/$rx_tag_begin" . Group::TAG_PREFIX . "$rx_tag$rx_tag_end/i", $html, $matches);
     $groups = array();
-    $tags = array();
-    if ($n_tags) {
+    if ($n_groups) {
       foreach ($matches[2] as $tag) {
+        // Check if we have a group with this tag:
         $group = Group::createByTag($tag);
         if ($group) {
           // Remember the group:
           $groups[$group->nid()] = $group;
           // Replace the group reference with a link:
-          $html = preg_replace("/$code_begin#($tag)$code_end/i", '$1' . $group->tagLink() . '$3', $html);
-        }
-        else {
-          // Remember the tag:
-          $tags[$tag] = $tag;
-          // @todo Replace the tag reference with a link:
-//          $html = preg_replace("/$code_begin#$tag$code_end/i", '$1' . $tag->tagLink() . '$3', $html);
+          $html = preg_replace("/$rx_tag_begin" . Group::TAG_PREFIX . "($tag)$rx_tag_end/i", '$1' . $group->tagLink() . '$3', $html);
         }
       }
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Topic tags
+
+// @todo Since this code is a repeat of above, refactor it into a method that can be used for member, group and topic tags.
+//    // Scan for tags:
+//    $n_topics = preg_match_all("/$rx_tag_begin" . Topic::TAG_PREFIX . "$rx_tag$rx_tag_end/i", $html, $matches);
+//    $topics = array();
+//    if ($n_topics) {
+//      foreach ($matches[2] as $tag) {
+//        // Check if we have a topic with this tag:
+//        $topic = Topic::createByTag($tag);
+//        if ($topic) {
+//          // Remember the topic:
+//          $topics[$topic->nid()] = $topic;
+//          // Replace the topic reference with a link:
+//          $html = preg_replace("/$rx_tag_begin" . Topic::TAG_PREFIX . "($tag)$rx_tag_end/i", '$1' . $topic->tagLink() . '$3', $html);
+//        }
+//      }
+//    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Emoticons, symbols, newlines
