@@ -12,6 +12,24 @@ function moonmars_init() {
   // Set the internal encoding to UTF-8.
   // @see moonmars_text_html_entities()
   mb_internal_encoding('UTF-8');
+
+  // Redirect to alias.
+  moonmars_alias_redirect();
+}
+
+/**
+ * Redirect to an extended alias if requested, for nodes and users.
+ * @todo extend for topics
+ *
+ * e.g. if user/1/edit requested, redirect to members/mossy2100/edit
+ * This functionality should have been implemented in globalredirect or path_alias_xt or subpathauto, but as far as I
+ * can tell, has not been,
+ */
+function moonmars_alias_redirect() {
+  $parts = request_args();
+  if (in_array($parts[0], ['user', 'node']) && is_uint($parts[1])) {
+    drupal_goto(drupal_get_path_alias("{$parts[0]}/{$parts[1]}") . '/' . implode('/', array_slice($parts, 2)));
+  }
 }
 
 /**

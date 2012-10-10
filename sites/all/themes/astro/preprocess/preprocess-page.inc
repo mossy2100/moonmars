@@ -20,7 +20,7 @@ function astro_alpha_preprocess_page(&$vars) {
 
 
 //  dbg($vars);
-  if (alias_arg(2) == 'activity') {
+  if (request_arg(2) == 'activity') {
     $vars['title'] = 'Activity';
   }
 }

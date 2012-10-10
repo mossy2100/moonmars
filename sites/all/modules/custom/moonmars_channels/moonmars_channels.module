@@ -22,14 +22,19 @@ function moonmars_channels_form_alter(&$form, &$form_state, $form_id) {
     $channel = Channel::create($form['#node']);
     $parent_entity = $channel->parentEntity();
 
-    // Make sure we're at the right URL:
-    if ($parent_entity instanceof Member) {
-      $logged_in_member = Member::loggedInMember();
-      $edit_links_path = $logged_in_member->editAlias() . '/links';
-      if (current_path() != $edit_links_path) {
-        drupal_goto($edit_links_path);
-      }
-    }
+//    // Make sure we're at the right URL:
+//    if ($parent_entity instanceof Member) {
+//      $logged_in_member = Member::loggedInMember();
+//      $edit_links_path = $logged_in_member->editAlias() . '/links';
+//
+//      dbg($edit_links_path);
+//      dbg(current_path());
+//      exit;
+//
+//      if (current_path() != $edit_links_path) {
+//        drupal_goto($edit_links_path);
+//      }
+//    }
 
     // Remove the title field from the form:
     unset($form['title']);

@@ -30,6 +30,8 @@ function moonmars_members_init() {
 
 /**
  * Implements hook_menu().
+ *
+ * Note we have to use 'user/%/*' menu paths here - 'member/%/*' don't work because they're built on aliases.
  */
 function moonmars_members_menu() {
   $items = [];
@@ -43,13 +45,13 @@ function moonmars_members_menu() {
     'access callback' => 'user_is_logged_in',
     'type'            => MENU_NORMAL_ITEM
   ];
-  $items['member/%/follow'] = [
+  $items['user/%/follow'] = [
     'page callback'    => 'moonmars_members_follow',
     'page arguments'   => [1],
     'access callback'  => 'user_is_logged_in',
     'type'             => MENU_CALLBACK,
   ];
-  $items['member/%/unfollow'] = [
+  $items['user/%/unfollow'] = [
     'page callback'    => 'moonmars_members_unfollow',
     'page arguments'   => [1],
     'access callback'  => 'user_is_logged_in',
@@ -57,21 +59,21 @@ function moonmars_members_menu() {
   ];
 
   // Edit forms:
-  $items['member/%/edit/profile'] = [
+  $items['user/%/edit/profile'] = [
     'title' => 'Edit Profile',
     'page callback'   => 'moonmars_members_edit_profile_form',
     'page arguments'  => [1],
     'access callback' => 'moonmars_members_access_private',
     'type'            => MENU_CALLBACK,
   ];
-  $items['member/%/edit/links'] = [
+  $items['user/%/edit/links'] = [
     'title' => 'Edit Links',
     'page callback'   => 'moonmars_members_edit_links_form',
     'page arguments'  => [1],
     'access callback' => 'moonmars_members_access_private',
     'type'            => MENU_CALLBACK,
   ];
-  $items['member/%/edit/notifications'] = [
+  $items['user/%/edit/notifications'] = [
     'page callback'   => 'moonmars_members_edit_nxn_prefs_form',
     'page arguments'  => [1],
     'access callback' => 'moonmars_members_access_private',
@@ -137,6 +139,7 @@ function theme_moonmars_members_edit_menu() {
     return FALSE;
   }
 
+  $request = request();
   $edit_base = $page_member->alias() . '/edit';
 
   $tabs = [
@@ -148,7 +151,7 @@ function theme_moonmars_members_edit_menu() {
   $html = "<ul id='actor-edit-tabs'>";
   foreach ($tabs as $url => $label) {
     $html .= "<li><a href='/$url'";
-    if (current_path() == $url) {
+    if ($request == $url) {
       $html .= " class='selected'";
     }
     $html .= ">$label</a></li>";
@@ -492,58 +495,53 @@ function moonmars_members_edit_nxn_prefs_form($user) {
 /**
  * Create a follows relationship between the logged in user and the user specified in the parameter.
  *
- * @param $member2_uid
+ * @param $followee_uid
  */
-function moonmars_members_follow($member2_uid) {
-  global $user;
-  $member1_uid = $user->uid;
+function moonmars_members_follow($followee_uid) {
+  $follower = Member::loggedInMember();
 
-  if ($member1_uid && $member2_uid) {
+  if ($follower && $followee_uid) {
+    $followee = Member::create($followee_uid);
 
-    $member1 = Member::create($user->uid);
-    $member2 = Member::create($member2_uid);
-
-    if ($member1->follows($member2)) {
-      drupal_set_message(t("You are already following %user2_name.", ['%user2_name' => $member2->name()]));
+    if ($follower->follows($followee)) {
+      drupal_set_message(t("You are already following %user2_name.", ['%user2_name' => $followee->name()]));
     }
     else {
       // Follow the member:
-      $member1->follow($member2);
+      $follower->follow($followee);
 
       // Tell the user:
-      drupal_set_message(t("You are now following %user2_name.", ['%user2_name' => $member2->name()]));
+      drupal_set_message(t("You are now following %user2_name.", ['%user2_name' => $followee->name()]));
     }
   }
 
-  drupal_goto($member2->alias());
+  drupal_goto($followee->alias());
 }
 
 /**
  * Removes a follows relationship between the logged in user and the user specified in the parameter.
  *
- * @param $member2_uid
+ * @param $followee_uid
  */
-function moonmars_members_unfollow($member2_uid) {
-  global $user;
-  $member1_uid = $user->uid;
+function moonmars_members_unfollow($followee_uid) {
+  $follower = Member::loggedInMember();
 
-  if ($member1_uid && $member2_uid) {
-    $member1 = Member::create($user);
-    $member2 = Member::create($member2_uid);
+  if ($follower && $followee_uid) {
+    $followee = Member::create($followee_uid);
 
-    if ($member1->follows($member2)) {
+    if ($follower->follows($followee)) {
       // Unfollow the member:
-      $member1->unfollow($member2);
+      $follower->unfollow($followee);
 
       // Tell the user:
-      drupal_set_message(t("You are no longer following %user2_name.", ['%user2_name' => $member2->name()]));
+      drupal_set_message(t("You are no longer following %user2_name.", ['%user2_name' => $followee->name()]));
     }
     else {
-      drupal_set_message(t("You weren't following %user2_name.", ['%user2_name' => $member2->name()]));
+      drupal_set_message(t("You weren't following %user2_name.", ['%user2_name' => $followee->name()]));
     }
   }
 
-  drupal_goto($member2->alias());
+  drupal_goto($followee->alias());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

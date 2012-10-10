@@ -27,7 +27,7 @@ function moonmars_events_views_pre_execute($view) {
     case 'calendar':
 
       // Get the view arguments:
-      $arg1 = alias_arg(1);
+      $arg1 = request_arg(1);
       $template = (isset($arg1) && in_array($arg1, [
         'day',
         'week',

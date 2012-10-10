@@ -492,7 +492,7 @@ class Triumph {
             break;
 
           case 'new-follower':
-            // No need to notify the follower:
+            // No need to notify the follower, not that they would be included in the candidates anyway.
             $candidates->remove($this->actor('follower'));
             break;
 

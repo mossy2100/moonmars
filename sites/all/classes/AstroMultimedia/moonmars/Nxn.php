@@ -328,7 +328,7 @@ class Nxn {
     }
     $bio = $member->bio();
     if ($bio) {
-      $details['Bio'] = "<div style='" . moonmars_box_inline_style('0 5px') . "'>$bio</div>";
+      $details['Bio'] = "<div style='" . moonmars_box_inline_style('10px 5px') . "'>$bio</div>";
     }
 
     // Add a list of topics that the member is interested in:
@@ -625,18 +625,20 @@ class Nxn {
 
     // Generate the subject, summary and details:
     if (Member::equals($followee, $this->recipient)) {
-      $followee_name = "you";
       // If the followee is receiving the nxn they they'll be interested in the follower's details:
       $details = self::renderMemberDetails($follower, "Follower details");
+      $followee_name = "you";
+      $followee_link = "you";
     }
     else {
-      $followee_name = $followee->name();
       // If someone is receiving a nxn about their followee following someone, then they'll be interested in the
       // followee's details:
       $details = self::renderMemberDetails($followee, "Followee details");
+      $followee_name = $followee->name();
+      $followee_link = $followee->link($followee_name);
     }
     $subject = $follower->name() . " is now following $followee_name";
-    $summary = $follower->link() . " is now following " . $followee->link($followee_name) . ".";
+    $summary = $follower->link() . " is now following $followee_link.";
 
     return array(
       'subject' => $subject,

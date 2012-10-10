@@ -7,31 +7,9 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Useful functions related to URL arguments.
 
-function alias_args() {
-  $request_uri = trim(urldecode($_SERVER['REQUEST_URI']), '/');
-  return array_filter(explode('/', $request_uri));
-}
-
-function alias_arg($i) {
-  $alias_args = alias_args();
-  return array_key_exists($i, $alias_args) ? $alias_args[$i] : NULL;
-}
-
-function alias_arg_count() {
-  return count(alias_args());
-}
-
 /**
- * Return the last argument in the alias.
+ * Return the number of arguments in the system path. Supplements Drupal's arg() and args() functions.
  *
- * @return string
- */
-function last_alias_arg() {
-  return alias_arg(alias_arg_count() - 1);
-}
-
-/**
- * Return the number of arguments in the path.
  * @return int
  */
 function arg_count() {
@@ -43,13 +21,70 @@ function arg_count() {
 }
 
 /**
- * Return the last argument.
+ * Return the last argument in the system path. Supplements Drupal's arg() and args() functions.
+ *
  * @return string
  */
 function last_arg() {
   return arg(arg_count() - 1);
 }
 
+/**
+ * Get the requested path (i.e. what appears in the URL bar). This may be a system path or an alias.
+ * Supports clean and unclean URLs.
+ *
+ * @return string
+ */
+function request() {
+  if (isset($_SERVER['QUERY_STRING']) && $_SERVER['QUERY_STRING']) {
+    // Non-clean URLs: get the requested path from the query string.
+    parse_str($_SERVER['QUERY_STRING'], $query);
+    $request_uri = $query['q'];
+  }
+  else {
+    // Clean URLs: get the requested path directly:
+    $request_uri = $_SERVER['REQUEST_URI'];
+  }
+  return trim(urldecode($request_uri), '/');
+}
+
+/**
+ * Get the parts of the requested path. Mirrors Drupal's args() function.
+ *
+ * @return array
+ */
+function request_args() {
+  return array_filter(explode('/', request()));
+}
+
+/**
+ * Get a specific part of the requested path. Mirrors Drupal's arg() function.
+ *
+ * @return string
+ */
+function request_arg($i) {
+  $request_args = request_args();
+  return array_key_exists($i, $request_args) ? $request_args[$i] : NULL;
+}
+
+/**
+ * Get the number of parts in the requested path.
+ *
+ * @return int
+ */
+function request_arg_count() {
+  return count(request_args());
+}
+
+/**
+ * Return the last argument in the requested path.
+ *
+ * @return string
+ */
+function last_request_arg() {
+  $request_args = request_args();
+  return $request_args[count($request_args) - 1];
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Useful database functions.
