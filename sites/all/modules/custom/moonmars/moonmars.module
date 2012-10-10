@@ -28,7 +28,11 @@ function moonmars_init() {
 function moonmars_alias_redirect() {
   $parts = request_args();
   if (in_array($parts[0], ['user', 'node']) && is_uint($parts[1])) {
-    drupal_goto(drupal_get_path_alias("{$parts[0]}/{$parts[1]}") . '/' . implode('/', array_slice($parts, 2)));
+    $alias = drupal_get_path_alias("{$parts[0]}/{$parts[1]}");
+    if (count($parts) > 2) {
+      $alias .= '/' . implode('/', array_slice($parts, 2));
+    }
+    drupal_goto($alias);
   }
 }
 

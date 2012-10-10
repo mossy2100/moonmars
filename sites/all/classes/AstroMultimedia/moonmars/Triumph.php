@@ -566,14 +566,21 @@ class Triumph {
                     }
                     break;
 
-                  case 'topic':
-                    // Applies to triumph types: new-group, new-item, new-comment
-                    // @todo
-      //              $actor_role = substr($this->triumphType, 4);
-                    //        if ($this->actors[$actor_role]->matchesMemberTopics($member)) {
-                    //         $this->recipients->add($member);
-                    //        }
+                  case 'item_mention':
+                    // Applies to triumph types: new-comment.
+                    if ($this->actor('comment')->item()->textScan()->mentions($member)) {
+                      $this->recipients->add($member);
+                    }
                     break;
+
+//                  case 'topic':
+//                    // Applies to triumph types: new-group, new-item, new-comment
+//                    // @todo
+//      //              $actor_role = substr($this->triumphType, 4);
+//                    //        if ($this->actors[$actor_role]->matchesMemberTopics($member)) {
+//                    //         $this->recipients->add($member);
+//                    //        }
+//                    break;
 
                   case 'item':
                     // Applies to triumph types: new-comment

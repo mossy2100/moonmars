@@ -17,27 +17,18 @@ const MOONMARS_NXN_SOME = 2;
  */
 function moonmars_nxn_menu() {
   $items = [];
-
-  // Why isn't this callback working?
-  $items['member/%/notifications'] = [
-    'page callback'   => 'moonmars_nxn_list',
-    'page arguments'  => [1],
-    'access callback' => 'moonmars_nxn_list_access',
-    'type'            => MENU_CALLBACK,
-  ];
-  // But this one does?
   $items['user/%/notifications'] = [
-    'page callback'   => 'moonmars_nxn_list',
-    'page arguments'  => [1],
-    'access callback' => 'moonmars_nxn_list_access',
-    'type'            => MENU_CALLBACK,
+    'page callback' => 'moonmars_nxn_list',
+    'page arguments' => [1],
+    'access callback' => 'moonmars_members_access_private',
+    'type' => MENU_CALLBACK,
   ];
 
   // Callback to be called from a shell script to create and send notifications.
   $items['service/send-notifications'] = [
-    'page callback'   => 'moonmars_nxn_send_outstanding',
+    'page callback' => 'moonmars_nxn_send_outstanding',
     'access callback' => TRUE,
-    'type'            => MENU_CALLBACK,
+    'type' => MENU_CALLBACK,
   ];
   return $items;
 }
@@ -103,8 +94,8 @@ function moonmars_nxn_definitions() {
   ];
 
   $new_topic_conditions = [
-    'sub-topic'   => [
-      'label'   => "Sub-topics of topics I already follow",
+    'match_topic'   => [
+      'label'   => "Topics that match a topic I already follow",
       'default' => TRUE,
       'enabled' => FALSE,
     ],
@@ -134,7 +125,7 @@ function moonmars_nxn_definitions() {
       'default' => TRUE,
       'enabled' => TRUE,
     ],
-    'comment_mention' => [
+    'mention' => [
       'label' => "Comments that mention me",
       'default' => TRUE,
       'enabled' => TRUE,
@@ -456,33 +447,15 @@ function moonmars_nxn_list($user) {
 }
 
 /**
- * Check if the user can access the notifications list.
- *
- * @return bool
- */
-function moonmars_nxn_list_access() {
-  // Check the user is logged in:
-  if (!user_is_logged_in()) {
-    return FALSE;
-  }
-
-  // Check we're at the correct URL and redirect if necessary:
-  $uri = trim($_SERVER['REQUEST_URI'], '/');
-  $nxn_list_link = Member::loggedInMember()->alias() . '/notifications';
-  if ($uri != $nxn_list_link) {
-    drupal_goto($nxn_list_link);
-  }
-
-  return moonmars_members_access_private();
-}
-
-/**
  * Form for notifications preferences.
  *
  * @return array
  */
 function moonmars_nxn_prefs_form() {
-  $logged_in_member = Member::loggedInMember();
+  $member = moonmars_actors_get_actor_from_url();
+  if (!$member || !($member instanceof Member)) {
+    drupal_not_found();
+  }
 
   // Start building the form:
   $form = [
@@ -493,7 +466,7 @@ function moonmars_nxn_prefs_form() {
     ],
     'uid' => [
       '#type'  => 'hidden',
-      '#value' => $logged_in_member->uid(),
+      '#value' => $member->uid(),
     ],
     'entity_id' => [
       '#type'  => 'hidden',
@@ -547,7 +520,7 @@ function moonmars_nxn_prefs_form() {
           MOONMARS_NXN_NO  => 'No',
           MOONMARS_NXN_YES => 'Yes',
         ],
-        '#default_value' => $logged_in_member->nxnPrefWants($nxn_category, $triumph_type),
+        '#default_value' => $member->nxnPrefWants($nxn_category, $triumph_type),
       ];
 
       // If there are conditions...
@@ -560,7 +533,7 @@ function moonmars_nxn_prefs_form() {
         $form[$nxn_category][$nxn_cond_key] = [
           '#type'          => 'checkboxes',
           '#title'         => 'Just notify me about:',
-          '#default_value' => array_keys(array_filter($logged_in_member->nxnPrefConditions($nxn_category, $triumph_type))),
+          '#default_value' => array_keys(array_filter($member->nxnPrefConditions($nxn_category, $triumph_type))),
         ];
 
         // Add the options:

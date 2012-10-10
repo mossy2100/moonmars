@@ -8,9 +8,9 @@ use \AstroMultimedia\MoonMars\Channel;
  */
 function moonmars_members_init() {
   // If we're at 'user', and the user is logged in, forward the person to their profile.
-  // I don't really want people using that path.
-  if (user_is_logged_in() && trim($_SERVER['REQUEST_URI'], '/') == 'user') {
-    drupal_goto(MoonMars\Member::loggedInMember()->alias());
+  // I don't want people using that path.
+  if (user_is_logged_in() && request() == 'user') {
+    drupal_goto(Member::loggedInMember()->alias());
   }
 
   // Add some JS:
@@ -36,48 +36,48 @@ function moonmars_members_init() {
 function moonmars_members_menu() {
   $items = [];
   $items['profile'] = [
-    'page callback'   => 'moonmars_members_profile',
+    'page callback' => 'moonmars_members_profile',
     'access callback' => 'user_is_logged_in',
-    'type'            => MENU_NORMAL_ITEM
+    'type' => MENU_NORMAL_ITEM
   ];
   $items['activity'] = [
-    'page callback'   => 'moonmars_members_activity_redirect',
+    'page callback' => 'moonmars_members_activity_redirect',
     'access callback' => 'user_is_logged_in',
-    'type'            => MENU_NORMAL_ITEM
+    'type' => MENU_NORMAL_ITEM
   ];
   $items['user/%/follow'] = [
-    'page callback'    => 'moonmars_members_follow',
-    'page arguments'   => [1],
-    'access callback'  => 'user_is_logged_in',
-    'type'             => MENU_CALLBACK,
+    'page callback' => 'moonmars_members_follow',
+    'page arguments' => [1],
+    'access callback' => 'user_is_logged_in',
+    'type' => MENU_CALLBACK,
   ];
   $items['user/%/unfollow'] = [
-    'page callback'    => 'moonmars_members_unfollow',
-    'page arguments'   => [1],
-    'access callback'  => 'user_is_logged_in',
-    'type'             => MENU_CALLBACK,
+    'page callback' => 'moonmars_members_unfollow',
+    'page arguments' => [1],
+    'access callback' => 'user_is_logged_in',
+    'type' => MENU_CALLBACK,
   ];
 
   // Edit forms:
   $items['user/%/edit/profile'] = [
     'title' => 'Edit Profile',
-    'page callback'   => 'moonmars_members_edit_profile_form',
-    'page arguments'  => [1],
+    'page callback' => 'moonmars_members_edit_profile_form',
+    'page arguments' => [1],
     'access callback' => 'moonmars_members_access_private',
-    'type'            => MENU_CALLBACK,
+    'type' => MENU_CALLBACK,
   ];
   $items['user/%/edit/links'] = [
     'title' => 'Edit Links',
-    'page callback'   => 'moonmars_members_edit_links_form',
-    'page arguments'  => [1],
+    'page callback' => 'moonmars_members_edit_links_form',
+    'page arguments' => [1],
     'access callback' => 'moonmars_members_access_private',
-    'type'            => MENU_CALLBACK,
+    'type' => MENU_CALLBACK,
   ];
   $items['user/%/edit/notifications'] = [
-    'page callback'   => 'moonmars_members_edit_nxn_prefs_form',
-    'page arguments'  => [1],
+    'page callback' => 'moonmars_members_edit_nxn_prefs_form',
+    'page arguments' => [1],
     'access callback' => 'moonmars_members_access_private',
-    'type'            => MENU_CALLBACK,
+    'type' => MENU_CALLBACK,
   ];
   return $items;
 }
@@ -105,8 +105,18 @@ function moonmars_members_menu() {
 function moonmars_members_on_own_page() {
   // Get the logged-in member and the member whose page it is:
   $logged_in_member = Member::loggedInMember();
-  $page_member = moonmars_actors_get_actor_from_url();
-  return $logged_in_member && $page_member && Member::equals($logged_in_member, $page_member);
+  $actor = moonmars_actors_get_actor_from_url();
+  return $logged_in_member && $actor && Member::equals($logged_in_member, $actor);
+}
+
+/**
+ * Checks if we're on a member page.
+ *
+ * @return bool
+ */
+function moonmars_members_is_member_page() {
+  $actor = moonmars_actors_get_actor_from_url();
+  return $actor && ($actor instanceof Member);
 }
 
 /**
@@ -116,7 +126,7 @@ function moonmars_members_on_own_page() {
  */
 function moonmars_members_access_private() {
   $logged_in_member = Member::loggedInMember();
-  return $logged_in_member && ($logged_in_member->isAdmin() || moonmars_members_on_own_page());
+  return $logged_in_member && ($logged_in_member->isSuperUser() || $logged_in_member->isAdmin() || moonmars_members_on_own_page()) && moonmars_members_is_member_page();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

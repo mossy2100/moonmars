@@ -330,34 +330,55 @@ function moonmars_actors_looks_like_entity_path(array $uri_parts) {
  * @return bool
  */
 function moonmars_actors_get_actor_from_url() {
+  static $cache;
+
   // Look for the entity type and id in the request_uri:
-  $uri = trim($_SERVER['REQUEST_URI'], '/');
+  $uri = request();
 
-  // If we're at 'user' then the entity is the current logged-in user:
+  // Shortcut if we already did this one:
+  if (isset($cache[$uri])) {
+    return $cache[$uri];
+  }
+
+  $actor = NULL;
+
+  // At certain paths we know the actor is the logged-in member:
   if (in_array($uri, ['user', 'profile', 'activity', 'notifications']) && user_is_logged_in()) {
-    return Member::loggedInMember();
+    $actor = Member::loggedInMember();
   }
 
-  // Check for a normal user/%uid or node/%nid type of path:
-  $uri_parts = explode('/', $uri);
-  if (moonmars_actors_looks_like_entity_path($uri_parts)) {
-    return moonmars_actors_get_actor($uri_parts[0], $uri_parts[1]);
-  }
-
-  // Look for a matching alias:
-  while (count($uri_parts) >= 1) {
-    // Maybe it's an alias. Try converting to normal path.
-    $alias = drupal_get_normal_path($uri);
-
-    // Check again:
-    $alias_parts = explode('/', $alias);
-    if (moonmars_actors_looks_like_entity_path($alias_parts)) {
-      return moonmars_actors_get_actor($alias_parts[0], $alias_parts[1]);
+  if (!$actor) {
+    // Check for a normal user/%uid or node/%nid type of path:
+    $uri_parts = explode('/', $uri);
+    if (moonmars_actors_looks_like_entity_path($uri_parts)) {
+      $actor = moonmars_actors_get_actor($uri_parts[0], $uri_parts[1]);
     }
+  }
 
-    // Remove the last URI part and try again.
-    unset($uri_parts[count($uri_parts) - 1]);
-    $uri = implode('/', $uri_parts);
+  if (!$actor) {
+    // Look for a matching alias:
+    while (count($uri_parts) >= 1) {
+      // Maybe it's an alias. Try converting to normal path.
+      $path = drupal_get_normal_path($uri);
+
+      // Check again:
+      $path_parts = explode('/', $path);
+      if (moonmars_actors_looks_like_entity_path($path_parts)) {
+        $actor = moonmars_actors_get_actor($path_parts[0], $path_parts[1]);
+        if ($actor) {
+          break;
+        }
+      }
+
+      // Remove the last URI part and try again.
+      unset($uri_parts[count($uri_parts) - 1]);
+      $uri = implode('/', $uri_parts);
+    }
+  }
+
+  if ($actor) {
+    $cache[$uri] = $actor;
+    return $actor;
   }
 
   // Not an actor path:

@@ -1180,10 +1180,13 @@ class Member extends \AstroMultimedia\Drupal\User {
     $parent_entity = $channel->parentEntity();
 
     if ($parent_entity instanceof Member) {
+      // @todo Implement permissions so people can specify who can post in their channel.
+      // If a post is blocked from a channel by permissions, then the tag appears crossed out.
+
       // The member is the only one who can post in their own channel:
-      return self::equals($parent_entity, $this);
+//      return self::equals($parent_entity, $this);
       // Members can post in each other's channels.
-//      return TRUE;
+      return TRUE;
       // A member can post in their own channel, or in the channel of someone who follows them:
 //      return self::equals($parent_entity, $this) || $parent_entity->follows($this);
     }
