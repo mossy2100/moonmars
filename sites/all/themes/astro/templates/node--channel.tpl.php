@@ -31,7 +31,7 @@ require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'node') . '/node.page
       <div class='post-form-wrapper'>
         <h2>Share something</h2>
 
-        <div class='post-article-body'>
+        <div class='post-article-body' style='<?php echo $logged_in_member->commentStyle(); ?>'>
 
           <div class='user-picture'>
             <?php echo $logged_in_member->avatarTooltip(); ?>

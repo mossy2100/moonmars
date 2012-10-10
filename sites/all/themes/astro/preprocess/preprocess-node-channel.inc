@@ -10,14 +10,6 @@ use \AstroMultimedia\MoonMars\Channel;
  */
 function astro_alpha_preprocess_node_channel(&$vars) {
 
-  // JS:
-  drupal_add_js(drupal_get_path('module', 'moonmars_channels') . '/js/moonmars-channels.js');
-  drupal_add_js(drupal_get_path('module', 'moonmars_ratings') . '/js/ratings.js');
-
-  // Get the current logged-in member:
-  $logged_in_member = Member::loggedInMember();
-  $vars['logged_in_member'] = $logged_in_member;
-
   // Get the node:
   $node = $vars['node'];
 
@@ -25,13 +17,22 @@ function astro_alpha_preprocess_node_channel(&$vars) {
   $channel = Channel::create($node);
   $vars['channel'] = $channel;
 
-  // Add some JS:
+  // Get the parent entity:
+  $parent_entity = $channel->parentEntity();
+
+  // If we're at the channel's page, goto the parent entity's page.
+  $parent_entity_path = $parent_entity->alias();
+  if (request() != $parent_entity_path) {
+    drupal_goto($parent_entity_path);
+  }
+
+  // JS:
+  drupal_add_js(drupal_get_path('module', 'moonmars_channels') . '/js/moonmars-channels.js');
+  drupal_add_js(drupal_get_path('module', 'moonmars_ratings') . '/js/ratings.js');
   drupal_add_js(drupal_get_path('module', 'moonmars_text') . '/js/autotrim.js');
 
   // Remember the current channel:
   Channel::currentChannel($channel);
-
-  // Get the channel items.
 
   // Set the page title:
   if (arg(0) == 'node' && arg(1) == $channel->nid()) {
@@ -43,19 +44,19 @@ function astro_alpha_preprocess_node_channel(&$vars) {
     $vars['title'] = '';
   }
 
-  // Get the parent entity:
-  $entity = $channel->parentEntity();
-
   // Are we viewing the member's activity stream?
-  $viewing_activity = ($entity instanceof Member) && (request_arg(2) == 'activity');
+  $viewing_activity = ($parent_entity instanceof Member) && (request_arg(2) == 'activity');
   $vars['viewing_activity'] = $viewing_activity;
 
   // Render the items.
   if ($viewing_activity) {
     // Member's activity channel:
-    $vars['items'] = $entity->renderActivityItems();
+    $vars['items'] = $parent_entity->renderActivityItems();
   }
   else {
     $vars['items'] = $channel->renderItems();
   }
+
+  // Get the logged-in member:
+  $vars['logged_in_member'] = Member::loggedInMember();
 }
