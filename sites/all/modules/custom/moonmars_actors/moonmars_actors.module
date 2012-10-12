@@ -216,14 +216,14 @@ function moonmars_actors_entity_update($entity, $entity_type) {
       // (i.e., not if an admin is updating someone else's profile).
       // The reason for this is because an administrator won't normally be adding interesting info; they'll most
       // likely just be updating a password or something.
-      if (Member::equals($actor, $logged_in_member)) {
+      if ($logged_in_member && Member::equals($actor, $logged_in_member)) {
         // The first time a member's profile is updated we create the new-member triumph. After that, update-member.
         if (!$actor->profileUpdated()) {
           Triumph::newMember($actor);
 
           // We have to update the profile_updated field manually because if we call ->save() or user_save(), we'll
           // trigger this hook again which will in turn trigger an update-member triumph.
-          // It's a pain in the arse but I can't think of a better way to do this right now.
+          // It seems hacky but I can't think of a better way to do this right now.
 
           // 1. Update the data table for the field:
           $q = db_update('field_data_field_profile_updated')
