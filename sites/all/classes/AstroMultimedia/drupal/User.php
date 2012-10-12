@@ -387,8 +387,17 @@ class User extends Entity {
    *
    * @return bool
    */
-  public function isSuperUser() {
+  public function isSuperuser() {
     return $this->uid() == 1;
+  }
+
+  /**
+   * Get the superuser.
+   *
+   * @return bool
+   */
+  public static function superuser() {
+    return self::create(1);
   }
 
 }

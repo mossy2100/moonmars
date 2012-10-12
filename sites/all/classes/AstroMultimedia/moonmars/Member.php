@@ -1397,7 +1397,7 @@ class Member extends \AstroMultimedia\Drupal\User {
    * @return bool
    */
   public function canAdministerGroup(Group $group) {
-    return $this->isSuperUser() || $this->isAdmin() || $this->isGroupAdmin($group);
+    return $this->isSuperuser() || $this->isAdmin() || $this->isGroupAdmin($group);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

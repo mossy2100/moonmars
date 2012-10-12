@@ -33,7 +33,10 @@ class Relation extends Entity {
    * Constructor.
    */
   protected function __construct() {
-    return parent::__construct();
+    parent::__construct();
+
+    // All relations in MM are owned by the superuser:
+    $this->entity->uid = 1;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -46,7 +49,6 @@ class Relation extends Entity {
    * @return Relation
    */
   public static function create($relation_param = NULL) {
-
     // Get the class of the object we want to create:
     $class = get_called_class();
 
@@ -154,7 +156,11 @@ class Relation extends Entity {
     $this->load();
 
     // Save the relation:
-    relation_save($this->entity);
+    $result = relation_save($this->entity);
+    if (!$result) {
+      trigger_error('AstroMultimedia\Drupal\Relation', "Relation could not be saved", E_USER_WARNING);
+      return FALSE;
+    }
 
     // In case the relation is new, add it to the cache:
     $this->addToCache();
@@ -300,8 +306,8 @@ class Relation extends Entity {
       ),
     );
 
-    // Create the relation entity:
-    $rel_entity = relation_create($relationship_type, $endpoints);
+    // Create the relation entity. Note the account - all relations in MM are owned by the superuser.
+    $rel_entity = relation_create($relationship_type, $endpoints, User::superuser()->user());
 
     // Create the Relation object:
     $relation = $class::create($rel_entity);
@@ -320,9 +326,9 @@ class Relation extends Entity {
    * @todo This method currently relies on the database view 'view_relationship', which makes it somewhat unportable.
    *
    * @param string $relationship_type
-   * @param Entity $entity0
+   * @param null|Entity $entity0
    *   Use NULL to match all.
-   * @param Entity $entity1
+   * @param null|Entity $entity1
    *   Use NULL to match all.
    * @param null|int $offset
    * @param null|int $limit
@@ -427,7 +433,7 @@ class Relation extends Entity {
 
     // Delete the relationships:
     foreach ($rels as $rel) {
-      relation_delete($rel->rid());
+      $rel->delete();
     }
 
     return TRUE;

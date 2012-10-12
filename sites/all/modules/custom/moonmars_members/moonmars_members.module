@@ -126,7 +126,7 @@ function moonmars_members_is_member_page() {
  */
 function moonmars_members_access_private() {
   $logged_in_member = Member::loggedInMember();
-  return $logged_in_member && ($logged_in_member->isSuperUser() || $logged_in_member->isAdmin() || moonmars_members_on_own_page()) && moonmars_members_is_member_page();
+  return moonmars_members_is_member_page() && $logged_in_member && ($logged_in_member->isSuperuser() || $logged_in_member->isAdmin() || moonmars_members_on_own_page());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
