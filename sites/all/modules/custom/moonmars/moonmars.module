@@ -1,6 +1,6 @@
 <?php
 
-use \AstroMultimedia\Star\StarColor;
+use \AstroMultimedia\Star\Color;
 
 /**
  * Implements hook_init().
@@ -15,6 +15,9 @@ function moonmars_init() {
 
   // Redirect to alias.
   moonmars_alias_redirect();
+
+  // Needs to be run once on every D7 site. Keep here as a reminder for the next site.
+//  variable_set('update_max_fetch_time', 300);
 }
 
 /**
@@ -120,14 +123,14 @@ function moonmars_phpinfo() {
  */
 function moonmars_color_icons($property, $original_color, $current_color) {
 
-  $original_color = new StarColor($original_color);
+  $original_color = new Color($original_color);
 //  dbg($original_color->hslaString());
 
-  if (!StarColor::isHexString($current_color)) {
+  if (!Color::isHexString($current_color)) {
     $current_color = $original_color;
   }
   else {
-    $current_color = new StarColor($current_color);
+    $current_color = new Color($current_color);
     // Make the saturation and lightness match the original color:
     $current_color->saturation($original_color->saturation());
     $current_color->lightness($original_color->lightness());
@@ -167,32 +170,32 @@ function moonmars_color_icons($property, $original_color, $current_color) {
  * Generate color palette for use in forms.
  */
 function moonmars_color_icons2($bg_color_hex) {
-//  $orig_bg_color = new StarColor('#e4ebff');
+//  $orig_bg_color = new Color('#e4ebff');
   $bg_saturation = 0.97;
   $bg_lightness = 0.97;
 
-//  $orig_border_color = new StarColor('#96b1ff');
+//  $orig_border_color = new Color('#96b1ff');
   $border_saturation = 0.8;
   $border_lightness = 0.8;
 
-//  $orig_text_color = new StarColor('#314fa9');
+//  $orig_text_color = new Color('#314fa9');
 //  $text_saturation = 0.4;
 //  $text_lightness = 0.4;
 
   $default_hue = 220;
 
-  if (StarColor::isHexString($bg_color_hex)) {
-    $bg_color = new StarColor($bg_color_hex);
+  if (Color::isHexString($bg_color_hex)) {
+    $bg_color = new Color($bg_color_hex);
     // Set the saturation and lightness:
     $bg_color->hsl($bg_color->hue(), $bg_saturation, $bg_lightness);
   }
   else {
-    $bg_color = new StarColor($default_hue, $bg_saturation, $bg_lightness, TRUE);
+    $bg_color = new Color($default_hue, $bg_saturation, $bg_lightness, TRUE);
   }
 
   // Create the border color with the desired saturation and lightness:
-  $border_color = new StarColor(0, $border_saturation, $border_lightness, TRUE);
-//  $text_color = new StarColor($hue, $text_saturation, $text_lightness, TRUE);
+  $border_color = new Color(0, $border_saturation, $border_lightness, TRUE);
+//  $text_color = new Color($hue, $text_saturation, $text_lightness, TRUE);
 
   $html = "<div class='color-icons'>";
   $n_colors = 18;

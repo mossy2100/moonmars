@@ -8,7 +8,7 @@ namespace AstroMultimedia\Star;
  *
  * Class to encapsulate a time of day or duration.
  */
-class StarTime {
+class Time {
 
   /**
    * The number of seconds.
@@ -35,10 +35,10 @@ class StarTime {
    */
   public function toArray() {
     $seconds = $this->seconds;
-    $hours = floor($seconds / StarDateTime::SECONDS_PER_HOUR);
-    $seconds -= $hours * StarDateTime::SECONDS_PER_HOUR;
-    $minutes = floor($seconds / StarDateTime::SECONDS_PER_MINUTE);
-    $seconds -= $minutes * StarDateTime::SECONDS_PER_MINUTE;
+    $hours = floor($seconds / DateTime::SECONDS_PER_HOUR);
+    $seconds -= $hours * DateTime::SECONDS_PER_HOUR;
+    $minutes = floor($seconds / DateTime::SECONDS_PER_MINUTE);
+    $seconds -= $minutes * DateTime::SECONDS_PER_MINUTE;
     return array(
       'hour'   => $hours,
       'minute' => $minutes,
@@ -52,7 +52,7 @@ class StarTime {
    * @param int $hour
    * @param int $minute
    * @param int $second
-   * @return StarTime
+   * @return Time
    */
   public function time($hour = 0, $minute = 0, $second = 0) {
     if (func_num_args() == 0) {
@@ -61,7 +61,7 @@ class StarTime {
     }
     else {
       // Set the time:
-      $this->seconds = ($hour * StarDateTime::SECONDS_PER_HOUR) + ($minute * StarDateTime::SECONDS_PER_MINUTE) + $second;
+      $this->seconds = ($hour * DateTime::SECONDS_PER_HOUR) + ($minute * DateTime::SECONDS_PER_MINUTE) + $second;
       return $this;
     }
   }
@@ -73,7 +73,7 @@ class StarTime {
    * Get or set the hour.
    *
    * @param null|int $hour
-   * @return int|StarTime
+   * @return int|Time
    */
   public function hour($hour = NULL) {
     $a = $this->toArray();
@@ -91,7 +91,7 @@ class StarTime {
    * Get or set the minute.
    *
    * @param null|int $minute
-   * @return int|StarTime
+   * @return int|Time
    */
   public function minute($minute = NULL) {
     $a = $this->toArray();
@@ -109,7 +109,7 @@ class StarTime {
    * Get or set the second.
    *
    * @param null|int $second
-   * @return int|StarTime
+   * @return int|Time
    */
   public function second($second = NULL) {
     $a = $this->toArray();
@@ -130,7 +130,7 @@ class StarTime {
    * Get or set the total seconds.
    *
    * @param null|int $seconds
-   * @return int|StarTime
+   * @return int|Time
    */
   public function seconds($seconds = NULL) {
     if ($seconds === NULL) {
@@ -150,7 +150,7 @@ class StarTime {
    * @return float
    */
   public function minutes() {
-    return $this->seconds / StarDateTime::SECONDS_PER_MINUTE;
+    return $this->seconds / DateTime::SECONDS_PER_MINUTE;
   }
 
   /**
@@ -159,7 +159,7 @@ class StarTime {
    * @return float
    */
   public function hours() {
-    return $this->seconds / StarDateTime::SECONDS_PER_HOUR;
+    return $this->seconds / DateTime::SECONDS_PER_HOUR;
   }
 
   /**
@@ -168,21 +168,21 @@ class StarTime {
    * @return float
    */
   public function days() {
-    return $this->seconds / StarDateTime::SECONDS_PER_DAY;
+    return $this->seconds / DateTime::SECONDS_PER_DAY;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Format
 
   /**
-   * Format a StarTime.
+   * Format a Time.
    *
    * @param string $format
    * @return string
    */
   public function format($format) {
     // Easy way is to use DateTime::format().
-    $dt = new StarDateTime();
+    $dt = new DateTime();
     $dt->time($this);
     return $dt->format($format);
   }

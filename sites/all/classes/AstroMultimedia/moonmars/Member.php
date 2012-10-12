@@ -2,7 +2,7 @@
 namespace AstroMultimedia\MoonMars;
 
 use \stdClass;
-use \AstroMultimedia\Star\StarColor;
+use \AstroMultimedia\Star\Color;
 
 /**
  * Encapsulates a moonmars.com member.
@@ -158,8 +158,8 @@ class Member extends \AstroMultimedia\Drupal\User {
       $date_of_birth = $this->field('field_date_of_birth');
 
       if ($date_of_birth) {
-        $date_of_birth = new MoonMarsDateTime($date_of_birth);
-        $today = MoonMarsDateTime::today();
+        $date_of_birth = new DateTime($date_of_birth);
+        $today = DateTime::today();
         $birth_year = $date_of_birth->year();
         $current_year = $today->year();
         $birthday_this_year = $date_of_birth;
@@ -513,17 +513,17 @@ class Member extends \AstroMultimedia\Drupal\User {
   /**
    * Get the comment background color.
    *
-   * @return StarColor
+   * @return Color
    */
   public function commentBackgroundColor() {
     $bg_color = $this->field('field_background_color', LANGUAGE_NONE, 0, 'rgb');
 
-    if (StarColor::isHexString($bg_color)) {
-      $bg_color = new StarColor($bg_color);
+    if (Color::isHexString($bg_color)) {
+      $bg_color = new Color($bg_color);
     }
     else {
       // Default to blue:
-      $bg_color = new StarColor(220, 0.97, 0.97, TRUE);
+      $bg_color = new Color(220, 0.97, 0.97, TRUE);
     }
 
     // Reset the saturation and lightness:
@@ -536,7 +536,7 @@ class Member extends \AstroMultimedia\Drupal\User {
   /**
    * Get the comment border color. Same as the background color except darker.
    *
-   * @return StarColor
+   * @return Color
    */
   public function commentBorderColor() {
     $border_color = clone $this->commentBackgroundColor();
@@ -896,7 +896,7 @@ class Member extends \AstroMultimedia\Drupal\User {
     }
 
     // Otherwise let's look for a relationship:
-    $rels = MoonMarsRelation::searchBinary('follows', $this, $member);
+    $rels = Relation::searchBinary('follows', $this, $member);
     return (bool) $rels;
   }
 
@@ -907,7 +907,7 @@ class Member extends \AstroMultimedia\Drupal\User {
    */
   public function follow(Member $member) {
     // Create or update the follow relationship:
-    MoonMarsRelation::updateBinary('follows', $this, $member);
+    Relation::updateBinary('follows', $this, $member);
 
 //    // Notify the followee, if they want to be notified:
 //    if ($member->nxnPrefWants('site', 'new-follower')) {
@@ -927,7 +927,7 @@ class Member extends \AstroMultimedia\Drupal\User {
    */
   public function unfollow(Member $member) {
     // Delete the follow relationship:
-    MoonMarsRelation::deleteBinary('follows', $this, $member);
+    Relation::deleteBinary('follows', $this, $member);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -942,7 +942,7 @@ class Member extends \AstroMultimedia\Drupal\User {
     // Create or update the membership relationship.
     // We're calling updateBinary() here instead of createBinary(), just in case, but actually this method should never
     // be called if they're already a member of the group. See logic in moonmars_groups_join().
-    MoonMarsRelation::updateBinary('has_member', $group, $this);
+    Relation::updateBinary('has_member', $group, $this);
 
     // Create the triumph:
     Triumph::newMember($this, $group);
@@ -979,7 +979,7 @@ class Member extends \AstroMultimedia\Drupal\User {
    */
   public function leaveGroup(Group $group) {
     // Delete the membership relationship:
-    MoonMarsRelation::deleteBinary('has_member', $group, $this);
+    Relation::deleteBinary('has_member', $group, $this);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -989,7 +989,7 @@ class Member extends \AstroMultimedia\Drupal\User {
 //   * Send a notification message to a member.
 //   *
 //   * @param string $summary
-//   * @param EntityBase $thing
+//   * @param Entity $thing
 //   *   The thing (member, group, item or comment) that the notification is about.
 //   * @param Member $actor
 //   * @param Channel $channel
@@ -1593,7 +1593,7 @@ class Member extends \AstroMultimedia\Drupal\User {
   public function rating($entity, $new_rating = NULL) {
     if ($new_rating === NULL) {
       // Get this member's rating for the entity.
-      $rels = MoonMarsRelation::searchBinary('rates', $this, $entity);
+      $rels = Relation::searchBinary('rates', $this, $entity);
 
       if ($rels) {
         return (int) $rels[0]->field('field_rating');
@@ -1626,7 +1626,7 @@ class Member extends \AstroMultimedia\Drupal\User {
 
       /////////////////////////////////////////////////////////
       // Step 1. Update the rating relationship:
-      $rel = MoonMarsRelation::updateBinary('rates', $this, $entity, FALSE);
+      $rel = Relation::updateBinary('rates', $this, $entity, FALSE);
       $rel->field('field_rating', LANGUAGE_NONE, 0, 'value', $new_rating);
       $rel->field('field_multiplier', LANGUAGE_NONE, 0, 'value', 1);
       $rel->save();
@@ -1786,7 +1786,7 @@ class Member extends \AstroMultimedia\Drupal\User {
     }
 
     // Check if the user is a member of the group, and if they're also an admin.
-    $rels = MoonMarsRelation::searchBinary('has_member', $group, $this);
+    $rels = Relation::searchBinary('has_member', $group, $this);
     return $rels ? ((bool) $rels[0]->field('field_is_admin')) : FALSE;
   }
 

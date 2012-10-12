@@ -2,9 +2,9 @@
 namespace AstroMultimedia\Star;
 
 /**
- * StarSet class. Emulates sets, i.e. unordered collections with no duplicates.
+ * Set class. Emulates sets, i.e. unordered collections with no duplicates.
  */
-class StarSet {
+class Set {
 
   /**
    * Items in the set.
@@ -47,7 +47,7 @@ class StarSet {
    * Add an item to the set.
    *
    * @param mixed $item
-   * @return StarSet
+   * @return Set
    */
   public function add($item) {
     if (!in_array($item, $this->items, TRUE)) {
@@ -60,7 +60,7 @@ class StarSet {
    * Remove an item from the set.
    *
    * @param mixed $item
-   * @return StarSet
+   * @return Set
    */
   public function remove($item) {
     $this->items = array_values(array_diff($this->items, array($item)));
@@ -73,9 +73,9 @@ class StarSet {
   /**
    * Union of two sets.
    *
-   * @param StarSet $set1
-   * @param StarSet $set2
-   * @return StarSet
+   * @param Set $set1
+   * @param Set $set2
+   * @return Set
    */
   public static function union(self $set1, self $set2) {
     return new self(array_merge($set1->items, $set2->items));
@@ -84,9 +84,9 @@ class StarSet {
   /**
    * Difference between two sets.
    *
-   * @param StarSet $set1
-   * @param StarSet $set2
-   * @return StarSet
+   * @param Set $set1
+   * @param Set $set2
+   * @return Set
    */
   public static function diff(self $set1, self $set2) {
     return new self(array_diff($set1->items, $set2->items));
@@ -95,9 +95,9 @@ class StarSet {
   /**
    * Intersection between two sets.
    *
-   * @param StarSet $set1
-   * @param StarSet $set2
-   * @return StarSet
+   * @param Set $set1
+   * @param Set $set2
+   * @return Set
    */
   public static function intersect(self $set1, self $set2) {
     return new self(array_intersect($set1->items, $set2->items));
@@ -106,8 +106,8 @@ class StarSet {
   /**
    * Checks if 2 sets are equal.
    *
-   * @param StarSet $set2
-   * @return StarSet
+   * @param Set $set2
+   * @return Set
    */
   public function equal(self $set2) {
     return ($this->count() == $set2->count()) && $this->subset($set2);
@@ -120,8 +120,8 @@ class StarSet {
   /**
    * Checks if a set is a subset of another set.
    *
-   * @param StarSet $set2
-   * @return StarSet
+   * @param Set $set2
+   * @return Set
    */
   public function subset(self $set2) {
     foreach ($this->items as $item) {
@@ -135,8 +135,8 @@ class StarSet {
   /**
    * Checks if a set is a proper subset of another set.
    *
-   * @param StarSet $set2
-   * @return StarSet
+   * @param Set $set2
+   * @return Set
    */
   public function properSubset(self $set2) {
     return ($this->count() < $set2->count()) && $this->subset($set2);
@@ -145,8 +145,8 @@ class StarSet {
   /**
    * Checks if a set is a superset of another set.
    *
-   * @param StarSet $set2
-   * @return StarSet
+   * @param Set $set2
+   * @return Set
    */
   public function superset(self $set2) {
     return $set2->subset($this);
@@ -155,8 +155,8 @@ class StarSet {
   /**
    * Checks if a set is a proper superset of another set.
    *
-   * @param StarSet $set2
-   * @return StarSet
+   * @param Set $set2
+   * @return Set
    */
   public function properSuperset(self $set2) {
     return $set2->properSubset($this);

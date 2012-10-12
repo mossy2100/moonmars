@@ -110,7 +110,7 @@ function moonmars_relations_cleanup() {
 //  // Update the relation's alias.
 //  if ($entity_type == 'relation') {
 //
-//    // Get the MoonMarsRelation object:
+//    // Get the Relation object:
 //    $relation = moonmars_actors_get_actor($entity_type, $entity);
 //
 //    // Reset the alias:

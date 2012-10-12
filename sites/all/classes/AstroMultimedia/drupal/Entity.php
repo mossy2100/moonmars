@@ -2,14 +2,14 @@
 namespace AstroMultimedia\Drupal;
 
 use \stdClass;
-use \AstroMultimedia\Star\StarDateTime;
+use \AstroMultimedia\Star\DateTime;
 
 /**
  * A base class for entities.
  *
  * @todo This should be integrated somehow with the Entity class provided by the entity module.
  */
-abstract class EntityBase {
+abstract class Entity {
 
   /**
    * Static cache of entity objects.
@@ -54,7 +54,7 @@ abstract class EntityBase {
    * Child classes must define a load method.
    *
    * @abstract
-   * @return EntityBase
+   * @return Entity
    */
   abstract public function load();
 
@@ -70,7 +70,7 @@ abstract class EntityBase {
    * Child classes must define a save method.
    *
    * @abstract
-   * @return EntityBase
+   * @return Entity
    */
   abstract public function save();
 
@@ -299,7 +299,7 @@ abstract class EntityBase {
    * Get an entity from the cache.
    *
    * @param int $entity_id
-   * @return EntityBase
+   * @return Entity
    */
   public static function getFromCache($entity_id) {
     $class = get_called_class();
@@ -313,11 +313,11 @@ abstract class EntityBase {
    * Checks if two entities are equal.
    *
    * @static
-   * @param EntityBase $entity1
-   * @param EntityBase $entity2
+   * @param Entity $entity1
+   * @param Entity $entity2
    * @return bool
    */
-  public static function equals(EntityBase $entity1, EntityBase $entity2) {
+  public static function equals(Entity $entity1, Entity $entity2) {
     return ($entity1->entityType() == $entity2->entityType()) && ($entity1->id() == $entity2->id());
   }
 
@@ -336,7 +336,7 @@ abstract class EntityBase {
   /**
    * Get/set the path alias to the entity's page.
    *
-   * @return string|EntityBase
+   * @return string|Entity
    */
   public function alias($alias = NULL) {
     if ($alias === NULL) {
@@ -404,19 +404,19 @@ abstract class EntityBase {
   /**
    * Get the created datetime.
    *
-   * @return StarDateTime
+   * @return DateTime
    */
   public function created() {
-    return new StarDateTime($this->prop('created'));
+    return new DateTime($this->prop('created'));
   }
 
   /**
    * Get the changed datetime.
    *
-   * @return StarDateTime
+   * @return DateTime
    */
   public function changed() {
-    return new StarDateTime($this->prop('changed'));
+    return new DateTime($this->prop('changed'));
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

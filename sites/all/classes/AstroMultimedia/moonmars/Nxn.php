@@ -2,7 +2,7 @@
 namespace AstroMultimedia\MoonMars;
 
 use \stdClass;
-use \AstroMultimedia\Drupal\EntityBase;
+use \AstroMultimedia\Drupal\Entity;
 
 /**
  * User: shaun
@@ -42,14 +42,14 @@ class Nxn {
   /**
    * When was the nxn created? FALSE if not created yet.
    *
-   * @var MoonMarsDateTime|bool
+   * @var DateTime|bool
    */
   protected $created;
 
   /**
    * When was the nxn sent? FALSE if not sent yet.
    *
-   * @var MoonMarsDateTime|bool
+   * @var DateTime|bool
    */
   protected $sent;
 
@@ -127,8 +127,8 @@ class Nxn {
     $this->nxnId = (int) $rec->nxn_id;
     $this->triumph = new Triumph($rec->triumph_id);
     $this->recipient = Member::create($rec->recipient_uid);
-    $this->created = new MoonMarsDateTime($rec->created, 'UTC');
-    $this->sent = $rec->sent ? (new MoonMarsDateTime($rec->sent, 'UTC')) : FALSE;
+    $this->created = new DateTime($rec->created, 'UTC');
+    $this->sent = $rec->sent ? (new DateTime($rec->sent, 'UTC')) : FALSE;
   }
 
   /**
@@ -174,7 +174,7 @@ class Nxn {
     }
     else {
       // Insert new nxn:
-      $fields['created'] = MoonMarsDateTime::nowUTC()->mysql();
+      $fields['created'] = DateTime::nowUTC()->mysql();
       $q = db_insert('moonmars_nxn')
         ->fields($fields);
       $this->nxnId = $q->execute();
@@ -224,7 +224,7 @@ class Nxn {
   /**
    * Get the created datetime
    *
-   * @return MoonMarsDateTime
+   * @return DateTime
    */
   public function created() {
     $this->load();
@@ -392,13 +392,13 @@ class Nxn {
   /**
    * Render an item or comment.
    *
-   * @param \AstroMultimedia\Drupal\EntityBase $actor
-   * @param \AstroMultimedia\Drupal\EntityBase $highlighted_actor
+   * @param \AstroMultimedia\Drupal\Entity $actor
+   * @param \AstroMultimedia\Drupal\Entity $highlighted_actor
    * @return string
    */
-  public function renderItemOrCommentDetails(EntityBase $actor, EntityBase $highlighted_actor) {
+  public function renderItemOrCommentDetails(Entity $actor, Entity $highlighted_actor) {
     $poster = $actor->creator();
-    $highlight = EntityBase::equals($actor, $highlighted_actor);
+    $highlight = Entity::equals($actor, $highlighted_actor);
     // Comments are indented 10px:
     $margin_left = $actor instanceof Item ? 0 : '10px';
     $html = "
@@ -422,7 +422,7 @@ class Nxn {
    * @param Group $group
    * @return string
    */
-  public function renderItemDetails(Item $item, EntityBase $highlighted_actor) {
+  public function renderItemDetails(Item $item, Entity $highlighted_actor) {
     $html = '';
 //    $heading_style = "padding: 0; font-size: 13px; font-weight: bold; color: black; margin: 10px 0 5px;";
 
@@ -815,7 +815,7 @@ class Nxn {
 
     // If sent ok, update the sent property:
     if ($message['result']) {
-      $this->sent = MoonMarsDateTime::nowUTC();
+      $this->sent = DateTime::nowUTC();
     }
 
     return $message;

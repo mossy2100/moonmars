@@ -26,9 +26,9 @@ class EntitySet {
   /**
    * Add an entity to the set.
    *
-   * @param EntityBase $entity
+   * @param Entity $entity
    */
-  public function addSingle(EntityBase $entity) {
+  public function addSingle(Entity $entity) {
     // By using the entity path as the array key, we prevent duplicates.
     $this->entities[$entity->path()] = $entity;
   }
@@ -47,7 +47,7 @@ class EntitySet {
   /**
    * Add one or more entities to the set.
    *
-   * @param array|EntityBase $entity
+   * @param array|Entity $entity
    */
   public function add($entities) {
     if (is_array($entities)) {
@@ -61,9 +61,9 @@ class EntitySet {
   /**
    * Remove an entity from the set.
    *
-   * @param EntityBase $entity
+   * @param Entity $entity
    */
-  public function removeSingle(EntityBase $entity) {
+  public function removeSingle(Entity $entity) {
     // By using the entity path as the array key, it's easy to find the entity to remove.
     unset($this->entities[$entity->path()]);
   }
@@ -82,7 +82,7 @@ class EntitySet {
   /**
    * Remove one or more entities from the set.
    *
-   * @param array|EntityBase $entities
+   * @param array|Entity $entities
    */
   public function remove($entities) {
     if (is_array($entities)) {

@@ -1,7 +1,7 @@
 <?php
 
 use \AstroMultimedia\MoonMars\Nxn;
-use \AstroMultimedia\MoonMars\MoonMarsDateTime;
+use \AstroMultimedia\MoonMars\DateTime;
 use \AstroMultimedia\MoonMars\Member;
 use \AstroMultimedia\MoonMars\Triumph;
 
@@ -434,7 +434,7 @@ function moonmars_nxn_list($user) {
     $nxn->load();
     $html .= "
       <tr>
-        <td class='nxn-created'>" . $nxn->created()->formatMemberTZ(MoonMarsDateTime::FORMAT_DATETIME_LONG) . "</td>
+        <td class='nxn-created'>" . $nxn->created()->formatMemberTZ(DateTime::FORMAT_DATETIME_LONG) . "</td>
         <td class='nxn-details'>
           <div class='nxn-summary'>" . $nxn->summary() . "</div>
           <div class='nxn-preview'>" . $nxn->preview() . "</div>

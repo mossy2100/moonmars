@@ -4,7 +4,7 @@ namespace AstroMultimedia\MoonMars;
 /**
  * Group class.
  */
-class Group extends MoonMarsNode {
+class Group extends Node {
 
   /**
    * The node type.
@@ -341,7 +341,7 @@ class Group extends MoonMarsNode {
    * @return bool
    */
   public function hasMember(Member $member) {
-    $rels = MoonMarsRelation::searchBinary('has_member', $this, $member);
+    $rels = Relation::searchBinary('has_member', $this, $member);
     return (bool) $rels;
   }
 
@@ -391,7 +391,7 @@ class Group extends MoonMarsNode {
    * @return Group
    */
   public function addAdmin(Member $member) {
-    $rel = MoonMarsRelation::createNewBinary('has_member', $this, $member, FALSE);
+    $rel = Relation::createNewBinary('has_member', $this, $member, FALSE);
     $rel->field('field_is_admin', LANGUAGE_NONE, 0, 'value', 1);
     $rel->save();
   }

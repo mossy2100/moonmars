@@ -35,14 +35,14 @@ class Triumph {
   /**
    * When was the triumph created? FALSE if not created yet.
    *
-   * @var MoonMarsDateTime|bool
+   * @var DateTime|bool
    */
   protected $created;
 
   /**
    * When where the notifications created? FALSE if not created yet.
    *
-   * @var MoonMarsDateTime|bool
+   * @var DateTime|bool
    */
   protected $nxnsCreated;
 
@@ -96,7 +96,7 @@ class Triumph {
     elseif (is_string($param) && in_array($param, moonmars_nxn_triumph_types())) {
       // New triumph:
       $this->triumphType = $param;
-      $this->created = MoonMarsDateTime::nowUTC();
+      $this->created = DateTime::nowUTC();
       $this->nxnsCreated = FALSE;
       $this->actors = array();
       $this->recipients = NULL;
@@ -121,8 +121,8 @@ class Triumph {
   public function copyRec($rec) {
     $this->triumphId = (int) $rec->triumph_id;
     $this->triumphType = $rec->triumph_type;
-    $this->created = new MoonMarsDateTime($rec->created, 'UTC');
-    $this->nxnsCreated = $rec->nxns_created ? (new MoonMarsDateTime($rec->nxns_created, 'UTC')) : FALSE;
+    $this->created = new DateTime($rec->created, 'UTC');
+    $this->nxnsCreated = $rec->nxns_created ? (new DateTime($rec->nxns_created, 'UTC')) : FALSE;
     return $this;
   }
 
@@ -227,7 +227,7 @@ class Triumph {
   /**
    * Get the datetime when the triumph was created.
    *
-   * @return MoonMarsDateTime
+   * @return DateTime
    */
   public function created() {
     $this->load();
@@ -237,7 +237,7 @@ class Triumph {
   /**
    * Get the datetime when the nxns were created, or FALSE if they haven't been created yet.
    *
-   * @return MoonMarsDateTime|bool
+   * @return DateTime|bool
    */
   public function nxnsCreated() {
     $this->load();
@@ -267,7 +267,7 @@ class Triumph {
   /**
    * Get an actor involved in the triumph.
    *
-   * @return EntityBase
+   * @return Entity
    */
   public function actor($actor_role) {
     $this->actors();
@@ -278,7 +278,7 @@ class Triumph {
    * Add an actor to the triumph.
    *
    * @param $actor_role
-   * @param EntityBase $actor
+   * @param Entity $actor
    * @return Triumph
    */
   public function addActor($actor_role, $actor) {
@@ -634,7 +634,7 @@ class Triumph {
       $nxn->save();
       $n++;
     }
-    $this->nxnsCreated = MoonMarsDateTime::nowUTC();
+    $this->nxnsCreated = DateTime::nowUTC();
     return $n;
   }
 

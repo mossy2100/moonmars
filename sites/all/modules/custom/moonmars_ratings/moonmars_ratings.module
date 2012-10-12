@@ -1,6 +1,6 @@
 <?php
 
-use \AstroMultimedia\Drupal\EntityBase;
+use \AstroMultimedia\Drupal\Entity;
 use \AstroMultimedia\MoonMars\Member;
 
 function moonmars_ratings_menu() {
@@ -33,7 +33,7 @@ function moonmars_ratings_names() {
  * @param int $selected
  * @return string
  */
-function moonmars_ratings_buttons(Member $member, EntityBase $entity) {
+function moonmars_ratings_buttons(Member $member, Entity $entity) {
   $current_rating = $member->rating($entity);
 
   $entity_type = $entity->entityType();

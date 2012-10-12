@@ -1,6 +1,6 @@
 <?php
 
-use \AstroMultimedia\Drupal\EntityBase;
+use \AstroMultimedia\Drupal\Entity;
 use \AstroMultimedia\Drupal\Node;
 use \AstroMultimedia\Drupal\Comment;
 use \AstroMultimedia\MoonMars\Channel;
@@ -8,7 +8,7 @@ use \AstroMultimedia\MoonMars\Member;
 use \AstroMultimedia\MoonMars\Group;
 use \AstroMultimedia\MoonMars\Topic;
 use \AstroMultimedia\MoonMars\Triumph;
-use \AstroMultimedia\MoonMars\MoonMarsRelation;
+use \AstroMultimedia\MoonMars\Relation;
 
 /**
  * @author Shaun Moss (mossy2100)
@@ -21,7 +21,7 @@ use \AstroMultimedia\MoonMars\MoonMarsRelation;
  *   Group (extends Node)
  *   Item (extends Node)
  *   ItemComment (extends Comment)
- *   MoonMarsRelation (extends Relation)
+ *   Relation (extends Relation)
  */
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -158,7 +158,7 @@ function moonmars_actors_valid_tag($name) {
 /**
  * Common code for resetting aliases when saving members and groups.
  *
- * @param EntityBase $actor
+ * @param Entity $actor
  */
 function moonmars_actors_reset_aliases($actor) {
   // Update the alias for the actor:
@@ -255,13 +255,13 @@ function moonmars_actors_entity_update($entity, $entity_type) {
 // Functions for getting and creating actor entities and channels
 
 /**
- * Gets an EntityBase-derived object from a Drupal entity.
+ * Gets an Entity-derived object from a Drupal entity.
  *
  * @static
  * @param string $entity_type
  * @param object|int $entity
- * @return EntityBase
- *   EntityBase-derived class, e.g. Member, Group, Item, ItemComment, MoonMarsRelation, etc.
+ * @return Entity
+ *   Entity-derived class, e.g. Member, Group, Item, ItemComment, Relation, etc.
  */
 function moonmars_actors_get_actor($entity_type, $entity) {
   switch ($entity_type) {
@@ -307,7 +307,7 @@ function moonmars_actors_get_actor($entity_type, $entity) {
 
     case 'relation':
       // Create the object:
-      return MoonMarsRelation::create($entity);
+      return Relation::create($entity);
   }
 
   return FALSE;
@@ -399,10 +399,10 @@ function moonmars_actors_get_uid_from_url() {
 /**
  * Creates a new channel for an entity.
  *
- * @param EntityBase $entity
+ * @param Entity $entity
  * @return int
  */
-function moonmars_actors_create_channel(EntityBase $entity) {
+function moonmars_actors_create_channel(Entity $entity) {
   // Create the new channel:
   $channel = Channel::create()
     ->setProperties([
@@ -414,7 +414,7 @@ function moonmars_actors_create_channel(EntityBase $entity) {
   $channel->save();
 
   // Create the relationship between the entity and the relationship:
-  MoonMarsRelation::createNewBinary('has_channel', $entity, $channel);
+  Relation::createNewBinary('has_channel', $entity, $channel);
 
   // Reset the channel's alias and title. This needs to be done after creating the relationship.
   $channel->resetAliasAndTitle();
@@ -426,13 +426,13 @@ function moonmars_actors_create_channel(EntityBase $entity) {
 /**
  * Get an entity's channel.
  *
- * @param EntityBase $entity
+ * @param Entity $entity
  * @param bool $create
  * @return int
  */
-function moonmars_actors_get_channel(EntityBase $entity, $create = TRUE) {
+function moonmars_actors_get_channel(Entity $entity, $create = TRUE) {
   // Check if the entity already has a channel:
-  $rels = MoonMarsRelation::searchBinary('has_channel', $entity, NULL);
+  $rels = Relation::searchBinary('has_channel', $entity, NULL);
 
   if (!empty($rels)) {
     return $rels[0]->endpoint(1);

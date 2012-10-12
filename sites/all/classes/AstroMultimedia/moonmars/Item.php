@@ -4,7 +4,7 @@ namespace AstroMultimedia\MoonMars;
 /**
  * Encapsulates an item node.
  */
-class Item extends MoonMarsNode {
+class Item extends Node {
 
   /**
    * The node type.
@@ -49,7 +49,7 @@ class Item extends MoonMarsNode {
    * @return bool
    */
   public function bump() {
-    $rels = MoonMarsRelation::searchBinary('has_item', NULL, $this);
+    $rels = Relation::searchBinary('has_item', NULL, $this);
     if ($rels) {
       $rels[0]->load();
       $rels[0]->save();
@@ -68,7 +68,7 @@ class Item extends MoonMarsNode {
    */
   public function channel() {
     if (!isset($this->channel)) {
-      $rels = MoonMarsRelation::searchBinary('has_item', NULL, $this);
+      $rels = Relation::searchBinary('has_item', NULL, $this);
 
       if ($rels) {
         $this->channel = $rels[0]->endpoint(0);

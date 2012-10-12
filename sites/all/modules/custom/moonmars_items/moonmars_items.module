@@ -4,7 +4,7 @@ use \AstroMultimedia\MoonMars\Member;
 use \AstroMultimedia\MoonMars\Channel;
 use \AstroMultimedia\MoonMars\Item;
 use \AstroMultimedia\MoonMars\Triumph;
-use \AstroMultimedia\MoonMars\MoonMarsRelation;
+use \AstroMultimedia\MoonMars\Relation;
 
 /**
  * Implements hook_menu().
@@ -423,7 +423,7 @@ function moonmars_items_ajax_remove() {
   // All good - remove the item.
 
   // Remove the item from the current channel:
-  MoonMarsRelation::deleteBinary('has_item', $current_channel, $item);
+  Relation::deleteBinary('has_item', $current_channel, $item);
 
   // Complete data array, encode and send:
   $data['result'] = TRUE;

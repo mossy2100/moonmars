@@ -6,7 +6,7 @@ use \stdClass;
 /**
  * Comment class.
  */
-class Comment extends EntityBase {
+class Comment extends Entity {
 
   /**
    * The entity type.

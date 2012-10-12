@@ -6,7 +6,7 @@ use \stdClass;
 /**
  * Node class.
  */
-class Node extends EntityBase {
+class Node extends Entity {
 
   /**
    * The entity type.

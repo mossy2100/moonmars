@@ -1,6 +1,6 @@
 <?php
 
-use \AstroMultimedia\MoonMars\MoonMarsDateTime;
+use \AstroMultimedia\MoonMars\DateTime;
 use \AstroMultimedia\MoonMars\Member;
 use \AstroMultimedia\MoonMars\Group;
 
@@ -97,7 +97,7 @@ function moonmars_update_marshall($callback) {
  * Sort the color names.
  */
 function moonmars_update_named_colors() {
-  $colors = StarColor::colorNames();
+  $colors = Color::colorNames();
   $colors2 = [];
   foreach ($colors as $name => $hex) {
     $colors2[strtolower($name)] = strtoupper($hex);
@@ -196,7 +196,7 @@ function moonmars_update_clean_up_channels() {
  */
 function moonmars_update_remove_subscriber_relationships() {
   // Convert all has_subscriber relationships to has_member and follows relationships:
-  $rels = MoonMarsRelation::searchBinary('has_subscriber');
+  $rels = Relation::searchBinary('has_subscriber');
 
   foreach ($rels as $rel) {
     // Get the endpoints as objects:
@@ -246,7 +246,7 @@ function moonmars_update_news_items() {
     $item = Item::create($rec->item_nid);
     $html .= "<h1>Item " . $item->nid() . "</h1>\n";
 
-    $relation_changed = new MoonMarsDateTime($rec->created);
+    $relation_changed = new DateTime($rec->created);
     $latest = $relation_changed;
     $html .= "Relation changed time: $relation_changed\n";
 
@@ -295,7 +295,7 @@ function moonmars_update_channel_item_relation_changed_times() {
     $item = Item::create($rec->item_nid);
     $html .= "<h1>Relation " . $rec->rid . "</h1>\n";
 
-    $relation_changed = new MoonMarsDateTime($rec->created);
+    $relation_changed = new DateTime($rec->created);
     $latest = $relation_changed;
     $html .= "Relation changed time: $relation_changed\n";
 

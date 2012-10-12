@@ -2,7 +2,7 @@
 namespace AstroMultimedia\Star;
 
 /**
- * StarColor class.
+ * Color class.
  *
  * @author  Shaun Moss
  * @version 2012-08-11
@@ -11,7 +11,7 @@ namespace AstroMultimedia\Star;
  *
  * @idea Also provide properties for cyan, magenta, yellow and black.
  */
-class StarColor {
+class Color {
 
   /**
    * The color value, a 32-bit integer with bytes organised as ARGB.
@@ -24,19 +24,19 @@ class StarColor {
    * Constructor.  Multiple function signatures supported.
    *
    * General pattern:
-   *   new StarColor();
-   *   new StarColor($color);
-   *   new StarColor($color, $alpha);
-   *   new StarColor($red, $green, $blue);
-   *   new StarColor($red, $green, $blue, $alpha);
-   *   new StarColor($hue, $saturation, $lightness, TRUE);
-   *   new StarColor($hue, $saturation, $lightness, $alpha, TRUE);
+   *   new Color();
+   *   new Color($color);
+   *   new Color($color, $alpha);
+   *   new Color($red, $green, $blue);
+   *   new Color($red, $green, $blue, $alpha);
+   *   new Color($hue, $saturation, $lightness, TRUE);
+   *   new Color($hue, $saturation, $lightness, $alpha, TRUE);
    *
    * $color can be:
    *   - a hex color string (3 or 6-digit, with or without leading '#')
    *   - a color name or 'transparent'
    *   - a 24-bit RGB integer, as would be returned from imagecolorat()
-   *   - a StarColor object to clone
+   *   - a Color object to clone
    *   - CSS-style color string of the form:
    *     - 'rgb(red, green, blue)'
    *     - 'rgba(red, green, blue, alpha)'
@@ -58,69 +58,69 @@ class StarColor {
    * Examples:
    *
    * Hex #rrggbb:
-   *   new StarColor('#ABCDEF');
-   *   new StarColor('#ABCDEF', 0.75);
-   *   new StarColor('#ABCDEF', '75%');
-   *   new StarColor('ABCDEF');
-   *   new StarColor('ABCDEF', 0.75);
-   *   new StarColor('ABCDEF', '75%');
+   *   new Color('#ABCDEF');
+   *   new Color('#ABCDEF', 0.75);
+   *   new Color('#ABCDEF', '75%');
+   *   new Color('ABCDEF');
+   *   new Color('ABCDEF', 0.75);
+   *   new Color('ABCDEF', '75%');
    *
    * Hex #rgb:
-   *   new StarColor('#ABC');
-   *   new StarColor('#ABC', 0.75);
-   *   new StarColor('#ABC', '75%');
-   *   new StarColor('ABC');
-   *   new StarColor('ABC', 0.75);
-   *   new StarColor('ABC', '75%');
+   *   new Color('#ABC');
+   *   new Color('#ABC', 0.75);
+   *   new Color('#ABC', '75%');
+   *   new Color('ABC');
+   *   new Color('ABC', 0.75);
+   *   new Color('ABC', '75%');
    *
    * Named colors:
-   *   new StarColor('Orange');
-   *   new StarColor('Orange', 0.75);
-   *   new StarColor('Orange', '75%');
-   *   new StarColor('Transparent');
+   *   new Color('Orange');
+   *   new Color('Orange', 0.75);
+   *   new Color('Orange', '75%');
+   *   new Color('Transparent');
    *
    * 24-bit color integer:
-   *   new StarColor(0xABCDEF);
-   *   new StarColor(0xABCDEF, 0.75);
-   *   new StarColor(0xABCDEF, '75%');
-   *   new StarColor(imagecolorat($image, $x, $y));
-   *   new StarColor(imagecolorat($image, $x, $y), 0.75);
-   *   new StarColor(imagecolorat($image, $x, $y), '75%');
+   *   new Color(0xABCDEF);
+   *   new Color(0xABCDEF, 0.75);
+   *   new Color(0xABCDEF, '75%');
+   *   new Color(imagecolorat($image, $x, $y));
+   *   new Color(imagecolorat($image, $x, $y), 0.75);
+   *   new Color(imagecolorat($image, $x, $y), '75%');
    *
    * Clone:
-   *   new StarColor($otherStarColorObject);
-   *   new StarColor($otherStarColorObject, 0.75);
-   *   new StarColor($otherStarColorObject, '75%');
+   *   new Color($otherColorObject);
+   *   new Color($otherColorObject, 0.75);
+   *   new Color($otherColorObject, '75%');
    *
    * RGBA:
-   *   new StarColor(100, 200, 150);
-   *   new StarColor(100, 200, 150, 0.75);
-   *   new StarColor(100, 200, 150, '75%');
-   *   new StarColor('30%', '50%', '40%');
-   *   new StarColor('30%', '50%', '40%', 0.75);
-   *   new StarColor('30%', '50%', '40%', '75%');
+   *   new Color(100, 200, 150);
+   *   new Color(100, 200, 150, 0.75);
+   *   new Color(100, 200, 150, '75%');
+   *   new Color('30%', '50%', '40%');
+   *   new Color('30%', '50%', '40%', 0.75);
+   *   new Color('30%', '50%', '40%', '75%');
    *
    * HSLA:
-   *   new StarColor(120, '80%', '30%', TRUE);
-   *   new StarColor(120, '80%', '30%', 0.75, TRUE);
-   *   new StarColor(120, '80%', '30%', '75%', TRUE);
+   *   new Color(120, '80%', '30%', TRUE);
+   *   new Color(120, '80%', '30%', 0.75, TRUE);
+   *   new Color(120, '80%', '30%', '75%', TRUE);
    *
    * CSS :
-   *   new StarColor('rgb(100, 200, 150)');
-   *   new StarColor('rgba(100, 200, 150, 0.75)');
-   *   new StarColor('rgb(30%, 90%, 12%)');
-   *   new StarColor('rgba(30%, 90%, 12%, 0.75)');
-   *   new StarColor('hsl(120, 59%, 72%)');
-   *   new StarColor('hsla(120, 59%, 72%, 0.75)');
+   *   new Color('rgb(100, 200, 150)');
+   *   new Color('rgba(100, 200, 150, 0.75)');
+   *   new Color('rgb(30%, 90%, 12%)');
+   *   new Color('rgba(30%, 90%, 12%, 0.75)');
+   *   new Color('hsl(120, 59%, 72%)');
+   *   new Color('hsla(120, 59%, 72%, 0.75)');
    *
    * Array:
-   *   new StarColor(array('red' => 100, 'green' => 200, 'blue' => 150));
-   *   new StarColor(array('red' => 100, 'green' => 200, 'blue' => 150), 0.75);
-   *   new StarColor(array('red' => 100, 'green' => 200, 'blue' => 150), '75%');
-   *   new StarColor(array('red' => 100, 'green' => 200, 'blue' => 150, 'alpha' => 0.75));
+   *   new Color(array('red' => 100, 'green' => 200, 'blue' => 150));
+   *   new Color(array('red' => 100, 'green' => 200, 'blue' => 150), 0.75);
+   *   new Color(array('red' => 100, 'green' => 200, 'blue' => 150), '75%');
+   *   new Color(array('red' => 100, 'green' => 200, 'blue' => 150, 'alpha' => 0.75));
    *
-   * @param string|int|float|StarColor $param1
-   *   Color string or int, StarColor, red, or hue
+   * @param string|int|float|Color $param1
+   *   Color string or int, Color, red, or hue
    * @param string|int|float $param2
    *   Alpha, green or saturation
    * @param string|int|float $param3
@@ -268,7 +268,7 @@ class StarColor {
 
     }
 
-    trigger_error("StarColor::__construct() - Invalid parameters.", E_USER_WARNING);
+    trigger_error("Color::__construct() - Invalid parameters.", E_USER_WARNING);
   }
 
   ///////////////////////////////////////////////////////////////////////////
@@ -605,11 +605,11 @@ class StarColor {
    * Mix two colors.
    * If called with only two parameters then the colors are mixed 50-50.
    *
-   * @param int|string|StarColor $color1
-   * @param int|string|StarColor $color2
+   * @param int|string|Color $color1
+   * @param int|string|Color $color2
    * @param float $frac1
    *   0.0..1.0 Fraction of $color1
-   * @return StarColor
+   * @return Color
    */
   public static function mix($color1, $color2, $frac1 = 0.5) {
     $color1 = self::normalizeColor($color1);
@@ -645,9 +645,9 @@ class StarColor {
    * @see http://www.w3.org/TR/2003/REC-SVG11-20030114/masking.html#SimpleAlphaBlending
    * @see http://en.wikipedia.org/wiki/Alpha_compositing#Alpha_blending
    *
-   * @param int|string|StarColor $top_color
-   * @param int|string|StarColor $bottom_color
-   * @return StarColor
+   * @param int|string|Color $top_color
+   * @param int|string|Color $bottom_color
+   * @return Color
    */
   public static function blend($top_color, $bottom_color) {
     $top_color = self::normalizeColor($top_color);
@@ -890,10 +890,10 @@ class StarColor {
   }
 
   /**
-   * Converts value to a StarColor, if not one already.
-   * Use this to avoid creating a new object if the param is already a StarColor.
+   * Converts value to a Color, if not one already.
+   * Use this to avoid creating a new object if the param is already a Color.
    *
-   * @param int|string|StarColor $color
+   * @param int|string|Color $color
    */
   protected static function normalizeColor($color) {
     return ($color instanceof self) ? $color : new self($color);

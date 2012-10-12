@@ -1,6 +1,6 @@
 <?php
 
-use \AstroMultimedia\MoonMars\MoonMarsDateTime;
+use \AstroMultimedia\MoonMars\DateTime;
 
 /**
  * @file
@@ -20,7 +20,7 @@ use \AstroMultimedia\MoonMars\MoonMarsDateTime;
  * @return string
  */
 function astro_format_about_how_long_ago($datetime) {
-  $datetime = new MoonMarsDateTime($datetime);
+  $datetime = new DateTime($datetime);
   $time_ago = $datetime->aboutHowLongAgo();
   $time_ago = $time_ago == 'now' ? 'just now' : "about $time_ago ago";
   $iso = $datetime->format(DateTime::ISO8601);

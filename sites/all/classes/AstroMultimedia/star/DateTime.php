@@ -1,18 +1,29 @@
 <?php
 namespace AstroMultimedia\Star;
 
-use \DateTime;
 use \DateTimeZone;
 
 /**
  * This class is part of the Star Library, and is designed to extend and improve PHP's built-in DateTime class.
  *
- * @todo Abandon DateTime, which is constrained to 1970..2038, and make a DateTime with a wider range.
- * Use a StarDate class which holds a day number, e.g. MJD or Unix Day, and a StarTime value for the time.
- * Then a StarDateTime would just have a StarDate date and StarTime time.
- * Also incorporate support for leap seconds. StarDate::seconds() should return 86400 or 86401 depending on date.
+ * @todo Abandon DateTime, which is constrained to 1970..2038, and make a DateTime with a wider range, say 0..9999.
+ * Use a Date class which holds a day number, e.g. MJD or Unix Day, and a Time value for the time.
+ * Then a DateTime would just have a Date, Time and TimeZone.
+ * There should be two methods to set timezone:
+ *   timezone() to get/set the timezone
+ *   shiftTimezone() to move the same point in time to a different timezone, thus affecting the time and possibly also
+ *     the date parts
+ * Also incorporate support for leap seconds. Date::seconds() should return 86400 or 86401 depending on date.
+ *
+ * Also build support for the Earthian calendar. In fact, a calendar should be an abstraction, an extension of the
+ * DateTime class.
+ *
+ * A DateTime would include:
+ *   - Date
+ *   - Time
+ *   - TimeZone
  */
-class StarDateTime extends DateTime {
+class DateTime extends \DateTime {
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Constants
@@ -52,9 +63,9 @@ class StarDateTime extends DateTime {
   // Static methods
 
   /**
-   * The current datetime as an StarDateTime object.
+   * The current datetime as an DateTime object.
    *
-   * @return StarDateTime
+   * @return DateTime
    */
   public static function now() {
     // This will call the parent constructor, which defaults to 'now'.
@@ -62,9 +73,9 @@ class StarDateTime extends DateTime {
   }
 
   /**
-   * The current datetime in the UTC timezone, as an StarDateTime object.
+   * The current datetime in the UTC timezone, as an DateTime object.
    *
-   * @return StarDateTime
+   * @return DateTime
    */
   public static function nowUTC() {
     // This will call the parent constructor, which defaults to 'now'.
@@ -72,9 +83,9 @@ class StarDateTime extends DateTime {
   }
 
   /**
-   * Today's date as an StarDateTime object.
+   * Today's date as an DateTime object.
    *
-   * @return StarDateTime
+   * @return DateTime
    */
   public static function today() {
     $now = self::now();
@@ -95,14 +106,14 @@ class StarDateTime extends DateTime {
    * All arguments are optional.
    *
    * Usage examples:
-   *    $dt = new StarDateTime();
-   *    $dt = new StarDateTime($unix_timestamp);
-   *    $dt = new StarDateTime($datetime_string);
-   *    $dt = new StarDateTime($datetime_string, $timezone);
-   *    $dt = new StarDateTime($year, $month, $day);
-   *    $dt = new StarDateTime($year, $month, $day, $timezone);
-   *    $dt = new StarDateTime($year, $month, $day, $hour, $minute, $second);
-   *    $dt = new StarDateTime($year, $month, $day, $hour, $minute, $second, $timezone);
+   *    $dt = new DateTime();
+   *    $dt = new DateTime($unix_timestamp);
+   *    $dt = new DateTime($datetime_string);
+   *    $dt = new DateTime($datetime_string, $timezone);
+   *    $dt = new DateTime($year, $month, $day);
+   *    $dt = new DateTime($year, $month, $day, $timezone);
+   *    $dt = new DateTime($year, $month, $day, $hour, $minute, $second);
+   *    $dt = new DateTime($year, $month, $day, $hour, $minute, $second, $timezone);
    *
    * @param string|int                    $year, $unix_timestamp or $datetime_string
    * @param null|DateTimeZone|string|int  $month or $timezone
@@ -149,7 +160,7 @@ class StarDateTime extends DateTime {
       $timezone = isset($args[6]) ? $args[6] : NULL;
     }
     else {
-      trigger_error("StarDateTime::__construct() - Invalid number of paremeters.", E_USER_WARNING);
+      trigger_error("DateTime::__construct() - Invalid number of paremeters.", E_USER_WARNING);
     }
 
     // Support string timezones:
@@ -159,7 +170,7 @@ class StarDateTime extends DateTime {
 
     // Check we have a valid timezone:
     if ($timezone !== NULL && !($timezone instanceof DateTimeZone)) {
-      trigger_error("StarDateTime::__construct() - Invalid timezone.", E_USER_WARNING);
+      trigger_error("DateTime::__construct() - Invalid timezone.", E_USER_WARNING);
     }
 
     // Call parent constructor:
@@ -227,7 +238,7 @@ class StarDateTime extends DateTime {
    * @param int $year
    * @param int $month
    * @param int $day
-   * @return StarDateTime
+   * @return DateTime
    */
   public function date($year = 1, $month = 1, $day = 1) {
     if (func_num_args() == 0) {
@@ -246,12 +257,12 @@ class StarDateTime extends DateTime {
    * @param int $hour
    * @param int $minute
    * @param int $second
-   * @return StarTime|DateTime
+   * @return Time|DateTime
    */
   public function time($hour = 0, $minute = 0, $second = 0) {
     if (func_num_args() == 0) {
       // Get the time:
-      return new StarTime($this->hour(), $this->minute(), $this->second());
+      return new Time($this->hour(), $this->minute(), $this->second());
     }
     else {
       // Set the time:
@@ -307,7 +318,7 @@ class StarDateTime extends DateTime {
    * Get or set the year.
    *
    * @param int $year
-   * @return int|StarDateTime
+   * @return int|DateTime
    */
   public function year($year = 1) {
     if (func_num_args() == 0) {
@@ -324,7 +335,7 @@ class StarDateTime extends DateTime {
    * Get or set the month.
    *
    * @param int $month
-   * @return int|StarDateTime
+   * @return int|DateTime
    */
   public function month($month = 1) {
     if (func_num_args() == 0) {
@@ -341,7 +352,7 @@ class StarDateTime extends DateTime {
    * Get or set the day of the month.
    *
    * @param int $day
-   * @return int|StarDateTime
+   * @return int|DateTime
    */
   public function day($day = 1) {
     if (func_num_args() == 0) {
@@ -358,7 +369,7 @@ class StarDateTime extends DateTime {
    * Get or set the hour.
    *
    * @param int $hour
-   * @return int|StarDateTime
+   * @return int|DateTime
    */
   public function hour($hour = 0) {
     if (func_num_args() == 0) {
@@ -375,7 +386,7 @@ class StarDateTime extends DateTime {
    * Get or set the minute.
    *
    * @param int $minute
-   * @return int|StarDateTime
+   * @return int|DateTime
    */
   public function minute($minute = 0) {
     if (func_num_args() == 0) {
@@ -392,7 +403,7 @@ class StarDateTime extends DateTime {
    * Get or set the second.
    *
    * @param int $second
-   * @return int|StarDateTime
+   * @return int|DateTime
    */
   public function second($second = 0) {
     if (func_num_args() == 0) {
@@ -437,13 +448,13 @@ class StarDateTime extends DateTime {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Add periods. These methods return a new StarDateTime object; they don't modify the calling object.
+  // Add periods. These methods return a new DateTime object; they don't modify the calling object.
 
   /**
    * Add years.
    *
    * @param int $years
-   * @return StarDateTime
+   * @return DateTime
    */
   public function addYears($years) {
     $dt = clone $this;
@@ -454,7 +465,7 @@ class StarDateTime extends DateTime {
    * Add months.
    *
    * @param int $months
-   * @return StarDateTime
+   * @return DateTime
    */
   public function addMonths($months) {
     $dt = clone $this;
@@ -465,7 +476,7 @@ class StarDateTime extends DateTime {
    * Add weeks.
    *
    * @param int $weeks
-   * @return StarDateTime
+   * @return DateTime
    */
   public function addWeeks($weeks) {
     return $this->addDays($weeks * 7);
@@ -475,7 +486,7 @@ class StarDateTime extends DateTime {
    * Add days.
    *
    * @param int $days
-   * @return StarDateTime
+   * @return DateTime
    */
   public function addDays($days) {
     $dt = clone $this;
@@ -486,7 +497,7 @@ class StarDateTime extends DateTime {
    * Add hours.
    *
    * @param int $hours
-   * @return StarDateTime
+   * @return DateTime
    */
   public function addHours($hours) {
     $dt = clone $this;
@@ -497,7 +508,7 @@ class StarDateTime extends DateTime {
    * Add minutes.
    *
    * @param int $minutes
-   * @return StarDateTime
+   * @return DateTime
    */
   public function addMinutes($minutes) {
     $dt = clone $this;
@@ -508,7 +519,7 @@ class StarDateTime extends DateTime {
    * Add seconds.
    *
    * @param int $seconds
-   * @return StarDateTime
+   * @return DateTime
    */
   public function addSeconds($seconds) {
     $dt = clone $this;
@@ -516,13 +527,13 @@ class StarDateTime extends DateTime {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Subtract periods. These methods return a new StarDateTime object; they don't modify the calling object.
+  // Subtract periods. These methods return a new DateTime object; they don't modify the calling object.
 
   /**
    * Subtract years.
    *
    * @param int $years
-   * @return StarDateTime
+   * @return DateTime
    */
   public function subYears($years) {
     return $this->addYears(-$years);
@@ -532,7 +543,7 @@ class StarDateTime extends DateTime {
    * Subtract months.
    *
    * @param int $months
-   * @return StarDateTime
+   * @return DateTime
    */
   public function subMonths($months) {
     return $this->addMonths(-$months);
@@ -542,7 +553,7 @@ class StarDateTime extends DateTime {
    * Subtract weeks.
    *
    * @param int $weeks
-   * @return StarDateTime
+   * @return DateTime
    */
   public function subWeeks($weeks) {
     return $this->addWeeks(-$weeks);
@@ -552,7 +563,7 @@ class StarDateTime extends DateTime {
    * Subtract days.
    *
    * @param int $days
-   * @return StarDateTime
+   * @return DateTime
    */
   public function subDays($days) {
     return $this->addDays(-$days);
@@ -562,7 +573,7 @@ class StarDateTime extends DateTime {
    * Subtract hours.
    *
    * @param int $hours
-   * @return StarDateTime
+   * @return DateTime
    */
   public function subHours($hours) {
     return $this->addHours(-$hours);
@@ -572,7 +583,7 @@ class StarDateTime extends DateTime {
    * Subtract minutes.
    *
    * @param int $minutes
-   * @return StarDateTime
+   * @return DateTime
    */
   public function subMinutes($minutes) {
     return $this->addMinutes(-$minutes);
@@ -582,7 +593,7 @@ class StarDateTime extends DateTime {
    * Subtract seconds.
    *
    * @param int $seconds
-   * @return StarDateTime
+   * @return DateTime
    */
   public function subSeconds($seconds) {
     return $this->addSeconds(-$seconds);
@@ -596,7 +607,7 @@ class StarDateTime extends DateTime {
    *
    * @return float
    */
-  function julianDay() {
+  function jd() {
     $d = $this->day();
     $m = $this->month();
     $y = $this->year();
@@ -611,8 +622,8 @@ class StarDateTime extends DateTime {
    *
    * @return int
    */
-  function modifiedJulianDay() {
-    return $this->julianDay() - 2400000.5;
+  function mjd() {
+    return $this->jd() - 2400000.5;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -637,7 +648,7 @@ class StarDateTime extends DateTime {
   }
 
   /**
-   * Generates a string describing how long ago a datetime was.
+   * Generates a string describing about how long ago a datetime was.
    *
    * @return string
    */
@@ -650,7 +661,7 @@ class StarDateTime extends DateTime {
 
     // Check time is in the past:
     if ($seconds < 0) {
-      trigger_error("StarDateTime::aboutHowLongAgo() - Datetimes must be in the past.", E_USER_WARNING);
+      trigger_error("DateTime::aboutHowLongAgo() - Datetimes must be in the past.", E_USER_WARNING);
       return FALSE;
     }
 
@@ -715,7 +726,7 @@ class StarDateTime extends DateTime {
    * The signature is identical to
    * @see DateTime::diff(), which returns a DateInterval.
    *
-   * @param StarDateTime $dt2
+   * @param DateTime $dt2
    * @param bool $absolute
    *   If TRUE then the absolute value of the difference is returned.
    */
@@ -736,12 +747,12 @@ class StarDateTime extends DateTime {
    * The result is not necessarily the same as $this->diffSeconds() / self::SECONDS_PER_DAY,
    * or even the floor() or round() of that, because the time parts of the datetimes are discarded.
    *
-   * @param StarDateTime $datetime
+   * @param DateTime $datetime
    * @param bool $absolute
    *   If TRUE then the absolute value of the difference is returned.
    */
   function diffDays(self $datetime, $absolute = FALSE) {
-    $diff = $this->unixDay() - $datetime->unixDay();
+    $diff = $this->mjd() - $datetime->mjd();
     if ($absolute) {
       $diff = abs($diff);
     }

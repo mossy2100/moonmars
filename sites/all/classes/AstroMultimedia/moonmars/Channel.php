@@ -1,12 +1,12 @@
 <?php
 namespace AstroMultimedia\MoonMars;
 
-use \AstroMultimedia\Drupal\EntityBase;
+use \AstroMultimedia\Drupal\Entity;
 
 /**
  * Channel class - encapsulates a channel node.
  */
-class Channel extends MoonMarsNode {
+class Channel extends Node {
 
   /**
    * The node type.
@@ -82,7 +82,7 @@ class Channel extends MoonMarsNode {
     // Check if we remembered the result in the parentEntity property:
     if (!isset($this->parentEntity)) {
       // Search for the has_channel relationship:
-      $rels = MoonMarsRelation::searchBinary('has_channel', NULL, $this);
+      $rels = Relation::searchBinary('has_channel', NULL, $this);
       if (!empty($rels)) {
         $this->parentEntity = $rels[0]->endpoint(0);
       }
@@ -250,7 +250,7 @@ class Channel extends MoonMarsNode {
    * @return bool
    */
   public function hasItem(Item $item) {
-    return (bool) MoonMarsRelation::searchBinary('has_item', $this, $item);
+    return (bool) Relation::searchBinary('has_item', $this, $item);
   }
 
   /**
@@ -264,13 +264,13 @@ class Channel extends MoonMarsNode {
   public function addItem(Item $item) {
 
     // Check if the item is already in a channel:
-    $rels = MoonMarsRelation::searchBinary('has_item', $this, $item);
+    $rels = Relation::searchBinary('has_item', $this, $item);
 
     if ($rels) {
       $rel = $rels[0];
 
       // Check the item wasn't posted in a different channel; if so, it's an error:
-      if (EntityBase::equals($rel->endpoint(0), $this)) {
+      if (Entity::equals($rel->endpoint(0), $this)) {
         trigger_error("Channel::addItem() - Item has already been posted in another channel.", E_USER_WARNING);
         return FALSE;
       }
@@ -281,7 +281,7 @@ class Channel extends MoonMarsNode {
     }
     else {
       // Create a new relationship:
-      return MoonMarsRelation::createNewBinary('has_item', $this, $item);
+      return Relation::createNewBinary('has_item', $this, $item);
     }
   }
 

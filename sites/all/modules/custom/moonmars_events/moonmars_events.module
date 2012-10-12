@@ -1,6 +1,6 @@
 <?php
 
-use \AstroMultimedia\MoonMars\MoonMarsDateTime;
+use \AstroMultimedia\MoonMars\DateTime;
 
 /**
  * Implements hook_form_alter().
@@ -39,7 +39,7 @@ function moonmars_events_views_pre_execute($view) {
 
       switch ($template) {
         case 'year':
-          $date = new MoonMarsDateTime($view->args[0] . '-01-01');
+          $date = new DateTime($view->args[0] . '-01-01');
           $date->clampYear($min_year, $max_year);
           // Create labels for the previous and next buttons:
           $prev_date = $date->subYears(1);
@@ -49,7 +49,7 @@ function moonmars_events_views_pre_execute($view) {
           break;
 
         case 'month':
-          $date = new MoonMarsDateTime($view->args[0] . '-01');
+          $date = new DateTime($view->args[0] . '-01');
           $date->clampYear($min_year, $max_year);
           // Create labels for the previous and next buttons:
           $prev_date = $date->subMonths(1);
@@ -59,14 +59,14 @@ function moonmars_events_views_pre_execute($view) {
           break;
 
 //        case 'week':
-//          $date = new MoonMarsDateTime('Monday, ' . $view->args[0]);
+//          $date = new DateTime('Monday, ' . $view->args[0]);
 //          // Create labels for the previous and next buttons:
 //          $prev_label = '<< ' . $date->subWeeks(1)->format('Y \WW');
 //          $next_label = $date->addWeeks(1)->format('Y \WW') . ' >>';
 //          break;
 
         case 'day':
-          $date = new MoonMarsDateTime($view->args[0]);
+          $date = new DateTime($view->args[0]);
           $date->clampYear($min_year, $max_year);
           // Create labels for the previous and next buttons:
           $prev_date = $date->subDays(1);

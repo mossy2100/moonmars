@@ -845,7 +845,7 @@ function moonmars_members_activity_redirect() {
 //function moonmars_members_rating_buttons($uid) {
 ////  $logged_in_member = Member::loggedInMember();
 ////  $page_member = Member::create($uid);
-////  $rel = MoonMarsRelation::searchBinary('rates', 'user', $logged_in_member->uid(), 'user', $page_member->uid());
+////  $rel = Relation::searchBinary('rates', 'user', $logged_in_member->uid(), 'user', $page_member->uid());
 //}
 
 /**

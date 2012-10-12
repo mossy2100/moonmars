@@ -6,7 +6,7 @@ use \stdClass;
 /**
  * Relation class.
  */
-class Relation extends EntityBase {
+class Relation extends Entity {
 
   /**
    * The entity type.
@@ -274,8 +274,8 @@ class Relation extends EntityBase {
    *
    * @static
    * @param string $relationship_type
-   * @param EntityBase $entity0
-   * @param EntityBase $entity1
+   * @param Entity $entity0
+   * @param Entity $entity1
    * @param bool $save
    *   Whether or not to save the relationship. Defaults to TRUE.
    * @return Relation
@@ -320,9 +320,9 @@ class Relation extends EntityBase {
    * @todo This method currently relies on the database view 'view_relationship', which makes it somewhat unportable.
    *
    * @param string $relationship_type
-   * @param EntityBase $entity0
+   * @param Entity $entity0
    *   Use NULL to match all.
-   * @param EntityBase $entity1
+   * @param Entity $entity1
    *   Use NULL to match all.
    * @param null|int $offset
    * @param null|int $limit
@@ -374,8 +374,8 @@ class Relation extends EntityBase {
    * Update or create a relationship.
    *
    * @param string $relationship_type
-   * @param EntityBase $entity0
-   * @param EntityBase $entity1
+   * @param Entity $entity0
+   * @param Entity $entity1
    * @param bool $save
    *   Whether or not to save the relationship. Defaults to TRUE.
    * @return Relation
@@ -408,8 +408,8 @@ class Relation extends EntityBase {
    * Delete relationships.
    *
    * @param string $relationship_type
-   * @param EntityBase $entity0
-   * @param EntityBase $entity1
+   * @param Entity $entity0
+   * @param Entity $entity1
    * @return bool
    *   TRUE on success, FALSE on failure
    */

@@ -7,15 +7,15 @@ namespace AstroMultimedia\MoonMars;
  * Time: 10:14 PM
  * To change this template use File | Settings | File Templates.
  */
-class MoonMarsRelation extends \AstroMultimedia\Drupal\Relation {
+class Relation extends \AstroMultimedia\Drupal\Relation {
 
   /**
-   * Get an endpoint as an EntityBase-derived object (e.g. Group, Member, Item, ItemComment).
+   * Get an endpoint as an Entity-derived object (e.g. Group, Member, Item, ItemComment).
    * Overrides base class method which only returns an array.
    *
    * @param string $lang
    * @param int $delta
-   * @return EntityBase
+   * @return Entity
    */
   public function endpoint($delta, $lang = LANGUAGE_NONE) {
     $this->load();

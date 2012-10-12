@@ -7,7 +7,7 @@ use \stdClass;
 /**
  * User object.
  */
-class User extends EntityBase {
+class User extends Entity {
 
   /**
    * The entity type.
