@@ -376,7 +376,7 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
  * Validation handler for the user registration form.
  */
 function moonmars_members_user_register_form_validate($form, &$form_state) {
-  if (!moonmars_actors_valid_code($form_state['values']['name'])) {
+  if (!moonmars_actors_valid_tag($form_state['values']['name'])) {
     global $moonmars_username_desc;
     form_set_error('name', $moonmars_username_desc);
   }
@@ -426,7 +426,7 @@ function moonmars_members_user_profile_form_after_build($form) {
  * Validation handler for the user account/profile form.
  */
 function moonmars_members_user_profile_form_validate($form, &$form_state) {
-  if (!moonmars_actors_valid_code($form_state['values']['name'])) {
+  if (!moonmars_actors_valid_tag($form_state['values']['name'])) {
     global $moonmars_username_desc;
     form_set_error('name', $moonmars_username_desc);
   }

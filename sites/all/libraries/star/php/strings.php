@@ -532,15 +532,19 @@ function colourStr($red, $green, $blue)
     str_pad(base_convert($blue, 10, 16), 2, '0', STR_PAD_LEFT));
 }
 
-
-function inStr($needle, $haystack)
-{
-  // returns true if $needle is in $haystack otherwise false
-  if ($needle == '')
-  {
-    return FALSE;
+/**
+ * Checks if $needle is in $haystack.
+ *
+ * @param string $haystack
+ * @param string $needle
+ * @param bool $case_sensitive
+ * @return bool
+ */
+function in_str($haystack, $needle, $case_sensitive = TRUE) {
+  if ($case_sensitive) {
+    return strpos($haystack, $needle) !== FALSE;
   }
-  return strpos($haystack, $needle) !== FALSE;
+  return strpos(strtolower($haystack), strtolower($needle)) !== FALSE;
 }
 
 function html2db($str)

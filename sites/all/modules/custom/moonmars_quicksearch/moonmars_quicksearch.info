@@ -1,0 +1,4 @@
+name = moonmars.com Quicksearch
+description = Support for the quicksearch feature on moonmars.com.
+core = 7.x
+package = moonmars.com

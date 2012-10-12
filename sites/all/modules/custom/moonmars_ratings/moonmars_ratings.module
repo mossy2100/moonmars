@@ -62,9 +62,9 @@ function moonmars_ratings_buttons(Member $member, Entity $entity) {
  */
 function moonmars_ratings_ajax_rate() {
   // Get request params:
-  $entity_type  = isset($_REQUEST['entity_type']) ? $_REQUEST['entity_type']        : NULL;
-  $entity_id    = isset($_REQUEST['entity_id'])   ? ((int) $_REQUEST['entity_id'])  : NULL;
-  $rating       = isset($_REQUEST['rating'])      ? ((int) $_REQUEST['rating'])     : NULL;
+  $entity_type = isset($_REQUEST['entity_type']) ? $_REQUEST['entity_type'] : NULL;
+  $entity_id = isset($_REQUEST['entity_id']) ? ((int) $_REQUEST['entity_id']) : NULL;
+  $rating = isset($_REQUEST['rating']) ? ((int) $_REQUEST['rating']) : NULL;
 
   // Get the logged-in member:
   $logged_in_member = Member::loggedInMember();
@@ -72,8 +72,8 @@ function moonmars_ratings_ajax_rate() {
   // Begin the data array:
   $data = [
     'entity_type' => $entity_type,
-    'entity_id'   => $entity_id,
-    'rating'      => $rating,
+    'entity_id' => $entity_id,
+    'rating' => $rating,
   ];
 
   // Check params:

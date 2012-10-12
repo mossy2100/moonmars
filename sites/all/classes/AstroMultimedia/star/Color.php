@@ -134,7 +134,7 @@ class Color {
     $n_args = func_num_args();
 
     if ($n_args == 0) {
-      // Default to black:
+      // Default to fully-opaque black:
       $this->rgba(0, 0, 0, 1);
       return;
     }

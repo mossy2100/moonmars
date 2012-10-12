@@ -64,10 +64,24 @@ from
 where r.relation_type = 'has_channel';
 
 
+CREATE OR REPLACE VIEW view_topic
+AS SELECT
+   t.tid,
+   t.name,
+   ftt.field_topic_title_value as title,
+   t.description
+FROM
+  taxonomy_term_data t
+  LEFT JOIN taxonomy_vocabulary tv ON t.vid = tv.vid
+  LEFT JOIN field_data_field_topic_title ftt ON t.tid = ftt.entity_id
+WHERE tv.name = 'topic'
+
+
 CREATE or replace view view_group
 AS select
    n.nid,
    n.title,
+   tft.field_group_tag_value as tag,
    n.status,
    n.uid,
    n.created,
@@ -79,6 +93,7 @@ AS select
    if (sum(vgm.member_status) is NULL, 0, sum(vgm.member_status)) as member_count
 from
   node n
+  left join field_data_field_group_tag tft on n.nid = tft.entity_id
   left join field_data_field_description fd on n.nid = fd.entity_id
   left join field_data_field_group_type fgt on n.nid = fgt.entity_id
   left join field_data_field_scale fs on n.nid = fs.entity_id
@@ -143,6 +158,7 @@ AS select
    u.status,
    ffn.field_first_name_value as first_name,
    fln.field_last_name_value as last_name,
+   trim(concat(if(ffn.field_first_name_value is null, '', ffn.field_first_name_value), ' ', if(fln.field_last_name_value is null, '', fln.field_last_name_value))) as full_name,
    fdob.field_date_of_birth_value as date_of_birth,
    fg.field_gender_value as gender,
    fb.field_bio_value as bio,
