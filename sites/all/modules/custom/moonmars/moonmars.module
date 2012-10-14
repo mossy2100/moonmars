@@ -1,6 +1,7 @@
 <?php
 
 use \AstroMultimedia\Star\Color;
+use \AstroMultimedia\Star\Style;
 
 /**
  * Implements hook_init().
@@ -197,7 +198,7 @@ function moonmars_color_icons2($bg_color_hex) {
   $border_color = new Color(0, $border_saturation, $border_lightness, TRUE);
 //  $text_color = new Color($hue, $text_saturation, $text_lightness, TRUE);
 
-  $html = "<div class='color-icons'>";
+  $html = "<div class='color-icons'>\n";
   $n_colors = 18;
   $diff = 360 / $n_colors;
 
@@ -216,7 +217,7 @@ function moonmars_color_icons2($bg_color_hex) {
 //    $text_color->hue($hue2);
 
     if ($n % 6 == 0) {
-      $html .= "<div class='clearfix'>";
+      $html .= "  <div class='clearfix'>\n";
     }
 
 //    $html .= "
@@ -224,22 +225,16 @@ function moonmars_color_icons2($bg_color_hex) {
 //        <div class='color-icon' style='background-color: " . $bg_color->hex() . "; border-color: " . $border_color->hex() . "; color: " . $text_color->hex() . ";'>" . ($n + 1) . "</div>
 //      </div>";
 
-    $html .= "
-      <div class='color-icon-wrapper " . ($hue2 == $hue ? 'selected' : '') . "'>
-        <div class='color-icon' style='background-color: " . $bg_color->hex() . "; border-color: " . $border_color->hex() . ";'></div>
-      </div>";
+    $html .= "    <div class='color-icon-wrapper " . ($hue2 == $hue ? 'selected' : '') . "'>
+      <div class='color-icon' style='background-color: " . $bg_color->hex() . "; border-color: " . $border_color->hex() . ";'></div>
+    </div>\n";
 
     if (($n + 1) % 6 == 0) {
-      $html .= "</div>";
+      $html .= "  </div>\n";
     }
   }
 
-  if (($n + 1) % 6 != 0) {
-    $html .= "</div>";
-  }
-
-  $html .= "</div>";
-
+  $html .= "</div>\n";
   return $html;
 }
 
@@ -252,14 +247,15 @@ function moonmars_color_icons2($bg_color_hex) {
  * @param int $padding_top
  * @return string
  */
-function moonmars_box_inline_style($padding = '5px', $border_color = '#ccc', $background_color = 'transparent') {
-  $styles = [
+function moonmars_box_inline_style($padding = '5px', $margin = '0', $border_color = '#ccc', $background_color = 'transparent') {
+  $style = new Style([
     'padding' => $padding,
     'border' => "solid 1px $border_color",
-    'border-radius' => '3px',
-  ];
+    'margin' => $margin,
+  ]);
+  $style->borderRadius('3px');
   if ($background_color != 'transparent') {
-    $styles['background-color'] = $background_color;
+    $style->property('background-color', $background_color);
   }
-  return array_to_inline_style($styles);
+  return $style->inline();
 }

@@ -123,7 +123,7 @@ class Group extends Node {
    */
   public function link($label = NULL, $absolute = FALSE) {
     $label = $label ?: $this->tag();
-    return parent::link($label, $absolute);;
+    return parent::link($label, $absolute);
   }
 
   /**

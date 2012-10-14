@@ -3,6 +3,7 @@ namespace AstroMultimedia\MoonMars;
 
 use \stdClass;
 use \AstroMultimedia\Drupal\Entity;
+use \AstroMultimedia\Star\Style;
 
 /**
  * User: shaun
@@ -282,10 +283,10 @@ class Nxn {
    * @return string
    */
   public function renderDetails(array $values, $title = NULL) {
-    $html = $title ? "<h3>$title</h3>" : "";
+    $html = $title ? "<h3 style='font-size: 13px; font-weight: bold; font-style: italic; padding: 0; margin: 0 0 5px;'>$title</h3>" : "";
     $html .= "<table style='background: none; padding: 0; border: 0; margin: 0; border-spacing: 0;'>\n";
     $grey3 = '#777';
-    $td_style = array_to_inline_style([
+    $td_style = new Style([
       'padding' => '5px 10px 5px 0',
       'margin' => 0,
       'border' => 0,
@@ -293,9 +294,10 @@ class Nxn {
       'font-family' => 'Helvetica, Arial, Tahoma, Verdana, sans-serif',
       'vertical-align' => 'top',
     ]);
+    $td_style = $td_style->inline();
     foreach ($values as $label => $value) {
       $html .= "<tr>\n";
-      $html .= "<td style='$td_style color: $grey3;'>$label:</td>\n";
+      $html .= "<td style='$td_style width: 75px; color: $grey3;'>$label:</td>\n";
       $html .= "<td style='$td_style color: black;'>$value</td>\n";
       $html .= "</tr>\n";
     }
@@ -306,17 +308,17 @@ class Nxn {
   /**
    * Render member details as an HTML table.
    *
-   * @static
    * @param Member $member
    * @return array
    */
-  public static function memberDetails(Member $member) {
+  public function memberDetails(Member $member, $title = "Member details") {
     $details = array();
     if ($member->fullName()) {
       $details['Name'] = $member->fullName();
     }
     $details['Tag'] = "<strong>" . $member->name(NULL, TRUE) . "</strong>";
     $details['Profile'] = $member->link($member->url(TRUE));
+    $details['Avatar'] = $member->avatar();
     if ($member->age()) {
       $details['Age'] = $member->age();
     }
@@ -330,22 +332,27 @@ class Nxn {
     if ($bio) {
       $details['Bio'] = "<div style='" . moonmars_box_inline_style('10px 5px') . "'>$bio</div>";
     }
+//    $details['Interests'] = $member->topicsLinks();
 
     // Add a list of topics that the member is interested in:
 //    $details['Interests'] = $member->interests();
-    return self::renderDetails($details);
+    $html = "<div style='" . moonmars_box_inline_style('10px', '10px 0', '#96b1ff') . "'>" .
+      self::renderDetails($details, $title) .
+      "<p style='padding: 0; margin: 10px 0 0;'>" . $this->followStr($member) . "</p></div>";
+
+    return $html;
   }
 
   /**
    * Render group details as an HTML table.
    *
-   * @static
    * @param Group $group
    * @return array
    */
-  public static function groupDetails(Group $group) {
+  public function groupDetails(Group $group, $title = "Group details") {
+    $group_name = $group->title();
     $details = array(
-      'Name' => $group->title(),
+      'Name' => $group_name,
       'Tag' => "<strong>" . $group->tag(NULL, TRUE) . "</strong>",
       'Profile' => $group->link($group->url(TRUE)),
       'Type' => $group->groupType(NULL, 'name'),
@@ -366,7 +373,16 @@ class Nxn {
       $details['Administrators'] = implode('<br>', $admin_links);
     }
 
-    return self::renderDetails($details);
+    $html = "<div style='" . moonmars_box_inline_style('10px', '10px 0', '#96b1ff') . "'>" . self::renderDetails($details, $title);
+    if ($group->hasMember($this->recipient)) {
+      $html .= "<p style='padding: 0; margin: 10px 0 0;'>You are a member of $group_name.</p>";
+    }
+    else {
+      $html .= "<p style='padding: 0; margin: 10px 0 0;'>You are not a member of $group_name. " . l("Join " . $group->tag(NULL, TRUE), $group->alias() . '/join') . "</p>";
+    }
+    $html .= "</div>";
+
+    return $html;
   }
 
   /**
@@ -402,7 +418,7 @@ class Nxn {
    * @param Group $group
    * @return string
    */
-  public function renderItemDetails(Item $item, Entity $highlighted_actor) {
+  public function itemDetails(Item $item, Entity $highlighted_actor) {
     $html = '';
 //    $heading_style = "padding: 0; font-size: 13px; font-weight: bold; color: black; margin: 10px 0 5px;";
 
@@ -480,7 +496,7 @@ class Nxn {
   public function followStr(Member $member) {
     $you_follow_member = $this->recipient->follows($member);
     $member_follows_you = $member->follows($this->recipient);
-    $member_name = $member->name(NULL, TRUE);
+    $member_name = $member->fullName();
     if ($you_follow_member) {
       if ($member_follows_you) {
         return "You follow $member_name and they follow you.";
@@ -490,7 +506,7 @@ class Nxn {
       }
     }
     else {
-      $follow_member_link = l("Follow " . $member->name(NULL, TRUE) . ".", $member->alias() . '/follow');
+      $follow_member_link = l("Follow " . $member->name(NULL, TRUE), $member->alias() . '/follow');
       if ($member_follows_you) {
         return "You do not follow $member_name but they follow you. $follow_member_link";
       }
@@ -520,13 +536,13 @@ class Nxn {
     else {
       // New member of a group:
       $subject = "New member of the " . $group->title() . " group";
-      $summary = "The " . $group->link() . " group on <a href='$base_url'>moonmars.com</a> has a new member!";
+      $summary = "The " . l($group->title(), $group->alias()) . " group on <a href='$base_url'>moonmars.com</a> has a new member!";
     }
 
     // Details:
-    $details = self::memberDetails($member, "Member details");
+    $details = $this->memberDetails($member);
     if ($group) {
-      $details .= self::groupDetails($group, "Group details");
+      $details .= $this->groupDetails($group);
     }
 
     return array(
@@ -559,11 +575,10 @@ class Nxn {
     }
 
     // Details:
-    $details = self::groupDetails($group, "Group details");
+    $details = $this->groupDetails($group);
     if ($parent_group) {
-      $details .= self::groupDetails($parent_group, "Parent group details");
+      $details .= $this->groupDetails($parent_group, "Parent group details");
     }
-    $details .= "<p><strong>" . l("Join the \"$group_name\" group", $group->alias() . '/join') . "</strong></p>";
 
     return array(
       'subject' => $subject,
@@ -596,11 +611,10 @@ class Nxn {
     if ($item->mentions($this->recipient)) {
       $notes[] = "You were mentioned in the item.";
     }
-    $notes[] = $this->followStr($poster);
     // @todo add a note if the item mentions a #topic they're interested in
 
     // Details:
-    $details = self::renderNotes($notes) . self::renderItemDetails($item, $item);
+    $details = self::renderNotes($notes) . self::itemDetails($item, $item);
 
     return array(
       'subject' => $subject,
@@ -646,14 +660,10 @@ class Nxn {
     if ($item->mentions($this->recipient)) {
       $notes[] = "You were mentioned in the original item.";
     }
-    $notes[] = $this->followStr($comment_poster);
-    if (!$item_poster->equals($comment_poster) && !$item_poster->equals($this->recipient)) {
-      $notes[] = $this->followStr($item_poster);
-    }
     // @todo add a note if the item mentions a #topic they're interested in
 
     // Details:
-    $details = self::renderNotes($notes) . self::renderItemDetails($item, $comment);
+    $details = self::renderNotes($notes) . self::itemDetails($item, $comment);
 
     return array(
       'subject' => $subject,
@@ -687,25 +697,15 @@ class Nxn {
     // Summary:
     $summary = $follower->link() . " is now following $followee_link.";
 
-    // Notes:
-    $notes = [];
-    if (!$follower->equals($this->recipient)) {
-      $notes[] = $this->followStr($follower);
-    }
-    if (!$followee->equals($this->recipient)) {
-      $notes[] = $this->followStr($followee);
-    }
-
     // Details:
-    $details = self::renderNotes($notes);
     if ($followee->equals($this->recipient)) {
       // If the followee is receiving the nxn they they'll be interested in the follower's details:
-      $details .= self::memberDetails($follower, "Follower details");
+      $details = $this->memberDetails($follower, "Follower details");
     }
     else {
       // If someone is receiving a nxn about their followee following another member, then they'll be interested in that
       // member's details:
-      $details .= self::memberDetails($followee, "Followee details");
+      $details = $this->memberDetails($followee, "Followee details");
     }
 
     return array(
@@ -751,7 +751,7 @@ class Nxn {
     $summary = $member->link() . " updated their profile.";
 
     // Details:
-    $details = self::memberDetails($member, "Member details");
+    $details = $this->memberDetails($member);
 
     return array(
       'subject' => $subject,
@@ -775,7 +775,7 @@ class Nxn {
     $summary = "The " . $group->link() . " group profile was updated by " . $updater->link() . ".";
 
     // Details:
-    $details = self::groupDetails($group, "Group details");
+    $details = $this->groupDetails($group);
 
     return array(
       'subject' => $subject,
@@ -800,7 +800,7 @@ class Nxn {
     $summary = $admin->link() . " is now $article administrator for the " . $group->link() . " group.";
 
     // Details:
-    $details = self::groupDetails($group, "Group details");
+    $details = $this->groupDetails($group);
 
     return array(
       'subject' => $subject,
@@ -834,7 +834,7 @@ class Nxn {
       </ul>
       <p>Other group members can help you with these things, plus you can always add new administrators if you need to.
       You can step down at any time. Group administrators earn additional points for their efforts!</p>"
-      . self::groupDetails($group, "Group details");
+      . $this->groupDetails($group);
 
     return array(
       'subject' => $subject,

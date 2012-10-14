@@ -431,9 +431,13 @@ function moonmars_update_clean_up_relationships() {
   foreach ($rs as $rec) {
     $delete = FALSE;
     $rel = relation_load($rec->rid);
-    dbg($rel->endpoints);
+//    dbg($rel->endpoints);
     if (!$rel->endpoints || !$rel->endpoints[LANGUAGE_NONE]) {
       dbg("No endpoints, delete relation $rec->rid");
+      $delete = TRUE;
+    }
+    elseif (count($rel->endpoints[LANGUAGE_NONE]) == 1) {
+      dbg("Only one endpoint, delete relation $rec->rid");
       $delete = TRUE;
     }
     else {

@@ -3,6 +3,7 @@ namespace AstroMultimedia\MoonMars;
 
 use \stdClass;
 use \AstroMultimedia\Star\Color;
+use \AstroMultimedia\Star\Style;
 
 /**
  * Encapsulates a moonmars.com member.
@@ -550,22 +551,22 @@ class Member extends \AstroMultimedia\Drupal\User {
    * @return string
    */
   public function commentBorderStyle($highlight = FALSE) {
-    $style = [
+    $style = new Style([
       'border-color' => $this->commentBorderColor()->hex(),
-    ];
-    return array_to_inline_style($style);
+    ]);
+    return $style->inline();
   }
 
   /**
    * Get the HTML attribute for the member's post or comment style.
    */
   public function commentStyle($highlight = FALSE) {
-    $style = [
+    $style = new Style([
       'padding' => ($highlight ? 4 : 5) . 'px',
       'border' => 'solid ' . ($highlight ? 2 : 1) . 'px ' . $this->commentBorderColor()->hex(),
       'background-color' => ($highlight ? 'white' : $this->commentBackgroundColor()->hex()),
-    ];
-    return array_to_inline_style($style);
+    ]);
+    return $style->inline();
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
