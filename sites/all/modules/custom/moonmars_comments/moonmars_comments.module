@@ -107,8 +107,11 @@ function moonmars_comments_ajax_post() {
   $item_comment = ItemComment::create($comment);
   $html = $item_comment->render();
 
-  // Post the comment in the current channel:
-  Channel::currentChannel()->postComment($item_comment, TRUE);
+  // Bump the item to the top of the channel:
+  $item->bump();
+
+  // Create a triumph:
+  Triumph::newComment($item_comment);
 
   // Complete data array, encode and send:
   $data['result'] = TRUE;
@@ -133,9 +136,9 @@ function moonmars_comments_ajax_edit() {
 
   // Begin the data array:
   $data = [
-    'cid'      => $cid,
+    'cid' => $cid,
     'item_nid' => $item_nid,
-    'text'     => $text,
+    'text' => $text,
   ];
 
   // Check we have all the necessary params:
@@ -169,8 +172,11 @@ function moonmars_comments_ajax_edit() {
   $item_comment->submit();
   $item_comment->save();
 
-  // Update the comment in the current channel:
-  Channel::currentChannel()->postComment($item_comment, FALSE);
+  // Bump the comment's item to the top of the channel:
+  $item_comment->item()->bump();
+
+  // Note, we don't create a triumph here for editing a comment - just for new comments.
+  // This is to prevent annoyance and to provide an incentive for getting the comment right first time.
 
   // Complete data array, encode and send:
   $data['result'] = TRUE;

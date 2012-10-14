@@ -313,12 +313,11 @@ abstract class Entity {
    * Checks if two entities are equal.
    *
    * @static
-   * @param Entity $entity1
-   * @param Entity $entity2
+   * @param Entity $entity
    * @return bool
    */
-  public static function equals(Entity $entity1, Entity $entity2) {
-    return ($entity1->entityType() == $entity2->entityType()) && ($entity1->id() == $entity2->id());
+  public function equals(Entity $entity) {
+    return ($this->entityType() == $entity->entityType()) && ($this->id() == $entity->id());
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

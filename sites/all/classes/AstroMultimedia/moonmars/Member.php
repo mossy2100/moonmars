@@ -130,11 +130,10 @@ class Member extends \AstroMultimedia\Drupal\User {
   /**
    * Get a link to the user's profile with a '@' prefix on the username.
    *
-   * @param bool $absolute
    * @return string
    */
-  public function tagLink($absolute = FALSE) {
-    return $this->link($this->name(NULL, TRUE), $absolute);
+  public function tagLink() {
+    return $this->link($this->name(NULL, TRUE));
   }
 
   /**
@@ -886,10 +885,10 @@ class Member extends \AstroMultimedia\Drupal\User {
    * @param Member $member
    */
   public function follows(Member $member) {
-    // If we've already got the list of followees, look through that in order to avoid a database hit:
+    // If we've already got the list of followees, look through that first in order to avoid a database hit:
     if (isset($this->followees)) {
       foreach ($this->followees as $followee) {
-        if (self::equals($member, $followee)) {
+        if ($member->equals($followee)) {
           return TRUE;
         }
       }
@@ -1184,11 +1183,10 @@ class Member extends \AstroMultimedia\Drupal\User {
       // If a post is blocked from a channel by permissions, then the tag appears crossed out.
 
       // The member is the only one who can post in their own channel:
-//      return self::equals($parent_entity, $this);
-      // Members can post in each other's channels.
+//      return $parent_entity->equals($this);
+
+      // Members can post in each others' channels.
       return TRUE;
-      // A member can post in their own channel, or in the channel of someone who follows them:
-//      return self::equals($parent_entity, $this) || $parent_entity->follows($this);
     }
     elseif ($parent_entity instanceof Group) {
       // Only administrators can post items in the News channel.
@@ -1241,12 +1239,12 @@ class Member extends \AstroMultimedia\Drupal\User {
     }
 
     // A member can delete an item if they posted it.
-    if (self::equals($this, $item->creator())) {
+    if ($this->equals($item->creator())) {
       return TRUE;
     }
 
     // A member can delete any item posted in their channel.
-    if (Channel::equals($this->channel(), $item->channel())) {
+    if ($this->channel()->equals($item->channel())) {
       return TRUE;
     }
 
@@ -1346,7 +1344,7 @@ class Member extends \AstroMultimedia\Drupal\User {
     }
 
     // Members can edit their own comments:
-    return self::equals($comment->creator(), $this);
+    return $this->equals($comment->creator());
   }
 
   /**
@@ -1367,12 +1365,12 @@ class Member extends \AstroMultimedia\Drupal\User {
     }
 
     // Members can delete their own comments:
-    if (self::equals($comment->creator(), $this)) {
+    if ($this->equals($comment->creator())) {
       return TRUE;
     }
 
     // Members can delete comments made on items posted in their channel.
-    if (Channel::equals($comment->item()->channel(), $this->channel())) {
+    if ($this->channel()->equals($comment->item()->channel())) {
       return TRUE;
     }
 
@@ -1738,7 +1736,7 @@ class Member extends \AstroMultimedia\Drupal\User {
    */
   public function commentedOn(Item $item) {
     foreach ($item->commenters() as $commenter) {
-      if (self::equals($commenter, $this)) {
+      if ($this->equals($commenter)) {
         return TRUE;
       }
     }

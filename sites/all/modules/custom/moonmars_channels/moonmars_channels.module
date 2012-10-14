@@ -35,7 +35,7 @@ function moonmars_channels_form_alter(&$form, &$form_state, $form_id) {
     unset($form['title']);
 
     // Is the user on their own profile?
-    $own_profile = ($parent_entity instanceof Member) && Member::equals($parent_entity, Member::loggedInMember());
+    $own_profile = ($parent_entity instanceof Member) && $parent_entity->equals(Member::loggedInMember());
 
     $social_links = moonmars_channels_social_links();
     foreach ($social_links as $social_link => $social_link_info) {

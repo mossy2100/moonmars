@@ -106,7 +106,7 @@ function moonmars_members_on_own_page() {
   // Get the logged-in member and the member whose page it is:
   $logged_in_member = Member::loggedInMember();
   $actor = moonmars_actors_get_actor_from_url();
-  return $logged_in_member && $actor && Member::equals($logged_in_member, $actor);
+  return $logged_in_member && $actor && $actor->equals($logged_in_member);
 }
 
 /**
@@ -650,7 +650,7 @@ function moonmars_members_block_view($delta = '') {
       break;
 
     case 'member-followees':
-      $block['subject'] = 'Following';
+      $block['subject'] = 'Followees';
       $block['content'] = moonmars_members_followees_block();
       break;
   }
@@ -678,7 +678,7 @@ function moonmars_members_menu_block() {
 
   // Get the current member and check if they're looking at their own profile:
   $logged_in_member = Member::loggedInMember();
-  $own_profile = Member::equals($logged_in_member, $page_member);
+  $own_profile = $page_member->equals($logged_in_member);
 
   // Member profile menu links:
   $html = "<ul id='member-menu' class='menu'>";
@@ -816,47 +816,9 @@ function moonmars_members_notifications($uid) {
   return views_embed_view('notifications', 'page', $uid);
 }
 
-///**
-// * Show the items from channels the member is following.
-// *
-// * @return string
-// */
-//function moonmars_members_activity($uid) {
-//  // Make sure the user is looking at their own activity and not someone else's.
-//  global $user;
-//  if ($user->uid != $uid) {
-//    drupal_access_denied();
-//  }
-//
-//  drupal_set_title('Activity');
-//  Member::loggedInMember()->channel()->render();
-//}
-
 /**
  * Display the member's activity.
  */
 function moonmars_members_activity_redirect() {
   drupal_goto(Member::loggedInMember()->alias() . '/activity');
-}
-
-///**
-// * Show rating buttons for the specified member.
-// */
-//function moonmars_members_rating_buttons($uid) {
-////  $logged_in_member = Member::loggedInMember();
-////  $page_member = Member::create($uid);
-////  $rel = Relation::searchBinary('rates', 'user', $logged_in_member->uid(), 'user', $page_member->uid());
-//}
-
-/**
- * Get the string for the following column in the Members table.
- * @todo update this to a checkbox, see how group search works.
- *
- * @param $uid
- * @return string
- */
-function moonmars_members_following($uid) {
-  $current_member = Member::loggedInMember();
-  $row_member = Member::create($uid);
-  return (!$current_member || Member::equals($current_member, $row_member)) ? 'N/A' : ($current_member->follows($row_member) ? 'Yes' : 'No');
 }

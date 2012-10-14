@@ -266,3 +266,52 @@ form {
   background: $red3;
   color: #fff;
 }
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Quicksearch form
+
+section.block-moonmars-quicksearch {
+  h2 {
+    font-size: 14px;
+  }
+
+  form#moonmars-quicksearch-form {
+    @include blank-container;
+    psition: relative;
+
+    #edit-quicksearch-text {
+      width: 100%;
+    }
+
+    #quicksearch-results {
+      display: none;
+      width: auto;
+      background-color: white;
+      border: solid 1px $blue4;
+      @include border-radius(4px);
+      padding: 0 0 1px 0;
+      position: absolute;
+      list-style-type: none;
+
+      li {
+        padding: 1px 1px 0 1px;
+
+        a {
+          display: block;
+          color: $blue3;
+          background-color: $blue5;
+          @include border-radius(3px);
+          padding: 2px;
+          white-space: nowrap;
+          overflow: hidden;
+        }
+
+        &.hover a {
+          background-color: $red3;
+          color: white;
+        }
+      }
+    }
+  }
+}

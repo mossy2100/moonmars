@@ -20,6 +20,69 @@ function moonmars_quicksearch_menu() {
 }
 
 /**
+ * Implementation of hook_block_info().
+ */
+function moonmars_quicksearch_block_info() {
+  $blocks['quicksearch-form'] = [
+    'info' => t('Quicksearch form'),
+    'cache' => DRUPAL_CACHE_GLOBAL,
+  ];
+  return $blocks;
+}
+
+/**
+ * Implementation of hook_block_view().
+ */
+function moonmars_quicksearch_block_view($delta = '') {
+  $block = [];
+  switch ($delta) {
+    case 'quicksearch-form':
+      $block['subject'] = 'Quicksearch';
+      $block['content'] = drupal_get_form('moonmars_quicksearch_form');
+      break;
+  }
+  return $block;
+}
+
+/**
+ * Create the quicksearch form.
+ *
+ * @return array
+ */
+function moonmars_quicksearch_form() {
+  $form = [];
+  $form['quicksearch_text'] = [
+    '#type' => 'textfield',
+  ];
+  $form['quicksearch_results'] = [
+    '#markup' => "<ul id='quicksearch-results'></ul>",
+  ];
+
+  // Set autocomplete off on both the form and the field, to cover all browsers:
+  $form['#attributes']['autocomplete'] = 'off';
+  $form['quicksearch_text']['#attributes']['autocomplete'] = 'off';
+
+  $form['#attached']['js'][] = drupal_get_path('module', 'moonmars_quicksearch') . '/js/quicksearch.js';
+
+  // Custom submit handler:
+  $form['#submit'][] = 'moonmars_quicksearch_form_submit';
+
+  return $form;
+}
+
+/**
+ * Submit handler for moonmars_quicksearch_form().
+ * This should only be triggered if they press enter when in the search box.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function moonmars_quicksearch_form_submit($form, &$form_state) {
+  dsm($form);
+//  dsm($form_state);
+}
+
+/**
  * Get the min position of the match in an item.
  *
  * @param array
@@ -128,7 +191,7 @@ function moonmars_quicksearch_compare_matches($item1, $item2) {
  */
 function moonmars_quicksearch_ajax_search($text) {
   // Get request param. For now, search is case-insensitive.
-  $text = strtolower(trim($text));
+  $text = strtolower($text);
   // Only search if 3 characters or more. Actually the callback should never be triggered with fewer than 3 characters.\
   // The JS will make that check.
   if (strlen($text) < MOONMARS_QUICKSEARCH_MIN_LENGTH) {
@@ -199,13 +262,17 @@ function moonmars_quicksearch_ajax_search($text) {
   // Grab the top 10:
   $matches = array_slice($matches, 0, 10);
 
-  // Generate the response:
-  $data = [];
+  // Generate the HTML response:
+  $html = '';
   foreach ($matches as $match) {
-    $data["{$match['actor_type']}/{$match['tag']}"] = "{$match['prefix']}{$match['tag']} ({$match['title']})";
+    $html .= "<li><a href='/{$match['actor_type']}/{$match['tag']}'>{$match['prefix']}{$match['tag']} ({$match['title']})</a></li>\n";
   }
 
   // Send the result:
+  $data = [
+    'text' => $text,
+    'html' => $html,
+  ];
   echo json_encode($data);
   return;
 }

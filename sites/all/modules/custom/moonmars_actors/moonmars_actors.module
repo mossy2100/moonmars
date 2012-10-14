@@ -216,7 +216,7 @@ function moonmars_actors_entity_update($entity, $entity_type) {
       // (i.e., not if an admin is updating someone else's profile).
       // The reason for this is because an administrator won't normally be adding interesting info; they'll most
       // likely just be updating a password or something.
-      if ($logged_in_member && Member::equals($actor, $logged_in_member)) {
+      if ($logged_in_member && $actor->equals($logged_in_member)) {
         // The first time a member's profile is updated we create the new-member triumph. After that, update-member.
         if (!$actor->profileUpdated()) {
           Triumph::newMember($actor);

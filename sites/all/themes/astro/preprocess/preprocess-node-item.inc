@@ -47,11 +47,11 @@ function astro_alpha_preprocess_node_item(&$vars) {
   $vars['channel'] = $item_channel;
 
   // Original channel string:
-  if ($current_channel && Channel::equals($current_channel, $item_channel)) {
+  if ($current_channel && $item_channel->equals($current_channel)) {
     $vars['item_channel_string'] = '';
 //    $vars['item_channel_string'] = 'in this channel';
   }
-  elseif ($current_channel && Channel::equals($item_channel, $poster->channel())) {
+  elseif ($current_channel && $item_channel->equals($poster->channel())) {
     $vars['item_channel_string'] = 'in their channel';
   }
   elseif ($item_channel) {
@@ -150,7 +150,7 @@ function astro_alpha_preprocess_node_item(&$vars) {
   // Ratings:
   // To rate an item, the member must be logged in, and it must have been created by someone else.
   // @todo Update this to a Member::canRateItem() method.
-  $can_rate = $logged_in_member && !Member::equals($logged_in_member, $poster);
+  $can_rate = $logged_in_member && !$poster->equals($logged_in_member);
   $vars['rating_buttons'] = $can_rate ? moonmars_ratings_buttons($logged_in_member, $item) : '';
 
   // Path to theme:

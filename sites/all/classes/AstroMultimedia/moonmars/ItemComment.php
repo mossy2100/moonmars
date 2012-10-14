@@ -109,4 +109,14 @@ class ItemComment extends \AstroMultimedia\Drupal\Comment {
     return $this->textScan()->html();
   }
 
+  /**
+   * Checks if the comment mentions a member.
+   *
+   * @param Member $member
+   * @return bool
+   */
+  public function mentions(Member $member) {
+    return $this->textScan()->mentions($member);
+  }
+
 }

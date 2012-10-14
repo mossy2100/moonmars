@@ -100,7 +100,7 @@ function astro_alpha_preprocess_comment(&$vars) {
   // Ratings:
   // To rate an item, the member must be logged in, and it must have been created by someone else.
   // @todo Update this to a Member::canRateComment() method.
-  $can_rate = $logged_in_member && !Member::equals($logged_in_member, $poster);
+  $can_rate = $logged_in_member && !$poster->equals($logged_in_member);
   $vars['rating_buttons'] = $can_rate ? moonmars_ratings_buttons($logged_in_member, $item_comment) : '';
 
   // Path to theme:

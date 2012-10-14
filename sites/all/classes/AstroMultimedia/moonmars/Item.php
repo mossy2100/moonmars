@@ -50,12 +50,13 @@ class Item extends Node {
    */
   public function bump() {
     $rels = Relation::searchBinary('has_item', NULL, $this);
-    if ($rels) {
-      $rels[0]->load();
-      $rels[0]->save();
-      return TRUE;
+    if (!$rels) {
+      trigger_error("Item::bump() - Item has not been added to any channel.", E_USER_WARNING);
+      return FALSE;
     }
-    return FALSE;
+    $rels[0]->load();
+    $rels[0]->save();
+    return TRUE;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -117,6 +118,16 @@ class Item extends Node {
    */
   public function html() {
     return $this->textScan()->html();
+  }
+
+  /**
+   * Checks if the item mentions a member.
+   *
+   * @param Member $member
+   * @return bool
+   */
+  public function mentions(Member $member) {
+    return $this->textScan()->mentions($member);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

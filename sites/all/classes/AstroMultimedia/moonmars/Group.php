@@ -129,11 +129,10 @@ class Group extends Node {
   /**
    * Create a link for the group using the hash tag.
    *
-   * @param bool $absolute
    * @return string
    */
-  public function tagLink($absolute = FALSE) {
-    return $this->link($this->tag(NULL, TRUE), $absolute);
+  public function tagLink() {
+    return $this->link($this->tag(NULL, TRUE));
   }
 
   /**
@@ -491,48 +490,5 @@ class Group extends Node {
   public function mode() {
     return $this->field('field_group_mode');
   }
-
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Notifications
-
-//  /***
-//   * Send a notification message to all the members of a group.
-//   *
-//   * @param string $summary
-//   * @param string $text
-//   * @param Member $actor
-//   * @param Channel $channel
-//   * @param Item $item
-//   * @param ItemComment $comment
-//   */
-//  public function notifyMembers($summary, $text = NULL, Member $actor = NULL, Channel $channel = NULL, Item $item = NULL, ItemComment $comment = NULL) {
-//    $members = $this->members();
-//    foreach ($members as $member) {
-//      // Notify everyone in the group except the actor:
-//      if (!Member::equals($member, $actor)) {
-//        $member->notify($summary, $text, $actor, $channel, $item, $comment);
-//      }
-//    }
-//  }
-
-//  /***
-//   * Send a notification message to all the admins of a group.
-//   *
-//   * @param string $summary
-//   * @param string $text
-//   * @param Member $actor
-//   * @param Channel $channel
-//   * @param Item $item
-//   * @param ItemComment $comment
-//   */
-//  public function notifyAdmins($summary, $text = NULL, Member $actor = NULL, Channel $channel = NULL, Item $item = NULL, ItemComment $comment = NULL) {
-//    $admins = $this->admins();
-//    foreach ($admins as $admin) {
-//      // Notify all admins except the actor:
-//      if (!Member::equals($admin, $actor)) {
-//        $admin->notify($summary, $text, $actor, $channel, $item, $comment);
-//      }
-//    }
-//  }
 
 }

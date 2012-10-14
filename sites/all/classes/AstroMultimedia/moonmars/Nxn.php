@@ -304,7 +304,7 @@ class Nxn {
   }
 
   /**
-   * Get an array of member details.
+   * Render member details as an HTML table.
    *
    * @static
    * @param Member $member
@@ -333,11 +333,11 @@ class Nxn {
 
     // Add a list of topics that the member is interested in:
 //    $details['Interests'] = $member->interests();
-    return $details;
+    return self::renderDetails($details);
   }
 
   /**
-   * Get an array of group details.
+   * Render group details as an HTML table.
    *
    * @static
    * @param Group $group
@@ -366,39 +366,19 @@ class Nxn {
       $details['Administrators'] = implode('<br>', $admin_links);
     }
 
-    return $details;
+    return self::renderDetails($details);
   }
 
   /**
-   * Generate an HTML table of member details.
-   *
-   * @param Member $member
-   * @return string
-   */
-  public function renderMemberDetails(Member $member, $title = NULL) {
-    return self::renderDetails(self::memberDetails($member, $title));
-  }
-
-  /**
-   * Generate an HTML table of group details.
-   *
-   * @param Group $group
-   * @return string
-   */
-  public function renderGroupDetails(Group $group, $title = NULL) {
-    return self::renderDetails(self::groupDetails($group, $title));
-  }
-
-  /**
-   * Render an item or comment.
+   * Render an item or comment details as HTML.
    *
    * @param \AstroMultimedia\Drupal\Entity $actor
    * @param \AstroMultimedia\Drupal\Entity $highlighted_actor
    * @return string
    */
-  public function renderItemOrCommentDetails(Entity $actor, Entity $highlighted_actor) {
+  public function itemOrCommentDetails(Entity $actor, Entity $highlighted_actor) {
     $poster = $actor->creator();
-    $highlight = Entity::equals($actor, $highlighted_actor);
+    $highlight = $actor->equals($highlighted_actor);
     // Comments are indented 10px:
     $margin_left = $actor instanceof Item ? 0 : '10px';
     $html = "
@@ -428,14 +408,14 @@ class Nxn {
 
     // Item:
 //    $html .= "<div style='$heading_style'>Item:</div>";
-    $html .= self::renderItemOrCommentDetails($item, $highlighted_actor);
+    $html .= self::itemOrCommentDetails($item, $highlighted_actor);
 
     // Comments:
 //    $html .= "<div style='$heading_style'>Comments:</div>";
     $comments = $item->comments();
     if ($comments) {
       foreach ($comments as $comment) {
-        $html .= self::renderItemOrCommentDetails($comment, $highlighted_actor);
+        $html .= self::itemOrCommentDetails($comment, $highlighted_actor);
       }
     }
 //    else {
@@ -446,7 +426,84 @@ class Nxn {
   }
 
   /**
+   * Render an array of notes as an unordered list.
+   *
+   * @param array $notes
+   * @return string
+   */
+  public function renderNotes(array $notes) {
+    if (!$notes) {
+      return '';
+    }
+    $html = "<ul>";
+    foreach ($notes as $note) {
+      $html .= "<li>$note</li>";
+    }
+    $html .= "</ul>";
+    return $html;
+  }
+
+  /**
+   * Get a name for a channel that is meaningful to the nxn recipient.
+   *
+   * @param Channel $channel
+   * @param Member $poster
+   * @return string
+   */
+  public function channelTitle(Channel $channel, Member $poster) {
+    $parent_entity = $channel->parentEntity();
+    if ($parent_entity) {
+      if ($parent_entity instanceof Member) {
+        if ($parent_entity->equals($this->recipient)) {
+          $channel_name = 'your channel';
+        }
+        elseif ($parent_entity->equals($poster)) {
+          $channel_name = "their channel";
+        }
+        else {
+          $channel_name = $parent_entity->name() . "'s channel";
+        }
+      }
+      elseif ($parent_entity instanceof Group) {
+        $channel_name = "the " . $parent_entity->title() . " group";
+      }
+    }
+    return $channel_name;
+  }
+
+  /**
+   * Generate a sentence describing the follow relationships between the nxn recipient and another member.
+   *
+   * @param Member $member
+   * @return string
+   */
+  public function followStr(Member $member) {
+    $you_follow_member = $this->recipient->follows($member);
+    $member_follows_you = $member->follows($this->recipient);
+    $member_name = $member->name(NULL, TRUE);
+    if ($you_follow_member) {
+      if ($member_follows_you) {
+        return "You follow $member_name and they follow you.";
+      }
+      else {
+        return "You follow $member_name but they do not follow you.";
+      }
+    }
+    else {
+      $follow_member_link = l("Follow " . $member->name(NULL, TRUE) . ".", $member->alias() . '/follow');
+      if ($member_follows_you) {
+        return "You do not follow $member_name but they follow you. $follow_member_link";
+      }
+      else {
+        return "You do not follow $member_name and they do not follow you. $follow_member_link";
+      }
+    }
+  }
+
+  /**
    * Generate a new-member nxn.
+   *
+   * @return array
    */
   public function generateNewMember() {
     global $base_url;
@@ -454,9 +511,6 @@ class Nxn {
     // Get the actors:
     $member = $this->triumph->actor('member');
     $group = $this->triumph->actor('group');
-
-    // Create message:
-    $details = self::renderMemberDetails($member, "Member details");
 
     if (!$group) {
       // New member of the site:
@@ -467,9 +521,12 @@ class Nxn {
       // New member of a group:
       $subject = "New member of the " . $group->title() . " group";
       $summary = "The " . $group->link() . " group on <a href='$base_url'>moonmars.com</a> has a new member!";
+    }
 
-      // Additional group details:
-      $details .= self::renderGroupDetails($group, "Group details");
+    // Details:
+    $details = self::memberDetails($member, "Member details");
+    if ($group) {
+      $details .= self::groupDetails($group, "Group details");
     }
 
     return array(
@@ -481,6 +538,8 @@ class Nxn {
 
   /**
    * Generate a new-group nxn.
+   *
+   * @return array
    */
   public function generateNewGroup() {
     global $base_url;
@@ -489,24 +548,21 @@ class Nxn {
     $group = $this->triumph->actor('group');
     $parent_group = $this->triumph->actor('parent group');
 
-    // Generate the subject, summary and details.
     // Subject:
     $group_name = $group->title();
     $subject = "New group created";
 
     // Summary:
     $summary = "<a href='$base_url'>moonmars.com</a> has a new group!";
-
-    // Details:
-    $details = self::renderGroupDetails($group, "Group details");
-
-    // Additional details for subgroups:
     if ($parent_group) {
       $summary .= " This is a subgroup of " . $parent_group->link() . ".";
-      $details .= self::renderGroupDetails($parent_group, "Parent group details");
     }
 
-    // Add a convenient "join group" link:
+    // Details:
+    $details = self::groupDetails($group, "Group details");
+    if ($parent_group) {
+      $details .= self::groupDetails($parent_group, "Parent group details");
+    }
     $details .= "<p><strong>" . l("Join the \"$group_name\" group", $group->alias() . '/join') . "</strong></p>";
 
     return array(
@@ -518,42 +574,33 @@ class Nxn {
 
   /**
    * Generate a new-item nxn.
+   *
+   * @return array
    */
   public function generateNewItem() {
-    // Get the item:
     $item = $this->triumph()->actor('item');
-
-    // Get the poster:
+    $item_link = $item->link("item");
     $poster = $item->creator();
-
-    // Get the item's channel:
     $channel = $item->channel();
-
-    // Get the parent entity:
+    $channel_name = $this->channelTitle($channel, $poster);
     $parent_entity = $channel ? $channel->parentEntity() : NULL;
-
-    // Get a user-friendly name for the channel:
-    $channel_name = $channel->userFriendlyTitle($this->recipient, $poster);
 
     // Subject:
     $subject = $poster->name() . " posted a new item in $channel_name";
 
-    // Get a link to the item:
-    $item_link = $item->link("item");
-
-    // Create a summary of the notification:
+    // Summary:
     $summary = $poster->link() . " posted a new $item_link in " . $parent_entity->link($channel_name) . ".";
 
-    // Add the mention part of the message:
-    if ($item->textScan()->mentions($this->recipient)) {
-      $summary .= " You were mentioned in the item.";
+    // Notes:
+    $notes = [];
+    if ($item->mentions($this->recipient)) {
+      $notes[] = "You were mentioned in the item.";
     }
+    $notes[] = $this->followStr($poster);
+    // @todo add a note if the item mentions a #topic they're interested in
 
-    // @todo add a note to the summary if the item mentions a #topic they're interested in
-    // @todo Add "comment-by-email-reply" feature.
-
-    // Render the item details:
-    $details = self::renderItemDetails($item, $item);
+    // Details:
+    $details = self::renderNotes($notes) . self::renderItemDetails($item, $item);
 
     return array(
       'subject' => $subject,
@@ -567,45 +614,46 @@ class Nxn {
    * Generate a new-comment nxn.
    */
   public function generateNewComment() {
-    // Get the comment:
     $comment = $this->triumph()->actor('comment');
-
-    // Get the item:
     $item = $comment->item();
-
-    // Get the item and comment posters:
     $item_poster = $item->creator();
     $comment_poster = $comment->creator();
-
-    // Get the item's channel:
     $channel = $item->channel();
-
-    // Get the parent entity:
     $parent_entity = $channel ? $channel->parentEntity() : NULL;
-
-    // Get a user-friendly name for the channel:
-    $channel_name = $channel->userFriendlyTitle($this->recipient, $comment_poster);
+    $channel_name = $this->channelTitle($channel, $comment_poster);
 
     // Subject:
     $subject = $comment_poster->name() . " posted a new comment in $channel_name";
 
-    // Create a summary of the notification:
+    // Summary:
     $summary =  $comment_poster->link() . " posted a new " . $comment->link('comment') . " on an " . $item->link('item');
-    if (Member::equals($this->recipient, $item_poster)) {
+    if ($item_poster->equals($this->recipient)) {
       $summary .= " you posted";
     }
-    $summary .= " in " . $parent_entity->link($channel_name) . ".";
-
-    // Add the mention part of the message:
-    if ($comment->textScan()->mentions($this->recipient)) {
-      $summary .= " You were mentioned in the comment.";
+    elseif ($item_poster->equals($comment_poster)) {
+      $summary .= " they posted";
     }
+    else {
+      $summary .= " posted by " . $item_poster->link();
+    }
+    $summary .=  " in " . $parent_entity->link($channel_name) . ".";
 
-    // @todo add a note to the summary if the item mentions a #topic they're interested in
-    // @todo Add "comment-by-email-reply" feature.
+    // Notes:
+    $notes = [];
+    if ($comment->mentions($this->recipient)) {
+      $notes[] = "You were mentioned in the comment.";
+    }
+    if ($item->mentions($this->recipient)) {
+      $notes[] = "You were mentioned in the original item.";
+    }
+    $notes[] = $this->followStr($comment_poster);
+    if (!$item_poster->equals($comment_poster) && !$item_poster->equals($this->recipient)) {
+      $notes[] = $this->followStr($item_poster);
+    }
+    // @todo add a note if the item mentions a #topic they're interested in
 
-    // Render the comment details:
-    $details = self::renderItemDetails($item, $comment);
+    // Details:
+    $details = self::renderNotes($notes) . self::renderItemDetails($item, $comment);
 
     return array(
       'subject' => $subject,
@@ -617,28 +665,48 @@ class Nxn {
 
   /**
    * Generate a new-follower nxn.
+   *
+   * @return array
    */
   public function generateNewFollower() {
-    // Get the actors:
     $follower = $this->triumph()->actor('follower');
     $followee = $this->triumph()->actor('followee');
 
-    // Generate the subject, summary and details:
-    if (Member::equals($followee, $this->recipient)) {
-      // If the followee is receiving the nxn they they'll be interested in the follower's details:
-      $details = self::renderMemberDetails($follower, "Follower details");
+    if ($followee->equals($this->recipient)) {
       $followee_name = "you";
       $followee_link = "you";
     }
     else {
-      // If someone is receiving a nxn about their followee following someone, then they'll be interested in the
-      // followee's details:
-      $details = self::renderMemberDetails($followee, "Followee details");
       $followee_name = $followee->name();
       $followee_link = $followee->link($followee_name);
     }
+
+    // Subject:
     $subject = $follower->name() . " is now following $followee_name";
+
+    // Summary:
     $summary = $follower->link() . " is now following $followee_link.";
+
+    // Notes:
+    $notes = [];
+    if (!$follower->equals($this->recipient)) {
+      $notes[] = $this->followStr($follower);
+    }
+    if (!$followee->equals($this->recipient)) {
+      $notes[] = $this->followStr($followee);
+    }
+
+    // Details:
+    $details = self::renderNotes($notes);
+    if ($followee->equals($this->recipient)) {
+      // If the followee is receiving the nxn they they'll be interested in the follower's details:
+      $details .= self::memberDetails($follower, "Follower details");
+    }
+    else {
+      // If someone is receiving a nxn about their followee following another member, then they'll be interested in that
+      // member's details:
+      $details .= self::memberDetails($followee, "Followee details");
+    }
 
     return array(
       'subject' => $subject,
@@ -651,13 +719,16 @@ class Nxn {
    * Generate a new-page nxn.
    */
   public function generateNewPage() {
-    // Get the actors:
     $page = $this->triumph()->actor('page');
     $creator = $page->creator();
 
-    // Generate the subject, summary and details:
+    // Subject:
     $subject = $creator->name() . " created a new page: " . $page->title();
+
+    // Summary:
     $summary = $creator->link() . " created a new page: " . $page->link() . ".";
+
+    // Details:
     $details = $page->html();
 
     return array(
@@ -671,13 +742,16 @@ class Nxn {
    * Generate an update-member nxn.
    */
   public function generateUpdateMember() {
-    // Get the actors:
     $member = $this->triumph()->actor('member');
 
-    // Generate the subject, summary and details:
+    // Subject:
     $subject = $member->name() . " updated their profile";
+
+    // Summary:
     $summary = $member->link() . " updated their profile.";
-    $details = self::renderMemberDetails($member, "Member details");
+
+    // Details:
+    $details = self::memberDetails($member, "Member details");
 
     return array(
       'subject' => $subject,
@@ -694,10 +768,14 @@ class Nxn {
     $group = $this->triumph()->actor('group');
     $updater = $this->triumph()->actor('updater');
 
-    // Generate the subject, summary and details:
-    $subject = "The " . $group->title() . " group profile has been updated";
+    // Subject:
+    $subject = "The " . $group->title() . " group profile was updated";
+
+    // Summary:
     $summary = "The " . $group->link() . " group profile was updated by " . $updater->link() . ".";
-    $details = self::renderGroupDetails($group, "Group details");
+
+    // Details:
+    $details = self::groupDetails($group, "Group details");
 
     return array(
       'subject' => $subject,
@@ -714,11 +792,15 @@ class Nxn {
     $group = $this->triumph()->actor('group');
     $admin = $this->triumph()->actor('admin');
 
-    // Generate the subject, summary and details:
+    // Subject:
     $subject = "The " . $group->title() . " group has a new administrator";
+
+    // Summary:
     $article = ($group->adminCount() == 1) ? 'the' : 'an';
     $summary = $admin->link() . " is now $article administrator for the " . $group->link() . " group.";
-    $details = self::renderGroupDetails($group, "Group details");
+
+    // Details:
+    $details = self::groupDetails($group, "Group details");
 
     return array(
       'subject' => $subject,
@@ -734,23 +816,25 @@ class Nxn {
     // Get the actors:
     $group = $this->triumph()->actor('group');
 
-    // Generate the subject, summary and details:
+    // Subject:
     $subject = "The " . $group->title() . " needs a new administrator";
+
+    // Summary:
     $summary = "The " . $group->link() . " needs a new administrator.";
 
+    // Details:
     $details = "<p>Could it be you?</p>
       <p>Being a group administrator on moonmars.com is a great way to contribute to the community and does
-      not need to take up a lot of your time. It simply involves:
+      not need to take up a lot of your time. It mainly involves:</p>
       <ul>
         <li>Maintaining the group profile, such as logo, description and links.</li>
-        <li>Tagging and adding value to shared resources.</li>
         <li>If the group is restricted or closed, inviting new members or approving requests to join.</li>
         <li>Moderating content and enforcing rules of conduct if there are any.</li>
         <li>Warning or kicking trolls, spammers and scammers.</li>
       </ul>
-      Remember, other group members can and will help you with this work. Plus, you can always add new administrators,
-      and you can step down at any time. Group administrators earn additional points for their efforts.</p>";
-    $details .= self::renderGroupDetails($group, "Group details");
+      <p>Other group members can help you with these things, plus you can always add new administrators if you need to.
+      You can step down at any time. Group administrators earn additional points for their efforts!</p>"
+      . self::groupDetails($group, "Group details");
 
     return array(
       'subject' => $subject,

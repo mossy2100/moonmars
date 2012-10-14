@@ -557,23 +557,30 @@ class Triumph {
                     }
                     break;
 
-                  case 'mention':
+                  case 'item-mention':
                     // Applies to triumph types: new-item, new-comment.
-                    // Get the actor role 'item' or 'comment':
-                    $actor_role = substr($this->triumphType, 4);
-                    if ($this->actor($actor_role)->textScan()->mentions($member)) {
+                    if ($this->triumphType == 'new-item') {
+                      $item = $this->actor('item');
+                    }
+                    else {
+                      $item = $this->actor('comment')->item();
+                    }
+                    if ($item->mentions($member)) {
                       $this->recipients->add($member);
                     }
                     break;
 
-                  case 'item_mention':
+                  case 'comment-mention':
                     // Applies to triumph types: new-comment.
-                    if ($this->actor('comment')->item()->textScan()->mentions($member)) {
+                    if ($this->actor('comment')->mentions($member)) {
                       $this->recipients->add($member);
                     }
                     break;
 
-//                  case 'topic':
+//                  case 'match-topic':
+//                  case 'group-topic':
+//                  case 'item-topic':
+//                  case 'comment-topic':
 //                    // Applies to triumph types: new-group, new-item, new-comment
 //                    // @todo
 //      //              $actor_role = substr($this->triumphType, 4);
@@ -582,15 +589,15 @@ class Triumph {
 //                    //        }
 //                    break;
 
-                  case 'item':
+                  case 'my-item':
                     // Applies to triumph types: new-comment
                     // Notify the member if the comment is on an item they posted:
-                    if (Member::equals($member, $this->actor('comment')->item()->creator())) {
+                    if ($member->equals($this->actor('comment')->item()->creator())) {
                       $this->recipients->add($member);
                     }
                     break;
 
-                  case 'comment':
+                  case 'my-comment':
                     // Applies to triumph types: new-comment
                     // Notify the member if the comment is on an item they've commented on:
                     if ($member->commentedOn($this->actor('comment')->item())) {

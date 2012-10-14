@@ -86,7 +86,7 @@ function moonmars_nxn_definitions() {
       'default' => TRUE,
       'enabled' => TRUE,
     ],
-    'topic'   => [
+    'group-topic'   => [
       'label'   => "Groups about a topic I'm interested in",
       'default' => TRUE,
       'enabled' => FALSE,
@@ -94,20 +94,20 @@ function moonmars_nxn_definitions() {
   ];
 
   $new_topic_conditions = [
-    'match_topic'   => [
-      'label'   => "Topics that match a topic I already follow",
+    'match-topic'   => [
+      'label'   => "Topics matching a topic I follow",
       'default' => TRUE,
       'enabled' => FALSE,
     ],
   ];
 
   $new_item_conditions = [
-    'mention' => [
+    'item-mention' => [
       'label'   => "Items that mention me",
       'default' => TRUE,
       'enabled' => TRUE,
     ],
-    'topic'   => [
+    'item-topic'   => [
       'label'   => "Items referencing a topic I'm interested in",
       'default' => TRUE,
       'enabled' => FALSE,
@@ -115,34 +115,34 @@ function moonmars_nxn_definitions() {
   ];
 
   $new_comment_conditions = [
-    'item' => [
+    'my-item' => [
       'label' => "Comments on an item I shared",
       'default' => TRUE,
       'enabled' => TRUE,
     ],
-    'comment' => [
-      'label' => "Comments on an item I also commented on",
+    'my-comment' => [
+      'label' => "Comments on an item I commented on",
       'default' => TRUE,
       'enabled' => TRUE,
     ],
-    'mention' => [
+    'comment-mention' => [
       'label' => "Comments that mention me",
       'default' => TRUE,
       'enabled' => TRUE,
     ],
-    'item_mention' => [
+    'item-mention' => [
       'label' => "Comments on an item that mentions me",
       'default' => TRUE,
       'enabled' => FALSE,
     ],
     // @todo These probably belong in a topics section:
-    'topic' => [
-      'label' => "Comments referencing a topic I'm interested in",
+    'comment-topic' => [
+      'label' => "Comments about a topic I'm interested in",
       'default' => TRUE,
       'enabled' => FALSE,
     ],
-    'item_topic' => [
-      'label' => "Comments on an item referencing a topic I'm interested in",
+    'item-topic' => [
+      'label' => "Comments on an item about a topic I'm interested in",
       'default' => TRUE,
       'enabled' => FALSE,
     ],

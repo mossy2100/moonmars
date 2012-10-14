@@ -206,7 +206,7 @@ class TextScan {
   public function mentions(Member $member) {
     $mentioned_members = $this->members();
     foreach ($mentioned_members as $mentioned_member) {
-      if (Member::equals($mentioned_member, $member)) {
+      if ($member->equals($mentioned_member)) {
         return TRUE;
       }
     }

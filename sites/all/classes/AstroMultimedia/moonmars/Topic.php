@@ -14,4 +14,13 @@ class Topic extends \AstroMultimedia\Drupal\Term {
    */
   const TAG_PREFIX = '#';
 
+  /**
+   * Create a link for the topic using the hash tag.
+   *
+   * @return string
+   */
+  public function tagLink() {
+    return $this->link($this->name(NULL, TRUE));
+  }
+
 }
