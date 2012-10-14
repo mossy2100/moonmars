@@ -199,7 +199,14 @@ function moonmars_actors_entity_insert($entity, $entity_type) {
 /**
  * Implements hook_entity_update().
  *
- * Note, we use this hook instead of hook_node_update() as it gets called later in the cycle, after
+ * This hook is invoked after the node or user is saved to the database and immediately after hook_user_update() or
+ * hook_node_update().
+ * Event order:
+ *   1. Save user/node to the database
+ *   2. Invoke user_update/node_update
+ *   3. Invoke entity_update
+ *
+ * We use this hook instead of hook_node_update() as it gets called later in the cycle, after
  * pathauto_node_update_alias() sets the alias according to the pattern. hook_node_update() is called before then.
  */
 function moonmars_actors_entity_update($entity, $entity_type) {
@@ -212,30 +219,20 @@ function moonmars_actors_entity_update($entity, $entity_type) {
     // Create triumphs:
     $logged_in_member = Member::loggedInMember();
     if ($actor instanceof Member) {
-      // Only create a new-member or update-member triumph if the member is updating their own profile
+      // Only create an update-member triumph if the member is updating their own profile
       // (i.e., not if an admin is updating someone else's profile).
-      // The reason for this is because an administrator won't normally be adding interesting info; they'll most
-      // likely just be updating a password or something.
+      // The reason for this is because an administrator probably won't be adding interesting info;
+      // they'll most likely just be updating a password or something.
       if ($logged_in_member && $actor->equals($logged_in_member)) {
-        // The first time a member's profile is updated we create the new-member triumph. After that, update-member.
-        if (!$actor->profileUpdated()) {
+
+        // The first time a member updates their profile, send a new-member triumph. The reason why we don't do this
+        // when the user account is created, or when they confirm their email address, is because if we send new-member
+        // notifications at those times they won't contain much interesting information. The first time they update
+        // their profile, however (which they will normally do straight after they confirm their email address anyway)
+        // will probably when they enter most of their personal info. Then we send the nxn, then people will know
+        // whether they want to follow the new member or not.
+        if (!$actor->newMemberTriumphCreated()) {
           Triumph::newMember($actor);
-
-          // We have to update the profile_updated field manually because if we call ->save() or user_save(), we'll
-          // trigger this hook again which will in turn trigger an update-member triumph.
-          // It seems hacky but I can't think of a better way to do this right now.
-
-          // 1. Update the data table for the field:
-          $q = db_update('field_data_field_profile_updated')
-            ->fields(['field_profile_updated_value' => 1])
-            ->condition('entity_id', $actor->uid());
-          $q->execute();
-
-          // 2. Update the revision table for the field:
-          $q = db_update('field_revision_field_profile_updated')
-            ->fields(['field_profile_updated_value' => 1])
-            ->condition('entity_id', $actor->uid());
-          $q->execute();
         }
         else {
           Triumph::updateMember($actor);

@@ -129,12 +129,21 @@ class Member extends \AstroMultimedia\Drupal\User {
   }
 
   /**
-   * Get a link to the user's profile with a '@' prefix on the username.
+   * Get the member's tag, i.e. their username with the '@' prefix.
+   *
+   * @return string
+   */
+  public function tag() {
+    return $this->name(NULL, TRUE);
+  }
+
+  /**
+   * Get a link to the user's profile with their tag as the label.
    *
    * @return string
    */
   public function tagLink() {
-    return $this->link($this->name(NULL, TRUE));
+    return $this->link($this->tag());
   }
 
   /**
@@ -231,16 +240,6 @@ class Member extends \AstroMultimedia\Drupal\User {
    */
   public function bio() {
     return $this->field('field_bio');
-  }
-
-  /**
-   * Get/set the value of field_profile_updated.
-   *
-   * @param null $value
-   * @return mixed
-   */
-  public function profileUpdated($value = NULL) {
-    return $this->field('field_profile_updated', LANGUAGE_NONE, 0, 'value', $value);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1787,6 +1786,24 @@ class Member extends \AstroMultimedia\Drupal\User {
     // Check if the user is a member of the group, and if they're also an admin.
     $rels = Relation::searchBinary('has_member', $group, $this);
     return $rels ? ((bool) $rels[0]->field('field_is_admin')) : FALSE;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Triumphs
+
+  /**
+   * Check if we've already created a new-member triumph for this member.
+   *
+   * @return bool
+   */
+  public function newMemberTriumphCreated() {
+    $q = db_select('moonmars_triumph', 't')
+      ->fields('t', ['triumph_id'])
+      ->condition('t.triumph_type', 'new-member')
+      ->condition('a.entity_id', $this->uid());
+    $q->join('moonmars_triumph_actor', 'a', "t.triumph_id = a.triumph_id");
+    $rs = $q->execute();
+    return (bool) $rs->rowCount();
   }
 
 }

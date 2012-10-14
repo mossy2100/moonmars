@@ -316,7 +316,7 @@ class Nxn {
     if ($member->fullName()) {
       $details['Name'] = $member->fullName();
     }
-    $details['Tag'] = "<strong>" . $member->name(NULL, TRUE) . "</strong>";
+    $details['Tag'] = "<strong>" . $member->tag() . "</strong>";
     $details['Profile'] = $member->link($member->url(TRUE));
     $details['Avatar'] = $member->avatar();
     if ($member->age()) {
@@ -496,7 +496,7 @@ class Nxn {
   public function followStr(Member $member) {
     $you_follow_member = $this->recipient->follows($member);
     $member_follows_you = $member->follows($this->recipient);
-    $member_name = $member->fullName();
+    $member_name = $member->fullName() ?: $member->tag();
     if ($you_follow_member) {
       if ($member_follows_you) {
         return "You follow $member_name and they follow you.";
@@ -506,7 +506,7 @@ class Nxn {
       }
     }
     else {
-      $follow_member_link = l("Follow " . $member->name(NULL, TRUE), $member->alias() . '/follow');
+      $follow_member_link = l("Follow " . $member->tag(), $member->alias() . '/follow');
       if ($member_follows_you) {
         return "You do not follow $member_name but they follow you. $follow_member_link";
       }
@@ -683,29 +683,29 @@ class Nxn {
     $followee = $this->triumph()->actor('followee');
 
     if ($followee->equals($this->recipient)) {
-      $followee_name = "you";
+      $followee_tag = "you";
       $followee_link = "you";
     }
     else {
-      $followee_name = $followee->name();
-      $followee_link = $followee->link($followee_name);
+      $followee_tag = $followee->tag();
+      $followee_link = $followee->tagLink();
     }
 
     // Subject:
-    $subject = $follower->name() . " is now following $followee_name";
+    $subject = $follower->name() . " is now following $followee_tag";
 
     // Summary:
     $summary = $follower->link() . " is now following $followee_link.";
 
     // Details:
-    if ($followee->equals($this->recipient)) {
-      // If the followee is receiving the nxn they they'll be interested in the follower's details:
-      $details = $this->memberDetails($follower, "Follower details");
+    // Only attach follower or followee details if they're different members than the recipient (who, presumably,
+    // already knows their own details.)
+    $details = '';
+    if (!$follower->equals($this->recipient)) {
+      $details .= $this->memberDetails($follower, "Follower details");
     }
-    else {
-      // If someone is receiving a nxn about their followee following another member, then they'll be interested in that
-      // member's details:
-      $details = $this->memberDetails($followee, "Followee details");
+    if (!$followee->equals($this->recipient)) {
+      $details .= $this->memberDetails($followee, "Followee details");
     }
 
     return array(

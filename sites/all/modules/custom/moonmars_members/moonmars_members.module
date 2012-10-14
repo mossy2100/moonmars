@@ -2,6 +2,7 @@
 
 use \AstroMultimedia\MoonMars\Member;
 use \AstroMultimedia\MoonMars\Channel;
+use \AstroMultimedia\MoonMars\Triumph;
 
 /**
  * Implements hook_init().
@@ -180,6 +181,8 @@ function theme_moonmars_members_edit_menu() {
 function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
   global $moonmars_username_desc;
 
+//  dbg($form_id);
+
   // Check for relevant form_ids:
   if (!in_array($form_id, ['user_register_form', 'user_profile_form'])) {
     return;
@@ -293,15 +296,15 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
         '#markup' => moonmars_color_icons2($form['field_background_color'][LANGUAGE_NONE][0]['rgb']['#default_value']),
       ];
 
-      // Hide the colour fields we aren't using:
+      // Hide the colour fields we aren't using any more:
       unset($form['field_border_color']);
       unset($form['field_text_color']);
 
-      // Hide the score:
-      unset($form['field_score']);
-
-      // Hide the "Profile updated" checkbox:
-      unset($form['field_profile_updated']);
+      // Hide the score for everyone except me:
+      $logged_in_member = Member::loggedInMember();
+      if (!$logged_in_member->isSuperuser()) {
+        unset($form['field_score']);
+      }
 
       // Remove location fieldset description:
       unset($form['field_user_location'][LANGUAGE_NONE][0]['#description']);

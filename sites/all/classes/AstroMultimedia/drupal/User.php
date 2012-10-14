@@ -141,11 +141,13 @@ class User extends Entity {
   /**
    * Load the user object.
    *
+   * @param bool $force_reload
+   *   If TRUE, reload the user even if it's already been loaded.
    * @return User
    */
-  public function load() {
-    // Avoid reloading:
-    if ($this->loaded) {
+  public function load($force_reload = FALSE) {
+    // Avoid reloading unless forced:
+    if ($this->loaded && !$force_reload) {
       return $this;
     }
 
