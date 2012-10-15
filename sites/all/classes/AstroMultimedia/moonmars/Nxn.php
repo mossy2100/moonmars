@@ -442,24 +442,6 @@ class Nxn {
   }
 
   /**
-   * Render an array of notes as an unordered list.
-   *
-   * @param array $notes
-   * @return string
-   */
-  public function renderNotes(array $notes) {
-    if (!$notes) {
-      return '';
-    }
-    $html = "<ul>";
-    foreach ($notes as $note) {
-      $html .= "<li>$note</li>";
-    }
-    $html .= "</ul>";
-    return $html;
-  }
-
-  /**
    * Get a name for a channel that is meaningful to the nxn recipient.
    *
    * @param Channel $channel
@@ -481,7 +463,7 @@ class Nxn {
         }
       }
       elseif ($parent_entity instanceof Group) {
-        $channel_name = "the " . $parent_entity->title() . " group";
+        $channel_name = $parent_entity->title();
       }
     }
     return $channel_name;
@@ -605,16 +587,13 @@ class Nxn {
 
     // Summary:
     $summary = $poster->link() . " posted a new $item_link in " . $parent_entity->link($channel_name) . ".";
-
-    // Notes:
-    $notes = [];
     if ($item->mentions($this->recipient)) {
-      $notes[] = "You were mentioned in the item.";
+      $summary .= " You were mentioned in the item.";
     }
     // @todo add a note if the item mentions a #topic they're interested in
 
     // Details:
-    $details = self::renderNotes($notes) . self::itemDetails($item, $item);
+    $details = self::itemDetails($item, $item);
 
     return array(
       'subject' => $subject,
@@ -651,19 +630,16 @@ class Nxn {
       $summary .= " posted by " . $item_poster->link();
     }
     $summary .=  " in " . $parent_entity->link($channel_name) . ".";
-
-    // Notes:
-    $notes = [];
     if ($comment->mentions($this->recipient)) {
-      $notes[] = "You were mentioned in the comment.";
+      $summary .= " You were mentioned in the comment.";
     }
-    if ($item->mentions($this->recipient)) {
-      $notes[] = "You were mentioned in the original item.";
+    elseif ($item->mentions($this->recipient)) {
+      $summary .= " You were mentioned in the original item.";
     }
     // @todo add a note if the item mentions a #topic they're interested in
 
     // Details:
-    $details = self::renderNotes($notes) . self::itemDetails($item, $comment);
+    $details = self::itemDetails($item, $comment);
 
     return array(
       'subject' => $subject,
@@ -772,7 +748,7 @@ class Nxn {
     $subject = "The " . $group->title() . " group profile was updated";
 
     // Summary:
-    $summary = "The " . $group->link() . " group profile was updated by " . $updater->link() . ".";
+    $summary = "The " . $group->link($group->title()) . " group profile was updated by " . $updater->tagLink() . ".";
 
     // Details:
     $details = $this->groupDetails($group);

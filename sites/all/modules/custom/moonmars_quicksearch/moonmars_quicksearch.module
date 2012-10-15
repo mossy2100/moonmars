@@ -91,17 +91,17 @@ function moonmars_quicksearch_form_submit($form, &$form_state) {
 function moonmars_quicksearch_min_pos(array $item) {
   $text = $GLOBALS['quicksearch_text'];
   $pos_in_tag = strpos(strtolower($item['tag']), $text);
-  $pos_in_title = strpos(strtolower($item['title']), $text);
-  if ($pos_in_tag === FALSE && $pos_in_title === FALSE) {
+  $pos_in_name = strpos(strtolower($item['name']), $text);
+  if ($pos_in_tag === FALSE && $pos_in_name === FALSE) {
     return PHP_INT_MAX;
   }
   if ($pos_in_tag === FALSE) {
-    return $pos_in_title;
+    return $pos_in_name;
   }
-  if ($pos_in_title === FALSE) {
+  if ($pos_in_name === FALSE) {
     return $pos_in_tag;
   }
-  return min($pos_in_tag, $pos_in_title);
+  return min($pos_in_tag, $pos_in_name);
 }
 
 /**
@@ -123,11 +123,24 @@ function moonmars_quicksearch_compare_matches($item1, $item2) {
 
   $text = $GLOBALS['quicksearch_text'];
 
-  // Make tags and titles lower case for case-insensitive matching:
+  // Make tags and names lower case for case-insensitive matching:
   $tag1 = strtolower($item1['tag']);
-  $title1 = strtolower($item1['title']);
+  $name1 = strtolower($item1['name']);
   $tag2 = strtolower($item2['tag']);
-  $title2 = strtolower($item2['title']);
+  $name2 = strtolower($item2['name']);
+
+  // If both names match the search string, choose the item with the shorter name.
+  // For example, if the search text is 'mars', topic "Mars Settlement" should appear before "Mars".
+  $in_item1_name = in_str($text, $name1);
+  $in_item2_name = in_str($text, $name2);
+  if ($in_item1_name && $in_item2_name) {
+    if (strlen($name1) < strlen($name2)) {
+      return -1;
+    }
+    if (strlen($name1) > strlen($name2)) {
+      return 1;
+    }
+  }
 
   // If both tags match the search string, choose the item with the shorter tag.
   // For example, if the search text is 'mars', topic #mars should appear before #mars-settlement.
@@ -142,7 +155,15 @@ function moonmars_quicksearch_compare_matches($item1, $item2) {
     }
   }
 
-  // If the search text only matches one tag, that one should appear first, i.e. matching tags outranks matching titles.
+  // If the search text only matches one name, that one should appear first.
+  if ($in_item1_name && !$in_item2_name) {
+    return -1;
+  }
+  if (!$in_item1_name && $in_item2_name) {
+    return 1;
+  }
+
+  // If the search text only matches one tag, that one should appear first.
   if ($in_item1_tag && !$in_item2_tag) {
     return -1;
   }
@@ -166,19 +187,19 @@ function moonmars_quicksearch_compare_matches($item1, $item2) {
     return 1;
   }
 
+  // Compare names alphabetically:
+  if ($name1 < $name2) {
+    return -1;
+  }
+  if ($name1 > $name2) {
+    return 1;
+  }
+
   // Compare tags alphabetically:
   if ($tag1 < $tag2) {
     return -1;
   }
   if ($tag1 > $tag2) {
-    return 1;
-  }
-
-  // Compare titles alphabetically:
-  if ($title1 < $title2) {
-    return -1;
-  }
-  if ($title1 > $title2) {
     return 1;
   }
 
@@ -218,7 +239,7 @@ function moonmars_quicksearch_ajax_search($text) {
       'actor_type' => 'member',
       'prefix' => Member::TAG_PREFIX,
       'tag' => $rec->name,
-      'title' => $rec->full_name,
+      'name' => $rec->full_name,
     ];
   }
 
@@ -235,7 +256,7 @@ function moonmars_quicksearch_ajax_search($text) {
       'actor_type' => 'topic',
       'prefix' => Topic::TAG_PREFIX,
       'tag' => $rec->name,
-      'title' => $rec->title,
+      'name' => $rec->title,
     ];
   }
 
@@ -252,7 +273,7 @@ function moonmars_quicksearch_ajax_search($text) {
       'actor_type' => 'group',
       'prefix' => Group::TAG_PREFIX,
       'tag' => $rec->tag,
-      'title' => $rec->title,
+      'name' => $rec->title,
     ];
   }
 
@@ -265,7 +286,7 @@ function moonmars_quicksearch_ajax_search($text) {
   // Generate the HTML response:
   $html = '';
   foreach ($matches as $match) {
-    $html .= "<li><a href='/{$match['actor_type']}/{$match['tag']}'>{$match['prefix']}{$match['tag']} ({$match['title']})</a></li>\n";
+    $html .= "<li><a href='/{$match['actor_type']}/{$match['tag']}'>{$match['name']} ({$match['prefix']}{$match['tag']})</a></li>\n";
   }
 
   // Send the result:

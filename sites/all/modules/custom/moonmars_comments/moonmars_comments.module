@@ -4,6 +4,7 @@ use \AstroMultimedia\MoonMars\Member;
 use \AstroMultimedia\MoonMars\Item;
 use \AstroMultimedia\MoonMars\ItemComment;
 use \AstroMultimedia\MoonMars\Channel;
+use \AstroMultimedia\MoonMars\Triumph;
 
 /**
  * Implements hook_menu().
