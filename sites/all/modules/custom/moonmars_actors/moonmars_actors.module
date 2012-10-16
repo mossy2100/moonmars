@@ -330,7 +330,7 @@ function moonmars_actors_get_actor_from_url() {
   static $cache;
 
   // Look for the entity type and id in the request_uri:
-  $uri = request();
+  $uri = request_path();
 
   // Shortcut if we already did this one:
   if (isset($cache[$uri])) {
@@ -339,7 +339,7 @@ function moonmars_actors_get_actor_from_url() {
 
   $actor = NULL;
 
-  // At certain paths we know the actor is the logged-in member:
+  // For certain paths we know the actor is the logged-in member:
   if (in_array($uri, ['user', 'profile', 'activity', 'notifications']) && user_is_logged_in()) {
     $actor = Member::loggedInMember();
   }

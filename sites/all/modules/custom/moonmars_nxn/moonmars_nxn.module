@@ -13,6 +13,11 @@ const MOONMARS_NXN_YES = 1;
 const MOONMARS_NXN_SOME = 2;
 
 /**
+ * Number of notifications per page.
+ */
+const NXNS_PER_PAGE = 100;
+
+/**
  * Implements hook_menu().
  */
 function moonmars_nxn_menu() {
@@ -409,7 +414,7 @@ function moonmars_nxn_triumph_types() {
  * @return string
  */
 function moonmars_nxn_list($user) {
-  // Create the member from the uid or name:
+  // Create the member from the uid:
   $member = Member::create($user);
 
   // Set the title:
@@ -422,13 +427,39 @@ function moonmars_nxn_list($user) {
     </div>";
 //  $html .= views_embed_view('notifications', 'page', $member->uid());
 
-  $html .= "<table id='table-nxns'>";
-  $page = isset($_GET['page']) ? ((int) $_GET['page']) : 0;
+  // Get the total number of nxns:
+  $q = db_select('moonmars_nxn', 'nxn')
+    ->condition('recipient_uid', $member->uid())
+    ->countQuery();
+  $rs = $q->execute();
+  $total_n_nxns = $rs->fetchField();
+
+  // Check the requested page number:
+  $page = 0;
+  if (isset($_GET['page'])) {
+    if (is_uint($_GET['page']) && $_GET['page'] >= 1) {
+      $page = (int) $_GET['page'];
+      // Check upper limit of page:
+      $max_page = $total_n_nxns ? (ceil($total_n_nxns / NXNS_PER_PAGE) - 1) : 0;
+      if ($page > $max_page) {
+        // Goto the last page:
+        drupal_goto($member->alias() . '/notifications', $max_page ? ['query' => ['page' => $max_page]] : []);
+      }
+    }
+    else {
+      // Invalid page number, goto the first page:
+      drupal_goto($member->alias() . '/notifications');
+    }
+  }
+
+  // Display the nxns:
   $q = db_select('moonmars_nxn', 'nxn')
     ->fields('nxn', ['nxn_id'])
+    ->condition('recipient_uid', $member->uid())
     ->orderBy('created', 'DESC')
-    ->range($page * 25, 25);
+    ->range($page * NXNS_PER_PAGE, NXNS_PER_PAGE);
   $rs = $q->execute();
+  $html .= "<table id='table-nxns'>";
   foreach ($rs as $rec) {
     $nxn = new Nxn($rec->nxn_id);
     $nxn->load();
@@ -442,6 +473,10 @@ function moonmars_nxn_list($user) {
       </tr>";
   }
   $html .= "</table>";
+
+  // Render the pager:
+  pager_default_initialize($total_n_nxns, NXNS_PER_PAGE);
+  $html .= theme('pager', array('quantity' => $total_n_nxns));
 
   return $html;
 }

@@ -30,31 +30,12 @@ function last_arg() {
 }
 
 /**
- * Get the requested path (i.e. what appears in the URL bar). This may be a system path or an alias.
- * Supports clean and unclean URLs.
- *
- * @return string
- */
-function request() {
-  if (isset($_SERVER['QUERY_STRING']) && $_SERVER['QUERY_STRING']) {
-    // Non-clean URLs: get the requested path from the query string.
-    parse_str($_SERVER['QUERY_STRING'], $query);
-    $request_uri = $query['q'];
-  }
-  else {
-    // Clean URLs: get the requested path directly:
-    $request_uri = $_SERVER['REQUEST_URI'];
-  }
-  return trim(urldecode($request_uri), '/');
-}
-
-/**
  * Get the parts of the requested path. Mirrors Drupal's args() function.
  *
  * @return array
  */
 function request_args() {
-  return array_filter(explode('/', request()));
+  return array_filter(explode('/', request_path()));
 }
 
 /**

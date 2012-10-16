@@ -9,7 +9,6 @@ use \AstroMultimedia\MoonMars\Channel;
  * @param $vars
  */
 function astro_alpha_preprocess_node_channel(&$vars) {
-
   // Get the node:
   $node = $vars['node'];
 
@@ -22,7 +21,7 @@ function astro_alpha_preprocess_node_channel(&$vars) {
 
   // If we're at the channel's page, goto the parent entity's page.
   $parent_entity_path = $parent_entity->alias();
-  if (request() != $parent_entity_path) {
+  if (request_path() != $parent_entity_path) {
     drupal_goto($parent_entity_path);
   }
 

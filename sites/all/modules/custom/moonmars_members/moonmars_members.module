@@ -2,7 +2,6 @@
 
 use \AstroMultimedia\MoonMars\Member;
 use \AstroMultimedia\MoonMars\Channel;
-use \AstroMultimedia\MoonMars\Triumph;
 
 /**
  * Implements hook_init().
@@ -10,7 +9,7 @@ use \AstroMultimedia\MoonMars\Triumph;
 function moonmars_members_init() {
   // If we're at 'user', and the user is logged in, forward the person to their profile.
   // I don't want people using that path.
-  if (user_is_logged_in() && request() == 'user') {
+  if (user_is_logged_in() && request_path() == 'user') {
     drupal_goto(Member::loggedInMember()->alias());
   }
 
@@ -39,12 +38,12 @@ function moonmars_members_menu() {
   $items['profile'] = [
     'page callback' => 'moonmars_members_profile',
     'access callback' => 'user_is_logged_in',
-    'type' => MENU_NORMAL_ITEM
+    'type' => MENU_NORMAL_ITEM,
   ];
   $items['activity'] = [
-    'page callback' => 'moonmars_members_activity_redirect',
+    'page callback' => 'moonmars_members_activity',
     'access callback' => 'user_is_logged_in',
-    'type' => MENU_NORMAL_ITEM
+    'type' => MENU_NORMAL_ITEM,
   ];
   $items['user/%/follow'] = [
     'page callback' => 'moonmars_members_follow',
@@ -128,48 +127,6 @@ function moonmars_members_is_member_page() {
 function moonmars_members_access_private() {
   $logged_in_member = Member::loggedInMember();
   return moonmars_members_is_member_page() && $logged_in_member && ($logged_in_member->isSuperuser() || $logged_in_member->isAdmin() || moonmars_members_on_own_page());
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Theming
-
-/**
- * Implementation of hook_theme().
- */
-function moonmars_members_theme() {
-  $hooks['moonmars_members_edit_menu'] = [];
-  return $hooks;
-}
-
-/**
- * Create the member edit menu.
- */
-function theme_moonmars_members_edit_menu() {
-  $page_member = moonmars_actors_get_actor_from_url();
-  if (!$page_member instanceof Member) {
-    return FALSE;
-  }
-
-  $request = request();
-  $edit_base = $page_member->alias() . '/edit';
-
-  $tabs = [
-    "$edit_base/profile"       => 'Profile',
-    "$edit_base/links"         => 'Links',
-    "$edit_base/notifications" => 'Notifications',
-  ];
-
-  $html = "<ul id='actor-edit-tabs'>";
-  foreach ($tabs as $url => $label) {
-    $html .= "<li><a href='/$url'";
-    if ($request == $url) {
-      $html .= " class='selected'";
-    }
-    $html .= ">$label</a></li>";
-  }
-  $html .= "</ul>";
-
-  return $html;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -561,10 +518,17 @@ function moonmars_members_unfollow($followee_uid) {
 // Redirects
 
 /**
- * Go to the member's profile.
+ * Go to the logged-in member's profile.
  */
 function moonmars_members_profile() {
   drupal_goto(Member::loggedInMember()->alias());
+}
+
+/**
+ * Go to the logged-in member's activity page.
+ */
+function moonmars_members_activity() {
+  drupal_goto(Member::loggedInMember()->alias() . '/activity');
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -628,6 +592,10 @@ function moonmars_members_block_info() {
     'info' => t("Member's followees"),
     'cache' => DRUPAL_CACHE_PER_PAGE,
   ];
+  $blocks['member-edit-tabs'] = [
+    'info' => t("Member edit tabs"),
+    'cache' => DRUPAL_CACHE_PER_USER,
+  ];
   return $blocks;
 }
 
@@ -655,6 +623,11 @@ function moonmars_members_block_view($delta = '') {
     case 'member-followees':
       $block['subject'] = 'Followees';
       $block['content'] = moonmars_members_followees_block();
+      break;
+
+    case 'member-edit-tabs':
+      $block['subject'] = NULL;
+      $block['content'] = moonmars_members_edit_tabs_block();
       break;
   }
   return $block;
@@ -790,6 +763,40 @@ function moonmars_members_followees_block() {
 }
 
 /**
+ * Create the member edit menu.
+ */
+function moonmars_members_edit_tabs_block() {
+  $page_member = moonmars_actors_get_actor_from_url();
+  if (!$page_member instanceof Member) {
+    return FALSE;
+  }
+
+  $request = request_path();
+  $edit_base = $page_member->alias() . '/edit';
+
+  $tabs = [
+    "$edit_base/profile"       => 'Profile',
+    "$edit_base/links"         => 'Links',
+    "$edit_base/notifications" => 'Notifications',
+  ];
+
+  $html = "<ul id='actor-edit-tabs'>";
+  foreach ($tabs as $url => $label) {
+    $html .= "<li><a href='/$url'";
+    if ($request == $url) {
+      $html .= " class='selected'";
+    }
+    $html .= ">$label</a></li>";
+  }
+  $html .= "</ul>";
+
+  return $html;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Notifications
+
+/**
  * Implements hook_mail().
  */
 function moonmars_members_mail($key, &$message, $params) {
@@ -817,11 +824,4 @@ function moonmars_members_notifications($uid) {
 
   drupal_set_title('Your Notifications');
   return views_embed_view('notifications', 'page', $uid);
-}
-
-/**
- * Display the member's activity.
- */
-function moonmars_members_activity_redirect() {
-  drupal_goto(Member::loggedInMember()->alias() . '/activity');
 }

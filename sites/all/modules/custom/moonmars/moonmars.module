@@ -26,8 +26,8 @@ function moonmars_init() {
  * @todo extend for topics
  *
  * e.g. if user/1/edit requested, redirect to members/mossy2100/edit
- * This functionality should have been implemented in globalredirect or path_alias_xt or subpathauto, but as far as I
- * can tell, has not been,
+ * This functionality should have been implemented in globalredirect or path_alias_xt or subpathauto,
+ * but as far as I can tell, has not been.
  */
 function moonmars_alias_redirect() {
   $parts = request_args();

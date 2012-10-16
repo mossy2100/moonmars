@@ -367,7 +367,7 @@ class Nxn {
     // Group administrators:
     $admin_links = array();
     foreach ($group->admins() as $admin) {
-      $admin_links[] = $admin->link();
+      $admin_links[] = $admin->tagLink();
     }
     if ($admin_links) {
       $details['Administrators'] = implode('<br>', $admin_links);
@@ -403,7 +403,7 @@ class Nxn {
           <tr>
             <td style='padding: 0; border: 0; margin: 0; vertical-align: top;'>" . $poster->avatar() . "</td>
             <td style='padding: 0 0 0 5px; border: 0; margin: 0; vertical-align: top;'>
-              <div style='margin: 0; font-size: 11px;'>" . $poster->link(NULL, TRUE) . " <span style='color: #919191'>about " . $actor->created()->aboutHowLongAgo() . " ago</span></div>
+              <div style='margin: 0; font-size: 11px;'>" . $poster->tagLink() . " <span style='color: #919191'>about " . $actor->created()->aboutHowLongAgo() . " ago</span></div>
               <div style='margin: 10px 0 0; font-size: 12px;'>" . $actor->html() . "</div>
             </td>
           </tr>
@@ -459,7 +459,7 @@ class Nxn {
           $channel_name = "their channel";
         }
         else {
-          $channel_name = $parent_entity->name() . "'s channel";
+          $channel_name = $parent_entity->tag() . "'s channel";
         }
       }
       elseif ($parent_entity instanceof Group) {
@@ -579,14 +579,21 @@ class Nxn {
     $item_link = $item->link("item");
     $poster = $item->creator();
     $channel = $item->channel();
-    $channel_name = $this->channelTitle($channel, $poster);
-    $parent_entity = $channel ? $channel->parentEntity() : NULL;
+
+    if ($channel) {
+      $channel_name = $this->channelTitle($channel, $poster);
+      $parent_entity = $channel->parentEntity();
+    }
+    else {
+      $channel_name = NULL;
+      $parent_entity = NULL;
+    }
 
     // Subject:
-    $subject = $poster->name() . " posted a new item in $channel_name";
+    $subject = $poster->tag() . " posted a new item" . ($channel ? " in $channel_name" : '');
 
     // Summary:
-    $summary = $poster->link() . " posted a new $item_link in " . $parent_entity->link($channel_name) . ".";
+    $summary = $poster->tagLink() . " posted a new $item_link" . ($parent_entity ? (" in " . $parent_entity->link($channel_name)) : '') . ".";
     if ($item->mentions($this->recipient)) {
       $summary .= " You were mentioned in the item.";
     }
@@ -612,14 +619,21 @@ class Nxn {
     $item_poster = $item->creator();
     $comment_poster = $comment->creator();
     $channel = $item->channel();
-    $parent_entity = $channel ? $channel->parentEntity() : NULL;
-    $channel_name = $this->channelTitle($channel, $comment_poster);
+
+    if ($channel) {
+      $channel_name = $this->channelTitle($channel, $comment_poster);
+      $parent_entity = $channel->parentEntity();
+    }
+    else {
+      $channel_name = NULL;
+      $parent_entity = NULL;
+    }
 
     // Subject:
-    $subject = $comment_poster->name() . " posted a new comment in $channel_name";
+    $subject = $comment_poster->tag() . " posted a new comment" . ($channel ? " in $channel_name" : '');
 
     // Summary:
-    $summary =  $comment_poster->link() . " posted a new " . $comment->link('comment') . " on an " . $item->link('item');
+    $summary =  $comment_poster->tagLink() . " posted a new " . $comment->link('comment') . " on an " . $item->link('item');
     if ($item_poster->equals($this->recipient)) {
       $summary .= " you posted";
     }
@@ -627,9 +641,12 @@ class Nxn {
       $summary .= " they posted";
     }
     else {
-      $summary .= " posted by " . $item_poster->link();
+      $summary .= " posted by " . $item_poster->tagLink();
     }
-    $summary .=  " in " . $parent_entity->link($channel_name) . ".";
+    if ($parent_entity) {
+      $summary .= " in " . $parent_entity->link($channel_name);
+    }
+    $summary .= ".";
     if ($comment->mentions($this->recipient)) {
       $summary .= " You were mentioned in the comment.";
     }
@@ -668,10 +685,10 @@ class Nxn {
     }
 
     // Subject:
-    $subject = $follower->name() . " is now following $followee_tag";
+    $subject = $follower->tag() . " is now following $followee_tag";
 
     // Summary:
-    $summary = $follower->link() . " is now following $followee_link.";
+    $summary = $follower->tagLink() . " is now following $followee_link.";
 
     // Details:
     // Only attach follower or followee details if they're different members than the recipient (who, presumably,
@@ -699,10 +716,10 @@ class Nxn {
     $creator = $page->creator();
 
     // Subject:
-    $subject = $creator->name() . " created a new page: " . $page->title();
+    $subject = $creator->tag() . " created a new page: " . $page->title();
 
     // Summary:
-    $summary = $creator->link() . " created a new page: " . $page->link() . ".";
+    $summary = $creator->tagLink() . " created a new page: " . $page->link() . ".";
 
     // Details:
     $details = $page->html();
@@ -721,10 +738,10 @@ class Nxn {
     $member = $this->triumph()->actor('member');
 
     // Subject:
-    $subject = $member->name() . " updated their profile";
+    $subject = $member->tag() . " updated their profile";
 
     // Summary:
-    $summary = $member->link() . " updated their profile.";
+    $summary = $member->tagLink() . " updated their profile.";
 
     // Details:
     $details = $this->memberDetails($member);
@@ -773,7 +790,7 @@ class Nxn {
 
     // Summary:
     $article = ($group->adminCount() == 1) ? 'the' : 'an';
-    $summary = $admin->link() . " is now $article administrator for the " . $group->link() . " group.";
+    $summary = $admin->tagLink() . " is now $article administrator for the " . $group->link() . " group.";
 
     // Details:
     $details = $this->groupDetails($group);
