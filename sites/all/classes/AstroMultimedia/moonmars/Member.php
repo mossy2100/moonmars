@@ -853,7 +853,6 @@ class Member extends \AstroMultimedia\Drupal\User {
   public function followees() {
     // Check if we already got them:
     if (!isset($this->followees)) {
-
       // Get the member's followees in reverse order of that in which they connected.
       $q = db_select('view_followers', 'vf')
         ->fields('vf', array('followee_uid'))
@@ -1431,100 +1430,112 @@ class Member extends \AstroMultimedia\Drupal\User {
   }
 
   /**
-   * Get the items that should appear in the member's channel.
+   * Get all the items posted by the member that have modified (created, changed or commented on) within a datetime range.
+   * Note, this method does NOT return an array of Item objects, but timestamps, because it's designed for
+   * lightning fast sorting. Item object creation happens later when the page is rendered.
    *
-   * @param int $offset
-   * @param int $limit
+   * @param int $ts_start
+   * @param int $ts_end
    * @return array
    */
-  public function items($offset = NULL, $limit = NULL) {
-    list($sql, $params) = $this->itemQuery();
-
-    // Order by:
-    $sql .= " ORDER BY vci.changed DESC";
-
-    // Add the offset and limit if specified:
-    if ($offset !== NULL && $limit !== NULL) {
-      $offset = (int) $offset;
-      $limit = (int) $limit;
-      $sql .= " LIMIT $offset, $limit";
-    }
-
-    // Get the items:
-    $rs = db_query($sql, $params);
+  public function itemsPostedBy($ts_start, $ts_end) {
+    $q = db_select('view_channel_has_item', 'vchi')
+      ->fields('vchi', array('nid', 'item_modified'))
+      ->condition('item_uid', $this->uid())
+      ->condition('item_modified', [$ts_start, $ts_end], 'BETWEEN');
+    $rs = $q->execute();
     $items = array();
     foreach ($rs as $rec) {
-      $items[] = Item::create($rec->item_nid);
+      $items[$rec->nid] = $rec->item_modified;
     }
-
     return $items;
   }
 
   /**
-   * Get items from the channels the member is subscribed to.
+   * Get the items that should appear in the member's profile channel.
+   * This method is optimised for speed and memory.
+   * @todo Check for restricted/closed groups. Need Member::canSeeItem() method.
+   * @todo Include topics the member is following.
    *
-   * @param int $offset
-   * @param int $limit
+   * @param int $ts_start
+   * @param int $ts_end
    * @return array
    */
-  public function activityItems($offset = NULL, $limit = NULL) {
-    $sql = "
-      SELECT vci.item_nid
-      FROM view_channel_has_item vci
-      WHERE vci.item_status = 1
-        AND vci.channel_nid IN (SELECT vcs.channel_nid FROM view_channel_has_subscriber vcs WHERE vcs.subscriber_uid = :member_uid)
-      ORDER BY vci.changed DESC";
+  public function items($ts_start, $ts_end) {
+    // Items appearing in their profile channel come from multiple sources:
+    //   1. Items posted by them.
+    //   2. Items posted by their followees.
+    //   3. Items posted in their channel.
+    //   4. Items posted in their groups. @todo Replace this with: Items tagged with one of their groups.
+    //   5. Items tagged with their member tag. @todo
+    //   6. Items tagged with a topic they're following. @todo
 
-    // We're interested in items:
-    // - posted in groups the user is a member of
-    // - posted by other members the member is following
+    /////////////////////////////////////////////////////////////////////
+    // Create an array of uids of item posters that we want to include.
 
-    // Q: What if the followee has posted something in a closed group? The challenge here is that we need to know
-    // whether the member has view access to the group at the database level, and this is probably impractical.
-    // A: One solution would be to get the item_nids of all items that the user could potentially see, then filter
-    // using permission function. However, this may become inefficient over time.
-    // A: Another solution would be to not include items that followees post in groups that follower is not a member of,
-    // but only things they post in their own channel. This would be much easier.
+    // Start with theirs:
+    $item_uids = [$this->uid()];
 
-//    $sql = "
-//      SELECT vci.item_nid
-//      FROM view_channel_has_item vci
-//      WHERE vci.item_status = 1
-//        AND (
-//          vci.channel_nid IN (
-//            SELECT vcs.channel_nid
-//            FROM view_entity_has_channel vec
-//              LEFT JOIN view_group_has_member vgm ON vec.entity_type = 'node' and vec.entity_id = vgm.group_nid
-//            WHERE vgm.member_uid = :member_uid
-//          )
-//          OR
-//          vci.channel_nid IN (
-//            SELECT vcs.channel_nid
-//            FROM view_entity_has_channel vec
-//              LEFT JOIN view_member_has_follower vmf ON vec.entity_type = 'user' AND vec.entity_id = vmf.member_uid
-//            WHERE vmf.follower_uid = :member_uid
-//          )
-//        )
-//      ORDER BY vci.changed DESC";
-
-    $params = array(
-      ':member_uid' => $this->uid(),
-    );
-
-    // Add the offset and limit if specified:
-    if ($offset !== NULL && $limit !== NULL) {
-      $offset = (int) $offset;
-      $limit = (int) $limit;
-      $sql .= " LIMIT $offset, $limit";
+    // Now get the uids of this member's followees.
+    // If we already have the followees in an array, use that:
+    if (isset($this->followees)) {
+      foreach ($this->followees as $followee) {
+        $item_uids[] = $followee->uid();
+      }
+    }
+    else {
+      // Get the member's followees from the db:
+      $q = db_select('view_followers', 'vf')
+        ->fields('vf', array('followee_uid'))
+        ->condition('follower_uid', $this->uid());
+      $rs = $q->execute();
+      foreach ($rs as $rec) {
+        $item_uids[] = $rec->followee_uid;
+      }
     }
 
-    // Get the items:
-    $rs = db_query($sql, $params);
+    /////////////////////////////////////////////////////////////////////
+    // Create an array of nids of channels that we want to include.
+
+    // Start with theirs:
+    $channel_nids = [$this->channel()->nid()];
+
+    // Now get the nids of this member's groups' channels.
+    // If we already have the groups in an array, use that:
+    if (isset($this->groups)) {
+      foreach ($this->groups as $group) {
+        $channel_nids[] = $group->channel()->nid();
+      }
+    }
+    else {
+      // Get the member's groups from the db:
+      $q = db_select('view_group_has_member', 'vghm')
+        ->join('view_entity_has_channel', 'vehc', "vgm.group_nid = vec.entity_id AND vec.entity_type = 'node'");
+      $q->fields('vehc', array('channel_nid'))
+        ->condition('vghm.member_uid', $this->uid());
+      $rs = $q->execute();
+      foreach ($rs as $rec) {
+        $channel_nids[] = $rec->channel_nid;
+      }
+    }
+
+    /////////////////////////////////////////////////////////////////////
+    // The main query.
+    $q = db_select('view_channel_has_item', 'vchi')
+      ->fields('vchi', array('nid', 'item_modified'))
+      ->condition(db_or()
+        ->condition('item_uid', $item_uids)
+        ->condition('channel_nid', $channel_nids))
+      ->condition('item_modified', [$ts_start, $ts_end], 'BETWEEN');
+    dbg_query($q);
+    $rs = $q->execute();
     $items = array();
     foreach ($rs as $rec) {
-      $items[] = Item::create($rec->item_nid);
+      $items[$rec->nid] = $rec->item_modified;
     }
 
+    // Order the items in descending order of the latest time it was created, changed or commented on.
+    asort($items);
     return $items;
   }
 
@@ -1550,25 +1561,6 @@ class Member extends \AstroMultimedia\Drupal\User {
 
     // Get the items from this channel:
     $items = $this->items($page * Channel::pageSize, Channel::pageSize);
-
-    // Get the total item count:
-    $total_n_items = $this->itemCount();
-
-    // Render the page of items:
-    return Channel::renderItemsPage($items, $total_n_items);
-  }
-
-  /**
-   * Render items for a member's profile.
-   *
-   * @return string
-   */
-  public function renderActivityItems() {
-    // Get the page number:
-    $page = isset($_GET['page']) ? ((int) $_GET['page']) : 0;
-
-    // Get the items from this channel:
-    $items = $this->activityItems($page * Channel::pageSize, Channel::pageSize);
 
     // Get the total item count:
     $total_n_items = $this->itemCount();

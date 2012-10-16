@@ -17,10 +17,4 @@ function astro_alpha_preprocess_page(&$vars) {
   drupal_add_js('/sites/all/libraries/star/js/strings.js');
   drupal_add_js('/sites/all/libraries/star/js/arrays.js');
   drupal_add_js('/sites/all/libraries/star/js/debug.js');
-
-
-//  dbg($vars);
-  if (request_arg(2) == 'activity') {
-    $vars['title'] = 'Activity';
-  }
 }

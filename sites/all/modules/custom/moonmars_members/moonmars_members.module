@@ -40,11 +40,6 @@ function moonmars_members_menu() {
     'access callback' => 'user_is_logged_in',
     'type' => MENU_NORMAL_ITEM,
   ];
-  $items['activity'] = [
-    'page callback' => 'moonmars_members_activity',
-    'access callback' => 'user_is_logged_in',
-    'type' => MENU_NORMAL_ITEM,
-  ];
   $items['user/%/follow'] = [
     'page callback' => 'moonmars_members_follow',
     'page arguments' => [1],
@@ -524,13 +519,6 @@ function moonmars_members_profile() {
   drupal_goto(Member::loggedInMember()->alias());
 }
 
-/**
- * Go to the logged-in member's activity page.
- */
-function moonmars_members_activity() {
-  drupal_goto(Member::loggedInMember()->alias() . '/activity');
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Blocks
 
@@ -660,8 +648,6 @@ function moonmars_members_menu_block() {
   $html = "<ul id='member-menu' class='menu'>";
   if ($own_profile) {
     // Links for when you're on your own profile.
-    // Activity:
-    $html .= "<li>" . l('Activity', $page_member->alias() . '/activity') . "</li>";
     // Profile:
     $html .= "<li>" . l('Profile', $page_member->alias()) . "</li>";
     // View notifications:

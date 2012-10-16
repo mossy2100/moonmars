@@ -94,7 +94,7 @@ function moonmars_form_alter(&$form, &$form_state, $form_id) {
  */
 function moonmars_home() {
   if (user_is_logged_in()) {
-    drupal_goto('activity');
+    drupal_goto('profile');
   }
   else {
     drupal_goto('group/moonmars');

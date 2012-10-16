@@ -3,6 +3,8 @@
 use \AstroMultimedia\MoonMars\DateTime;
 use \AstroMultimedia\MoonMars\Member;
 use \AstroMultimedia\MoonMars\Group;
+use \AstroMultimedia\MoonMars\Item;
+use \AstroMultimedia\MoonMars\ItemComment;
 
 /**
  * Implements hook_menu().
@@ -126,7 +128,8 @@ function moonmars_update_fix_aliases() {
   // Groups:
   $q = db_select('node', 'n')
     ->fields('n', ['nid'])
-    ->condition('type', 'group');
+    ->condition('type', 'group')
+    ->orderBy('nid');
   $rs = $q->execute();
   foreach ($rs as $rec) {
     $group = Group::create($rec->nid);
@@ -134,33 +137,35 @@ function moonmars_update_fix_aliases() {
     drupal_set_message("Updated group alias to <em>" . $group->alias() . "</em>");
   }
 
-  // Channels and notifications:
+  // Channels:
   $q = db_select('node', 'n')
-    ->fields('n', ['nid', 'type'])
-    ->condition('type', ['channel', 'item'])
-    ->orderBy('type')
+    ->fields('n', ['nid'])
+    ->condition('type', 'channel')
     ->orderBy('nid');
   $rs = $q->execute();
   foreach ($rs as $rec) {
-    switch ($rec->type) {
-      case 'channel':
-        $channel = Channel::create($rec->nid);
-        if ($channel->resetAlias()) {
-          drupal_set_message("Updated channel alias to <em>" . $channel->alias() . "</em>");
-        }
-        else {
-          drupal_set_message("Could not updated channel alias for <em>" . $channel->alias() . "</em>", 'warning');
-        }
-        break;
-
-      case 'item':
-        $item = Item::create($rec->nid);
-        $alias = pathauto_create_alias('node', 'return', "node/$rec->nid", ['node' => $item->node()], 'item');
-        $item->alias($alias);
-        drupal_set_message("Updated item alias to <em>" . $item->alias() . "</em>");
-        break;
+    $channel = Channel::create($rec->nid);
+    if ($channel->resetAlias()) {
+      drupal_set_message("Updated channel alias to <em>" . $channel->alias() . "</em>");
+    }
+    else {
+      drupal_set_message("Could not updated channel alias for <em>" . $channel->alias() . "</em>", 'warning');
     }
   }
+
+  // Items:
+  $q = db_select('node', 'n')
+    ->fields('n', ['nid'])
+    ->condition('type', 'item')
+    ->orderBy('nid');
+  $rs = $q->execute();
+  foreach ($rs as $rec) {
+    $item = Item::create($rec->nid);
+    $alias = pathauto_create_alias('node', 'return', "node/$rec->nid", ['node' => $item->node()], 'item');
+    $item->alias($alias);
+    drupal_set_message("Updated item alias to <em>" . $item->alias() . "</em>");
+  }
+
   return '';
 }
 
@@ -337,53 +342,61 @@ function moonmars_update_channel_item_relation_changed_times() {
   return $html;
 }
 
-/**
- * Fix group references in item and comment text.
- */
-function moonmars_update_fix_group_mentions() {
-  // Update item text:
-  $q = db_select('node', 'n')
-    ->fields('n', ['nid']);
-  $q->join('field_data_field_item_text', 'ft', "n.nid = ft.entity_id");
-  $q->condition('field_item_text_value', '%[Group: %', 'LIKE');
-  $rs = $q->execute();
-  foreach ($rs as $rec) {
-    $item = Item::create($rec->nid);
-    $text = $item->text();
-    dbg($text);
-
-    $n = preg_match_all("/\[Group: ([^\]]+)\]/", $text, $matches);
-    dbg($matches);
-
-    $text = preg_replace("/\[Group: ([^\]]+)\]/", "[$1]", $text);
-    dbg($text);
-
-    $item->text($text);
-    $item->save();
-
-  }
-
-  // Now comments:
-  $q = db_select('comment', 'c')
-    ->fields('c', ['cid']);
-  $q->join('field_data_comment_body', 'fcb', "c.cid = fcb.entity_id");
-  $q->condition('comment_body_value', '%[Group: %', 'LIKE');
-  $rs = $q->execute();
-  foreach ($rs as $rec) {
-    $item_comment = ItemComment::create($rec->cid);
-    $text = $item_comment->text();
-    dbg($text);
-
-    $n = preg_match_all("/\[Group: ([^\]]+)\]/", $text, $matches);
-    dbg($matches);
-
-    $text = preg_replace("/\[Group: ([^\]]+)\]/", "[$1]", $text);
-    dbg($text);
-
-    $item_comment->text($text);
-    $item_comment->save();
-  }
-}
+///**
+// * Fix group references in item and comment text.
+// */
+//function moonmars_update_fix_group_mentions() {
+//  // Update item text:
+//  $q = db_select('node', 'n')
+//    ->fields('n', ['nid']);
+//  $q->join('field_data_field_item_text', 'ft', "n.nid = ft.entity_id");
+//  $q->condition('field_item_text_value', '%[Group: %', 'LIKE');
+//  $rs = $q->execute();
+//  foreach ($rs as $rec) {
+//    $item = Item::create($rec->nid);
+//    $text = $item->text();
+//    dbg($text);
+//
+//    $n = preg_match_all("/\[(Group: )?([^\]]+)\]/", $text, $matches);
+//    dbg($matches);
+//
+//    foreach ($matches[2] as $title) {
+//      $group = Group::searchByTitle($title);
+//      dbg($group);
+//    }
+//
+////    $text = preg_replace("/\[Group: ([^\]]+)\]/", "[$1]", $text);
+////    dbg($text);
+////
+////    $item->text($text);
+////    $item->save();
+//
+//  }
+//
+//  // Now comments:
+//  $q = db_select('comment', 'c')
+//    ->fields('c', ['cid']);
+//  $q->join('field_data_comment_body', 'fcb', "c.cid = fcb.entity_id");
+//  $q->condition('comment_body_value', '%[Group: %', 'LIKE');
+//  $rs = $q->execute();
+//  foreach ($rs as $rec) {
+//    $item_comment = ItemComment::create($rec->cid);
+//    $text = $item_comment->text();
+//    dbg($text);
+//
+//    $n = preg_match_all("/\[(Group: )?([^\]]+)\]/", $text, $matches);
+//    dbg($matches);
+//
+//    $n = preg_match_all("/\[([^\]]+)\]/", $text, $matches);
+//    dbg($matches);
+//
+////    $text = preg_replace("/\[Group: ([^\]]+)\]/", "[$1]", $text);
+////    dbg($text);
+////
+////    $item_comment->text($text);
+////    $item_comment->save();
+//  }
+//}
 
 /**
  * Set default group tags.
@@ -424,7 +437,7 @@ function moonmars_update_set_default_group_tags() {
 /**
  * Delete any relations with invalid endpoints.
  */
-function moonmars_update_clean_up_relationships() {
+function moonmars_update_clean_up_relations() {
   $q = db_select('relation', 'r')
     ->fields('r', ['rid']);
   $rs = $q->execute();

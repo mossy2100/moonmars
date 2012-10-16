@@ -43,18 +43,8 @@ function astro_alpha_preprocess_node_channel(&$vars) {
     $vars['title'] = '';
   }
 
-  // Are we viewing the member's activity stream?
-  $viewing_activity = ($parent_entity instanceof Member) && (request_arg(2) == 'activity');
-  $vars['viewing_activity'] = $viewing_activity;
-
   // Render the items.
-  if ($viewing_activity) {
-    // Member's activity channel:
-    $vars['items'] = $parent_entity->renderActivityItems();
-  }
-  else {
-    $vars['items'] = $channel->renderItems();
-  }
+  $vars['items'] = $channel->renderItems();
 
   // Get the logged-in member:
   $vars['logged_in_member'] = Member::loggedInMember();

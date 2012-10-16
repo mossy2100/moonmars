@@ -12,15 +12,21 @@ AS select
    fde1.endpoints_entity_id AS item_nid,
    n1.title as item_title,
    n1.status as item_status,
+   n1.uid as item_uid,
    n1.created as item_created,
-   n1.changed as item_changed
+   n1.changed as item_changed,
+   max(c.changed) as latest_comment,
+   count(c.cid) as n_comments,
+   greatest(n1.changed, ifnull(max(c.changed), 0)) as item_modified
 from
   relation r
   left join field_data_endpoints fde0 on (r.rid = fde0.entity_id) and (fde0.endpoints_r_index = 0)
   left join field_data_endpoints fde1 on (r.rid = fde1.entity_id) and (fde1.endpoints_r_index = 1)
   left join node n0 on (fde0.endpoints_entity_id = n0.nid)
   left join node n1 on (fde1.endpoints_entity_id = n1.nid)
-where r.relation_type = 'has_item';
+  left join comment c ON n1.nid = c.nid
+where r.relation_type = 'has_item'
+group by n1.nid
 
 
 CREATE or replace view view_channel_has_subscriber
@@ -166,17 +172,7 @@ AS select
    fmm.field_moon_or_mars_value as moon_or_mars,
    upper(l.country) as country,
    l.province as province,
-   l.city as city,
-   snm.field_site_new_member_nxn_value as site_member_nxn,
-   sng.field_site_new_group_nxn_value as site_group_nxn,
-   sni.field_site_new_item_nxn_value as site_item_nxn,
-   snc.field_site_new_comment_nxn_value as site_comment_nxn,
-   cni.field_channel_new_item_nxn_value as channel_item_nxn,
-   cnc.field_channel_new_comment_nxn_value as channel_comment_nxn,
-   fni.field_followee_new_item_nxn_value as followee_item_nxn,
-   fnc.field_followee_new_comment_nxn_value as followee_comment_nxn,
-   gni.field_group_new_item_nxn_value as group_item_nxn,
-   gnc.field_group_new_comment_nxn_value as group_comment_nxn
+   l.city as city
 from
   users u
   left join field_data_field_first_name ffn on u.uid = ffn.entity_id
@@ -187,17 +183,7 @@ from
   left join field_data_field_mobile_phone fmp on u.uid = fmp.entity_id
   left join field_data_field_moon_or_mars fmm on u.uid = fmm.entity_id
   left join field_data_field_user_location ful on u.uid = ful.entity_id
-  left join location l on ful.field_user_location_lid = l.lid
-  left join field_data_field_site_new_member_nxn snm on u.uid = snm.entity_id
-  left join field_data_field_site_new_group_nxn sng on u.uid = sng.entity_id
-  left join field_data_field_site_new_item_nxn sni on u.uid = sni.entity_id
-  left join field_data_field_site_new_comment_nxn snc on u.uid = snc.entity_id
-  left join field_data_field_channel_new_item_nxn cni on u.uid = cni.entity_id
-  left join field_data_field_channel_new_comment_nxn cnc on u.uid = cnc.entity_id
-  left join field_data_field_followee_new_item_nxn fni on u.uid = fni.entity_id
-  left join field_data_field_followee_new_comment_nxn fnc on u.uid = fnc.entity_id
-  left join field_data_field_group_new_item_nxn gni on u.uid = gni.entity_id
-  left join field_data_field_group_new_comment_nxn gnc on u.uid = gnc.entity_id;
+  left join location l on ful.field_user_location_lid = l.lid;
 
 
 CREATE or replace VIEW view_relationship

@@ -216,6 +216,29 @@ class Channel extends Node {
   }
 
   /**
+   * Get all the items posted in this channel that have been modified (created, changed or commented on) within a
+   * datetime range.
+   * Note, this method does NOT return an array of Item objects, but timestamps, because it's designed for
+   * lightning fast sorting. Item object creation happens later when the page is rendered.
+   *
+   * @param int $ts_start
+   * @param int $ts_end
+   * @return array
+   */
+  public function itemsPostedIn($ts_start, $ts_end) {
+    $q = db_select('view_channel_has_item', 'vchi')
+      ->fields('vchi', array('nid', 'item_modified'))
+      ->condition('channel_nid', $this->nid())
+      ->condition('item_modified', [$ts_start, $ts_end], 'BETWEEN');
+    $rs = $q->execute();
+    $items = array();
+    foreach ($rs as $rec) {
+      $items[$rec->nid] = $rec->item_modified;
+    }
+    return $items;
+  }
+
+  /**
    * Checks if an item is in the channel.
    *
    * @param Item $item
@@ -283,7 +306,7 @@ class Channel extends Node {
     $page = isset($_GET['page']) ? ((int) $_GET['page']) : 0;
 
     // Get the items from this channel:
-    $order_by_field = ($this->nid() == MOONMARS_NEWS_CHANNEL_NID) ? 'item_created' : 'changed';
+    $order_by_field = ($this->nid() == MOONMARS_NEWS_CHANNEL_NID) ? 'item_created' : 'item_modified';
     $items = $this->items($page * self::pageSize, self::pageSize, $order_by_field);
 
     // Get the total item count:

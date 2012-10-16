@@ -171,7 +171,7 @@ class Group extends Node {
    *
    * @static
    * @param $group_tag
-   * @return Channel
+   * @return Group
    */
   public static function createByTag($group_tag) {
     $rec = db_select('field_data_field_group_tag', 'f')
@@ -180,6 +180,26 @@ class Group extends Node {
       ->execute()
       ->fetch();
     return $rec ? self::create($rec->entity_id) : FALSE;
+  }
+
+  /**
+   * Find groups by title. Only supports exact match at present.
+   *
+   * @static
+   * @param $title
+   * @return Group
+   */
+  public static function searchByTitle($title) {
+    $rs = db_select('node', 'n')
+      ->fields('n', array('nid'))
+      ->condition('type', 'group')
+      ->condition('title', $title)
+      ->execute();
+    $matches = array();
+    foreach ($rs as $rec) {
+      $matches[] = self::create($rec->nid);
+    }
+    return $matches;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
