@@ -2,6 +2,7 @@
 
 use \AstroMultimedia\Star\Color;
 use \AstroMultimedia\Star\Style;
+use \AstroMultimedia\MoonMars\Group;
 
 /**
  * Implements hook_init().
@@ -19,6 +20,11 @@ function moonmars_init() {
 
   // Needs to be run once on every D7 site. Keep here as a reminder for the next site.
 //  variable_set('update_max_fetch_time', 300);
+
+//  $groups = Group::searchByTitle('MarsDrive');
+//  $group = $groups[0];
+//  dbg($group->itemQuery());
+//  dbg($group->channel()->itemCount());
 }
 
 /**

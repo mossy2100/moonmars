@@ -330,7 +330,7 @@ class Member extends \AstroMultimedia\Drupal\User {
       $this->load();
 
       // Get the name:
-      $username = $this->name();
+      $username = $this->tag();
       $full_name = $this->fullName();
 
       // Cater for names that are too long - we don't want the tooltip too wide.
@@ -384,7 +384,7 @@ class Member extends \AstroMultimedia\Drupal\User {
       'class' => array('username'),
       'title' => 'Visit ' . $this->name() . "'s profile."
     );
-    return l($this->name(), $this->alias(), array('attributes' => $attr));
+    return l($this->tag(), $this->alias(), array('attributes' => $attr));
   }
 
   /**
@@ -1404,33 +1404,35 @@ class Member extends \AstroMultimedia\Drupal\User {
     return $this->channel()->renderLinks();
   }
 
+//  /**
+//   * Get the common query elements used by the items() and itemCount() methods.
+//   *
+//   * @return array
+//   */
+//  public function itemQuery() {
+//    // Select items from the member's own channel plus all channels they're subscribed to.
+//    $sql = "
+//      SELECT vci.item_nid
+//      FROM view_channel_has_item vci
+//      WHERE vci.item_status = 1
+//        AND (
+//          vci.channel_nid = :members_channel_nid
+//          OR
+//          vci.channel_nid IN (SELECT vcs.channel_nid FROM view_channel_has_subscriber vcs WHERE vcs.subscriber_uid = :member_uid)
+//        )";
+//
+//    $params = array(
+//      ':members_channel_nid' => $this->channel()->nid(),
+//      ':member_uid'          => $this->uid()
+//    );
+//
+//    return array($sql, $params);
+//  }
+
   /**
-   * Get the common query elements used by the items() and itemCount() methods.
+   * Get all the items posted by the member that have been modified (created, changed or commented on) within a
+   * timestamp range.
    *
-   * @return array
-   */
-  public function itemQuery() {
-    // Select items from the member's own channel plus all channels they're subscribed to.
-    $sql = "
-      SELECT vci.item_nid
-      FROM view_channel_has_item vci
-      WHERE vci.item_status = 1
-        AND (
-          vci.channel_nid = :members_channel_nid
-          OR
-          vci.channel_nid IN (SELECT vcs.channel_nid FROM view_channel_has_subscriber vcs WHERE vcs.subscriber_uid = :member_uid)
-        )";
-
-    $params = array(
-      ':members_channel_nid' => $this->channel()->nid(),
-      ':member_uid'          => $this->uid()
-    );
-
-    return array($sql, $params);
-  }
-
-  /**
-   * Get all the items posted by the member that have modified (created, changed or commented on) within a datetime range.
    * Note, this method does NOT return an array of Item objects, but timestamps, because it's designed for
    * lightning fast sorting. Item object creation happens later when the page is rendered.
    *
@@ -1454,6 +1456,7 @@ class Member extends \AstroMultimedia\Drupal\User {
   /**
    * Get the items that should appear in the member's profile channel.
    * This method is optimised for speed and memory.
+   *
    * @todo Check for restricted/closed groups. Need Member::canSeeItem() method.
    * @todo Include topics the member is following.
    *
@@ -1470,64 +1473,36 @@ class Member extends \AstroMultimedia\Drupal\User {
     //   5. Items tagged with their member tag. @todo
     //   6. Items tagged with a topic they're following. @todo
 
-    /////////////////////////////////////////////////////////////////////
-    // Create an array of uids of item posters that we want to include.
+    //////////////////////////////////////////////////////////////////////////////////////
+    // Create an array of uids of the members that we want to include items posted by.
 
     // Start with theirs:
     $item_uids = [$this->uid()];
 
-    // Now get the uids of this member's followees.
-    // If we already have the followees in an array, use that:
-    if (isset($this->followees)) {
-      foreach ($this->followees as $followee) {
-        $item_uids[] = $followee->uid();
-      }
-    }
-    else {
-      // Get the member's followees from the db:
-      $q = db_select('view_followers', 'vf')
-        ->fields('vf', array('followee_uid'))
-        ->condition('follower_uid', $this->uid());
-      $rs = $q->execute();
-      foreach ($rs as $rec) {
-        $item_uids[] = $rec->followee_uid;
-      }
+    // Now the uids of this member's followees:
+    foreach ($this->followees() as $followee) {
+      $item_uids[] = $followee->uid();
     }
 
-    /////////////////////////////////////////////////////////////////////
-    // Create an array of nids of channels that we want to include.
+    //////////////////////////////////////////////////////////////////////////////////////
+    // Create an array of nids of the channels that we want to include items from.
 
     // Start with theirs:
     $channel_nids = [$this->channel()->nid()];
 
-    // Now get the nids of this member's groups' channels.
-    // If we already have the groups in an array, use that:
-    if (isset($this->groups)) {
-      foreach ($this->groups as $group) {
-        $channel_nids[] = $group->channel()->nid();
-      }
-    }
-    else {
-      // Get the member's groups from the db:
-      $q = db_select('view_group_has_member', 'vghm')
-        ->join('view_entity_has_channel', 'vehc', "vgm.group_nid = vec.entity_id AND vec.entity_type = 'node'");
-      $q->fields('vehc', array('channel_nid'))
-        ->condition('vghm.member_uid', $this->uid());
-      $rs = $q->execute();
-      foreach ($rs as $rec) {
-        $channel_nids[] = $rec->channel_nid;
-      }
+    // Now the nids of this member's groups' channels:
+    foreach ($this->groups() as $group) {
+      $channel_nids[] = $group->channel()->nid();
     }
 
-    /////////////////////////////////////////////////////////////////////
-    // The main query.
+    //////////////////////////////////////////////////////////////////////////////////////
+    // Construct the main query.
     $q = db_select('view_channel_has_item', 'vchi')
       ->fields('vchi', array('nid', 'item_modified'))
       ->condition(db_or()
         ->condition('item_uid', $item_uids)
         ->condition('channel_nid', $channel_nids))
       ->condition('item_modified', [$ts_start, $ts_end], 'BETWEEN');
-    dbg_query($q);
     $rs = $q->execute();
     $items = array();
     foreach ($rs as $rec) {
@@ -1540,34 +1515,97 @@ class Member extends \AstroMultimedia\Drupal\User {
   }
 
   /**
-   * Get the total number of items in the member's profile channel.
+   * Get the items that should appear in the member's profile channel.
+   * This method is optimised for speed and memory.
    *
+   * @todo Check for restricted/closed groups. Need Member::canSeeItem() method.
+   * @todo Include topics the member is following.
+   *
+   * @param int $ts_start
+   * @param int $ts_end
    * @return array
    */
-  public function itemCount() {
-    list($sql, $params) = $this->itemQuery();
-    $rs = db_query($sql, $params);
-    return $rs->rowCount();
+  public function itemQuery() {
+    // Items appearing in their profile channel come from multiple sources:
+    //   1. Items posted by them.
+    //   2. Items posted by their followees.
+    //   3. Items posted in their channel.
+    //   4. Items posted in their groups. @todo Replace this with: Items tagged with one of their groups.
+    //   5. Items tagged with their member tag. @todo
+    //   6. Items tagged with a topic they're following. @todo
+
+    //////////////////////////////////////////////////////////////////////////////////////
+    // Create an array of uids of the members that we want to include items posted by.
+
+    // Start with theirs:
+    $item_uids = [$this->uid()];
+
+    // Now the uids of this member's followees:
+    foreach ($this->followees() as $followee) {
+      $item_uids[] = $followee->uid();
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////
+    // Create an array of nids of the channels that we want to include items from.
+
+    // Start with theirs:
+    $channel_nids = [$this->channel()->nid()];
+
+    // Now the nids of this member's groups' channels:
+    foreach ($this->groups() as $group) {
+      $channel_nids[] = $group->channel()->nid();
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////
+    // Construct the main query.
+    $q = db_select('view_channel_has_item', 'vchi')
+      ->fields('vchi', array('item_nid'))
+      ->condition(db_or()
+        ->condition('item_uid', $item_uids)
+        ->condition('channel_nid', $channel_nids));
+//      ->orderBy('item_modified', 'DESC');
+    return $q;
   }
 
-  /**
-   * Render items for a member's profile.
-   *
-   * @return string
-   */
-  public function renderItems() {
-    // Get the page number:
-    $page = isset($_GET['page']) ? ((int) $_GET['page']) : 0;
+//  /**
+//   * Get the total number of items in the member's profile channel.
+//   *
+//   * @return array
+//   */
+//  public function itemCount() {
+//    list($sql, $params) = $this->itemQuery();
+//    $rs = db_query($sql, $params);
+//    return $rs->rowCount();
+//  }
 
-    // Get the items from this channel:
-    $items = $this->items($page * Channel::pageSize, Channel::pageSize);
-
-    // Get the total item count:
-    $total_n_items = $this->itemCount();
-
-    // Render the page of items:
-    return Channel::renderItemsPage($items, $total_n_items);
-  }
+//  /**
+//   * Render items for a member's profile.
+//   *
+//   * @return string
+//   */
+//  public function renderItems() {
+//    // Get a day of items at a time until we have the minimum amount.
+//    // Let's say 20 to start with.
+//    $n_items_goal = 20;
+//    $ts_end = REQUEST_TIME;
+//    $items = [];
+//
+//    while (TRUE) {
+//      $ts_start = $ts_end - DateTime::SECONDS_PER_DAY;
+//      $items = array_merge($items, $this->items($ts_start, $ts_end));
+//      $n_items = count($items);
+//      if ($n_items >= $n_items_goal) {
+//        break;
+//      }
+//      $ts_end = $ts_start;
+//    }
+//
+//    // Get the total item count:
+//    $total_n_items = $this->itemCount();
+//
+//    // Render the page of items:
+//    return Channel::renderItemsPage($item_times, $total_n_items);
+//  }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Ratings

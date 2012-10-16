@@ -16,7 +16,7 @@ class Channel extends Node {
   /**
    * The default page size for channels.
    */
-  const pageSize = 10;
+  const PAGE_SIZE = 10;
 
   /**
    * The parent entity of the channel.
@@ -24,6 +24,14 @@ class Channel extends Node {
    * @var array
    */
   protected $parentEntity;
+
+//  /**
+//   * The min and max item_modified timestamp for items *appearing in* (not necessarily posted in) this channel.
+//   *
+//   * @var int
+//   */
+//  protected $minItemModified;
+//  protected $maxItemModified;
 
   /**
    * Constructor.
@@ -181,6 +189,27 @@ class Channel extends Node {
   // Item-related methods.
 
   /**
+   * Checks if an item is in the channel.
+   *
+   * @param Item $item
+   * @return bool
+   */
+  public function hasItem(Item $item) {
+    return (bool) Relation::searchBinary('has_item', $this, $item);
+  }
+
+  /**
+   * Post an item in a channel.
+   *
+   * @param Item $item
+   * @return Relation
+   */
+  public function postItem(Item $item) {
+    // Create a new relationship:
+    return Relation::createNewBinary('has_item', $this, $item);
+  }
+
+  /**
    * Get the items in the channel.
    *
    * @param int $offset
@@ -189,12 +218,14 @@ class Channel extends Node {
    * @param string $order_by_direction
    * @return array
    */
-  public function items($offset = NULL, $limit = NULL, $order_by_field = 'changed', $order_by_direction = 'DESC') {
-    // Look for relationship records:
-    $q = db_select('view_channel_has_item', 'vci')
-      ->fields('vci', array('item_nid'))
-      ->condition('channel_nid', $this->nid())
-      ->condition('item_status', 1);
+  public function items($offset = NULL, $limit = NULL, $order_by_field = 'item_modified', $order_by_direction = 'DESC') {
+//    // Look for relationship records:
+//    $q = db_select('view_channel_has_item', 'vci')
+//      ->fields('vci', array('item_nid'))
+//      ->condition('channel_nid', $this->nid())
+//      ->condition('item_status', 1);
+
+    $q = $this->parentEntity()->itemQuery();
 
     // Add LIMIT clause:
     if ($offset !== NULL && $limit !== NULL) {
@@ -213,6 +244,55 @@ class Channel extends Node {
       $items[] = $item;
     }
     return $items;
+  }
+
+  /**
+   * Get the total number of items in the channel.
+   *
+   * @return array
+   */
+  public function itemCount() {
+    return $this->parentEntity()->itemQuery()->countQuery()->execute()->fetchField();
+  }
+
+  /**
+   * Render a page of items, with pagination.
+   *
+   * @return string
+   */
+  public static function renderItemsPage($items, $total_n_items) {
+    // Render the items:
+    $items_html = Item::renderMultiple($items);
+
+    // Render the pager:
+    pager_default_initialize($total_n_items, self::PAGE_SIZE);
+    $pager_html = theme('pager', array('quantity' => $total_n_items));
+
+    return "
+      <div id='channel'>
+        <div id='channel-items'>$items_html</div>
+        <div id='channel-pager'>$pager_html</div>
+      </div>";
+  }
+
+  /**
+   * Render a channel's items.
+   *
+   * @return string
+   */
+  public function renderItems() {
+    // Get the page number:
+    $page = isset($_GET['page']) ? ((int) $_GET['page']) : 0;
+
+    // Get the items from this channel:
+    $order_by_field = ($this->nid() == MOONMARS_NEWS_CHANNEL_NID) ? 'item_created' : 'item_modified';
+    $items = $this->items($page * self::PAGE_SIZE, self::PAGE_SIZE, $order_by_field);
+
+    // Get the total item count:
+    $total_n_items = $this->itemCount();
+
+    // Render the page of items:
+    return self::renderItemsPage($items, $total_n_items);
   }
 
   /**
@@ -238,83 +318,68 @@ class Channel extends Node {
     return $items;
   }
 
-  /**
-   * Checks if an item is in the channel.
-   *
-   * @param Item $item
-   * @return bool
-   */
-  public function hasItem(Item $item) {
-    return (bool) Relation::searchBinary('has_item', $this, $item);
-  }
+//  /**
+//   * Get the min and max modified timestamp of items in this group.
+//   *
+//   * @todo Check for restricted/closed groups. Need Member::canSeeItem() method.
+//   */
+//  public function loadMinMaxItemModified() {
+//    $q = $this->itemQuery()
+//      ->fields('vchi', "MIN(item_modified) AS min_item_modified, MAX(item_modified) AS max_item_modified");
+//    dbg($q);
+//    $rec = $q->execute()->fetchAssoc();
+//    dbg($rec);
+//    $this->minItemModified = $rec->min_item_modified;
+//    $this->maxItemModified = $rec->max_item_modified;
+//  }
+//
+//  /**
+//   * Get the min modified timestamp of items in this channel.
+//   *
+//   * @todo Check for restricted/closed groups. Need Member::canSeeItem() method.
+//   *
+//   * @return SelectQuery
+//   */
+//  public function minItemModified() {
+//    if (!isset($this->minItemModified)) {
+//      $this->loadMinMaxItemModified();
+//    }
+//    return $this->minItemModified;
+//  }
+//
+//  /**
+//   * Get the max modified timestamp of items in this channel.
+//   *
+//   * @todo Check for restricted/closed groups. Need Member::canSeeItem() method.
+//   *
+//   * @return SelectQuery
+//   */
+//  public function maxItemModified() {
+//    if (!isset($this->maxItemModified)) {
+//      $this->loadMaxMaxItemModified();
+//    }
+//    return $this->maxItemModified;
+//  }
 
-  /**
-   * Post an item in a channel.
-   *
-   * @param Item $item
-   * @return Relation
-   */
-  public function postItem(Item $item) {
-    // Create a new relationship:
-    return Relation::createNewBinary('has_item', $this, $item);
-  }
 
-  /**
-   * Get the total number of items in the channel.
-   *
-   * @return array
-   */
-  public function itemCount() {
-    // Look for relationship records:
-    $q = db_select('view_channel_has_item', 'vci')
-      ->fields('vci', array('item_nid'))
-      ->condition('channel_nid', $this->nid())
-      ->condition('item_status', 1);
+//  public function renderPage($first) {
+//    if ($first) {
+//      $ts_end = REQUEST_TIME;
+//      $ts_start = $ts_end - DateTime::SECONDS_PER_DAY;
+//      $new_items = $this->itemsPostedIn($ts_start, $ts_end);
+//      $_SESSION['channel_items_cache'][$this->nid()] = [
+//        'items' => $new_items,
+//        'ts_min' => $new_items[0],
+//        'ts_max' => $new_items[count($new_items) - 1],
+//      ];
+//    }
+//    else {
+//      $items = $_SESSION['channel_items_cache'][$this->nid()]
+//    }
+//
+//
+//  }
 
-    // Get the items and return the count:
-    $rs = $q->execute();
-    return $rs->rowCount();
-  }
-
-  /**
-   * Render a page of items, with pagination.
-   *
-   * @return string
-   */
-  public static function renderItemsPage($items, $total_n_items) {
-    // Render the items:
-    $items_html = Item::renderMultiple($items);
-
-    // Render the pager:
-    pager_default_initialize($total_n_items, self::pageSize);
-    $pager_html = theme('pager', array('quantity' => $total_n_items));
-
-    return "
-      <div id='channel'>
-        <div id='channel-items'>$items_html</div>
-        <div id='channel-pager'>$pager_html</div>
-      </div>";
-  }
-
-  /**
-   * Render a channel's items.
-   *
-   * @return string
-   */
-  public function renderItems() {
-    // Get the page number:
-    $page = isset($_GET['page']) ? ((int) $_GET['page']) : 0;
-
-    // Get the items from this channel:
-    $order_by_field = ($this->nid() == MOONMARS_NEWS_CHANNEL_NID) ? 'item_created' : 'item_modified';
-    $items = $this->items($page * self::pageSize, self::pageSize, $order_by_field);
-
-    // Get the total item count:
-    $total_n_items = $this->itemCount();
-
-    // Render the page of items:
-    return self::renderItemsPage($items, $total_n_items);
-  }
 
   /**
    * Return the links for this channel's entity.

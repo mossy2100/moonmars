@@ -418,7 +418,7 @@ function moonmars_nxn_list($user) {
   $member = Member::create($user);
 
   // Set the title:
-  drupal_set_title(t('<em>@username:</em> Notifications', ['@username' => $member->name()]), PASS_THROUGH);
+  drupal_set_title(t('<em>@@username:</em> Notifications', ['@username' => $member->name()]), PASS_THROUGH);
 
   // Show the edit nxn prefs button:
   $html = "

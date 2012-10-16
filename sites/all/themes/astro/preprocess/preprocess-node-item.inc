@@ -3,6 +3,7 @@
 use \AstroMultimedia\MoonMars\Member;
 use \AstroMultimedia\MoonMars\Channel;
 use \AstroMultimedia\MoonMars\Item;
+use \AstroMultimedia\MoonMars\Group;
 
 /**
  * Preprocess function for item nodes.
@@ -31,12 +32,14 @@ function astro_alpha_preprocess_node_item(&$vars) {
   }
   else {
     $current_channel = Channel::currentChannel();
-    $vars['parent_entity'] = $current_channel->parentEntity();
+    // Set the parent entity:
+    $current_channel_parent_entity = $current_channel->parentEntity();
+    $vars['current_channel_parent_entity'] = $current_channel_parent_entity;
   }
   $vars['item_node_page'] = $item_node_page;
 
   // Get the original poster:
-  $poster = Member::create($vars['uid']);
+  $poster = $item->creator();
   $vars['poster'] = $poster;
 
   // Get the poster's avatar:
@@ -44,19 +47,23 @@ function astro_alpha_preprocess_node_item(&$vars) {
 
   // Get the item's channel:
   $item_channel = $item->channel();
+  $item_channel_parent_entity = $item_channel->parentEntity();
   $vars['channel'] = $item_channel;
 
-  // Original channel string:
+  // Add a note to indicate what channel the item was posted in:
   if ($current_channel && $item_channel->equals($current_channel)) {
-    $vars['item_channel_string'] = '';
-//    $vars['item_channel_string'] = 'in this channel';
+    $vars['item_channel_string'] = 'in this channel';
   }
-  elseif ($current_channel && $item_channel->equals($poster->channel())) {
+  elseif ($item_channel_parent_entity->equals($poster)) {
     $vars['item_channel_string'] = 'in their channel';
   }
-  elseif ($item_channel) {
-    $vars['item_channel_string'] = 'in ' . l($item_channel->title(), $item_channel->parentEntity()->alias());
+  elseif ($item_channel_parent_entity instanceof Member) {
+    $vars['item_channel_string'] = 'in ' . $item_channel_parent_entity->tagLink() . "'s channel";
   }
+  else {
+    $vars['item_channel_string'] = 'in ' . $item_channel_parent_entity->tagLink();
+  }
+  // Wrap it in a span tag:
   $vars['item_channel_string'] = "<span class='item_channel'>{$vars['item_channel_string']}</span>";
 
   // Format the post datetime:

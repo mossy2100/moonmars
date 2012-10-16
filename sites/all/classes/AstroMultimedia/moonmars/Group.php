@@ -511,4 +511,26 @@ class Group extends Node {
     return $this->field('field_group_mode');
   }
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Items
+
+  /**
+   * Get the query to obtain the items to appear in a group's channel.
+   *
+   * @todo Check for restricted/closed groups. Need Member::canSeeItem() method.
+   *
+   * @return SelectQuery
+   */
+  public function itemQuery() {
+    // Items appearing in a group channel come from multiple sources:
+    //   1. Items posted in the group's channel.
+    //   2. Items posted in other channels that are tagged with this group's tag. @todo
+
+    $q = db_select('view_channel_has_item', 'vchi')
+      ->fields('vchi', array('item_nid'))
+      ->condition('channel_nid', $this->channel()->nid());
+//      ->orderBy('item_modified', 'DESC');
+    return $q;
+  }
+
 }
