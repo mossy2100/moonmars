@@ -220,6 +220,7 @@ function moonmars_update_remove_subscriber_relationships() {
         // Member of a group:
         echobr("Creating/updating relationship: Group " . $parent_entity->title() . " has member " . $member->name());
         $rel2 = Relation::updateBinary('has_member', $parent_entity, $member, FALSE);
+        $rel2->field('field_is_admin', LANGUAGE_NONE, 0, 'value', 0);
       }
 
       // Set the created timestamp so we retain a record of when the relationship started:
