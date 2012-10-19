@@ -222,8 +222,8 @@ function moonmars_update_remove_subscriber_relationships() {
         $rel2 = Relation::updateBinary('has_member', $parent_entity, $member, FALSE);
       }
 
+      // Set the created timestamp so we retain a record of when the relationship started:
       $rel2->created($rel->created());
-      $rel2->changed($rel->changed());
       $rel2->save();
 
       echobr();

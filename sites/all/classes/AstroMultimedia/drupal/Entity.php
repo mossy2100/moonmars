@@ -401,7 +401,7 @@ abstract class Entity {
   // Datetimes
 
   /**
-   * Get/set the created datetime.
+   * Get/set the created timestamp.
    *
    * @param null|int|string|DateTime $value
    * @return DateTime
@@ -418,7 +418,11 @@ abstract class Entity {
   }
 
   /**
-   * Get/set the changed datetime.
+   * Get/set the changed timestamp.
+   *
+   * Note that this method of setting the changed timestamp doesn't actually affect the database, because the entity
+   * save function will update the changed timestamp to now() automatically.
+   * But, perhaps it could be useful if you just want to update the property in the object.
    *
    * @param null|int|string|DateTime $value
    * @return DateTime
