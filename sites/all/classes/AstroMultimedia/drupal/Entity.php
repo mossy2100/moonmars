@@ -401,9 +401,9 @@ abstract class Entity {
   // Datetimes
 
   /**
-   * Get the created datetime.
+   * Get/set the created datetime.
    *
-   * @param null|int|DateTime $value
+   * @param null|int|string|DateTime $value
    * @return DateTime
    */
   public function created($value = NULL) {
@@ -412,31 +412,26 @@ abstract class Entity {
       return new DateTime($this->prop('created'));
     }
     else {
-      // Get the timestamp:
-      if (is_int($value)) {
-        $created = $value;
-      }
-      elseif (is_string($value)) {
-        $created = strtotime($value);
-      }
-      elseif ($value instanceof \DateTime) {
-        $created = $value->getTimestamp();
-      }
-      else {
-        trigger_error("Entity::created() - Invalid parameter.", E_USER_WARNING);
-      }
       // Set the created property:
-      $this->prop('created', $created);
+      $this->prop('created', DateTime::toTimestamp($value));
     }
   }
 
   /**
-   * Get the changed datetime.
+   * Get/set the changed datetime.
    *
+   * @param null|int|string|DateTime $value
    * @return DateTime
    */
-  public function changed() {
-    return new DateTime($this->prop('changed'));
+  public function changed($value = NULL) {
+    if ($value === NULL) {
+      // Get the changed property as a DateTime:
+      return new DateTime($this->prop('changed'));
+    }
+    else {
+      // Set the changed property:
+      $this->prop('changed', DateTime::toTimestamp($value));
+    }
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
