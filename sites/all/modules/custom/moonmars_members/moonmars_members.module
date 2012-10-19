@@ -749,6 +749,19 @@ function moonmars_members_followees_block() {
 }
 
 /**
+ * Get the string for the following column in the Members table.
+ * @todo update this to a checkbox, see how group search works.
+ *
+ * @param $uid
+ * @return string
+ */
+function moonmars_members_following($uid) {
+  $logged_in_member = Member::loggedInMember();
+  $row_member = Member::create($uid);
+  return (!$logged_in_member || $logged_in_member->equals($row_member)) ? 'N/A' : ($logged_in_member->follows($row_member) ? 'Yes' : 'No');
+}
+
+/**
  * Create the member edit menu.
  */
 function moonmars_members_edit_tabs_block() {

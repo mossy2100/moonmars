@@ -50,10 +50,10 @@ class DateTime extends \DateTime {
   const DAYS_PER_WEEK       = 7;
   const DAYS_PER_MONTH      = 30.436875;
   const DAYS_PER_YEAR       = 365.2425;
-  
+
   const WEEKS_PER_MONTH     = 4.348125;
   const WEEKS_PER_YEAR      = 52.1775;
-  
+
   const MONTHS_PER_YEAR     = 12;
 
   // Formats
@@ -286,6 +286,31 @@ class DateTime extends \DateTime {
     else {
       return $this->setTimestamp($ts);
     }
+  }
+
+  /**
+   * Convert a value into a Unix timestamp.
+   *
+   * @param int|string|DateTime $datetime
+   * @return int
+   */
+  public static function toTimestamp($datetime) {
+    if (is_int($datetime)) {
+      // Assume parameter is a Unix timestamp:
+      return $datetime;
+    }
+    elseif (is_string($datetime)) {
+      // Assume parameter is a valid datetime timestamp:
+      $ts = strtotime($datetime);
+      if ($ts !== FALSE) {
+        return $ts;
+      }
+    }
+    elseif ($datetime instanceof \DateTime) {
+      // Parameter is a \DateTime object:
+      return $datetime->getTimestamp();
+    }
+    trigger_error("DateTime::toTimestamp() - Invalid parameter.", E_USER_WARNING);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

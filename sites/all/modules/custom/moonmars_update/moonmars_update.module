@@ -4,7 +4,7 @@ use \AstroMultimedia\MoonMars\DateTime;
 use \AstroMultimedia\MoonMars\Member;
 use \AstroMultimedia\MoonMars\Group;
 use \AstroMultimedia\MoonMars\Item;
-use \AstroMultimedia\MoonMars\ItemComment;
+use \AstroMultimedia\MoonMars\Relation;
 
 /**
  * Implements hook_menu().
@@ -209,25 +209,29 @@ function moonmars_update_remove_subscriber_relationships() {
     $member = $rel->endpoint(1);
 
     if ($channel) {
-      dbg("Channel " . $channel->title() . " has subscriber " . $member->name());
-
+      echobr("Channel " . $channel->title() . " has subscriber " . $member->name());
       $parent_entity = $channel->parentEntity();
-
       if ($parent_entity instanceof Member) {
         // Follows:
-        dbg("Creating/updating relationship: Member " . $member->name() . " follows " . $parent_entity->name());
-        Relation::updateBinary('follows', $member, $parent_entity);
+        echobr("Creating/updating relationship: Member " . $member->name() . " follows " . $parent_entity->name());
+        $rel2 = Relation::updateBinary('follows', $member, $parent_entity, FALSE);
       }
       elseif ($parent_entity instanceof Group) {
         // Member of a group:
-        dbg("Creating/updating relationship: Group " . $parent_entity->title() . " has member " . $member->name());
-        Relation::updateBinary('has_member', $parent_entity, $member);
+        echobr("Creating/updating relationship: Group " . $parent_entity->title() . " has member " . $member->name());
+        $rel2 = Relation::updateBinary('has_member', $parent_entity, $member, FALSE);
       }
+
+      $rel2->created($rel->created());
+      $rel2->changed($rel->changed());
+      $rel2->save();
+
+      echobr();
     }
   }
 
   // Delete all the has_subscriber relationships:
-  Relation::deleteBinary('has_subscriber');
+//  Relation::deleteBinary('has_subscriber');
 }
 
 /**

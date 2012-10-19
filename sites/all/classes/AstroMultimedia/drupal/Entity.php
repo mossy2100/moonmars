@@ -354,10 +354,10 @@ abstract class Entity {
       // Insert the new alias:
       $q = db_insert('url_alias')
         ->fields(array(
-          'source'   => $source,
-          'alias'    => $alias,
-          'language' => LANGUAGE_NONE,
-        ));
+                      'source'   => $source,
+                      'alias'    => $alias,
+                      'language' => LANGUAGE_NONE,
+                 ));
       $q->execute();
       return $this;
     }
@@ -403,10 +403,31 @@ abstract class Entity {
   /**
    * Get the created datetime.
    *
+   * @param null|int|DateTime $value
    * @return DateTime
    */
-  public function created() {
-    return new DateTime($this->prop('created'));
+  public function created($value = NULL) {
+    if ($value === NULL) {
+      // Get the created property as a DateTime:
+      return new DateTime($this->prop('created'));
+    }
+    else {
+      // Get the timestamp:
+      if (is_int($value)) {
+        $created = $value;
+      }
+      elseif (is_string($value)) {
+        $created = strtotime($value);
+      }
+      elseif ($value instanceof \DateTime) {
+        $created = $value->getTimestamp();
+      }
+      else {
+        trigger_error("Entity::created() - Invalid parameter.", E_USER_WARNING);
+      }
+      // Set the created property:
+      $this->prop('created', $created);
+    }
   }
 
   /**
