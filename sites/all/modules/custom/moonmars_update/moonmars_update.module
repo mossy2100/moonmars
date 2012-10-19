@@ -5,6 +5,7 @@ use \AstroMultimedia\MoonMars\Member;
 use \AstroMultimedia\MoonMars\Group;
 use \AstroMultimedia\MoonMars\Item;
 use \AstroMultimedia\MoonMars\Relation;
+use \AstroMultimedia\MoonMars\Channel;
 
 /**
  * Implements hook_menu().
@@ -35,6 +36,119 @@ function moonmars_update_marshall($callback) {
   drupal_set_message("Invalid callback $callback", 'error');
   return '';
 }
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// LATEST UPDATE 2012-10-19 - Run these in sequence.
+
+/**
+ * Convert all has_subscriber relationships to has_member and follows relationships.
+ */
+function moonmars_update_remove_subscriber_relationships() {
+  // Convert all has_subscriber relationships to has_member and follows relationships:
+  $rels = Relation::searchBinary('has_subscriber');
+
+  foreach ($rels as $rel) {
+    // Get the endpoints as objects:
+    $channel = $rel->endpoint(0);
+    $member = $rel->endpoint(1);
+
+    if ($channel) {
+      echobr("Channel " . $channel->title() . " has subscriber " . $member->name());
+      $parent_entity = $channel->parentEntity();
+      if ($parent_entity instanceof Member) {
+        // Follows:
+        echobr("Creating/updating relationship: Member " . $member->name() . " follows " . $parent_entity->name());
+        $rel2 = Relation::updateBinary('follows', $member, $parent_entity, FALSE);
+      }
+      elseif ($parent_entity instanceof Group) {
+        // Member of a group:
+        echobr("Creating/updating relationship: Group " . $parent_entity->title() . " has member " . $member->name());
+        $rel2 = Relation::updateBinary('has_member', $parent_entity, $member, FALSE);
+        $rel2->field('field_is_admin', LANGUAGE_NONE, 0, 'value', 0);
+      }
+
+      // Set the created timestamp so we retain a record of when the relationship started:
+      $rel2->created($rel->created());
+      $rel2->save();
+
+      echobr();
+    }
+  }
+
+  // Delete all the has_subscriber relationships:
+  Relation::deleteBinary('has_subscriber');
+}
+
+/**
+ * Delete relations with invalid endpoints.
+ * This could be a useful script to run from time to time.
+ * Really, what I would like is a general-purpose Drupal database clean-up script.
+ */
+function moonmars_update_clean_up_relations() {
+  $q = db_select('relation', 'r')
+    ->fields('r', ['rid']);
+  $rs = $q->execute();
+  foreach ($rs as $rec) {
+    $delete = FALSE;
+    $rel = relation_load($rec->rid);
+    if (!$rel->endpoints || !$rel->endpoints[LANGUAGE_NONE]) {
+      echobr("No endpoints, delete relation $rec->rid");
+      $delete = TRUE;
+    }
+    elseif (count($rel->endpoints[LANGUAGE_NONE]) == 1) {
+      echobr("Only one endpoint, delete relation $rec->rid");
+      $delete = TRUE;
+    }
+    else {
+      foreach ($rel->endpoints[LANGUAGE_NONE] as $endpoint) {
+        $entity = entity_load_single($endpoint['entity_type'], $endpoint['entity_id']);
+        if (!$entity) {
+          echobr("Entity {$endpoint['entity_type']}:{$endpoint['entity_id']} not found, delete relation $rec->rid");
+          $delete = TRUE;
+        }
+      }
+    }
+    if ($delete) {
+      dbg($rel->endpoints);
+      relation_delete($rec->rid);
+      echoln("<hr>");
+    }
+  }
+}
+
+/**
+ * Delete channels with no parents.
+ */
+function moonmars_update_clean_up_channels() {
+  $q = db_select('node', 'n')
+    ->fields('n', ['nid'])
+    ->condition('type', 'channel');
+  $rs = $q->execute();
+  foreach ($rs as $rec) {
+    $channel = Channel::create($rec->nid);
+    $parent_entity = $channel->parentEntity();
+    if (!$parent_entity) {
+      dpm("Channel " . $channel->nid() . " title: " . $channel->title() . " has no parent");
+
+      $items = $channel->items();
+      dpm("It contains " . count($items) . " items");
+
+      if (count($items) == 0) {
+        dpm("Deleting channel");
+//        $channel->delete();
+      }
+
+    }
+  }
+  return '';
+}
+
+
+// END LATEST UPDATE 2012-10-19
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 
 /**
  * Update subscriber relationships.
@@ -167,72 +281,6 @@ function moonmars_update_fix_aliases() {
   }
 
   return '';
-}
-
-/**
- * Delete channels with no parents.
- */
-function moonmars_update_clean_up_channels() {
-  $q = db_select('node', 'n')
-    ->fields('n', ['nid'])
-    ->condition('type', 'channel');
-  $rs = $q->execute();
-  foreach ($rs as $rec) {
-    $channel = Channel::create($rec->nid);
-    $parent_entity = $channel->parentEntity();
-    if (!$parent_entity) {
-      dpm("Channel " . $channel->nid() . " title: " . $channel->title() . " has no parent");
-
-      $items = $channel->items();
-      dpm("It contains " . count($items) . " items");
-
-      if (count($items) == 0) {
-        dpm("Deleting channel");
-        $channel->delete();
-      }
-
-    }
-  }
-  return '';
-}
-
-/**
- * Convert all has_subscriber relationships to has_member and follows relationships.
- */
-function moonmars_update_remove_subscriber_relationships() {
-  // Convert all has_subscriber relationships to has_member and follows relationships:
-  $rels = Relation::searchBinary('has_subscriber');
-
-  foreach ($rels as $rel) {
-    // Get the endpoints as objects:
-    $channel = $rel->endpoint(0);
-    $member = $rel->endpoint(1);
-
-    if ($channel) {
-      echobr("Channel " . $channel->title() . " has subscriber " . $member->name());
-      $parent_entity = $channel->parentEntity();
-      if ($parent_entity instanceof Member) {
-        // Follows:
-        echobr("Creating/updating relationship: Member " . $member->name() . " follows " . $parent_entity->name());
-        $rel2 = Relation::updateBinary('follows', $member, $parent_entity, FALSE);
-      }
-      elseif ($parent_entity instanceof Group) {
-        // Member of a group:
-        echobr("Creating/updating relationship: Group " . $parent_entity->title() . " has member " . $member->name());
-        $rel2 = Relation::updateBinary('has_member', $parent_entity, $member, FALSE);
-        $rel2->field('field_is_admin', LANGUAGE_NONE, 0, 'value', 0);
-      }
-
-      // Set the created timestamp so we retain a record of when the relationship started:
-      $rel2->created($rel->created());
-      $rel2->save();
-
-      echobr();
-    }
-  }
-
-  // Delete all the has_subscriber relationships:
-//  Relation::deleteBinary('has_subscriber');
 }
 
 /**
@@ -436,39 +484,5 @@ function moonmars_update_set_default_group_tags() {
       $group->save();
     }
     echo "<hr>";
-  }
-}
-
-/**
- * Delete any relations with invalid endpoints.
- */
-function moonmars_update_clean_up_relations() {
-  $q = db_select('relation', 'r')
-    ->fields('r', ['rid']);
-  $rs = $q->execute();
-  foreach ($rs as $rec) {
-    $delete = FALSE;
-    $rel = relation_load($rec->rid);
-//    dbg($rel->endpoints);
-    if (!$rel->endpoints || !$rel->endpoints[LANGUAGE_NONE]) {
-      dbg("No endpoints, delete relation $rec->rid");
-      $delete = TRUE;
-    }
-    elseif (count($rel->endpoints[LANGUAGE_NONE]) == 1) {
-      dbg("Only one endpoint, delete relation $rec->rid");
-      $delete = TRUE;
-    }
-    else {
-      foreach ($rel->endpoints[LANGUAGE_NONE] as $endpoint) {
-        $entity = entity_load_single($endpoint['entity_type'], $endpoint['entity_id']);
-        if (!$entity) {
-          dbg("Entity {$endpoint['entity_type']}:{$endpoint['entity_id']} not found, delete relation $rec->rid");
-          $delete = TRUE;
-        }
-      }
-    }
-    if ($delete) {
-      relation_delete($rec->rid);
-    }
   }
 }
