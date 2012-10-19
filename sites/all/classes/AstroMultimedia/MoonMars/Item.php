@@ -35,31 +35,6 @@ class Item extends Node {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Load/save
-
-  /**
-   * Update a channel-has-item relation's 'changed' field so that the item appears at the top of the channel.
-   * This should be called whenever an item is edited, and whenever a comment is posted or edited,
-   * so that the changed value in the relation always holds the time of the most recent change to the item.
-   *
-   * @todo Update this later, because we are updating the data model so that an item doesn't have only one
-   * channel, but can appear in multiple channels based on tags. Instead we will simply calculate the latest change
-   * time when creating the channel.
-   *
-   * @return bool
-   */
-  public function bump() {
-    $rels = Relation::searchBinary('has_item', NULL, $this);
-    if (!$rels) {
-      trigger_error("Item::bump() - Item has not been added to any channel.", E_USER_WARNING);
-      return FALSE;
-    }
-    $rels[0]->load();
-    $rels[0]->save();
-    return TRUE;
-  }
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Channel
 
   /**
@@ -79,6 +54,28 @@ class Item extends Node {
     return $this->channel;
   }
 
+  /**
+   * Update a channel-has-item relation's 'changed' field so that the item appears at the top of the channel.
+   * This should be called whenever an item is edited, and whenever a comment is posted or edited,
+   * so that the changed value in the relation always holds the time of the most recent change to the item.
+   *
+   * @todo Update this later, because we are updating the data model so that an item doesn't have only one
+   * channel, but can appear in multiple channels based on tags. Instead we will simply calculate the latest change
+   * time when creating the channel.
+   *
+   * @return bool
+   *   TRUE if the channel was found and the item was bumped; otherwise FALSE.
+   */
+  public function bump() {
+    $rels = Relation::searchBinary('has_item', NULL, $this);
+    if ($rels) {
+      $rels[0]->load();
+      $rels[0]->save();
+      return TRUE;
+    }
+    return FALSE;
+  }
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Text
 
@@ -90,10 +87,11 @@ class Item extends Node {
    */
   public function text($text = NULL) {
     if ($text) {
+      // Set the text.
       // Convert hearts to HTML entities:
       $text = moonmars_text_fix_hearts($text);
     }
-
+    // Get/set the field:
     return $this->field('field_item_text', LANGUAGE_NONE, 0, 'value', $text);
   }
 
@@ -241,8 +239,68 @@ class Item extends Node {
    * @return string
    */
   public function resetAlias() {
-    require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'pathauto') . '/pathauto.inc';
-    return pathauto_create_alias('node', 'insert', $this->path(), ['node' => $this->node()], 'item');
+    $text = strtolower($this->text());
+    echobr("Item " . $this->nid());
+    echobr($text);
+
+    // Close contractions:
+    $text = preg_replace("/([a-z]+)'([a-z]+)/", "$1$2", $text);
+    echobr("Closed contractions: $text");
+
+    // Extract words:
+    $words = preg_split("/[^\w]+/", $text);
+    $words = array_values(array_filter($words));
+    dbg($words);
+
+    if (!$words) {
+      $alias = 'untitled';
+    }
+    else {
+      // Choose the number of words that gives us a alias max length of 50:
+      $optimal_length = 100;
+      $smallest_dist = PHP_INT_MAX;
+      $smallest_dist_key = NULL;
+      foreach ($words as $key => $word) {
+        $alias = implode('-', array_slice($words, 0, $key + 1));
+        $dist = abs(strlen($alias) - $optimal_length);
+        echobr("dist for $alias = $dist");
+        if ($dist > $smallest_dist) {
+          // we're done:
+          break;
+        }
+        else {
+          echobr("updating key to $key");
+          $smallest_dist = $dist;
+          $smallest_dist_key = $key;
+        }
+      }
+      $alias = implode('-', array_slice($words, 0, $smallest_dist_key + 1));
+    }
+
+    // Get a unique variation:
+    $base = $alias;
+    $n = 0;
+    while (TRUE) {
+      // Is this alias in use?
+      $q = db_select('url_alias', 'ua')
+        ->fields('ua', ['source'])
+        ->condition('alias', $alias)
+        ->condition('source', 'node/' . $this->nid(), '!=');
+      $rs = $q->execute();
+      if ($rs->rowCount()) {
+        // Yes it is. Go to next variation.
+        $source = $rs->fetchField();
+        echobr("Another node has this alias $alias: $source");
+        $n++;
+        $alias = "$base-$n";
+      }
+      else {
+        break;
+      }
+    }
+
+    echobr($alias);
+    $this->alias($alias);
   }
 
 }

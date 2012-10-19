@@ -210,6 +210,20 @@ class Channel extends Node {
   }
 
   /**
+   * Get the query to obtain the items linked to a channel.
+   * This function is *not* for finding which items to *display* in a channel. Use the itemQuery() method in the
+   * parent entity for that.
+   *
+   * @return SelectQuery
+   */
+  public function itemQuery() {
+    $q = db_select('view_channel_has_item', 'vchi')
+      ->fields('vchi', array('item_nid'))
+      ->condition('channel_nid', $this->nid());
+    return $q;
+  }
+
+  /**
    * Get the items in the channel.
    *
    * @param int $offset
@@ -225,7 +239,8 @@ class Channel extends Node {
 //      ->condition('channel_nid', $this->nid())
 //      ->condition('item_status', 1);
 
-    $q = $this->parentEntity()->itemQuery();
+    $parent_entity = $this->parentEntity();
+    $q = $parent_entity ? $parent_entity->itemQuery() : $this->itemQuery();
 
     // Add LIMIT clause:
     if ($offset !== NULL && $limit !== NULL) {

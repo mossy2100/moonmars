@@ -129,21 +129,133 @@ function moonmars_update_clean_up_channels() {
     $channel = Channel::create($rec->nid);
     $parent_entity = $channel->parentEntity();
     if (!$parent_entity) {
-      dpm("Channel " . $channel->nid() . " title: " . $channel->title() . " has no parent");
+      echobr("Channel " . $channel->nid() . " title: " . $channel->title() . " has no parent");
 
       $items = $channel->items();
-      dpm("It contains " . count($items) . " items");
+      echobr("It contains " . count($items) . " items");
 
       if (count($items) == 0) {
-        dpm("Deleting channel");
-//        $channel->delete();
+        echobr("Deleting channel");
+        $channel->delete();
       }
-
+      echo "<hr>";
     }
   }
-  return '';
 }
 
+/**
+ * Set default group tags.
+ */
+function moonmars_update_set_default_group_tags() {
+  $q = db_select('node', 'n')
+    ->fields('n', ['nid'])
+    ->condition('type', 'group');
+  $rs = $q->execute();
+  foreach ($rs as $rec) {
+    $group = Group::create($rec->nid);
+    $title = $group->title();
+    echobr($title);
+    $tag = $group->tag();
+    if ($tag) {
+      echobr("Current tag: $tag");
+    }
+    else {
+      $words = array_map(function($value) {
+        return strtolower($value);
+      }, explode(' ', $title));
+      foreach ($words as $key => $word) {
+        if (in_array($word, ['for', 'the', 'and', 'of', 'an', 'a'])) {
+          unset($words[$key]);
+        }
+      }
+      echo "New tag: ";
+      if ($title == 'Solar System Express') {
+        $tag = 'sol-x';
+      }
+      elseif ($title == 'Superheavy Elements/Radioactive Materials') {
+        $tag = 'superheavy-radioactive';
+      }
+      elseif ($title == 'Earthlight Institute') {
+        $tag = 'eli';
+      }
+      elseif ($title == 'The Planetary Society') {
+        $tag = 'tps';
+      }
+      elseif ($title == 'Website Development') {
+        $tag = 'webdev';
+      }
+      elseif (count($words) >= 3 && !in_str($title, 'metal', FALSE)) {
+        $tag = '';
+        foreach ($words as $word) {
+          $tag .= $word[0];
+        }
+      }
+      else {
+        $tag = implode('-', $words);
+      }
+      echobr($tag);
+      $group->tag($tag);
+      $group->save();
+    }
+    echo "<hr>";
+  }
+}
+
+/**
+ * Fix URL aliases.
+ */
+function moonmars_update_fix_aliases() {
+  // Members:
+  $q = db_select('users', 'u')
+    ->fields('u', ['uid'])
+    ->condition('uid', 0, '>');
+  $rs = $q->execute();
+  foreach ($rs as $rec) {
+    $member = Member::create($rec->uid);
+    $member->resetAlias();
+    echobr("Updated member alias to <em>" . $member->alias() . "</em>");
+  }
+
+  // Groups:
+  $q = db_select('node', 'n')
+    ->fields('n', ['nid'])
+    ->condition('type', 'group')
+    ->orderBy('nid');
+  $rs = $q->execute();
+  foreach ($rs as $rec) {
+    $group = Group::create($rec->nid);
+    $group->resetAlias();
+    echobr("Updated group alias to <em>" . $group->alias() . "</em>");
+  }
+
+  // Channels:
+  $q = db_select('node', 'n')
+    ->fields('n', ['nid'])
+    ->condition('type', 'channel')
+    ->orderBy('nid');
+  $rs = $q->execute();
+  foreach ($rs as $rec) {
+    $channel = Channel::create($rec->nid);
+    if ($channel->resetAlias()) {
+      echobr("Updated channel alias to <em>" . $channel->alias() . "</em>");
+    }
+    else {
+      echobr("Could not updated channel alias for <em>" . $channel->alias() . "</em>", 'warning');
+    }
+  }
+
+  // Items:
+  $q = db_select('node', 'n')
+    ->fields('n', ['nid'])
+    ->condition('type', 'item')
+    ->orderBy('nid');
+  $rs = $q->execute();
+  foreach ($rs as $rec) {
+    $item = Item::create($rec->nid);
+    $item->resetAlias();
+    echobr("Updated item alias to <em>" . $item->alias() . "</em><hr>");
+  }
+}
 
 // END LATEST UPDATE 2012-10-19
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -220,67 +332,6 @@ function moonmars_update_named_colors() {
   }
   ksort($colors2);
   dbg($colors2);
-}
-
-/**
- * Fix URL aliases.
- */
-function moonmars_update_fix_aliases() {
-  require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'pathauto') . '/pathauto.inc';
-
-  // Members:
-  $q = db_select('users', 'u')
-    ->fields('u', ['uid'])
-    ->condition('uid', 0, '>');
-  $rs = $q->execute();
-  foreach ($rs as $rec) {
-    $member = Member::create($rec->uid);
-    $member->resetAlias();
-    drupal_set_message("Updated member alias to <em>" . $member->alias() . "</em>");
-  }
-
-  // Groups:
-  $q = db_select('node', 'n')
-    ->fields('n', ['nid'])
-    ->condition('type', 'group')
-    ->orderBy('nid');
-  $rs = $q->execute();
-  foreach ($rs as $rec) {
-    $group = Group::create($rec->nid);
-    $group->resetAlias();
-    drupal_set_message("Updated group alias to <em>" . $group->alias() . "</em>");
-  }
-
-  // Channels:
-  $q = db_select('node', 'n')
-    ->fields('n', ['nid'])
-    ->condition('type', 'channel')
-    ->orderBy('nid');
-  $rs = $q->execute();
-  foreach ($rs as $rec) {
-    $channel = Channel::create($rec->nid);
-    if ($channel->resetAlias()) {
-      drupal_set_message("Updated channel alias to <em>" . $channel->alias() . "</em>");
-    }
-    else {
-      drupal_set_message("Could not updated channel alias for <em>" . $channel->alias() . "</em>", 'warning');
-    }
-  }
-
-  // Items:
-  $q = db_select('node', 'n')
-    ->fields('n', ['nid'])
-    ->condition('type', 'item')
-    ->orderBy('nid');
-  $rs = $q->execute();
-  foreach ($rs as $rec) {
-    $item = Item::create($rec->nid);
-    $alias = pathauto_create_alias('node', 'return', "node/$rec->nid", ['node' => $item->node()], 'item');
-    $item->alias($alias);
-    drupal_set_message("Updated item alias to <em>" . $item->alias() . "</em>");
-  }
-
-  return '';
 }
 
 /**
@@ -450,39 +501,3 @@ function moonmars_update_channel_item_relation_changed_times() {
 ////    $item_comment->save();
 //  }
 //}
-
-/**
- * Set default group tags.
- */
-function moonmars_update_set_default_group_tags() {
-  $q = db_select('node', 'n')
-    ->fields('n', ['nid'])
-    ->condition('type', 'group');
-  $rs = $q->execute();
-  foreach ($rs as $rec) {
-    $group = Group::create($rec->nid);
-    $tag = $group->tag();
-    if ($tag) {
-      echo "Has a tag:";
-      dbg($tag);
-    }
-    else {
-      $title = $group->title();
-      dbg($title);
-      $words = array_map(function($value) {
-        return strtolower($value);
-      }, explode(' ', $title));
-      foreach ($words as $key => $word) {
-        if (in_array($word, ['for', 'the', 'and', 'of', 'an', 'a'])) {
-          unset($words[$key]);
-        }
-      }
-      echo "New tag:";
-      $tag = implode('-', $words);
-      dbg($tag);
-      $group->tag($tag);
-      $group->save();
-    }
-    echo "<hr>";
-  }
-}

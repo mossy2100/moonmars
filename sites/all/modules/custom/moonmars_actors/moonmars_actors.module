@@ -166,8 +166,97 @@ function moonmars_actors_reset_aliases($actor) {
 
   // Update the alias and title for the actor's channel.
   // @todo Remove when channels are made obsolete as entities.
-  $channel = $actor->channel();
-  $channel->resetAliasAndTitle();
+  if ($actor instanceof Member || $actor instanceof Group) {
+    $channel = $actor->channel();
+    if ($channel) {
+      $channel->resetAliasAndTitle();
+    }
+  }
+}
+
+/**
+ * Called when updating an entity.
+ * Supports members, groups and items.
+ *
+ * @param stdClass$entity
+ * @param string $entity_type
+ * @param string $op
+ *   Must be 'insert' or 'update'.
+ */
+function moonmars_actors_entity_save($entity, $entity_type, $op) {
+  // Check if the entity is a member or group:
+  if ($entity_type == 'user' || ($entity_type == 'node' && in_array($entity->type, ['group', 'item']))) {
+
+    // Get the actor:
+    $actor = moonmars_actors_get_actor($entity_type, $entity);
+
+    // Get the logged-in member:
+    $logged_in_member = Member::loggedInMember();
+
+    if ($actor instanceof Member) {
+      $member = $actor;
+      if ($op == 'update') {
+        // Create triumphs:
+        if ($actor instanceof Member) {
+          // Only create an update-member triumph if the member is updating their own profile
+          // (i.e., not if an admin is updating someone else's profile).
+          // The reason for this is because an administrator probably won't be adding interesting info;
+          // they'll most likely just be updating a password or something.
+          if ($logged_in_member && $member->equals($logged_in_member)) {
+            // The first time a member updates their profile, send a new-member triumph. The reason why we don't do this
+            // when the user account is created, or when they confirm their email address, is because if we send new-member
+            // notifications at those times they won't contain much interesting information. The first time they update
+            // their profile, however (which they will normally do straight after they confirm their email address anyway)
+            // will probably when they enter most of their personal info. Then we send the nxn, then people will know
+            // whether they want to follow the new member or not.
+            if (!$member->newMemberTriumphCreated()) {
+              Triumph::newMember($member);
+            }
+            else {
+              Triumph::updateMember($member);
+            }
+          }
+        }
+      }
+    }
+    elseif ($actor instanceof Group) {
+      $group = $actor;
+      if ($op == 'insert') {
+        // Create triumph:
+        Triumph::newGroup($group);
+        // Add the creator as group admin:
+        $group->addAdmin(Member::loggedInMember());
+      }
+      elseif ($op == 'update') {
+        // Create triumph:
+        Triumph::updateGroup($actor, $logged_in_member);
+      }
+    }
+    elseif ($actor instanceof Item) {
+      $item = $actor;
+      // If the item is new...
+      if ($op == 'insert') {
+        // Add it to the channel where it was posted:
+        // @todo code this may be removed if we do away with channels.
+        if (isset($GLOBALS['channel_nid']) && $GLOBALS['channel_nid']) {
+          $channel = Channel::create($GLOBALS['channel_nid']);
+          if ($channel) {
+            $channel->postItem($item);
+          }
+        }
+        // Create a new-item triumph:
+        Triumph::newItem($item);
+      }
+      else {
+        // Bump it to the top of the channel:
+        $item->bump();
+        // We aren't creating triumphs for updating items or comments.
+      }
+    }
+
+    // Update the actor alias and channel alias and title:
+    moonmars_actors_reset_aliases($actor);
+  }
 }
 
 /**
@@ -177,23 +266,7 @@ function moonmars_actors_reset_aliases($actor) {
  * after pathauto_node_insert_alias() sets the alias according to the pattern.
  */
 function moonmars_actors_entity_insert($entity, $entity_type) {
-  // Check if the entity is a member or group:
-  if ($entity_type == 'user' || ($entity_type == 'node' && $entity->type == 'group')) {
-
-    // Get the actor:
-    $actor = moonmars_actors_get_actor($entity_type, $entity);
-
-    // If group:
-    if ($actor instanceof Group) {
-      // Create triumph:
-      Triumph::newGroup($actor);
-      // Add the creator as group admin:
-      $actor->addAdmin(Member::loggedInMember());
-    }
-
-    // Update the actor alias and channel alias and title:
-    moonmars_actors_reset_aliases($actor);
-  }
+  moonmars_actors_entity_save($entity, $entity_type, 'insert');
 }
 
 /**
@@ -207,45 +280,10 @@ function moonmars_actors_entity_insert($entity, $entity_type) {
  *   3. Invoke entity_update
  *
  * We use this hook instead of hook_node_update() as it gets called later in the cycle, after
- * pathauto_node_update_alias() sets the alias according to the pattern. hook_node_update() is called before then.
+ * pathauto_node_update_alias() sets the alias according to the pattern.
  */
 function moonmars_actors_entity_update($entity, $entity_type) {
-  // Check if the entity is a member or group:
-  if ($entity_type == 'user' || ($entity_type == 'node' && $entity->type == 'group')) {
-
-    // Get the actor:
-    $actor = moonmars_actors_get_actor($entity_type, $entity);
-
-    // Create triumphs:
-    $logged_in_member = Member::loggedInMember();
-    if ($actor instanceof Member) {
-      // Only create an update-member triumph if the member is updating their own profile
-      // (i.e., not if an admin is updating someone else's profile).
-      // The reason for this is because an administrator probably won't be adding interesting info;
-      // they'll most likely just be updating a password or something.
-      if ($logged_in_member && $actor->equals($logged_in_member)) {
-
-        // The first time a member updates their profile, send a new-member triumph. The reason why we don't do this
-        // when the user account is created, or when they confirm their email address, is because if we send new-member
-        // notifications at those times they won't contain much interesting information. The first time they update
-        // their profile, however (which they will normally do straight after they confirm their email address anyway)
-        // will probably when they enter most of their personal info. Then we send the nxn, then people will know
-        // whether they want to follow the new member or not.
-        if (!$actor->newMemberTriumphCreated()) {
-          Triumph::newMember($actor);
-        }
-        else {
-          Triumph::updateMember($actor);
-        }
-      }
-    }
-    elseif ($actor instanceof Group) {
-      Triumph::updateGroup($actor, $logged_in_member);
-    }
-
-    // Update the actor alias and channel alias and title:
-    moonmars_actors_reset_aliases($actor);
-  }
+  moonmars_actors_entity_save($entity, $entity_type, 'update');
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

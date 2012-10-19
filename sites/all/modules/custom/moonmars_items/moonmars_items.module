@@ -202,6 +202,7 @@ function moonmars_items_form_submit($form, &$form_state) {
 
 /**
  * Implement hook_node_presave().
+ * @todo update when we replace items with posts.
  */
 function moonmars_items_node_presave($node) {
   if ($node->type == 'item') {
@@ -216,51 +217,6 @@ function moonmars_items_node_presave($node) {
     // Set the title to a trimmed version of the text:
     $node->title = moonmars_text_trim($text);
   }
-}
-
-/**
- * Stuff to do if the item is inserted or updated from a channel.
- *
- * @param $node
- */
-function moonmars_items_node_save($node, $is_new) {
-  // If the item was posted in a channel page:
-  if ($node->type == 'item' && isset($GLOBALS['channel_nid']) && $GLOBALS['channel_nid']) {
-
-    // Get the item:
-    $item = Item::create($node);
-
-    // Reset the item's alias:
-    $item->resetAlias();
-
-    // Get the channel:
-    $channel = Channel::create($GLOBALS['channel_nid']);
-
-    // If the item is new then add it to the channel, otherwise bump it to the top:
-    if ($is_new) {
-      $channel->postItem($item);
-    }
-    else {
-      $item->bump();
-    }
-
-    // Create a new-item triumph:
-    Triumph::newItem($item);
-  }
-}
-
-/**
- * Implement hook_node_insert().
- */
-function moonmars_items_node_insert($node) {
-  moonmars_items_node_save($node, TRUE);
-}
-
-/**
- * Implement hook_node_update().
- */
-function moonmars_items_node_update($node) {
-  moonmars_items_node_save($node, FALSE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
