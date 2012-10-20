@@ -209,6 +209,15 @@ class Channel extends Node {
    * @return SelectQuery
    */
   public function itemQuery() {
+    // Check if the parent entity has an itemQuery method, in which case override, and get the items display in
+    // this channel (not necessarily posted in).
+    // This really needs to be refactored or something.
+    $parent_entity = $this->parentEntity();
+    if  ($parent_entity && method_exists($parent_entity, 'itemQuery')) {
+      return $parent_entity->itemQuery();
+    }
+
+    // Get all the items posted in this channel:
     $q = db_select('view_channel_has_item', 'vchi')
       ->fields('vchi', array('item_nid'))
       ->condition('channel_nid', $this->nid());
@@ -225,14 +234,7 @@ class Channel extends Node {
    * @return array
    */
   public function items($offset = NULL, $limit = NULL, $order_by_field = 'item_modified', $order_by_direction = 'DESC') {
-//    // Look for relationship records:
-//    $q = db_select('view_channel_has_item', 'vci')
-//      ->fields('vci', array('item_nid'))
-//      ->condition('channel_nid', $this->nid())
-//      ->condition('item_status', 1);
-
-    $parent_entity = $this->parentEntity();
-    $q = $parent_entity ? $parent_entity->itemQuery() : $this->itemQuery();
+    $q = $this->itemQuery();
 
     // Add LIMIT clause:
     if ($offset !== NULL && $limit !== NULL) {
@@ -259,7 +261,7 @@ class Channel extends Node {
    * @return array
    */
   public function itemCount() {
-    return $this->parentEntity()->itemQuery()->countQuery()->execute()->fetchField();
+    return $this->itemQuery()->countQuery()->execute()->fetchField();
   }
 
   /**
