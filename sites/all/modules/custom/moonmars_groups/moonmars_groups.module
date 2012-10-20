@@ -313,9 +313,12 @@ function moonmars_groups_menu_block() {
     return '';
   }
 
-  global $user;
-  if (!$user) {
-    return "<p>To join this group, first <a href='user/register'>register an account</a>.</p>";
+  // Get the current member:
+  $logged_in_member = Member::loggedInMember();
+
+  // If the user isn't logged in, no menu:
+  if (!$logged_in_member) {
+    return "<p><a href='/user/login'>Login</a> or <a href='/register'>register</a> to join this group.</p>";
   }
 
   // Get the group from the URL:
@@ -323,14 +326,6 @@ function moonmars_groups_menu_block() {
   $group = ($entity instanceof Group) ? $entity : (($entity instanceof Channel) ? $entity->parentEntity() : FALSE);
   if (!($group instanceof Group)) {
     return '';
-  }
-
-  // Get the current member:
-  $logged_in_member = Member::loggedInMember();
-
-  // If the user isn't logged in, no menu:
-  if (!$logged_in_member) {
-    return "<p><a href='/user/login'>Login</a> or <a href='/register'>register</a> to join this group.</p>";
   }
 
   // Check if they're a member of the group:

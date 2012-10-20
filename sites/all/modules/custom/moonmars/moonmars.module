@@ -106,7 +106,7 @@ function moonmars_home() {
     drupal_goto('profile');
   }
   else {
-    drupal_goto('group/moonmars');
+    drupal_goto('group/moonmars-news');
   }
 }
 
