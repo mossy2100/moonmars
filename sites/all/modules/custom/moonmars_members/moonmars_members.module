@@ -414,6 +414,18 @@ function moonmars_members_user_profile_form_submit($form, &$form_state) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Member edit forms
+//
+//function moonmars_members_edit_redirect($user) {
+//  if ($_GET) {
+//    $options = ['query' => $_GET];
+//  }
+//  else {
+//    $options = [];
+//  }
+//
+//  dpm('moonmars_members_edit_redirect - redirecting to ' . "user/$uid/edit/profile");
+//  drupal_goto("user/$uid/edit/profile", $options);
+//}
 
 /**
  * Display form for editing profile.

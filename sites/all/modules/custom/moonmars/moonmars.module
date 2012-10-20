@@ -20,11 +20,6 @@ function moonmars_init() {
 
   // Needs to be run once on every D7 site. Keep here as a reminder for the next site.
 //  variable_set('update_max_fetch_time', 300);
-
-//  $groups = Group::searchByTitle('MarsDrive');
-//  $group = $groups[0];
-//  dbg($group->itemQuery());
-//  dbg($group->channel()->itemCount());
 }
 
 /**
@@ -36,6 +31,7 @@ function moonmars_init() {
  * but as far as I can tell, has not been.
  */
 function moonmars_alias_redirect() {
+  $alias = NULL;
   $parts = request_args();
   if (in_array($parts[0], ['user', 'node']) && is_uint($parts[1])) {
     $path = "{$parts[0]}/{$parts[1]}";
@@ -43,9 +39,30 @@ function moonmars_alias_redirect() {
     if ($alias != $path) {
       if (count($parts) > 2) {
         $alias .= '/' . implode('/', array_slice($parts, 2));
+        if (count($parts) == 3 && $parts[0] == 'user' && $parts[2] == 'edit') {
+          $alias .= '/profile';
+        }
       }
-      drupal_goto($alias);
     }
+  }
+  elseif (count($parts) == 3 && $parts[0] == 'member' && $parts[2] == 'edit') {
+    // Redirect a request for the member edit page to the edit/profile page:
+    $alias = request_path() . '/profile';
+  }
+
+  if ($alias) {
+    if ($_GET) {
+      $query = $_GET;
+      if (isset($query['q'])) {
+        unset($query['q']);
+      }
+    }
+    if ($query) {
+      $alias .= '?' . http_build_query($query);
+    }
+    // Can't use drupal_goto() because if there's a destination parameter then it will screw up the redirect:
+    header("Location: /$alias");
+    exit;
   }
 }
 

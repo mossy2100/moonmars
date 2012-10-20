@@ -190,6 +190,8 @@ function moonmars_actors_entity_save($entity, $entity_type, $op) {
     // Get the actor:
     $actor = moonmars_actors_get_actor($entity_type, $entity);
 
+    dpm($actor);
+
     // Get the logged-in member:
     $logged_in_member = Member::loggedInMember();
 
