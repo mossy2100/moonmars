@@ -25,14 +25,6 @@ class Channel extends Node {
    */
   protected $parentEntity;
 
-//  /**
-//   * The min and max item_modified timestamp for items *appearing in* (not necessarily posted in) this channel.
-//   *
-//   * @var int
-//   */
-//  protected $minItemModified;
-//  protected $maxItemModified;
-
   /**
    * Constructor.
    */
