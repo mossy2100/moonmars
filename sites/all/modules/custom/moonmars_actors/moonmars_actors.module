@@ -9,6 +9,7 @@ use \AstroMultimedia\MoonMars\Group;
 use \AstroMultimedia\MoonMars\Topic;
 use \AstroMultimedia\MoonMars\Triumph;
 use \AstroMultimedia\MoonMars\Relation;
+use \AstroMultimedia\MoonMars\Item;
 
 /**
  * @author Shaun Moss (mossy2100)
@@ -178,7 +179,7 @@ function moonmars_actors_reset_aliases($actor) {
  * Called when updating an entity.
  * Supports members, groups and items.
  *
- * @param stdClass$entity
+ * @param stdClass $entity
  * @param string $entity_type
  * @param string $op
  *   Must be 'insert' or 'update'.
@@ -189,8 +190,6 @@ function moonmars_actors_entity_save($entity, $entity_type, $op) {
 
     // Get the actor:
     $actor = moonmars_actors_get_actor($entity_type, $entity);
-
-    dpm($actor);
 
     // Get the logged-in member:
     $logged_in_member = Member::loggedInMember();
@@ -240,11 +239,9 @@ function moonmars_actors_entity_save($entity, $entity_type, $op) {
       if ($op == 'insert') {
         // Add it to the channel where it was posted:
         // @todo code this may be removed if we do away with channels.
-        if (isset($GLOBALS['channel_nid']) && $GLOBALS['channel_nid']) {
-          $channel = Channel::create($GLOBALS['channel_nid']);
-          if ($channel) {
-            $channel->postItem($item);
-          }
+        $channel = Channel::currentChannel();
+        if ($channel) {
+          $channel->postItem($item);
         }
         // Create a new-item triumph:
         Triumph::newItem($item);
@@ -254,6 +251,9 @@ function moonmars_actors_entity_save($entity, $entity_type, $op) {
         $item->bump();
         // We aren't creating triumphs for updating items or comments.
       }
+    }
+    else {
+      trigger_error("moonmars_actors_entity_save() - Actor has unknown class. Check your use statements.", E_USER_WARNING);
     }
 
     // Update the actor alias and channel alias and title:

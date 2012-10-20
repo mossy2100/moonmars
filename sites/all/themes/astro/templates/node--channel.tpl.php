@@ -41,12 +41,8 @@ require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'node') . '/node.page
               </div>
 
               <?php
-              // Remember that we're on a channel page:
-              $GLOBALS['channel_nid'] = $channel->nid();
-
               // New item form:
-              $new_item_form = node_add('item');
-              echo render($new_item_form);
+              echo render(node_add('item'));
               ?>
 
             </div>

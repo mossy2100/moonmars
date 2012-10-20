@@ -16,6 +16,9 @@ function astro_alpha_preprocess_node_channel(&$vars) {
   $channel = Channel::create($node);
   $vars['channel'] = $channel;
 
+  // Remember the current channel in the session:
+  Channel::currentChannel($channel);
+
   // Get the parent entity:
   $parent_entity = $channel->parentEntity();
 
@@ -29,9 +32,6 @@ function astro_alpha_preprocess_node_channel(&$vars) {
   drupal_add_js(drupal_get_path('module', 'moonmars_channels') . '/js/moonmars-channels.js');
   drupal_add_js(drupal_get_path('module', 'moonmars_ratings') . '/js/ratings.js');
   drupal_add_js(drupal_get_path('module', 'moonmars_text') . '/js/autotrim.js');
-
-  // Remember the current channel:
-  Channel::currentChannel($channel);
 
   // Set the page title:
   if (arg(0) == 'node' && arg(1) == $channel->nid()) {
