@@ -2338,7 +2338,7 @@ function _drupal_bootstrap_page_cache() {
       header('X-Drupal-Cache: MISS');
     }
   }
-}
+} 
 
 /**
  * Initializes the database system and registers autoload functions.
