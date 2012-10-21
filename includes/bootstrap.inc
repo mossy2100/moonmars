@@ -2347,8 +2347,19 @@ function _drupal_bootstrap_database() {
   // Redirect the user to the installation script if Drupal has not been
   // installed yet (i.e., if no $databases array has been defined in the
   // settings.php file) and we are not already installing.
+
+  echo "<pre>";
+  var_dump($GLOBALS['databases']);
+  var_dump(MAINTENANCE_MODE);
+  echo "</pre>";
+
+
   if (empty($GLOBALS['databases']) && !drupal_installation_attempted()) {
     include_once DRUPAL_ROOT . '/includes/install.inc';
+
+    echo "going to install.php";
+    exit;
+
     install_goto('install.php');
   }
 
