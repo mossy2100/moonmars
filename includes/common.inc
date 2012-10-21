@@ -670,6 +670,7 @@ function drupal_encode_path($path) {
  */
 function drupal_goto($path = '', array $options = array(), $http_response_code = 302) {
   echo "drupal_goto($path)<br>";
+  exit;
 
   // A destination in $_GET always overrides the function arguments.
   // We do not allow absolute URLs to be passed via $_GET, as this can be an attack vector.
