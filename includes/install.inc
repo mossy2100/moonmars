@@ -1009,6 +1009,9 @@ function drupal_install_fix_file($file, $mask, $message = TRUE) {
  */
 function install_goto($path) {
   echo "install_goto($path)<br>";
+  echo "<pre>";
+  var_dump(debug_backtrace());
+  echo "</pre>";
   exit;
 
   global $base_url;
