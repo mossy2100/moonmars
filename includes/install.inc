@@ -1008,12 +1008,6 @@ function drupal_install_fix_file($file, $mask, $message = TRUE) {
  *   An installer path.
  */
 function install_goto($path) {
-  echo "install_goto($path)<br>";
-  echo "<pre>";
-  var_dump(debug_backtrace());
-  echo "</pre>";
-  exit;
-
   global $base_url;
   include_once DRUPAL_ROOT . '/includes/common.inc';
   header('Location: ' . $base_url . '/' . $path);
