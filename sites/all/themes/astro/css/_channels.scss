@@ -45,6 +45,7 @@ $ratingButtonHeight = 20px;
 
   article.new-comment-form-article {
     display: none;
+    margin-left: 10px;
 
     .post-content-wrapper {
       height: auto;
@@ -52,7 +53,7 @@ $ratingButtonHeight = 20px;
       form {
         padding: 0;
         margin: 0;
-        border: none;
+        border: 0;
         background: none;
       }
     }
@@ -107,35 +108,6 @@ article.node-item {
 
   .top-post-controls {
     border-top: solid 1px $grey4;
-  }
-
-  .post-controls {
-    padding-top: 1px;
-
-    ul.action-links {
-      display: block;
-      float: right;
-      height: $ratingButtonHeight;
-      margin-bottom: 0;
-
-      li {
-        padding: 0 0 0 10px;
-        //border-right: solid 1px $grey4;
-        margin: 0;
-        float: right;
-        display: block;
-        height: $ratingButtonHeight;
-        line-height: $ratingButtonHeight;
-
-        a {
-          line-height: $ratingButtonHeight;
-        }
-
-        &.waiting {
-          padding-right: 18px;
-        }
-      }
-    }
   }
 
   .score-more-wrapper {
@@ -206,6 +178,35 @@ article.node-item {
   }
 }
 
+.post-controls {
+  padding-top: 1px;
+
+  ul.action-links {
+    display: block;
+    float: right;
+    height: $ratingButtonHeight;
+    margin-bottom: 0;
+
+    li {
+      padding: 0 0 0 10px;
+      //border-right: solid 1px $grey4;
+      margin: 0;
+      float: right;
+      display: block;
+      height: $ratingButtonHeight;
+      line-height: $ratingButtonHeight;
+
+      a {
+        line-height: $ratingButtonHeight;
+      }
+
+      &.waiting {
+        padding-right: 18px;
+      }
+    }
+  }
+}
+
 .post-form-wrapper {
   @include channel-page-section;
 
@@ -230,13 +231,18 @@ article.node-channel form,
 article.node-item form {
   padding: 0;
   margin: 0;
-  border: none;
+  border: 0;
   background: none;
 }
 
+article.group {
+  .group-description {
+    @include channel-page-section;
+    padding-bottom: 10px;
+  }
+}
 
 form.node-item-form {
-
   #edit-field-item-type {
     margin-top: 10px;
 
@@ -279,10 +285,6 @@ form.node-item-form {
     padding: 0;
   }
 
-  .form-actions {
-    margin: 0;
-  }
-
   #field-item-text-add-more-wrapper {
     .form-item {
       margin-bottom: 0;
@@ -297,16 +299,9 @@ form.node-item-form {
   #edit-field-item-document-und-0-upload-button {
     display: none;
   }
-
 }
 
 article.node-item {
-  .field-name-field-item-text {
-    .field-item {
-      white-space: pre-wrap;
-    }
-  }
-
   p.comment-instruction {
     margin: 0;
     font-size: 11px;
@@ -379,16 +374,81 @@ div.item-list {
   }
 }
 
-article.group {
-  .group-description {
-    @include channel-page-section;
-    padding-bottom: 10px;
-  }
-}
-
 #profile-flag {
   position: relative;
   z-index: 1;
   left: -33px;
   top: -22px;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Channel links.
+.block-user-info-block,
+.block-group-info-block {
+  .official-website {
+    margin: 10px 0;
+  }
+
+  .social-links {
+    margin: 10px 0;
+    padding: 0;
+
+    a.social-link {
+      display: block;
+      float: left;
+      width: 25px;
+      height: 25px;
+      margin: 0 5px 5px 0;
+      @include border-radius(3px);
+      @include opacity(0.6);
+
+      &:hover {
+        @include opacity(1);
+      }
+    }
+
+    .social-link-website {
+      background-image: url("../images/social-icons/website-25x25.png");
+    }
+
+    .social-link-facebook {
+      background-image: url("../images/social-icons/facebook-25x25.png");
+    }
+
+    .social-link-linkedin {
+      background-image: url("../images/social-icons/linkedin-25x25.png");
+    }
+
+    .social-link-twitter {
+      background-image: url("../images/social-icons/twitter-25x25.png");
+    }
+
+    .social-link-meetup {
+      background-image: url("../images/social-icons/meetup-25x25.png");
+    }
+
+    .social-link-google-plus {
+      background-image: url("../images/social-icons/google-plus-25x25.png");
+    }
+
+    .social-link-youtube {
+      background-image: url("../images/social-icons/youtube-25x25.png");
+    }
+
+    .social-link-flickr {
+      background-image: url("../images/social-icons/flickr-25x25.png");
+    }
+
+    .social-link-wikipedia {
+      background-image: url("../images/social-icons/wikipedia-25x25.png");
+    }
+
+    .social-link-academia {
+      background-image: url("../images/social-icons/academia-25x25.png");
+    }
+
+    .social-link-skype {
+      background-image: url("../images/social-icons/skype-25x25.png");
+    }
+  }
 }

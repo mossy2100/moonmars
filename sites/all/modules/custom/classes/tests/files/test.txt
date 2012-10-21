@@ -1,1 +1,0 @@
-This file created for testing the classes module using SimpleTest.

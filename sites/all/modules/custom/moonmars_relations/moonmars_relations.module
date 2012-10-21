@@ -1,0 +1,133 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function moonmars_relations_menu() {
+  $items['admin/content/relation/cleanup'] = [
+    'page callback'    => 'moonmars_relations_cleanup',
+    'access callback'  => 'user_is_admin',
+    'type'             => MENU_NORMAL_ITEM,
+    'title'            => 'Cleanup',
+  ];
+  return $items;
+}
+
+///**
+// * Implements hook_form_alter().
+// */
+//function moonmars_relations_form_alter(&$form, &$form_state, $form_id) {
+//  dbg($form_id);
+//
+//
+//  if ($form_id != 'relation_edit_form') {
+//    return;
+//  }
+//
+//  $entity = $form_state['relation'];
+//  $rid = $entity->rid;
+//  $relation_type = $entity->relation_type;
+//
+//  // Alter form for group-has-member relations:
+//  if ($relation_type == 'has_member') {
+//
+//    $group_nid = $entity->endpoints[LANGUAGE_NONE][0]['entity_id'];
+//
+//    // Set the page title:
+//    if ($group_nid == MOONMARS_DEFAULT_GROUP_NID) {
+//      drupal_set_title("Default email preferences for groups");
+//    }
+//    else {
+//      $group = Group::create($group_nid);
+//      drupal_set_title("Email preferences for group " . $group->title());
+//    }
+//
+//    unset($form['endpoints']);
+//
+//    // If the current user is not an administrator, they can't control whether the member whose group settings are
+//    // displayed is an administrator of that group.
+//    if (!user_is_admin()) {
+//      unset($form['field_is_admin']);
+//    }
+//  }
+//
+//}
+
+/**
+ * Look through the relations and see if any refer to a relation type that has been deleted.
+ */
+function moonmars_relations_cleanup() {
+  // Get the relation types:
+  $rs = db_select('relation_type', 'rt')
+    ->fields('rt', ['relation_type'])
+    ->execute();
+  $relation_types = [];
+  foreach ($rs as $rec) {
+    $relation_types[] = $rec->relation_type;
+  }
+
+  // Get all relations:
+  $rs2 = db_select('relation', 'r')
+    ->fields('r', ['rid'])
+    ->execute();
+  $n = 0;
+  foreach ($rs2 as $rec2) {
+    $rel = relation_load($rec2->rid);
+
+    // Check for invalid relation type:
+    if (!in_array($rel->relation_type, $relation_types)) {
+      relation_delete($rel->rid);
+      drupal_set_message("Relation $rel->rid with obsolete relation type $rel->relation_type deleted.");
+      $n++;
+    }
+
+    // Check for invalid endpoints:
+    foreach ($rel->endpoints as $lang => $endpoints) {
+      foreach ($endpoints as $delta => $endpoint) {
+        $entity = @entity_load_single($endpoint['entity_type'], $endpoint['entity_id']);
+        if (!$entity) {
+          relation_delete($rel->rid);
+          drupal_set_message("Relation $rel->rid with invalid entity {$endpoint['entity_type']}:{$endpoint['entity_id']} deleted.");
+          $n++;
+        }
+      }
+    }
+  }
+
+  // Tell the user:
+  drupal_set_message(format_plural($n, "1 relation", "@count relations") . " deleted.");
+
+  return '';
+}
+
+///**
+// * Common code for inserting or updating relations.
+// *
+// * @param $entity
+// * @param $entity_type
+// */
+//function moonmars_relations_entity_save($entity, $entity_type) {
+//  // Update the relation's alias.
+//  if ($entity_type == 'relation') {
+//
+//    // Get the Relation object:
+//    $relation = moonmars_actors_get_actor($entity_type, $entity);
+//
+//    // Reset the alias:
+//    $relation->resetAlias();
+//  }
+//}
+
+///**
+// * Implements hook_entity_insert().
+// */
+//function moonmars_relations_entity_insert($entity, $entity_type) {
+//  moonmars_relations_entity_save($entity, $entity_type);
+//}
+//
+///**
+// * Implements hook_entity_update().
+// */
+//function moonmars_relations_entity_update($entity, $entity_type) {
+//  moonmars_relations_entity_save($entity, $entity_type);
+//}

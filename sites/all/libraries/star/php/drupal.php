@@ -7,31 +7,9 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Useful functions related to URL arguments.
 
-function alias_args() {
-  $request_uri = trim(urldecode($_SERVER['REQUEST_URI']), '/');
-  return array_filter(explode('/', $request_uri));
-}
-
-function alias_arg($i) {
-  $alias_args = alias_args();
-  return array_key_exists($i, $alias_args) ? $alias_args[$i] : NULL;
-}
-
-function alias_arg_count() {
-  return count(alias_args());
-}
-
 /**
- * Return the last argument in the alias.
+ * Return the number of arguments in the system path. Supplements Drupal's arg() and args() functions.
  *
- * @return string
- */
-function last_alias_arg() {
-  return alias_arg(alias_arg_count() - 1);
-}
-
-/**
- * Return the number of arguments in the path.
  * @return int
  */
 function arg_count() {
@@ -43,13 +21,51 @@ function arg_count() {
 }
 
 /**
- * Return the last argument.
+ * Return the last argument in the system path. Supplements Drupal's arg() and args() functions.
+ *
  * @return string
  */
 function last_arg() {
   return arg(arg_count() - 1);
 }
 
+/**
+ * Get the parts of the requested path. Mirrors Drupal's args() function.
+ *
+ * @return array
+ */
+function request_args() {
+  return array_filter(explode('/', request_path()));
+}
+
+/**
+ * Get a specific part of the requested path. Mirrors Drupal's arg() function.
+ *
+ * @return string
+ */
+function request_arg($i) {
+  $request_args = request_args();
+  return array_key_exists($i, $request_args) ? $request_args[$i] : NULL;
+}
+
+/**
+ * Get the number of parts in the requested path.
+ *
+ * @return int
+ */
+function request_arg_count() {
+  return count(request_args());
+}
+
+/**
+ * Return the last argument in the requested path.
+ *
+ * @return string
+ */
+function last_request_arg() {
+  $request_args = request_args();
+  return $request_args[count($request_args) - 1];
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Useful database functions.
@@ -382,13 +398,19 @@ function user_get_link($uid) {
 function role_load($role) {
   if (is_numeric($role)) {
     // Assume $role == rid
-    $sql = "SELECT * FROM {role} WHERE rid = %d";
+    return db_select('role', 'r')
+      ->fields('r')
+      ->condition('rid', $role)
+      ->execute()
+      ->fetchObject();
   }
-  else {
-    // Assume $role is role name:
-    $sql = "SELECT * FROM {role} WHERE name = '%s'";
-  }
-  return db_fetch_array(db_query($sql, $role));
+
+  // Assume $role is role name:
+  return db_select('role', 'r')
+    ->fields('r')
+    ->condition('name', $role)
+    ->execute()
+    ->fetchObject();
 }
 
 /**
@@ -453,51 +475,29 @@ function user_remove_role(&$user, $role) {
  * Returns TRUE if the user has the given role.
  * If $user == NULL, defaults to the logged-in user.
  * If the user is not logged in, returns FALSE.
+ *
  * @param mixed $role
  * @param object $user
- * @param array $edit Edit fields as would be passed to hook_user() or user_save()
  * @return bool
  */
-function user_has_role($role, $user = NULL, $edit = array()) {
-  // default to global user:
+function user_has_role($role, $user = NULL) {
+  // Default to global user:
   if (!$user) {
     $user = $GLOBALS['user'];
   }
-  // allow for $user being the uid:
-  if (is_numeric($user)) {
-    $uid = $user;
-    $user = user_load($uid);
+
+  // Allow for $user being the uid:
+  if (is_uint($user)) {
+    $user = user_load($user);
   }
+
+  // Check we have a user:
   if (!$user || !$user->uid) {
     return FALSE;
   }
-  $role_info = role_load($role);
-  $rid = $role_info['rid'];
-  $result = $user->roles[$rid] || $edit['roles'][$rid];
-//  debug($result ? "user is $role" : "user is not $role");
-  return $result;
-}
 
-/**
- * Returns TRUE if the user has the given role.
- * If $user == NULL, defaults to the logged-in user.  If the user is not logged in, returns FALSE.
- * Same as above function but optimised for speed.
- * This function does not load or save the user, but access the DB directly for speed.
- *
- * @param mixed $role Can be rid or role name.
- * @param int $uid
- * @return bool
- */
-function user_has_role_by_uid($role, $uid) {
-  if (!$uid) {
-    return FALSE;
-  }
-  // Get the role info:
-  $role = role_load($role);
-  // See if the user has this role:
-  $sql = "SELECT * FROM {users_roles} WHERE uid = %d AND rid = %d";
-  $rec = db_fetch_array(db_query($sql, $uid, $role['rid']));
-  return (bool) $rec;
+  // Check if the role (which may be a rid or a role name) is either a key or a value in the user's roles array:
+  return in_array($role, $user->roles) || array_key_exists($role, $user->roles);
 }
 
 /**
@@ -522,6 +522,23 @@ function user_get_roles($uid) {
   return $roles;
 }
 
+/**
+ * Checks if the logged-in user is an administrator.
+ *
+ * @return bool
+ */
+function user_is_admin() {
+  return user_has_role('administrator');
+}
+
+/**
+ * Checks if the logged-in user is the superuser.
+ *
+ * @return bool
+ */
+function user_is_superuser() {
+  return $GLOBALS['user']->uid == 1;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Useful form-related functions.
@@ -552,7 +569,7 @@ function remove_key_from_array($key, &$array, $parent = '') {
  * @param array $form
  * @param array $form_state
  */
-function remove_field_from_form($field, &$form, &$form_state = NULL) {
+function drupal_form_remove_field($field, &$form, &$form_state = NULL) {
   remove_key_from_array($field, $form);
   if ($form_state) {
     remove_key_from_array($field, $form_state);
@@ -565,7 +582,7 @@ function remove_field_from_form($field, &$form, &$form_state = NULL) {
  * @param array $form
  * @param array $form_state
  */
-function remove_group_from_form($group, &$form, &$form_state = NULL) {
+function drupal_form_remove_group($group, &$form, &$form_state = NULL) {
   // remove the fields in the group:
   if (is_array($form[$group])) {
     foreach ($form[$group] as $key => $value) {
@@ -584,6 +601,20 @@ function remove_group_from_form($group, &$form, &$form_state = NULL) {
   if ($form_state) {
     remove_key_from_array($group, $form_state);
   }
+}
+
+/**
+ * Move a field from one fieldset (field group) to another.
+ *
+ * @param $form
+ * @param $field_name
+ * @param $old_group
+ * @param $new_group
+ */
+function drupal_form_move_field(&$form, $field_name, $old_group, $new_group) {
+  $form['#groups'][$old_group]->children = array_diff($form['#groups'][$old_group]->children, [$field_name]);
+  $form['#groups'][$new_group]->children[] = 'field_moon_or_mars';
+  $form['#group_children'][$field_name] = $new_group;
 }
 
 /**

@@ -43,7 +43,6 @@
 
     // General purpose method for getting/setting the total size of a dimension (padding, border, margin).
     dimension: function(type, direction, value) {
-
       // Get the dimensions of interest based on the direction:
       if (direction == 'width') {
         var dimension1 = 'left';

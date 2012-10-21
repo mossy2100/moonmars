@@ -1,0 +1,4 @@
+name = moonmars.com Notifications
+description = Support for notifications on moonmars.com.
+core = 7.x
+package = moonmars.com

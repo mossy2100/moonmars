@@ -1,5 +1,8 @@
 <?php
 
+use \AstroMultimedia\MoonMars\Member;
+use \AstroMultimedia\MoonMars\Group;
+
 /**
  * Preprocess function for group nodes.
  *
@@ -7,8 +10,8 @@
  */
 function astro_alpha_preprocess_node_group(&$vars) {
   // Get the current logged-in member:
-  $current_member = Member::currentMember();
-  $vars['current_member'] = $current_member;
+  $logged_in_member = Member::loggedInMember();
+  $vars['logged_in_member'] = $logged_in_member;
 
   // Get the node:
   $node = $vars['node'];

@@ -1,0 +1,299 @@
+<?php
+
+use \AstroMultimedia\Drupal\Entity;
+use \AstroMultimedia\MoonMars\Member;
+use \AstroMultimedia\MoonMars\Group;
+use \AstroMultimedia\MoonMars\Topic;
+
+
+const MOONMARS_QUICKSEARCH_MIN_LENGTH = 3;
+
+
+function moonmars_quicksearch_menu() {
+  $items['ajax/quicksearch'] = [
+    'page callback' => 'moonmars_quicksearch_ajax_search',
+    'page arguments' => array(2),
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  ];
+  return $items;
+}
+
+/**
+ * Implementation of hook_block_info().
+ */
+function moonmars_quicksearch_block_info() {
+  $blocks['quicksearch-form'] = [
+    'info' => t('Quicksearch form'),
+    'cache' => DRUPAL_CACHE_GLOBAL,
+  ];
+  return $blocks;
+}
+
+/**
+ * Implementation of hook_block_view().
+ */
+function moonmars_quicksearch_block_view($delta = '') {
+  $block = [];
+  switch ($delta) {
+    case 'quicksearch-form':
+      $block['subject'] = 'Quicksearch';
+      $block['content'] = drupal_get_form('moonmars_quicksearch_form');
+      break;
+  }
+  return $block;
+}
+
+/**
+ * Create the quicksearch form.
+ *
+ * @return array
+ */
+function moonmars_quicksearch_form() {
+  $form = [];
+  $form['quicksearch_text'] = [
+    '#type' => 'textfield',
+  ];
+  $form['quicksearch_results'] = [
+    '#markup' => "<ul id='quicksearch-results'></ul>",
+  ];
+
+  // Set autocomplete off on both the form and the field, to cover all browsers:
+  $form['#attributes']['autocomplete'] = 'off';
+  $form['quicksearch_text']['#attributes']['autocomplete'] = 'off';
+
+  $form['#attached']['js'][] = drupal_get_path('module', 'moonmars_quicksearch') . '/js/quicksearch.js';
+
+  // Custom submit handler:
+  $form['#submit'][] = 'moonmars_quicksearch_form_submit';
+
+  return $form;
+}
+
+/**
+ * Submit handler for moonmars_quicksearch_form().
+ * This should only be triggered if they press enter when in the search box.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function moonmars_quicksearch_form_submit($form, &$form_state) {
+  dsm($form);
+//  dsm($form_state);
+}
+
+/**
+ * Get the min position of the match in an item.
+ *
+ * @param array
+ * @return int
+ */
+function moonmars_quicksearch_min_pos(array $item) {
+  $text = $GLOBALS['quicksearch_text'];
+  $pos_in_tag = strpos(strtolower($item['tag']), $text);
+  $pos_in_name = strpos(strtolower($item['name']), $text);
+  if ($pos_in_tag === FALSE && $pos_in_name === FALSE) {
+    return PHP_INT_MAX;
+  }
+  if ($pos_in_tag === FALSE) {
+    return $pos_in_name;
+  }
+  if ($pos_in_name === FALSE) {
+    return $pos_in_tag;
+  }
+  return min($pos_in_tag, $pos_in_name);
+}
+
+/**
+ * Callback for usort() that compares two matches.
+ *
+ * @param array $item1
+ * @param array $item2
+ * @return int
+ */
+function moonmars_quicksearch_compare_matches($item1, $item2) {
+  $min_pos1 = moonmars_quicksearch_min_pos($item1);
+  $min_pos2 = moonmars_quicksearch_min_pos($item2);
+  if ($min_pos1 < $min_pos2) {
+    return -1;
+  }
+  if ($min_pos1 > $min_pos2) {
+    return 1;
+  }
+
+  $text = $GLOBALS['quicksearch_text'];
+
+  // Make tags and names lower case for case-insensitive matching:
+  $tag1 = strtolower($item1['tag']);
+  $name1 = strtolower($item1['name']);
+  $tag2 = strtolower($item2['tag']);
+  $name2 = strtolower($item2['name']);
+
+  // If both names match the search string, choose the item with the shorter name.
+  // For example, if the search text is 'mars', topic "Mars Settlement" should appear before "Mars".
+  $in_item1_name = in_str($text, $name1);
+  $in_item2_name = in_str($text, $name2);
+  if ($in_item1_name && $in_item2_name) {
+    if (strlen($name1) < strlen($name2)) {
+      return -1;
+    }
+    if (strlen($name1) > strlen($name2)) {
+      return 1;
+    }
+  }
+
+  // If both tags match the search string, choose the item with the shorter tag.
+  // For example, if the search text is 'mars', topic #mars should appear before #mars-settlement.
+  $in_item1_tag = in_str($text, $tag1);
+  $in_item2_tag = in_str($text, $tag2);
+  if ($in_item1_tag && $in_item2_tag) {
+    if (strlen($tag1) < strlen($tag2)) {
+      return -1;
+    }
+    if (strlen($tag1) > strlen($tag2)) {
+      return 1;
+    }
+  }
+
+  // If the search text only matches one name, that one should appear first.
+  if ($in_item1_name && !$in_item2_name) {
+    return -1;
+  }
+  if (!$in_item1_name && $in_item2_name) {
+    return 1;
+  }
+
+  // If the search text only matches one tag, that one should appear first.
+  if ($in_item1_tag && !$in_item2_tag) {
+    return -1;
+  }
+  if (!$in_item1_tag && $in_item2_tag) {
+    return 1;
+  }
+
+  // Members appear before Topics and Groups:
+  if ($item1['actor_type'] == 'member' && $item2['actor_type'] != 'member') {
+    return -1;
+  }
+  if ($item1['actor_type'] != 'member' && $item2['actor_type'] == 'member') {
+    return 1;
+  }
+
+  // Topics appear before Groups:
+  if ($item1['actor_type'] == 'topic' && $item2['actor_type'] == 'group') {
+    return -1;
+  }
+  if ($item1['actor_type'] == 'group' && $item2['actor_type'] == 'topic') {
+    return 1;
+  }
+
+  // Compare names alphabetically:
+  if ($name1 < $name2) {
+    return -1;
+  }
+  if ($name1 > $name2) {
+    return 1;
+  }
+
+  // Compare tags alphabetically:
+  if ($tag1 < $tag2) {
+    return -1;
+  }
+  if ($tag1 > $tag2) {
+    return 1;
+  }
+
+  // They're the same - should never happen:
+  return 0;
+}
+
+/**
+ * AJAX callback for rating things.
+ */
+function moonmars_quicksearch_ajax_search($text) {
+  // Get request param. For now, search is case-insensitive.
+  $text = strtolower($text);
+  // Only search if 3 characters or more. Actually the callback should never be triggered with fewer than 3 characters.\
+  // The JS will make that check.
+  if (strlen($text) < MOONMARS_QUICKSEARCH_MIN_LENGTH) {
+    echo json_encode([]);
+    return;
+  }
+
+  // Remember the search text in a global for convenience:
+  $GLOBALS['quicksearch_text'] = $text;
+
+  // Search 3 actor types: member, topic, group.
+  $matches = [];
+
+  // Find matching members:
+  $q = db_select('view_member', 'm')
+    ->fields('m', ['name', 'full_name'])
+    ->condition(db_or()
+      ->condition('name', "%$text%", 'LIKE')
+      ->condition('full_name', "%$text%", 'LIKE')
+    );
+  $rs = $q->execute();
+  foreach ($rs as $rec) {
+    $matches[] = [
+      'actor_type' => 'member',
+      'prefix' => Member::TAG_PREFIX,
+      'tag' => $rec->name,
+      'name' => $rec->full_name,
+    ];
+  }
+
+  // Find matching topics:
+  $q = db_select('view_topic', 't')
+    ->fields('t', ['name', 'title'])
+    ->condition(db_or()
+      ->condition('name', "%$text%", 'LIKE')
+      ->condition('title', "%$text%", 'LIKE')
+  );
+  $rs = $q->execute();
+  foreach ($rs as $rec) {
+    $matches[] = [
+      'actor_type' => 'topic',
+      'prefix' => Topic::TAG_PREFIX,
+      'tag' => $rec->name,
+      'name' => $rec->title,
+    ];
+  }
+
+  // Find matching groups:
+  $q = db_select('view_group', 'g')
+    ->fields('g', ['tag', 'title'])
+    ->condition(db_or()
+      ->condition('tag', "%$text%", 'LIKE')
+      ->condition('title', "%$text%", 'LIKE')
+    );
+  $rs = $q->execute();
+  foreach ($rs as $rec) {
+    $matches[] = [
+      'actor_type' => 'group',
+      'prefix' => Group::TAG_PREFIX,
+      'tag' => $rec->tag,
+      'name' => $rec->title,
+    ];
+  }
+
+  // Sort the matches:
+  usort($matches, 'moonmars_quicksearch_compare_matches');
+
+  // Grab the top 10:
+  $matches = array_slice($matches, 0, 10);
+
+  // Generate the HTML response:
+  $html = '';
+  foreach ($matches as $match) {
+    $html .= "<li><a href='/{$match['actor_type']}/{$match['tag']}'>{$match['name']} ({$match['prefix']}{$match['tag']})</a></li>\n";
+  }
+
+  // Send the result:
+  $data = [
+    'text' => $text,
+    'html' => $html,
+  ];
+  echo json_encode($data);
+  return;
+}

@@ -1,94 +1,332 @@
 <?php
 
+use \AstroMultimedia\MoonMars\DateTime;
+use \AstroMultimedia\MoonMars\Member;
+use \AstroMultimedia\MoonMars\Group;
+use \AstroMultimedia\MoonMars\Item;
+use \AstroMultimedia\MoonMars\Relation;
+use \AstroMultimedia\MoonMars\Channel;
+
 /**
  * Implements hook_menu().
  */
 function moonmars_update_menu() {
-  $items = array();
-  $items['update/subscriber-relationships'] = array(
-    'page callback'    => 'moonmars_update_subscriber_relationships',
-    'access arguments' => array('administer relation types'),
-    'type'             => MENU_CALLBACK,
-  );
-  $items['named-colors'] = array(
-    'page callback'    => 'moonmars_update_named_colors',
-    'access callback'  => TRUE,
-    'type'             => MENU_CALLBACK,
-  );
-//  $items['update/news-items'] = array(
-//    'page callback'    => 'moonmars_update_news_items',
-//    'access callback'  => TRUE,
-//    'type'             => MENU_CALLBACK,
-//  );
-  $items['update/channel-item-relation-changed-times'] = array(
-    'page callback'    => 'moonmars_update_channel_item_relation_changed_times',
-    'access callback'  => TRUE,
-    'type'             => MENU_CALLBACK,
-  );
+  $items = [];
+  $items['update/%'] = [
+    'page callback'   => 'moonmars_update_marshall',
+    'page arguments'  => [1],
+    'access callback' => TRUE,
+    'type'            => MENU_CALLBACK,
+  ];
   return $items;
 }
 
-function moonmars_update_subscriber_relationships() {
-  // Convert all has_follower relationships to has_subscriber:
-  $rels = Relation::searchBinary('has_follower');
-  foreach ($rels as $rel) {
-    $member   = Member::create($rel->endpointEntityId(0));
-    $follower = Member::create($rel->endpointEntityId(1));
+/**
+ * General purpose function for marshalling calls to update functions.
+ * Saves me having to create an entry in hook_menu() every time.
+ *
+ * @param string $callback
+ * @return string
+ */
+function moonmars_update_marshall($callback) {
+  $fn = 'moonmars_update_' . str_replace('-', '_', $callback);
+  if (function_exists($fn)) {
+    return $fn();
+  }
+  drupal_set_message("Invalid callback $callback", 'error');
+  return '';
+}
 
-    // Create the has_subscriber relationship:
-    Relation::updateBinary('has_subscriber', 'node', $member->channel()->nid(), 'user', $follower->uid());
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// LATEST UPDATE 2012-10-19 - Run these in sequence.
+
+/**
+ * Convert all has_subscriber relationships to has_member and follows relationships.
+ */
+function moonmars_update_remove_subscriber_relationships() {
+  // Convert all has_subscriber relationships to has_member and follows relationships:
+  $rels = Relation::searchBinary('has_subscriber');
+
+  foreach ($rels as $rel) {
+    // Get the endpoints as objects:
+    $channel = $rel->endpoint(0);
+    $member = $rel->endpoint(1);
+
+    if ($channel) {
+      echobr("Channel " . $channel->title() . " has subscriber " . $member->name());
+      $parent_entity = $channel->parentEntity();
+      if ($parent_entity instanceof Member) {
+        // Follows:
+        echobr("Creating/updating relationship: Member " . $member->name() . " follows " . $parent_entity->name());
+        $rel2 = Relation::updateBinary('follows', $member, $parent_entity, FALSE);
+      }
+      elseif ($parent_entity instanceof Group) {
+        // Member of a group:
+        echobr("Creating/updating relationship: Group " . $parent_entity->title() . " has member " . $member->name());
+        $rel2 = Relation::updateBinary('has_member', $parent_entity, $member, FALSE);
+        $rel2->field('field_is_admin', LANGUAGE_NONE, 0, 'value', 0);
+      }
+
+      // Set the created timestamp so we retain a record of when the relationship started:
+      $rel2->created($rel->created());
+      $rel2->save();
+
+      echobr();
+    }
   }
 
-  // Delete the has_follower relationship:
-  Relation::deleteBinary('has_follower');
-  Relation::deleteBinary('follows');
+  // Delete all the has_subscriber relationships:
+  Relation::deleteBinary('has_subscriber');
+}
 
-  // Convert all has_member relationships to has_subscriber:
-  $rels = Relation::searchBinary('has_member');
-  foreach ($rels as $rel) {
-    $group    = Group::create($rel->endpointEntityId(0));
-    $follower = Member::create($rel->endpointEntityId(1));
-
-    // Create the has_subscriber relationship:
-    Relation::updateBinary('has_subscriber', 'node', $group->channel()->nid(), 'user', $follower->uid());
-  }
-
-  // Subscribe everyone to the News channel:
-  $rs = db_select('users', 'u')
-    ->fields('u', array('uid'))
-    ->condition('status', 1)
-    ->execute();
+/**
+ * Delete relations with invalid endpoints.
+ * This could be a useful script to run from time to time.
+ * Really, what I would like is a general-purpose Drupal database clean-up script.
+ */
+function moonmars_update_clean_up_relations() {
+  $q = db_select('relation', 'r')
+    ->fields('r', ['rid']);
+  $rs = $q->execute();
   foreach ($rs as $rec) {
-    $member = Member::create($rec->uid);
-
-    // Create the has_subscriber relationship:
-    Relation::updateBinary('has_subscriber', 'node', MOONMARS_NEWS_CHANNEL_NID, 'user', $member->uid());
-  }
-
-  // Default email_notifications to TRUE in every subscription relationship.
-  $rels = Relation::searchBinary('has_subscriber', 'node', NULL, 'user', NULL);
-  foreach ($rels as $rel) {
-    $rel->field('field_email_notification', LANGUAGE_NONE, 0, 'value', 1);
-    $rel->save();
-  }
-
-  // Delete all 'has_item' relationships where copied = 1
-  $rels = Relation::searchBinary('has_item', 'node', NULL, 'node', NULL);
-  foreach ($rels as $rel) {
-    $copied = $rel->field('field_copied');
-    if ($copied) {
-      echo 'deleting ' . $rel->rid() . '<br>';
-      $rel->delete();
+    $delete = FALSE;
+    $rel = relation_load($rec->rid);
+    if (!$rel->endpoints || !$rel->endpoints[LANGUAGE_NONE]) {
+      echobr("No endpoints, delete relation $rec->rid");
+      $delete = TRUE;
+    }
+    elseif (count($rel->endpoints[LANGUAGE_NONE]) == 1) {
+      echobr("Only one endpoint, delete relation $rec->rid");
+      $delete = TRUE;
+    }
+    else {
+      foreach ($rel->endpoints[LANGUAGE_NONE] as $endpoint) {
+        $entity = entity_load_single($endpoint['entity_type'], $endpoint['entity_id']);
+        if (!$entity) {
+          echobr("Entity {$endpoint['entity_type']}:{$endpoint['entity_id']} not found, delete relation $rec->rid");
+          $delete = TRUE;
+        }
+      }
+    }
+    if ($delete) {
+      dbg($rel->endpoints);
+      relation_delete($rec->rid);
+      echoln("<hr>");
     }
   }
 }
 
 /**
+ * Delete channels with no parents.
+ */
+function moonmars_update_clean_up_channels() {
+  $q = db_select('node', 'n')
+    ->fields('n', ['nid'])
+    ->condition('type', 'channel');
+  $rs = $q->execute();
+  foreach ($rs as $rec) {
+    $channel = Channel::create($rec->nid);
+    $parent_entity = $channel->parentEntity();
+    if (!$parent_entity) {
+      echobr("Channel " . $channel->nid() . " title: " . $channel->title() . " has no parent");
+
+      $items = $channel->items();
+      echobr("It contains " . count($items) . " items");
+
+      if (count($items) == 0) {
+        echobr("Deleting channel");
+        $channel->delete();
+      }
+      echo "<hr>";
+    }
+  }
+}
+
+/**
+ * Set default group tags.
+ */
+function moonmars_update_set_default_group_tags() {
+  $q = db_select('node', 'n')
+    ->fields('n', ['nid'])
+    ->condition('type', 'group');
+  $rs = $q->execute();
+  foreach ($rs as $rec) {
+    $group = Group::create($rec->nid);
+    $title = $group->title();
+    echobr($title);
+    $tag = $group->tag();
+    if ($tag) {
+      echobr("Current tag: $tag");
+    }
+    else {
+      $words = array_map(function($value) {
+        return strtolower($value);
+      }, explode(' ', $title));
+      foreach ($words as $key => $word) {
+        if (in_array($word, ['for', 'the', 'and', 'of', 'an', 'a'])) {
+          unset($words[$key]);
+        }
+      }
+      echo "New tag: ";
+      if ($title == 'Solar System Express') {
+        $tag = 'sol-x';
+      }
+      elseif ($title == 'Superheavy Elements/Radioactive Materials') {
+        $tag = 'superheavy-radioactive';
+      }
+      elseif ($title == 'Earthlight Institute') {
+        $tag = 'eli';
+      }
+      elseif ($title == 'The Planetary Society') {
+        $tag = 'tps';
+      }
+      elseif ($title == 'Website Development') {
+        $tag = 'webdev';
+      }
+      elseif (count($words) >= 3 && !in_str($title, 'metal', FALSE)) {
+        $tag = '';
+        foreach ($words as $word) {
+          $tag .= $word[0];
+        }
+      }
+      else {
+        $tag = implode('-', $words);
+      }
+      echobr($tag);
+      $group->tag($tag);
+      $group->save();
+    }
+    echo "<hr>";
+  }
+}
+
+/**
+ * Fix URL aliases.
+ */
+function moonmars_update_fix_aliases() {
+  // Members:
+  $q = db_select('users', 'u')
+    ->fields('u', ['uid'])
+    ->condition('uid', 0, '>');
+  $rs = $q->execute();
+  foreach ($rs as $rec) {
+    $member = Member::create($rec->uid);
+    $member->resetAlias();
+    echobr("Updated member alias to <em>" . $member->alias() . "</em>");
+  }
+
+  // Groups:
+  $q = db_select('node', 'n')
+    ->fields('n', ['nid'])
+    ->condition('type', 'group')
+    ->orderBy('nid');
+  $rs = $q->execute();
+  foreach ($rs as $rec) {
+    $group = Group::create($rec->nid);
+    $group->resetAlias();
+    echobr("Updated group alias to <em>" . $group->alias() . "</em>");
+  }
+
+  // Channels:
+  $q = db_select('node', 'n')
+    ->fields('n', ['nid'])
+    ->condition('type', 'channel')
+    ->orderBy('nid');
+  $rs = $q->execute();
+  foreach ($rs as $rec) {
+    $channel = Channel::create($rec->nid);
+    if ($channel->resetAlias()) {
+      echobr("Updated channel alias to <em>" . $channel->alias() . "</em>");
+    }
+    else {
+      echobr("Could not updated channel alias for <em>" . $channel->alias() . "</em>", 'warning');
+    }
+  }
+
+  // Items:
+  $q = db_select('node', 'n')
+    ->fields('n', ['nid'])
+    ->condition('type', 'item')
+    ->orderBy('nid');
+  $rs = $q->execute();
+  foreach ($rs as $rec) {
+    $item = Item::create($rec->nid);
+    $item->resetAlias();
+    echobr("Updated item alias to <em>" . $item->alias() . "</em><hr>");
+  }
+}
+
+// END LATEST UPDATE 2012-10-19
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+/**
+ * Update subscriber relationships.
+ */
+//function moonmars_update_subscriber_relationships() {
+//  // Convert all has_follower relationships to has_subscriber:
+//  $rels = Relation::searchBinary('has_follower');
+//  foreach ($rels as $rel) {
+//    $member   = Member::create($rel->endpointEntityId(0));
+//    $follower = Member::create($rel->endpointEntityId(1));
+//
+//    // Create the has_subscriber relationship:
+//    Relation::updateBinary('has_subscriber', 'node', $member->channel()->nid(), 'user', $follower->uid());
+//  }
+//
+//  // Delete the has_follower relationship:
+//  Relation::deleteBinary('has_follower');
+//  Relation::deleteBinary('follows');
+//
+//  // Convert all has_member relationships to has_subscriber:
+//  $rels = Relation::searchBinary('has_member');
+//  foreach ($rels as $rel) {
+//    $group    = Group::create($rel->endpointEntityId(0));
+//    $follower = Member::create($rel->endpointEntityId(1));
+//
+//    // Create the has_subscriber relationship:
+//    Relation::updateBinary('has_subscriber', 'node', $group->channel()->nid(), 'user', $follower->uid());
+//  }
+//
+//  // Subscribe everyone to the News channel:
+//  $rs = db_select('users', 'u')
+//    ->fields('u', array('uid'))
+//    ->condition('status', 1)
+//    ->execute();
+//  foreach ($rs as $rec) {
+//    $member = Member::create($rec->uid);
+//
+//    // Create the has_subscriber relationship:
+//    Relation::updateBinary('has_subscriber', 'node', MOONMARS_NEWS_CHANNEL_NID, 'user', $member->uid());
+//  }
+//
+//  // Default email_notifications to TRUE in every subscription relationship.
+//  $rels = Relation::searchBinary('has_subscriber', 'node', NULL, 'user', NULL);
+//  foreach ($rels as $rel) {
+//    $rel->field('field_email_notification', LANGUAGE_NONE, 0, 'value', 1);
+//    $rel->save();
+//  }
+//
+//  // Delete all 'has_item' relationships where copied = 1
+//  $rels = Relation::searchBinary('has_item', 'node', NULL, 'node', NULL);
+//  foreach ($rels as $rel) {
+//    $copied = $rel->field('field_copied');
+//    if ($copied) {
+//      echo 'deleting ' . $rel->rid() . '<br>';
+//      $rel->delete();
+//    }
+//  }
+//
+//}
+
+/**
  * Sort the color names.
  */
 function moonmars_update_named_colors() {
-  $colors = StarColor::colorNames();
-  $colors2 = array();
+  $colors = Color::colorNames();
+  $colors2 = [];
   foreach ($colors as $name => $hex) {
     $colors2[strtolower($name)] = strtoupper($hex);
   }
@@ -102,7 +340,7 @@ function moonmars_update_named_colors() {
 function moonmars_update_news_items() {
   // Look for relationship records:
   $q = db_select('view_channel_has_item', 'vci')
-    ->fields('vci', array('item_nid', 'created'))
+    ->fields('vci', ['item_nid', 'created'])
     ->condition('channel_nid', MOONMARS_NEWS_CHANNEL_NID)
     ->condition('item_status', 1)
     ->orderBy('created', 'DESC');
@@ -117,7 +355,7 @@ function moonmars_update_news_items() {
     $item = Item::create($rec->item_nid);
     $html .= "<h1>Item " . $item->nid() . "</h1>\n";
 
-    $relation_changed = new StarDateTime($rec->created);
+    $relation_changed = new DateTime($rec->created);
     $latest = $relation_changed;
     $html .= "Relation changed time: $relation_changed\n";
 
@@ -150,7 +388,7 @@ function moonmars_update_news_items() {
 function moonmars_update_channel_item_relation_changed_times() {
   // Look for relationship records:
   $q = db_select('view_channel_has_item', 'vci')
-    ->fields('vci', array('rid', 'item_nid', 'created'))
+    ->fields('vci', ['rid', 'item_nid', 'created'])
     ->condition('channel_nid', MOONMARS_NEWS_CHANNEL_NID)
 //    ->range(0, 5)
 //    ->orderBy('created', 'DESC');
@@ -166,7 +404,7 @@ function moonmars_update_channel_item_relation_changed_times() {
     $item = Item::create($rec->item_nid);
     $html .= "<h1>Relation " . $rec->rid . "</h1>\n";
 
-    $relation_changed = new StarDateTime($rec->created);
+    $relation_changed = new DateTime($rec->created);
     $latest = $relation_changed;
     $html .= "Relation changed time: $relation_changed\n";
 
@@ -196,7 +434,7 @@ function moonmars_update_channel_item_relation_changed_times() {
       $html .= "<b>Updating relation $rec->rid changed time to $latest</b>\n";
 
       $q2 = db_update('relation')
-        ->fields(array('created' => $latest->timestamp()))
+        ->fields(['created' => $latest->timestamp()])
         ->condition('rid', $rec->rid);
       $html .= dbg_sql($q2) . "\n";
 //      $q2->execute();
@@ -207,3 +445,59 @@ function moonmars_update_channel_item_relation_changed_times() {
   $html .= "</pre>";
   return $html;
 }
+
+///**
+// * Fix group references in item and comment text.
+// */
+//function moonmars_update_fix_group_mentions() {
+//  // Update item text:
+//  $q = db_select('node', 'n')
+//    ->fields('n', ['nid']);
+//  $q->join('field_data_field_item_text', 'ft', "n.nid = ft.entity_id");
+//  $q->condition('field_item_text_value', '%[Group: %', 'LIKE');
+//  $rs = $q->execute();
+//  foreach ($rs as $rec) {
+//    $item = Item::create($rec->nid);
+//    $text = $item->text();
+//    dbg($text);
+//
+//    $n = preg_match_all("/\[(Group: )?([^\]]+)\]/", $text, $matches);
+//    dbg($matches);
+//
+//    foreach ($matches[2] as $title) {
+//      $group = Group::searchByTitle($title);
+//      dbg($group);
+//    }
+//
+////    $text = preg_replace("/\[Group: ([^\]]+)\]/", "[$1]", $text);
+////    dbg($text);
+////
+////    $item->text($text);
+////    $item->save();
+//
+//  }
+//
+//  // Now comments:
+//  $q = db_select('comment', 'c')
+//    ->fields('c', ['cid']);
+//  $q->join('field_data_comment_body', 'fcb', "c.cid = fcb.entity_id");
+//  $q->condition('comment_body_value', '%[Group: %', 'LIKE');
+//  $rs = $q->execute();
+//  foreach ($rs as $rec) {
+//    $item_comment = ItemComment::create($rec->cid);
+//    $text = $item_comment->text();
+//    dbg($text);
+//
+//    $n = preg_match_all("/\[(Group: )?([^\]]+)\]/", $text, $matches);
+//    dbg($matches);
+//
+//    $n = preg_match_all("/\[([^\]]+)\]/", $text, $matches);
+//    dbg($matches);
+//
+////    $text = preg_replace("/\[Group: ([^\]]+)\]/", "[$1]", $text);
+////    dbg($text);
+////
+////    $item_comment->text($text);
+////    $item_comment->save();
+//  }
+//}

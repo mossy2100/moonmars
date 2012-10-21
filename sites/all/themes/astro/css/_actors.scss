@@ -1,0 +1,53 @@
+
+////////////////////////////////////////////////////////////////////////
+// Check actor code message.
+// Forms:
+//   - user register form
+//   - member profile edit form
+//   - group create/edit form
+#actor-tag-wrapper {
+  height: 24px;
+
+  input {
+    float: left;
+    width: 200px;
+  }
+
+  div {
+    height: 24px;
+    line-height: 24px;
+    margin-left: 5px;
+    float: left;
+  }
+
+  #actor-tag-prefix {
+    float: left;
+    margin-left: 0;
+    margin-right: 2px;
+  }
+
+  #actor-tag-check {
+    display: none;
+    color: $blue3;
+    cursor: pointer;
+  }
+
+  #actor-tag-message {
+    display: none;
+
+    &.actor-tag-valid {
+      color: $green3;
+    }
+
+    &.actor-tag-invalid {
+      color: $red3;
+    }
+  }
+
+  #actor-tag-waiting {
+    display: none;
+    height: 20px;
+    width: 16px;
+    background: url('../images/loading1.gif') no-repeat right 3px;
+  }
+}

@@ -1,34 +1,82 @@
 <?php
 // useful string functions:
 
-function println($str = '')
-{
-  print $str."\n";
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Bonus echo functions.
+
+/**
+ * Echo a string with a newline.
+ *
+ * @param string $str
+ */
+function echoln($str = '') {
+  echo "$str\n";
 }
 
-function printbr($str = '', $noBrIfStrEmpty = false)
-{
-  print $str;
-  if ($str != '' || !$noBrIfStrEmpty)
-    print "<br />\n";
+/**
+ * Echo a string with a break tag and a newline.
+ *
+ * @param string $str
+ */
+function echobr($str = '') {
+  echo "$str<br>\n";
 }
 
-function extractFilename($path)
-{
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Append functions.
+
+/**
+ * Append one string to another.
+ *
+ * @param string $str
+ * @param string $str_to_append
+ */
+function append(&$str, $str_to_append = '') {
+  $str .= $str_to_append;
+}
+
+/**
+ * Append one string with a newline to another string, i.e. append a line.
+ *
+ * @param string $str
+ * @param string $str_to_append
+ */
+function appendln(&$str, $str_to_append = '') {
+  $str .= "$str_to_append\n";
+}
+
+/**
+ * Append one string with a break tag and a newline to another string, i.e. append an HTML line.
+ *
+ * @param string $str
+ * @param string $str_to_append
+ */
+function appendbr(&$str, $str_to_append = '') {
+  $str .= "$str_to_append<br>\n";
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Probably don't need this one any more.
+function extractFilename($path) {
   $filename = $path;
   $n = strrpos($path, "/");
-  if ($n !== false)
+  if ($n !== FALSE)
     $filename = substr($filename, $n + 1);
   return $filename;
 }
 
-function isVowel($ch)
-{
-  $ch = strtolower($ch);
-  return in_array($ch, array("a", "e", "i", "o", "u"));
+/**
+ * Checks if a character is a vowel.
+ *
+ * @param string $ch
+ * @return bool
+ */
+function isVowel($ch) {
+  return in_array(strtolower($ch), array("a", "e", "i", "o", "u"));
 }
 
-function plural($str, $n = 0, $returnNum = false)
+function plural($str, $n = 0, $returnNum = FALSE)
 {
   // if $n == 1, returns $str (which should be singular form)
   // if $n != 1, returns the plural form of $str
@@ -89,30 +137,25 @@ function plural($str, $n = 0, $returnNum = false)
 }
 
 /**
- * Replaces Unix (\r\n) and Mac (\r) newlines with Windows newlines (\n).
+ * Replaces Unix (\r\n) and old Mac (\r) newlines with Windows newlines (\n).
  *
  * @param string $str
  * @return string
  */
-function simpleNewlines($str)
-{
-    $str = str_replace("\r\n", "\n", $str);
-    $str = str_replace("\r", "\n", $str);
-    return $str;
+function simpleNewlines($str) {
+  $str = str_replace("\r\n", "\n", $str);
+  $str = str_replace("\r", "\n", $str);
+  return $str;
 }
 
 /**
- * Converts all newlines (whether from Windows, Mac or Unix) into XHTML break tags.
+ * Converts all newlines, whether from Windows, Mac or Unix, into HTML break tags plus \n.
  *
  * @param string $str
- * @param bool $add_newlines Set to true if you want newlines after each break tag (default).
  * @return string
  */
-function nl2brs($str, $addNewlines = true) {
-  $str = simpleNewlines($str);
-  $replace = "<br />" . ($addNewlines ? "\n" : "");
-  $str = str_replace("\n", $replace, $str);
-  return $str;
+function nl2brs($str) {
+  return str_replace("\n", "<br>\n", simpleNewlines($str));
 }
 
 /**
@@ -122,17 +165,13 @@ function nl2brs($str, $addNewlines = true) {
  * @param string $str
  * @return string
  */
-function nl2commas($str)
-{
-    $str = simpleNewlines($str);
-  $search = array(",\n", "\n");
-  $str = str_replace($search, ", ", $str);
-  return $str;
+function nl2commas($str) {
+  return str_replace(array(",\n", "\n"), ', ', simpleNewlines($str));
 }
 
 /**
- * Backslashes newlines and carriage returns.
- * Useful for outputting strings to JavaScript.
+ * Backslashes newlines and carriage returns. Useful for outputting strings to JavaScript.
+ *
  * e.g.
  *     echo "var str = '".nl2slashn("This string has\nlinefeeds in it.")."';";
  * is the same as
@@ -231,10 +270,10 @@ function stripWhitespace($str) {
 function containsDigits($str) {
   for ($i = 0; $i < strlen($str); $i++)  {
     if (ctype_digit($str{$i})) {
-      return true;
+      return TRUE;
     }
   }
-  return false;
+  return FALSE;
 }
 
 /**
@@ -377,9 +416,9 @@ function str2bit($str)
 
 function expandYN($ch, $Y = 'Yes', $N = 'No', $default = 'N')
 {
-  if ($ch === true || $ch == 'Y')
+  if ($ch === TRUE || $ch == 'Y')
     return $Y;
-  else if ($ch === false || $ch == 'N' || $default == 'N')
+  else if ($ch === FALSE || $ch == 'N' || $default == 'N')
     return $N;
   else
     return $default;
@@ -493,15 +532,19 @@ function colourStr($red, $green, $blue)
     str_pad(base_convert($blue, 10, 16), 2, '0', STR_PAD_LEFT));
 }
 
-
-function inStr($needle, $haystack)
-{
-  // returns true if $needle is in $haystack otherwise false
-  if ($needle == '')
-  {
-    return false;
+/**
+ * Checks if $needle is in $haystack.
+ *
+ * @param string $haystack
+ * @param string $needle
+ * @param bool $case_sensitive
+ * @return bool
+ */
+function in_str($haystack, $needle, $case_sensitive = TRUE) {
+  if ($case_sensitive) {
+    return strpos($haystack, $needle) !== FALSE;
   }
-  return strpos($haystack, $needle) !== false;
+  return strpos(strtolower($haystack), strtolower($needle)) !== FALSE;
 }
 
 function html2db($str)
@@ -590,26 +633,30 @@ function endsWith($str, $substr, $ignoreCase = FALSE) {
   return right($str, strlen($substr)) == $substr;
 }
 
-
-function makeList($arr, $conj = "&")
-{
-  // will return a string in the form of "A, B, C & D", constructed from the supplied array:
-  if (count($arr) == 0)
+/**
+ * Will return a string in the form of "A, B, C & D", constructed from the supplied array.
+ *
+ * @param array $arr
+ * @param string $conj
+ * @return string
+ */
+function makeList($arr, $conj = "&") {
+  if (count($arr) == 0) {
     return "";
-  else if (count($arr) == 1)
+  }
+  elseif (count($arr) == 1) {
     return $arr[0];
-  else if (count($arr) == 2)
+  }
+  elseif (count($arr) == 2) {
     return "{$arr[0]} $conj {$arr[1]}";
-  else
-  {
+  }
+  else {
     $first = array_shift($arr);
-    return "$first, ".makeList($arr);
+    return "$first, " . makeList($arr);
   }
 }
 
-
-function editDistance($s, $t)
-{
+function editDistance($s, $t) {
   // note - I did not realise there was a levenshtein function built into PHP
   // when I made this one!
 
@@ -631,24 +678,26 @@ function editDistance($s, $t)
   // Step 1
   $n = strlen($s);
   $m = strlen($t);
-  if ($n == 0)
+  if ($n == 0) {
     return $m;
-  if ($m == 0)
+  }
+  if ($m == 0) {
     return $n;
+  }
 
   // Step 2
-  for ($i = 0; $i <= $n; $i++)
+  for ($i = 0; $i <= $n; $i++) {
     $d[$i][0] = $i;
-  for ($j = 0; $j <= $m; $j++)
+  }
+  for ($j = 0; $j <= $m; $j++) {
     $d[0][$j] = $j;
+  }
 
   // Step 3
-  for ($i = 1; $i <= $n; $i++)
-  {
+  for ($i = 1; $i <= $n; $i++) {
     $s_i = $s{$i - 1};  // the $i'th character of $s
     // Step 4
-    for ($j = 1; $j <= $m; $j++)
-    {
+    for ($j = 1; $j <= $m; $j++) {
       $t_j = $t{$j - 1}; // the $j'th character of $t
 
       // Step 5
@@ -663,18 +712,25 @@ function editDistance($s, $t)
   return $d[$n][$m];
 }
 
+/**
+ * Returns str with only alphanumeric or hyphens, any other chars removed.
+ *
+ * @param string $str
+ * @return string
+ */
 function makeDomainWord($str) {
-  // returns str with only alphanumeric or hyphens, any other chars removed:
   $out = "";
-  for ($i = 0; $i < strlen($str); $i++)
-  {
+  for ($i = 0; $i < strlen($str); $i++) {
     $ch = $str{$i};
     if (ctype_alnum($ch) || ($ch == '-' && $out != ''))
       $out .= $ch;
   }
-  // trim any trailing hyphens:
-  while ($out{strlen($out) - 1} == '-')
+
+  // Trim any trailing hyphens:
+  while ($out[strlen($out) - 1] == '-') {
     $out = left($out, strlen($out) - 1);
+  }
+
   return strtolower($out);
 }
 
@@ -689,14 +745,14 @@ function is_html($text) {
 
 
 /**
- * Normalizes break trags and trims any from the end.
+ * Normalizes break tags and trims any from the end.
  * @param string $text
  * @return string
  */
 function trim_break_tags($text) {
-  $text = str_replace(array("<br />", "<br/>", "<br>", "<BR />", "<BR/>", "<BR>"), "<br />", $text);
+  $text = str_replace(array('<br />', '<br/>', '<br>', '<BR />', '<BR/>', '<BR>'), '<br>', $text);
   $text = trim($text);
-  while (endsWith($text, "<br />")) {
+  while (endsWith($text, '<br>')) {
     $text = trim(left($text, strlen($text) - 6));
   }
   return $text;
@@ -713,7 +769,7 @@ function trim_break_tags($text) {
  * @param mixed $value
  * @return string
  */
-function var_to_string($value, $indent = 0, $objects = array()) {
+function var_to_string($value, $indent = 0, $objects = array(), $html = FALSE) {
   if (is_null($value)) {
     return 'NULL';
   }
@@ -724,7 +780,7 @@ function var_to_string($value, $indent = 0, $objects = array()) {
     return "'" . htmlspecialchars(addslashes($value)) . "'";
   }
   elseif (is_array($value)) {
-    return array_to_string($value, $indent, $objects);
+    return array_to_string($value, $indent, $objects, $html);
   }
   elseif (is_object($value)) {
     if (in_array($value, $objects, TRUE)) {
@@ -732,7 +788,12 @@ function var_to_string($value, $indent = 0, $objects = array()) {
     }
     else {
       $objects[] = $value;
-      return object_to_string($value, $indent, $objects);
+      if ($value instanceof Query) {
+        return dbg_sql($value);
+      }
+      else {
+        return object_to_string($value, $indent, $objects, $html);
+      }
     }
   }
   else {
@@ -742,72 +803,19 @@ function var_to_string($value, $indent = 0, $objects = array()) {
 }
 
 /**
- * Format an array in the Drupal style.
- *
- * @param array $array
- * @param int $indent
- * @return string
- */
-function array_to_string($array, $indent = 0, $objects = array()) {
-  if (empty($array)) {
-    return "array()";
-  }
-  $spaces = str_repeat(' ', $indent);
-  $lines = array();
-  $lines[] = "array(";
-  foreach ($array as $key => $value) {
-    $lines[] = "$spaces  " . var_to_string($key, 0, $objects) . " => " . var_to_string($value, $indent + 2, $objects) . ",";
-  }
-  $lines[] = "$spaces)";
-  return implode("\n", $lines);
-}
-
-/**
- * Format an object in a JSON-ish style.
- *
- * @param object $object
- * @param int $indent
- * @return string
- */
-function object_to_string($object, $indent = 0, $objects = array()) {
-  $spaces = str_repeat(' ', $indent);
-  $lines = array();
-  $lines[] = get_class($object) . " {";
-  
-  // Get the object's property values:
-  if (method_exists($object, 'toArray')) {
-    $properties = $object->toArray();
-  }
-  else {
-//    $properties = get_object_vars($object);
-    $properties = object_to_array($object);
-  }
-  
-  // Loop through properties:
-  foreach ($properties as $key => $value) {
-    $lines[] = "$spaces  $key: " . var_to_string($value, $indent + 2, $objects) . ",";
-  }
-  
-  $lines[] = "$spaces}";
-  return implode("\n", $lines);
-}
-
-
-/**
  * Indents a flat JSON string to make it more human-readable.
  *
  * @param string $json The original JSON string to process.
  * @return string Indented version of the original JSON string.
  */
 function format_json($json) {
-
     $result      = '';
     $pos         = 0;
     $strLen      = strlen($json);
     $indentStr   = '  ';
     $newLine     = "\n";
     $prevChar    = '';
-    $outOfQuotes = true;
+    $outOfQuotes = TRUE;
 
     for ($i=0; $i<=$strLen; $i++) {
 
@@ -820,7 +828,8 @@ function format_json($json) {
         
         // If this character is the end of an element, 
         // output a new line and indent the next line.
-        } else if(($char == '}' || $char == ']') && $outOfQuotes) {
+        }
+        elseif (($char == '}' || $char == ']') && $outOfQuotes) {
             $result .= $newLine;
             $pos --;
             for ($j=0; $j<$pos; $j++) {

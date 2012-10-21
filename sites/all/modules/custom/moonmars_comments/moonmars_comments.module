@@ -1,24 +1,30 @@
 <?php
 
+use \AstroMultimedia\MoonMars\Member;
+use \AstroMultimedia\MoonMars\Item;
+use \AstroMultimedia\MoonMars\ItemComment;
+use \AstroMultimedia\MoonMars\Channel;
+use \AstroMultimedia\MoonMars\Triumph;
+
 /**
  * Implements hook_menu().
  */
 function moonmars_comments_menu() {
-  $items['ajax/comment/post'] = array(
+  $items['ajax/comment/post'] = [
     'page callback'    => 'moonmars_comments_ajax_post',
     'access callback'  => 'user_is_logged_in',
     'type'             => MENU_CALLBACK,
-  );
-  $items['ajax/comment/edit'] = array(
+  ];
+  $items['ajax/comment/edit'] = [
     'page callback'    => 'moonmars_comments_ajax_edit',
     'access callback'  => 'user_is_logged_in',
     'type'             => MENU_CALLBACK,
-  );
-  $items['ajax/comment/delete'] = array(
+  ];
+  $items['ajax/comment/delete'] = [
     'page callback'    => 'moonmars_comments_ajax_delete',
     'access callback'  => 'user_is_logged_in',
     'type'             => MENU_CALLBACK,
-  );
+  ];
   return $items;
 }
 
@@ -49,16 +55,16 @@ function moonmars_comments_ajax_post() {
   $text = trim($_REQUEST['text']);
 
   // Get the logged-in member:
-  $current_member = Member::currentMember();
+  $logged_in_member = Member::loggedInMember();
 
   // Begin the data array:
-  $data = array(
+  $data = [
     'item_nid' => $item_nid,
     'text'     => $text,
-  );
+  ];
 
   // Check we have all the necessary params:
-  if (!$item_nid || !$text || !$current_member) {
+  if (!$item_nid || !$text || !$logged_in_member) {
     // Complete data array, encode and send:
     $data['result'] = FALSE;
     $data['error'] = 'Invalid parameters';
@@ -70,7 +76,7 @@ function moonmars_comments_ajax_post() {
   $item = Item::create($item_nid);
 
   // Check this member has permission to edit this comment:
-  if (!$current_member->canPostComment($item)) {
+  if (!$logged_in_member->canPostComment($item)) {
     // Complete data array, encode and send:
     $data['result'] = FALSE;
     $data['error'] = 'Access denied';
@@ -82,11 +88,11 @@ function moonmars_comments_ajax_post() {
   // All good - create the comment.
 
   // Create a new comment:
-  $comment = entity_create('comment', array('type' => 'comment'));
+  $comment = entity_create('comment', ['type' => 'comment']);
   $comment->pid = 0;
-  $comment->uid = $current_member->uid();
-  $comment->name = $current_member->name();
-  $comment->mail = $current_member->mail();
+  $comment->uid = $logged_in_member->uid();
+  $comment->name = $logged_in_member->name();
+  $comment->mail = $logged_in_member->mail();
   $comment->is_anonymous = FALSE;
   $comment->nid = $item_nid;
   $comment->status = 1;
@@ -102,8 +108,11 @@ function moonmars_comments_ajax_post() {
   $item_comment = ItemComment::create($comment);
   $html = $item_comment->render();
 
-  // Post the comment in the current channel:
-  Channel::currentChannel()->postComment($item_comment, TRUE);
+  // Bump the item to the top of the channel:
+  $item->bump();
+
+  // Create a triumph:
+  Triumph::newComment($item_comment);
 
   // Complete data array, encode and send:
   $data['result'] = TRUE;
@@ -124,17 +133,17 @@ function moonmars_comments_ajax_edit() {
   $text = trim($_REQUEST['text']);
 
   // Get the logged-in member:
-  $current_member = Member::currentMember();
+  $logged_in_member = Member::loggedInMember();
 
   // Begin the data array:
-  $data = array(
-    'cid'      => $cid,
+  $data = [
+    'cid' => $cid,
     'item_nid' => $item_nid,
-    'text'     => $text,
-  );
+    'text' => $text,
+  ];
 
   // Check we have all the necessary params:
-  if (!$cid || !$item_nid || !$text || !$current_member) {
+  if (!$cid || !$item_nid || !$text || !$logged_in_member) {
     // Complete data array, encode and send:
     $data['result'] = FALSE;
     $data['error'] = 'Invalid parameters';
@@ -146,7 +155,7 @@ function moonmars_comments_ajax_edit() {
   $item_comment = ItemComment::create($cid);
 
   // Check this member has permission to edit this comment:
-  if (!$current_member->canEditComment($item_comment)) {
+  if (!$logged_in_member->canEditComment($item_comment)) {
     // Complete data array, encode and send:
     $data['result'] = FALSE;
     $data['error'] = 'Access denied';
@@ -158,20 +167,21 @@ function moonmars_comments_ajax_edit() {
   // All good - update the comment.
 
   // Update the comment text:
-  $text = strip_tags(str_replace('<3', '&lt;3', $text));
-  $item_comment->field('comment_body', LANGUAGE_NONE, 0, 'value', $text);
+  $item_comment->text($text);
 
   // Save the comment:
-  // @todo maybe make these functions part of the Comment class.
-  comment_submit($item_comment->comment());
-  comment_save($item_comment->comment());
+  $item_comment->submit();
+  $item_comment->save();
 
-  // Update the comment in the current channel:
-  Channel::currentChannel()->postComment($item_comment, FALSE);
+  // Bump the comment's item to the top of the channel:
+  $item_comment->item()->bump();
+
+  // Note, we don't create a triumph here for editing a comment - just for new comments.
+  // This is to prevent annoyance and to provide an incentive for getting the comment right first time.
 
   // Complete data array, encode and send:
   $data['result'] = TRUE;
-  $data['filtered_text'] = moonmars_text_filter($text, TRUE, TRUE);
+  $data['html'] = $item_comment->html();
   echo json_encode($data);
 }
 
@@ -183,15 +193,15 @@ function moonmars_comments_ajax_delete() {
   $cid = (int) $_REQUEST['cid'];
 
   // Get the logged-in member:
-  $current_member = Member::currentMember();
+  $logged_in_member = Member::loggedInMember();
 
   // Create the data array:
-  $data = array(
+  $data = [
     'cid' => $cid,
-  );
+  ];
 
   // Check we have all the necessary params:
-  if (!$cid || !$current_member) {
+  if (!$cid || !$logged_in_member) {
     // Complete data array, encode and send:
     $data['result'] = FALSE;
     $data['error'] = 'Invalid parameters';
@@ -203,7 +213,7 @@ function moonmars_comments_ajax_delete() {
   $item_comment = ItemComment::create($cid);
 
   // Check this member has permission to delete this comment:
-  if (!$current_member->canDeleteComment($item_comment)) {
+  if (!$logged_in_member->canDeleteComment($item_comment)) {
     // Complete data array, encode and send:
     $data['result'] = FALSE;
     $data['error'] = 'Access denied';

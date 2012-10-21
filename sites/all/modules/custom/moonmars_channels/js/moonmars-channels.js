@@ -423,7 +423,7 @@ function editCommentReturn(data, textStatus, jqXHR) {
 
     // Update comment body contents:
     var commentBody = commentArticle.find('.field-name-comment-body');
-    commentBody.find('.field-item').html(data.filtered_text);
+    commentBody.find('.field-item').html(data.html);
 
     // Remove uploading icon and disabled state from textarea, and update contents:
     commentArticle.find('textarea').removeAttr('disabled').removeClass('uploading').val(data.text);
@@ -487,38 +487,37 @@ function showNewCommentForm(item_nid) {
   // Get the new comment form:
   var newCommentFormArticle = $('#new-comment-form-article-' + item_nid);
 
-  if (newCommentFormArticle.css('display') == 'block') {
-    // New comment form is already displayed, do nothing:
-    return;
+  // If the form is not displayed yet, display it:
+  if (newCommentFormArticle.css('display') != 'block') {
+
+    // Get the initial height of the new comment area:
+    var bottomLinks = $('.bottom-post-controls-' + item_nid);
+    var initialHeight = bottomLinks.length ? bottomLinks.height() : 0;
+
+    // Hide the comment links:
+    bottomLinks.hide();
+
+    // Initialise the form prior to animation:
+    newCommentFormArticle.css({height: initialHeight, opacity: 0, overflow: 'hidden'}).show();
+
+    // Reset the textarea height when it's made visible.
+    // elastic() will already have been called once on this textarea, creating the twin div.
+    newCommentFormArticle.find('textarea').elastic();
+
+    // Get the height of the visible part of the form, now that it's shown:
+    var height = newCommentFormArticle.find('.post-article-body').outerHeight();
+
+    // Animate the display of the form:
+    newCommentFormArticle.animate({
+      height: height,
+      opacity: 1
+    }, 333, function() {
+      // Now set the height to auto, so it grows automatically with the textarea:
+      newCommentFormArticle.height('auto');
+    });
   }
 
-  // Get the initial height of the new comment area:
-  var bottomLinks = $('.bottom-post-controls-' + item_nid);
-  var initialHeight = bottomLinks.length ? bottomLinks.height() : 0;
-
-  // Hide the comment links:
-  bottomLinks.hide();
-
-  // Initialise the form prior to animation:
-  newCommentFormArticle.css({height: initialHeight, opacity: 0, overflow: 'hidden'}).show();
-
-  // Reset the textarea height when it's made visible.
-  // elastic() will already have been called once on this textarea, creating the twin div.
-  newCommentFormArticle.find('textarea').elastic();
-
-  // Get the height of the visible part of the form, now that it's shown:
-  var height = newCommentFormArticle.find('.post-article-body').outerHeight();
-
-  // Animate the display of the form:
-  newCommentFormArticle.animate({
-    height: height,
-    opacity: 1
-  }, 333, function() {
-    // Now set the height to auto, so it grows automatically with the textarea:
-    newCommentFormArticle.height('auto');
-  });
-
-  // Simultaneously scroll into view:
+  // Scroll the form into view:
   var formTop = newCommentFormArticle.offset().top;
   var formHeight = newCommentFormArticle.height();
   var windowHeight = $(window).height();

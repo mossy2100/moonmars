@@ -1,41 +1,41 @@
 <?php
 
+use \AstroMultimedia\MoonMars\Member;
+use \AstroMultimedia\MoonMars\Channel;
+
 define('MOONMARS_CHANNEL_DEFAULT_PAGE_SIZE', 10);
 define('MOONMARS_NEWS_CHANNEL_NID', 467);
 
-/**
- * Implements hook_menu().
- */
-function moonmars_channels_menu() {
-  $items = array();
-  $items['user/%/subscriptions'] = array(
-    'page callback'    => 'moonmars_channels_list',
-    'access callback'  => 'user_is_logged_in',
-    'type'             => MENU_NORMAL_ITEM,
-  );
-  $items['subscriptions/update'] = array(
-    'page callback'    => 'moonmars_channels_update_subscriptions',
-    'access callback'  => 'user_is_logged_in',
-    'type'             => MENU_CALLBACK,
-  );
-  return $items;
-}
+///**
+// * Implements hook_menu().
+// */
+//function moonmars_channels_menu() {
+//  $items = [];
+//  return $items;
+//}
 
 /**
  * Implements hook_form_alter().
  */
 function moonmars_channels_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'channel_node_form') {
-    // Update the title:
     $channel = Channel::create($form['#node']);
-    drupal_set_title("Edit links for " . $channel->parentEntityName());
+    $parent_entity = $channel->parentEntity();
+
+    // In case we're at the channel's edit page, goto the actor's edit/links page.
+    if ($parent_entity instanceof Member) {
+      $logged_in_member = Member::loggedInMember();
+      $edit_links_path = $logged_in_member->editAlias() . '/links';
+      if (request_path() != $edit_links_path) {
+        drupal_goto($edit_links_path);
+      }
+    }
 
     // Remove the title field from the form:
     unset($form['title']);
 
-    // Is the user on their own profile:
-    $parent = $channel->parentEntity();
-    $own_profile = ($parent instanceof Member) && Member::equals($parent, Member::currentMember());
+    // Is the user on their own profile?
+    $own_profile = ($parent_entity instanceof Member) && $parent_entity->equals(Member::loggedInMember());
 
     $social_links = moonmars_channels_social_links();
     foreach ($social_links as $social_link => $social_link_info) {
@@ -54,8 +54,36 @@ function moonmars_channels_form_alter(&$form, &$form_state, $form_id) {
     unset($form['actions']['delete']);
     unset($form['actions']['preview']);
 
-    // Submit handler:
+    // Handler:
+    $form['actions']['submit']['#validate'][] = 'moonmars_channels_channel_node_form_validate';
     $form['actions']['submit']['#submit'][] = 'moonmars_channels_channel_node_form_submit';
+  }
+}
+
+/**
+ * Validation handler for channel_node_form.
+ * Check the links and add http:// if necessary:
+ *
+ * @param $form
+ * @param $form_state
+ */
+function moonmars_channels_channel_node_form_validate($form, &$form_state) {
+  $links = moonmars_channels_social_links();
+  foreach ($links as $link_info) {
+    $field = $link_info['field'];
+    if (!isset($form_state['values'][$field][LANGUAGE_NONE][0]['url'])) {
+      continue;
+    }
+
+    $url = $form_state['values'][$field][LANGUAGE_NONE][0]['url'];
+    if (!$url) {
+      continue;
+    }
+
+    $url_info = parse_url($url);
+    if (!isset($url_info['scheme'])) {
+      $form_state['values'][$field][LANGUAGE_NONE][0]['url'] = 'http://' . $url;
+    }
   }
 }
 
@@ -66,6 +94,7 @@ function moonmars_channels_form_alter(&$form, &$form_state, $form_id) {
  * @param $form_state
  */
 function moonmars_channels_channel_node_form_submit($form, &$form_state) {
+  // Back to the member or group page:
   $channel = Channel::create($form['#node']);
   $form_state['redirect'] = $channel->parentEntity()->alias();
 }
@@ -76,11 +105,11 @@ function moonmars_channels_channel_node_form_submit($form, &$form_state) {
  * @return array
  */
 function moonmars_channels_node_types() {
-  return array(
+  return [
     'group',
     'event',
     'project'
-  );
+  ];
 }
 
 /**
@@ -89,97 +118,68 @@ function moonmars_channels_node_types() {
  * @return array
  */
 function moonmars_channels_social_links() {
-  return array(
-    'website'     => array(
+  return [
+    'website'     => [
       'name'        => 'Website',
       'field'       => 'field_website',
       'domain'      => '',
       'description' => 'official website',
-    ),
-    'facebook'    => array(
+    ],
+    'facebook'    => [
       'name'        => 'Facebook',
       'field'       => 'field_facebook_link',
       'domain'      => 'facebook.com',
       'description' => 'Facebook profile',
-    ),
-    'linkedin'    => array(
+    ],
+    'linkedin'    => [
       'name'        => 'LinkedIn',
       'field'       => 'field_linkedin_link',
       'domain'      => 'linkedin.com',
       'description' => 'LinkedIn profile',
-    ),
-    'twitter'     => array(
+    ],
+    'twitter'     => [
       'name'        => 'Twitter',
       'field'       => 'field_twitter_link',
       'domain'      => 'twitter.com',
       'description' => 'Twitter profile',
-    ),
-    'google-plus' => array(
+    ],
+    'google-plus' => [
       'name'        => 'Google+',
       'field'       => 'field_google_link',
       'domain'      => 'plus.google.com',
       'description' => 'Google+ profile',
-    ),
-    'youtube'     => array(
+    ],
+    'youtube'     => [
       'name'        => 'YouTube',
       'field'       => 'field_youtube_link',
       'domain'      => 'youtube.com',
       'description' => 'YouTube channel',
-    ),
-    'wikipedia'   => array(
+    ],
+    'wikipedia'   => [
       'name'        => 'Wikipedia',
       'field'       => 'field_wikipedia_link',
       'domain'      => 'wikipedia.org',
       'description' => 'Wikipedia entry',
-    ),
-    'flickr'      => array(
+    ],
+    'flickr'      => [
       'name'        => 'Flickr',
       'field'       => 'field_flickr_link',
       'domain'      => 'flickr.com',
       'description' => 'Flickr profile',
-    ),
-    'meetup'      => array(
+    ],
+    'meetup'      => [
       'name'        => 'Meetup',
       'field'       => 'field_meetup_link',
       'domain'      => 'meetup.com',
       'description' => 'Meetup profile',
-    ),
-    'academia'   => array(
+    ],
+    'academia'   => [
       'name'        => 'Academia',
       'field'       => 'field_academia_link',
       'domain'      => 'academia.edu',
       'description' => 'Academia profile',
-    ),
-  );
-}
-
-/**
- * Common code for inserting or updating nodes.
- * 
- * @param $entity
- * @param $entity_type
- */
-function moonmars_channels_entity_save($entity, $entity_type) {
-  // Update the channel's alias and title in case the entity's title was changed:
-  $entity = MoonMarsEntity::getEntity($entity_type, $entity);
-  if ($entity && method_exists($entity, 'channel')) {
-    $channel = $entity->channel();
-    $channel->updateAliasAndTitle();
-  }
-}
-
-/**
- * Implements hook_entity_insert().
- */
-function moonmars_channels_entity_insert($entity, $entity_type) {
-  moonmars_channels_entity_save($entity, $entity_type);
-}
-
-/**
- * Implements hook_entity_update().
- */
-function moonmars_channels_entity_update($entity, $entity_type) {
-  moonmars_channels_entity_save($entity, $entity_type);
+    ],
+  ];
 }
 
 /**
@@ -201,107 +201,4 @@ function moonmars_channels_is_embedded_channel_page() {
   }
 
   return FALSE;
-}
-
-/**
- * Reorder the channels by title.
- *
- * @param $channels
- */
-function moonmars_channels_sort_by_title(&$channels) {
-  usort($channels, function ($channel1, $channel2) {
-    $channel1_title = strtolower($channel1->title());
-    $channel2_title = strtolower($channel2->title());
-    if ($channel1_title == $channel2_title) {
-      return 0;
-    }
-    elseif ($channel1_title < $channel2_title) {
-      return -1;
-    }
-    else {
-      return 1;
-    }
-  });
-}
-
-/**
- * List all channels, and show whether the member is subscribed to them or not.
- *
- * @todo Update this to use the Forms API. Will need to convert much of this to a custom render function.
- */
-function moonmars_channels_list() {
-  // Get the current member and their subscriptions:
-  $current_member = Member::currentMember();
-  $channels = $current_member->subscribedChannels();
-
-  // Reorder the channels by title:
-  moonmars_channels_sort_by_title($channels);
-
-  $header = array(
-    'Title',
-    "<input type='checkbox' id='subscribed-all'> Subscribed?",
-    "<input type='checkbox' id='email-notification-all'> Email notifications?",
-  );
-
-  foreach ($channels as $channel) {
-    $channel_nid = $channel->nid();
-    $subscriber_rel = $channel->getSubscriberRelationship($current_member);
-    $subscribed = (bool) $subscriber_rel;
-    $email_notification = $subscribed ? ((bool) $subscriber_rel->field('field_email_notification')) : FALSE;
-
-    $row = array(
-      $channel->parentEntityLink(),
-      "<input type='checkbox' id='subscribed-$channel_nid' name='subscribed[$channel_nid]'" . ($subscribed ? " checked" : "") . " class='subscribed'>",
-      "<input type='checkbox' id='email-notification-$channel_nid' name='email_notification[$channel_nid]'" . ($subscribed ? ($email_notification ? " checked" : "") : " disabled") . " class='email-notification'>",
-    );
-
-    // Add the row:
-    $rows[] = $row;
-  }
-
-  $table = array(
-    'header' => $header,
-    'rows' => $rows,
-  );
-
-  $html = '';
-  $html .= "<p>This page lists all of the channels you're subscribed to. You can update your subscriptions, and specify if you want email notifications for each channel. <a href='/handbook/channels'>Find out more about channels.</a></p>";
-  $html .= "<form id='subscriptions-form' action='/subscriptions/update' method='post'>";
-  $html .= theme('table', $table);
-  $html .= "
-    <div id='channels-button'>
-      <input type='submit' value='Update subscriptions'>
-    </div>
-  ";
-  $html .= "</form>";
-
-  drupal_add_js(drupal_get_path('module', 'moonmars_channels') . '/js/subscriptions.js');
-
-  return $html;
-}
-
-/**
- * Update a member's subscriptions.
- * @todo Move this to a submit handler.
- */
-function moonmars_channels_update_subscriptions() {
-  // Get the current member and their subscriptions:
-  $current_member = Member::currentMember();
-  $channels = $current_member->subscribedChannels();
-
-  // Update the member's subscriptions:
-  foreach ($channels as $channel) {
-    $channel_nid = $channel->nid();
-    $subscribed = isset($_POST['subscribed'][$channel_nid]) ? ((bool) $_POST['subscribed'][$channel_nid]) : FALSE;
-    if ($subscribed) {
-      $email_notification = isset($_POST['email_notification'][$channel_nid]) ? ((bool) $_POST['email_notification'][$channel_nid]) : FALSE;
-      $current_member->subscribe($channel, $email_notification);
-    }
-    else {
-      $current_member->unsubscribe($channel);
-    }
-  }
-
-  drupal_set_message("Your subscriptions have been updated. Have a great day!");
-  drupal_goto($current_member->alias());
 }

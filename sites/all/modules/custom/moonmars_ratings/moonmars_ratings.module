@@ -1,11 +1,14 @@
 <?php
 
+use \AstroMultimedia\Drupal\Entity;
+use \AstroMultimedia\MoonMars\Member;
+
 function moonmars_ratings_menu() {
-  $items['ajax/rate'] = array(
+  $items['ajax/rate'] = [
     'page callback'    => 'moonmars_ratings_ajax_rate',
     'access callback'  => TRUE,
     'type'             => MENU_CALLBACK,
-  );
+  ];
   return $items;
 }
 
@@ -15,13 +18,13 @@ function moonmars_ratings_menu() {
  * @return array
  */
 function moonmars_ratings_names() {
-  return array(
+  return [
     -2 => 'warning',
     -1 => 'dislike',
 //     0 => 'meh',
      1 => 'like',
      2 => 'favourite',
-  );
+  ];
 }
 
 /**
@@ -30,8 +33,11 @@ function moonmars_ratings_names() {
  * @param int $selected
  * @return string
  */
-function moonmars_ratings_buttons(Member $member, $entity_type, $entity_id) {
-  $current_rating = $member->rating($entity_type, $entity_id);
+function moonmars_ratings_buttons(Member $member, Entity $entity) {
+  $current_rating = $member->rating($entity);
+
+  $entity_type = $entity->entityType();
+  $entity_id = $entity->id();
 
   $html = "<div id='rating-buttons-{$entity_type}-{$entity_id}' class='rating-buttons' data-entity-type='$entity_type' data-entity-id='$entity_id'>\n";
 
@@ -56,22 +62,22 @@ function moonmars_ratings_buttons(Member $member, $entity_type, $entity_id) {
  */
 function moonmars_ratings_ajax_rate() {
   // Get request params:
-  $entity_type  = isset($_REQUEST['entity_type']) ? $_REQUEST['entity_type']        : NULL;
-  $entity_id    = isset($_REQUEST['entity_id'])   ? ((int) $_REQUEST['entity_id'])  : NULL;
-  $rating       = isset($_REQUEST['rating'])      ? ((int) $_REQUEST['rating'])     : NULL;
+  $entity_type = isset($_REQUEST['entity_type']) ? $_REQUEST['entity_type'] : NULL;
+  $entity_id = isset($_REQUEST['entity_id']) ? ((int) $_REQUEST['entity_id']) : NULL;
+  $rating = isset($_REQUEST['rating']) ? ((int) $_REQUEST['rating']) : NULL;
 
   // Get the logged-in member:
-  $current_member = Member::currentMember();
+  $logged_in_member = Member::loggedInMember();
 
   // Begin the data array:
-  $data = array(
+  $data = [
     'entity_type' => $entity_type,
-    'entity_id'   => $entity_id,
-    'rating'      => $rating,
-  );
+    'entity_id' => $entity_id,
+    'rating' => $rating,
+  ];
 
   // Check params:
-  if (!$entity_type || !$entity_id || is_null($rating) || !array_key_exists($rating, moonmars_ratings_names()) || !$current_member) {
+  if (!$entity_type || !$entity_id || is_null($rating) || !array_key_exists($rating, moonmars_ratings_names()) || !$logged_in_member) {
     $data['result'] = FALSE;
     $data['error'] = 'Invalid parameters';
     echo json_encode($data);
@@ -79,7 +85,7 @@ function moonmars_ratings_ajax_rate() {
   }
 
   // Update the rating:
-  $result = $current_member->rating($entity_type, $entity_id, $rating);
+  $result = $logged_in_member->rating(moonmars_actors_get_actor($entity_type, $entity_id), $rating);
 //  dbg($result);
 
   // Update result:

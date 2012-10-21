@@ -1,5 +1,10 @@
 <?php
 
+use \AstroMultimedia\MoonMars\Member;
+use \AstroMultimedia\MoonMars\Channel;
+use \AstroMultimedia\MoonMars\Item;
+use \AstroMultimedia\MoonMars\Group;
+
 /**
  * Preprocess function for item nodes.
  *
@@ -15,8 +20,8 @@ function astro_alpha_preprocess_node_item(&$vars) {
   drupal_add_js(drupal_get_path('module', 'moonmars_ratings') . '/js/ratings.js');
 
   // Get the current logged-in member:
-  $current_member = Member::currentMember();
-  $vars['current_member'] = $current_member;
+  $logged_in_member = Member::loggedInMember();
+  $vars['logged_in_member'] = $logged_in_member;
 
   // Get the node:
   $node = $vars['node'];
@@ -32,14 +37,10 @@ function astro_alpha_preprocess_node_item(&$vars) {
     drupal_add_js(array('astro' => array('item_node_page' => TRUE)), 'setting');
     $current_channel = NULL;
   }
-  else {
-    $current_channel = Channel::currentChannel();
-    $vars['parent_entity'] = $current_channel->parentEntity();
-  }
   $vars['item_node_page'] = $item_node_page;
 
   // Get the original poster:
-  $poster = Member::create($vars['uid']);
+  $poster = $item->creator();
   $vars['poster'] = $poster;
 
   // Get the poster's avatar:
@@ -47,20 +48,29 @@ function astro_alpha_preprocess_node_item(&$vars) {
 
   // Get the item's channel:
   $item_channel = $item->channel();
-  $vars['channel'] = $item_channel;
+  if ($item_channel) {
+    $item_channel_parent_entity = $item_channel->parentEntity();
+    $vars['channel'] = $item_channel;
 
-  // Original channel string:
-  if ($current_channel && Channel::equals($current_channel, $item_channel)) {
+    // Add a note to indicate what channel the item was posted in:
+    if ($current_channel && $item_channel->equals($current_channel)) {
+      $vars['item_channel_string'] = 'in this channel';
+    }
+    elseif ($item_channel_parent_entity->equals($poster)) {
+      $vars['item_channel_string'] = 'in their channel';
+    }
+    elseif ($item_channel_parent_entity instanceof Member) {
+      $vars['item_channel_string'] = 'in ' . $item_channel_parent_entity->tagLink() . "'s channel";
+    }
+    else {
+      $vars['item_channel_string'] = 'in ' . $item_channel_parent_entity->tagLink();
+    }
+    // Wrap it in a span tag:
+    $vars['item_channel_string'] = "<span class='item_channel'>{$vars['item_channel_string']}</span>";
+  }
+  else {
     $vars['item_channel_string'] = '';
-//    $vars['item_channel_string'] = 'in this channel';
   }
-  elseif ($current_channel && Channel::equals($item_channel, $poster->channel())) {
-    $vars['item_channel_string'] = 'in their channel';
-  }
-  elseif ($item_channel) {
-    $vars['item_channel_string'] = 'in ' . l($item_channel->title(), $item_channel->parentEntity()->alias());
-  }
-  $vars['item_channel_string'] = "<span class='item_channel'>{$vars['item_channel_string']}</span>";
 
   // Format the post datetime:
   $vars['created_datetime'] = astro_format_about_how_long_ago($node->created);
@@ -88,30 +98,30 @@ function astro_alpha_preprocess_node_item(&$vars) {
     $vars['comments'] = "<div id='comments' class='comment-wrapper'></div>";
   }
 
-  // Add links in comment text to URLs, member references and hash tags:
+  // Convert item text to HTML:
   if (isset($vars['content']['field_item_text'])) {
-    $vars['content']['field_item_text'][0]['#markup'] = moonmars_text_filter($vars['content']['field_item_text'][0]['#markup'], FALSE, TRUE);
+    $vars['content']['field_item_text'][0]['#markup'] = $item->html();
   }
 
   // Links for comment/edit/remove/delete item:
   $links1 = '';
   $links2 = '';
 
-  if ($current_member) {
+  if ($logged_in_member) {
     // These links are in right-to-left order because they're floated right:
 
     // delete link:
-    if ($current_member->canDeleteItem($item)) {
+    if ($logged_in_member->canDeleteItem($item)) {
       $links1 .= "<li class='item-delete'><a href='javascript:deleteItem($item_nid)'>delete</a></li>";
     }
 
 //    // remove link:
-//    if ($current_channel && $current_member->canRemoveItem($item, $current_channel)) {
+//    if ($current_channel && $logged_in_member->canRemoveItem($item, $current_channel)) {
 //      $links1 .= "<li class='item-remove'><a href='javascript:removeItem($item_nid)'>remove</a></li>";
 //    }
 
     // edit link:
-    if ($current_member->canEditItem($item)) {
+    if ($logged_in_member->canEditItem($item)) {
       $links1 .= "<li class='item-edit'><a href='javascript:editItem($item_nid)'>edit</a></li>";
     }
 
@@ -121,7 +131,7 @@ function astro_alpha_preprocess_node_item(&$vars) {
 //    }
 
     // comment link - show at top and bottom:
-    if ($current_member->canPostComment($item)) {
+    if ($logged_in_member->canPostComment($item)) {
       $links1 .= "<li class='item-comment item-comment-$item_nid'><a href='javascript:showNewCommentForm($item_nid)'>comment</a></li>";
 
       // Only show the bottom comment link if there are some comments. Otherwise they can use the top one.
@@ -152,8 +162,9 @@ function astro_alpha_preprocess_node_item(&$vars) {
 
   // Ratings:
   // To rate an item, the member must be logged in, and it must have been created by someone else.
-  $can_rate = $current_member && !Member::equals($current_member, $poster);
-  $vars['rating_buttons'] = $can_rate ? moonmars_ratings_buttons($current_member, 'node', $item_nid) : '';
+  // @todo Update this to a Member::canRateItem() method.
+  $can_rate = $logged_in_member && !$poster->equals($logged_in_member);
+  $vars['rating_buttons'] = $can_rate ? moonmars_ratings_buttons($logged_in_member, $item) : '';
 
   // Path to theme:
   $vars['theme_path'] = drupal_get_path('theme', 'astro');

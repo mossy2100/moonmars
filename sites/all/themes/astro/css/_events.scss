@@ -13,11 +13,11 @@
 	.date-nav-wrapper {
 		ul.pager {
 			background: none;
-			border: none;
+			border: 0;
 			margin-bottom: 5px;
 
 			li {
-				border: none;
+				border: 0;
 				position: static;
 				background: none;
 				color: white;
@@ -26,7 +26,7 @@
 				vertical-align: middle;
 				padding: 0;
 				margin-top: 10px;
-				border: none;
+				border: 0;
 
 				&.date-prev {
 					float: left;
@@ -120,4 +120,6 @@
 
 }
 
-
+.field-name-field-event-price {
+  float: left;
+}

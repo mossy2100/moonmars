@@ -106,10 +106,10 @@ function dbg($value, $func_name = '') {
   if ($_dbg_mode) {
     dbg_begin_print();
     if ($func_name != '') {
-      print "<b>$func_name:</b> ";
+      echo "<b>$func_name:</b> ";
     }
     // Requires strings.php:
-    print var_to_string($value);
+    echo var_to_string($value);
     dbg_end_print();
   }
 }
@@ -136,33 +136,34 @@ function dbg_sql($query, $target = 'default') {
   $query_array = object_to_array($query, TRUE);
 
   // Replace field placeholders:
-  if ($statement_type != 'select') {
-    $fields = $query_array['fields'];
-    $placeholder = ":db_{$statement_type}_placeholder_";
-    $n = 0;
-    foreach ($fields as $key => $value) {
+  if ($statement_type == 'insert') {
+    $values = $query_array['insertValues'][0];
+    foreach ($values as $index => $value) {
       $replacement = is_numeric($value) ? $value : $connection->quote($value);
-      $query_string = str_replace($placeholder . $n, $replacement, $query_string);
+      $query_string = str_replace(":db_insert_placeholder_$index", $replacement, $query_string);
+    }
+  }
+  elseif ($statement_type == 'update') {
+    $fields = $query_array['fields'];
+    $n = 0;
+    foreach ($fields as $value) {
+      $replacement = is_numeric($value) ? $value : $connection->quote($value);
+      $query_string = str_replace(":db_update_placeholder_$n", $replacement, $query_string);
       $n++;
     }
   }
 
   // Replace condition placeholders:
-  if ($statement_type == 'select') {
+  if (isset($query_array['where']['arguments']) && is_array($query_array['where']['arguments'])) {
     foreach ($query_array['where']['arguments'] as $placeholder => $value) {
       $replacement = is_numeric($value) ? $value : $connection->quote($value);
       $query_string = str_replace($placeholder, $replacement, $query_string);
     }
   }
-  else {
-    $conditions = $query_array['condition']['conditions'];
-    foreach ($conditions as $n => $info) {
-      if (!is_int($n)) {
-        continue;
-      }
-      $value = $info['value'];
+  if (isset($query_array['condition']['arguments']) && is_array($query_array['condition']['arguments'])) {
+    foreach ($query_array['condition']['arguments'] as $placeholder => $value) {
       $replacement = is_numeric($value) ? $value : $connection->quote($value);
-      $query_string = str_replace(':db_condition_placeholder_' . $n, $replacement, $query_string);
+      $query_string = str_replace($placeholder, $replacement, $query_string);
     }
   }
 

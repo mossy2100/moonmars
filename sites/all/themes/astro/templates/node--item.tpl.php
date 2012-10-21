@@ -1,6 +1,6 @@
 <article<?php print $attributes; ?> data-nid='<?php echo $node->nid; ?>'>
 
-  <div class='post-article-body'>
+  <div class='post-article-body' style='<?php echo $poster->commentStyle($highlight); ?>'>
 
     <div class='user-picture'>
       <?php echo $avatar; ?>
@@ -55,57 +55,56 @@
       ?>
 
     </div> <!-- /post-controls -->
+  </div>
 
-    <?php
-    // Comments:
-    echo $comments;
+  <?php
+  // Comments:
+  echo $comments;
 
-    // Bottom comment link:
-    echo $links2;
+  // Bottom comment link:
+  echo $links2;
+  ?>
+
+  <?php
+  // New comment form:
+  if ($logged_in_member && $logged_in_member->canPostComment($item)) {
     ?>
+    <article id="new-comment-form-article-<?php echo $node->nid; ?>" class="new-comment-form-article comment comment-new comment-by-viewer clearfix" data-nid="<?php echo $node->nid; ?>">
+      <div class='post-article-body' style='<?php echo $logged_in_member->commentStyle(); ?>'>
+        <div class='user-picture'>
+          <?php echo $logged_in_member->avatarTooltip(); ?>
+        </div>
+        <div class='post-content-wrapper'>
+          <div class='post-content'>
 
-    <?php
-      // New comment form:
-      if ($current_member && $current_member->canPostComment($item)) {
-      ?>
-      <article id="new-comment-form-article-<?php echo $node->nid; ?>" class="new-comment-form-article comment comment-new comment-by-viewer clearfix" data-nid="<?php echo $node->nid; ?>">
-        <div class='post-article-body' <?php echo $current_member->commentStyle(); ?>>
-          <div class='user-picture'>
-            <?php echo $current_member->avatarTooltip(); ?>
-          </div>
-          <div class='post-content-wrapper'>
-            <div class='post-content'>
-
-              <div class='who_where_when_posted'>
-                <?php echo $current_member->tooltipLink(); ?>
-              </div>
-
-              <form class='comment-form new-comment-form clearfix'>
-                <textarea class='new-comment-textarea'></textarea>
-                <div class='comment-buttons'>
-                  <input data-nid='<?php echo $node->nid; ?>' class='form-button cancel-comment-button' type='button' value='Cancel'>
-                  <input data-nid='<?php echo $node->nid; ?>' class='form-button new-comment-button' type='button' value='Post'>
-                </div>
-                <div class='comment-description'>Write something to share.</div>
-              </form>
+            <div class='who_where_when_posted'>
+              <?php echo $logged_in_member->tooltipLink(); ?>
             </div>
+
+            <form class='comment-form new-comment-form clearfix'>
+              <textarea class='new-comment-textarea'></textarea>
+              <div class='comment-buttons'>
+                <input data-nid='<?php echo $node->nid; ?>' class='form-button cancel-comment-button' type='button' value='Cancel'>
+                <input data-nid='<?php echo $node->nid; ?>' class='form-button new-comment-button' type='button' value='Post'>
+              </div>
+              <div class='comment-description'>Write something to share.</div>
+            </form>
           </div>
         </div>
-      </article>
-      <?php
-    }
-    elseif (!$current_member && isset($parent_entity) && ($parent_entity instanceof Group) && $parent_entity->mode() == 'open') {
-      // Tell the user they can comment if they login or register:
-      ?>
-      <p class='comment-instruction'>
-        <a href='/user/login?destination=<?php echo $parent_entity->alias(); ?>'>Login</a> or
-        <a href='/register?destination=<?php echo $parent_entity->alias(); ?>'>register</a>
-        to <!-- rate and --> post comments.
-      </p>
-      <?php
-    }
+      </div>
+    </article>
+    <?php
+  }
+  elseif (!$logged_in_member && isset($parent_entity) && ($parent_entity instanceof Group) && $parent_entity->mode() == 'open') {
+    // Tell the user they can comment if they login or register:
     ?>
-
-  </div>
+    <p class='comment-instruction'>
+      <a href='/user/login?destination=<?php echo $parent_entity->alias(); ?>'>Login</a> or
+      <a href='/register?destination=<?php echo $parent_entity->alias(); ?>'>register</a>
+      to <!-- rate and --> post comments.
+    </p>
+    <?php
+  }
+  ?>
 
 </article>

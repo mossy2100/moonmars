@@ -22,7 +22,6 @@
 
 .view-members,
 .view-groups {
-
   #views-exposed-form-groups-page {
     .views-exposed-widgets {
       margin: 0;
@@ -51,77 +50,6 @@
       #edit-submit-groups {
         margin-top: 15px;
       }
-
-    }
-  }
-}
-
-.region-content {
-  .view-notifications {
-    table {
-
-      thead {
-        display: none;
-      }
-
-      tr {
-        td {
-          border: none;
-
-          &.views-field-created {
-            padding: 5px 5px 5px 0;
-            color: $grey3;
-          }
-
-          &.views-field-field-notification-summary {
-            padding: 5px 0;
-          }
-
-          p {
-            margin: 0;
-          }
-
-          .notification-summary {
-            color: $grey3;
-          }
-
-          .notification-teaser {
-            margin-top: 3px;
-          }
-        }
-      }
-    }
-  }
-}
-
-.region-sidebar-first {
-  .view-notifications {
-
-    .views-row {
-      margin: 10px 0;
-    }
-
-    .views-field-created {
-      font-size: 11px;
-      color: $grey3;
-    }
-
-    .view-all-notifications {
-      text-align: right;
-    }
-
-    p {
-      margin: 0;
-    }
-
-    .notification-summary {
-      font-size: 11px;
-      color: $grey3;
-    }
-
-    .notification-teaser {
-      margin-top: 3px;
-      font-size: 11px;
     }
   }
 }

@@ -12,15 +12,21 @@ AS select
    fde1.endpoints_entity_id AS item_nid,
    n1.title as item_title,
    n1.status as item_status,
+   n1.uid as item_uid,
    n1.created as item_created,
-   n1.changed as item_changed
+   n1.changed as item_changed,
+   max(c.changed) as latest_comment,
+   count(c.cid) as n_comments,
+   greatest(n1.changed, ifnull(max(c.changed), 0)) as item_modified
 from
   relation r
   left join field_data_endpoints fde0 on (r.rid = fde0.entity_id) and (fde0.endpoints_r_index = 0)
   left join field_data_endpoints fde1 on (r.rid = fde1.entity_id) and (fde1.endpoints_r_index = 1)
   left join node n0 on (fde0.endpoints_entity_id = n0.nid)
   left join node n1 on (fde1.endpoints_entity_id = n1.nid)
-where r.relation_type = 'has_item';
+  left join comment c ON n1.nid = c.nid
+where r.relation_type = 'has_item'
+group by n1.nid
 
 
 CREATE or replace view view_channel_has_subscriber
@@ -64,10 +70,24 @@ from
 where r.relation_type = 'has_channel';
 
 
+CREATE OR REPLACE VIEW view_topic
+AS SELECT
+   t.tid,
+   t.name,
+   ftt.field_topic_title_value as title,
+   t.description
+FROM
+  taxonomy_term_data t
+  LEFT JOIN taxonomy_vocabulary tv ON t.vid = tv.vid
+  LEFT JOIN field_data_field_topic_title ftt ON t.tid = ftt.entity_id
+WHERE tv.name = 'topic'
+
+
 CREATE or replace view view_group
 AS select
    n.nid,
    n.title,
+   tft.field_group_tag_value as tag,
    n.status,
    n.uid,
    n.created,
@@ -79,6 +99,7 @@ AS select
    if (sum(vgm.member_status) is NULL, 0, sum(vgm.member_status)) as member_count
 from
   node n
+  left join field_data_field_group_tag tft on n.nid = tft.entity_id
   left join field_data_field_description fd on n.nid = fd.entity_id
   left join field_data_field_group_type fgt on n.nid = fgt.entity_id
   left join field_data_field_scale fs on n.nid = fs.entity_id
@@ -100,14 +121,38 @@ AS select
    n.status AS group_status,
    fde1.endpoints_entity_id AS member_uid,
    u.name AS member_name,
-   u.status AS member_status
+   u.status AS member_status,
+   field_is_admin_value AS is_admin
 from
   relation r
   left join field_data_endpoints fde0 on ((r.rid = fde0.entity_id) and (fde0.endpoints_r_index = 0))
   left join field_data_endpoints fde1 on ((r.rid = fde1.entity_id) and (fde1.endpoints_r_index = 1))
+  left join field_data_field_is_admin ia on r.rid = ia.entity_id
   left join node n on fde0.endpoints_entity_id = n.nid
   left join users u on fde1.endpoints_entity_id = u.uid
 where r.relation_type = 'has_member';
+
+
+CREATE or replace view view_followers
+AS select
+   r.rid AS rid,
+   r.vid AS vid,
+   r.uid AS uid,
+   r.created AS created,
+   r.changed AS changed,
+   fde0.endpoints_entity_id AS follower_uid,
+   u0.name AS follower_name,
+   u0.status AS follower_status,
+   fde1.endpoints_entity_id AS followee_uid,
+   u1.name AS followee_name,
+   u1.status AS followee_status
+from
+  relation r
+  left join field_data_endpoints fde0 on ((r.rid = fde0.entity_id) and (fde0.endpoints_r_index = 0))
+  left join field_data_endpoints fde1 on ((r.rid = fde1.entity_id) and (fde1.endpoints_r_index = 1))
+  left join users u0 on fde0.endpoints_entity_id = u0.uid
+  left join users u1 on fde1.endpoints_entity_id = u1.uid
+where r.relation_type = 'follows';
 
 
 CREATE or replace view view_member
@@ -119,6 +164,7 @@ AS select
    u.status,
    ffn.field_first_name_value as first_name,
    fln.field_last_name_value as last_name,
+   trim(concat(if(ffn.field_first_name_value is null, '', ffn.field_first_name_value), ' ', if(fln.field_last_name_value is null, '', fln.field_last_name_value))) as full_name,
    fdob.field_date_of_birth_value as date_of_birth,
    fg.field_gender_value as gender,
    fb.field_bio_value as bio,

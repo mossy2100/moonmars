@@ -18,23 +18,16 @@ require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'node') . '/node.page
   <div<?php print $content_attributes; ?>>
 
     <?php
-    if ($viewing_activity) {
-      ?>
-      <p>The all new Activity page! This is basically the same as the Home page on Facebook or Twitter, and shows
-      items from all the channels you're subscribed to, ordered by which has changed most recently.</p>
-      <?php
-    }
-
     // If the logged-in member can post items in this channel, show the new item form.
-    if (!$viewing_activity && $current_member && $current_member->canPostItem($channel)) {
+    if ($logged_in_member && $logged_in_member->canPostItem($channel)) {
       ?>
       <div class='post-form-wrapper'>
         <h2>Share something</h2>
 
-        <div class='post-article-body'>
+        <div class='post-article-body' style='<?php echo $logged_in_member->commentStyle(); ?>'>
 
           <div class='user-picture'>
-            <?php echo $current_member->avatarTooltip(); ?>
+            <?php echo $logged_in_member->avatarTooltip(); ?>
           </div>
 
           <div class='post-content-wrapper' <?php print $content_attributes; ?>>
@@ -43,17 +36,13 @@ require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'node') . '/node.page
               <div class='who_where_when_posted'>
                 <?php
                 // Current member's username with link and tooltip:
-                echo $current_member->tooltipLink();
+                echo $logged_in_member->tooltipLink();
                 ?>
               </div>
 
               <?php
-              // Remember that we're on a channel page:
-              $GLOBALS['channel_nid'] = $channel->nid();
-
               // New item form:
-              $new_item_form = node_add('item');
-              echo render($new_item_form);
+              echo render(node_add('item'));
               ?>
 
             </div>

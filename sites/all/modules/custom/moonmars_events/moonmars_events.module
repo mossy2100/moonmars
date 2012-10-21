@@ -1,5 +1,7 @@
 <?php
 
+use \AstroMultimedia\MoonMars\DateTime;
+
 /**
  * Implements hook_form_alter().
  */
@@ -25,19 +27,19 @@ function moonmars_events_views_pre_execute($view) {
     case 'calendar':
 
       // Get the view arguments:
-      $arg1 = alias_arg(1);
-      $template = (isset($arg1) && in_array($arg1, array(
+      $arg1 = request_arg(1);
+      $template = (isset($arg1) && in_array($arg1, [
         'day',
         'week',
         'year'
-      ))) ? $arg1 : 'month';
+      ])) ? $arg1 : 'month';
 
       $min_year = 2012;
       $max_year = 2050;
 
       switch ($template) {
         case 'year':
-          $date = new StarDateTime($view->args[0] . '-01-01');
+          $date = new DateTime($view->args[0] . '-01-01');
           $date->clampYear($min_year, $max_year);
           // Create labels for the previous and next buttons:
           $prev_date = $date->subYears(1);
@@ -47,7 +49,7 @@ function moonmars_events_views_pre_execute($view) {
           break;
 
         case 'month':
-          $date = new StarDateTime($view->args[0] . '-01');
+          $date = new DateTime($view->args[0] . '-01');
           $date->clampYear($min_year, $max_year);
           // Create labels for the previous and next buttons:
           $prev_date = $date->subMonths(1);
@@ -57,14 +59,14 @@ function moonmars_events_views_pre_execute($view) {
           break;
 
 //        case 'week':
-//          $date = new StarDateTime('Monday, ' . $view->args[0]);
+//          $date = new DateTime('Monday, ' . $view->args[0]);
 //          // Create labels for the previous and next buttons:
 //          $prev_label = '<< ' . $date->subWeeks(1)->format('Y \WW');
 //          $next_label = $date->addWeeks(1)->format('Y \WW') . ' >>';
 //          break;
 
         case 'day':
-          $date = new StarDateTime($view->args[0]);
+          $date = new DateTime($view->args[0]);
           $date->clampYear($min_year, $max_year);
           // Create labels for the previous and next buttons:
           $prev_date = $date->subDays(1);
@@ -83,16 +85,16 @@ function moonmars_events_views_pre_execute($view) {
       }
 
       // Some JS variables:
-      $settings = array(
-        'calendar' => array(
+      $settings = [
+        'calendar' => [
           'template'     => $template,
           'selectedDate' => $date->format('Y-m-d'),
           'prevLabel'    => $prev_label,
           'nextLabel'    => $next_label,
           'minYear'      => $min_year,
           'maxYear'      => $max_year,
-        ),
-      );
+        ],
+      ];
       drupal_add_js($settings, 'setting');
       drupal_add_js(drupal_get_path('module', 'moonmars_event') . '/js/moonmars_calendar.js');
       break;
