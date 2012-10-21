@@ -1,7 +1,12 @@
 <?php
 
 // This is set in global.inc
-//error_reporting(0);$conf['error_level'] = 32767;ini_set('display_errors', TRUE);ini_set('display_startup_errors', TRUE);
+//error_reporting(0);
+$conf['error_level'] = 32767;
+
+// SM - temporarily display all errors until server debugging finished.
+ini_set('display_errors', TRUE);
+ini_set('display_startup_errors', TRUE);
 ini_set('error_reporting', TRUE);
 
 // Override the setting in var/aegir/global.inc, for persistent_login:

@@ -2,7 +2,7 @@
 
 
 $options['db_type'] = 'mysql';
-$options['db_host'] = 'localhost';
+$options['db_host'] = '127.0.0.1';
 $options['db_port'] = '3306';
 $options['db_passwd'] = 'YD4N2KqGVB';
 $options['db_name'] = 'moonmarscom';
