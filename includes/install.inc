@@ -1009,6 +1009,7 @@ function drupal_install_fix_file($file, $mask, $message = TRUE) {
  */
 function install_goto($path) {
   echo "install_goto($path)<br>";
+  exit;
 
   global $base_url;
   include_once DRUPAL_ROOT . '/includes/common.inc';
