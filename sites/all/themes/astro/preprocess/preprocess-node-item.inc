@@ -72,6 +72,8 @@ function astro_alpha_preprocess_node_item(&$vars) {
     $vars['item_channel_string'] = '';
   }
 
+  $vars['item_channel_string'] .= ' [' . $item->modified()->iso() . ']';
+
   // Format the post datetime:
   $vars['created_datetime'] = astro_format_about_how_long_ago($node->created);
 

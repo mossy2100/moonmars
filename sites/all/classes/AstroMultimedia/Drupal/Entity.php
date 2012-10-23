@@ -401,24 +401,39 @@ abstract class Entity {
   // Datetimes
 
   /**
-   * Get/set the created timestamp.
+   * Get the DateTime class to use for these methods.
+   * This is hacky as fuck, need to think of a better way.
+   *
+   * @return string
+   */
+  public function _dateTimeClass() {
+    // Which class to use?
+    $called_class = get_called_class();
+    $parts = explode('\\', $called_class);
+    $date_time_class = implode('\\', array_slice($parts, 0, count($parts) - 1)) . '\\DateTime';
+    return class_exists($date_time_class) ? $date_time_class : '\\AstroMultimedia\\Star\\DateTime';
+  }
+
+  /**
+   * Get/set the created datetime.
    *
    * @param null|int|string|DateTime $value
    * @return DateTime
    */
   public function created($value = NULL) {
+    $date_time_class = $this->_dateTimeClass();
     if ($value === NULL) {
       // Get the created property as a DateTime:
-      return new DateTime($this->prop('created'));
+      return new $date_time_class($this->prop('created'));
     }
     else {
       // Set the created property:
-      $this->prop('created', DateTime::toTimestamp($value));
+      $this->prop('created', $date_time_class::toTimestamp($value));
     }
   }
 
   /**
-   * Get/set the changed timestamp.
+   * Get/set the changed datetime.
    *
    * Note that this method of setting the changed timestamp doesn't actually affect the database, because the entity
    * save function will update the changed timestamp to now() automatically.
@@ -428,13 +443,14 @@ abstract class Entity {
    * @return DateTime
    */
   public function changed($value = NULL) {
+    $date_time_class = $this->_dateTimeClass();
     if ($value === NULL) {
       // Get the changed property as a DateTime:
-      return new DateTime($this->prop('changed'));
+      return new $date_time_class($this->prop('changed'));
     }
     else {
       // Set the changed property:
-      $this->prop('changed', DateTime::toTimestamp($value));
+      $this->prop('changed', $date_time_class::toTimestamp($value));
     }
   }
 

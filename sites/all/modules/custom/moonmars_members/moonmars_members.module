@@ -19,7 +19,7 @@ function moonmars_members_init() {
 
   if (user_is_logged_in()) {
     global $user;
-    drupal_add_js(['moonmars_members' => ['username' => $user->name]], 'setting');
+    drupal_add_js(array('moonmars_members' => array('username' => $user->name)), 'setting');
     drupal_add_js("$module_path/js/set-username-menu.js");
   }
 
