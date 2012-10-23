@@ -248,9 +248,7 @@ class Channel extends Node {
     $rs = $q->execute();
     $items = array();
     foreach ($rs as $rec) {
-      $item = Item::create($rec->item_nid);
-//      $item->load();
-      $items[] = $item;
+      $items[] = Item::create($rec->item_nid);
     }
     return $items;
   }
@@ -307,8 +305,8 @@ class Channel extends Node {
   /**
    * Get all the items posted in this channel that have been modified (created, changed or commented on) within a
    * datetime range.
-   * Note, this method does NOT return an array of Item objects, but timestamps, because it's designed for
-   * lightning fast sorting. Item object creation happens later when the page is rendered.
+   * //Note, this method does NOT return an array of Item objects, but timestamps, because it's designed for
+   * //lightning fast sorting. Item object creation happens later when the page is rendered.
    *
    * @param int $ts_start
    * @param int $ts_end
@@ -318,11 +316,12 @@ class Channel extends Node {
     $q = db_select('view_channel_has_item', 'vchi')
       ->fields('vchi', array('nid', 'item_modified'))
       ->condition('channel_nid', $this->nid())
-      ->condition('item_modified', [$ts_start, $ts_end], 'BETWEEN');
+      ->condition('item_modified', [$ts_start, $ts_end], 'BETWEEN')
+      ->orderBy('item_modified');
     $rs = $q->execute();
     $items = array();
     foreach ($rs as $rec) {
-      $items[$rec->nid] = $rec->item_modified;
+      $items[$rec->nid] = Item::create($rec->item_modified);
     }
     return $items;
   }
