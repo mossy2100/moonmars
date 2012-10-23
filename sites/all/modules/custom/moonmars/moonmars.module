@@ -58,7 +58,7 @@ function moonmars_alias_redirect() {
       }
     }
     if ($query) {
-      $alias .= '?' . http_build_query($query);
+      $alias .= '?' . drupal_http_build_query($query);
     }
     // Can't use drupal_goto() because if there's a destination parameter then it will screw up the redirect:
     header("Location: /$alias");
@@ -70,22 +70,22 @@ function moonmars_alias_redirect() {
  * Implements hook_menu().
  */
 function moonmars_menu() {
-  $items = [];
-  $items['home'] = [
+  $items = array();
+  $items['home'] = array(
     'page callback' => 'moonmars_home',
     'access callback' => TRUE,
     'type' => MENU_CALLBACK
-  ];
-  $items['admin/phpinfo'] = [
+  );
+  $items['admin/phpinfo'] = array(
     'page callback' => 'moonmars_phpinfo',
     'access arguments' => ['execute php code'],
     'type' => MENU_CALLBACK
-  ];
-  $items['colors'] = [
+  );
+  $items['colors'] = array(
     'page callback' => 'moonmars_colors',
     'access callback' => TRUE,
     'type' => MENU_CALLBACK
-  ];
+  );
   return $items;
 }
 

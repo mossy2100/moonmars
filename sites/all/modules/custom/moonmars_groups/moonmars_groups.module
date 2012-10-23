@@ -18,7 +18,7 @@ const MOONMARS_GROUP_SEARCH_PAGE_SIZE = 20;
  * Implements hook_menu().
  */
 function moonmars_groups_menu() {
-  $items = [];
+  $items = array();
   $items['node/%/join'] = [
     'page callback'    => 'moonmars_groups_join',
     'page arguments'   => [1],
@@ -279,7 +279,7 @@ function moonmars_groups_block_info() {
  * Implementation of hook_block_view().
  */
 function moonmars_groups_block_view($delta = '') {
-  $block = [];
+  $block = array();
   switch ($delta) {
     case 'group-menu':
       $block['subject'] = NULL;
@@ -414,11 +414,11 @@ function moonmars_groups_biggest_groups_block() {
  * @param array $params
  * @return array
  */
-function moonmars_groups_search($params = []) {
+function moonmars_groups_search($params = array()) {
 //  dpm($params, 'moonmars_groups_search params');
 
   // Reset the search params:
-  $_SESSION['group_search']['params'] = [];
+  $_SESSION['group_search']['params'] = array();
 
   // Create the search query:
   $q = db_select('view_group', 'vg')
@@ -436,7 +436,7 @@ function moonmars_groups_search($params = []) {
 
   // Group types:
   if (isset($params['type'])) {
-    $selected_types = [];
+    $selected_types = array();
 
     if (is_array($params['type'])) {
       // Types selected as checkboxes on form:
@@ -519,7 +519,7 @@ function moonmars_groups_search($params = []) {
 
   // Get the results:
   $rs = $q->execute();
-  $results = [];
+  $results = array();
   foreach ($rs as $rec) {
     $results[] = $rec->nid;
   }
@@ -580,7 +580,7 @@ function moonmars_groups_search_form() {
   $logged_in_member = Member::loggedInMember();
 
   // Create the form:
-  $form = [];
+  $form = array();
 
   $form['title'] = [
     '#value' => "<h2>Search groups</h2>",
@@ -789,7 +789,7 @@ function theme_moonmars_groups_search_form($vars) {
 
     // Search results:
     $types = Group::groupTypes();
-    $rows = [];
+    $rows = array();
 
     for ($i = 0; $i < MOONMARS_GROUP_SEARCH_PAGE_SIZE; $i++) {
       $n = $_SESSION['group_search']['page'] * MOONMARS_GROUP_SEARCH_PAGE_SIZE + $i;

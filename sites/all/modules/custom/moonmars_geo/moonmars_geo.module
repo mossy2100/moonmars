@@ -6,7 +6,7 @@ use \stdClass;
  * Implements hook_menu().
  */
 function moonmars_geo_menu() {
-  $items = [];
+  $items = array();
   $items['ajax/geo/country'] = [
     'page callback'    => 'moonmars_geo_ajax_lookup_country',
     'access callback'  => TRUE,

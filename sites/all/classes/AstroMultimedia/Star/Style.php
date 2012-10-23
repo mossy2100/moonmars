@@ -32,7 +32,7 @@ class Style {
    * @return string
    */
   function inline() {
-    $pairs = [];
+    $pairs = array();
     foreach ($this->properties as $property => $value) {
       $pairs[] = "$property: $value;";
     }

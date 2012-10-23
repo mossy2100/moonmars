@@ -7,7 +7,7 @@
  */
 function moonmars_commerce_currency_options() {
   $currencies = currency_api_get_currencies();
-  $options = [];
+  $options = array();
   foreach ($currencies as $code => $currency_info) {
     $options[$code] = $currency_info['name'];
   }
