@@ -1477,7 +1477,7 @@ class Member extends \AstroMultimedia\Drupal\User {
     // Create an array of uids of the members that we want to include items posted by.
 
     // Start with theirs:
-    $item_uids = [$this->uid()];
+    $item_uids = array($this->uid());
 
     // Now the uids of this member's followees:
     foreach ($this->followees() as $followee) {
@@ -1488,7 +1488,7 @@ class Member extends \AstroMultimedia\Drupal\User {
     // Create an array of nids of the channels that we want to include items from.
 
     // Start with theirs:
-    $channel_nids = [$this->channel()->nid()];
+    $channel_nids = array($this->channel()->nid());
 
     // Now the nids of this member's groups' channels:
     foreach ($this->groups() as $group) {
@@ -1538,7 +1538,7 @@ class Member extends \AstroMultimedia\Drupal\User {
     // Create an array of uids of the members that we want to include items posted by.
 
     // Start with theirs:
-    $item_uids = [$this->uid()];
+    $item_uids = array($this->uid());
 
     // Now the uids of this member's followees:
     foreach ($this->followees() as $followee) {
@@ -1549,7 +1549,7 @@ class Member extends \AstroMultimedia\Drupal\User {
     // Create an array of nids of the channels that we want to include items from.
 
     // Start with theirs:
-    $channel_nids = [$this->channel()->nid()];
+    $channel_nids = array($this->channel()->nid());
 
     // Now the nids of this member's groups' channels:
     foreach ($this->groups() as $group) {
@@ -1588,7 +1588,7 @@ class Member extends \AstroMultimedia\Drupal\User {
 //    // Let's say 20 to start with.
 //    $n_items_goal = 20;
 //    $ts_end = REQUEST_TIME;
-//    $items = [];
+//    $items = array();
 //
 //    while (TRUE) {
 //      $ts_start = $ts_end - DateTime::SECONDS_PER_DAY;

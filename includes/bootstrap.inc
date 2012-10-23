@@ -319,7 +319,7 @@ abstract class DrupalCacheArray implements ArrayAccess {
     $this->bin = $bin;
 
     if ($cached = cache_get($this->cid, $this->bin)) {
-     $this->storage = $cached->data;
+      $this->storage = $cached->data;
     }
   }
 
@@ -1339,8 +1339,8 @@ function drupal_serve_page_from_cache(stdClass $cache) {
   $if_none_match = isset($_SERVER['HTTP_IF_NONE_MATCH']) ? stripslashes($_SERVER['HTTP_IF_NONE_MATCH']) : FALSE;
 
   if ($if_modified_since && $if_none_match
-      && $if_none_match == $etag // etag must match
-      && $if_modified_since == $cache->created) {  // if-modified-since must match
+    && $if_none_match == $etag // etag must match
+    && $if_modified_since == $cache->created) {  // if-modified-since must match
     header($_SERVER['SERVER_PROTOCOL'] . ' 304 Not Modified');
     drupal_send_headers($default_headers);
     return;
@@ -1659,19 +1659,19 @@ function request_uri() {
  */
 function watchdog_exception($type, Exception $exception, $message = NULL, $variables = array(), $severity = WATCHDOG_ERROR, $link = NULL) {
 
-   // Use a default value if $message is not set.
-   if (empty($message)) {
-     // The exception message is run through check_plain() by _drupal_decode_exception().
-     $message = '%type: !message in %function (line %line of %file).';
-   }
-   // $variables must be an array so that we can add the exception information.
-   if (!is_array($variables)) {
-     $variables = array();
-   }
+  // Use a default value if $message is not set.
+  if (empty($message)) {
+    // The exception message is run through check_plain() by _drupal_decode_exception().
+    $message = '%type: !message in %function (line %line of %file).';
+  }
+  // $variables must be an array so that we can add the exception information.
+  if (!is_array($variables)) {
+    $variables = array();
+  }
 
-   require_once DRUPAL_ROOT . '/includes/errors.inc';
-   $variables += _drupal_decode_exception($exception);
-   watchdog($type, $message, $variables, $severity, $link);
+  require_once DRUPAL_ROOT . '/includes/errors.inc';
+  $variables += _drupal_decode_exception($exception);
+  watchdog($type, $message, $variables, $severity, $link);
 }
 
 /**
@@ -2338,7 +2338,7 @@ function _drupal_bootstrap_page_cache() {
       header('X-Drupal-Cache: MISS');
     }
   }
-} 
+}
 
 /**
  * Initializes the database system and registers autoload functions.
@@ -3372,8 +3372,8 @@ function _drupal_shutdown_function() {
   }
   catch (Exception $exception) {
     // If we are displaying errors, then do so with no possibility of a further uncaught exception being thrown.
-   require_once DRUPAL_ROOT . '/includes/errors.inc';
-   if (error_displayable()) {
+    require_once DRUPAL_ROOT . '/includes/errors.inc';
+    if (error_displayable()) {
       print '<h1>Uncaught exception thrown in shutdown function.</h1>';
       print '<p>' . _drupal_render_exception_safe($exception) . '</p><hr />';
     }

@@ -10,7 +10,7 @@ define('MOONMARS_NEWS_CHANNEL_NID', 467);
 // * Implements hook_menu().
 // */
 //function moonmars_channels_menu() {
-//  $items = [];
+//  $items = array();
 //  return $items;
 //}
 

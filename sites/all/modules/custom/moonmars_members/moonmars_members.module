@@ -19,7 +19,7 @@ function moonmars_members_init() {
 
   if (user_is_logged_in()) {
     global $user;
-    drupal_add_js(['moonmars_members' => ['username' => $user->name]], 'setting');
+    drupal_add_js(array('moonmars_members' => array('username' => $user->name)), 'setting');
     drupal_add_js("$module_path/js/set-username-menu.js");
   }
 
@@ -34,7 +34,7 @@ function moonmars_members_init() {
  * Note we have to use 'user/%/*' menu paths here - 'member/%/*' don't work because they're built on aliases.
  */
 function moonmars_members_menu() {
-  $items = [];
+  $items = array();
   $items['profile'] = [
     'page callback' => 'moonmars_members_profile',
     'access callback' => 'user_is_logged_in',
@@ -420,7 +420,7 @@ function moonmars_members_user_profile_form_submit($form, &$form_state) {
 //    $options = ['query' => $_GET];
 //  }
 //  else {
-//    $options = [];
+//    $options = array();
 //  }
 //
 //  dpm('moonmars_members_edit_redirect - redirecting to ' . "user/$uid/edit/profile");
@@ -603,7 +603,7 @@ function moonmars_members_block_info() {
  * Implementation of hook_block_view().
  */
 function moonmars_members_block_view($delta = '') {
-  $block = [];
+  $block = array();
   switch ($delta) {
     case 'member-menu':
       $block['subject'] = NULL;

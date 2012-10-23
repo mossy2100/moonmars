@@ -26,4 +26,3 @@ function astro_format_about_how_long_ago($datetime) {
   $iso = $datetime->format(DateTime::ISO8601);
   return "<time datetime='$iso'>$time_ago</time>";
 }
-

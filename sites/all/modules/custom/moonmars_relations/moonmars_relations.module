@@ -61,7 +61,7 @@ function moonmars_relations_cleanup() {
   $rs = db_select('relation_type', 'rt')
     ->fields('rt', ['relation_type'])
     ->execute();
-  $relation_types = [];
+  $relation_types = array();
   foreach ($rs as $rec) {
     $relation_types[] = $rec->relation_type;
   }

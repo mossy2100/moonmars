@@ -11,7 +11,7 @@ use \AstroMultimedia\MoonMars\Channel;
  * Implements hook_menu().
  */
 function moonmars_update_menu() {
-  $items = [];
+  $items = array();
   $items['update/%'] = [
     'page callback'   => 'moonmars_update_marshall',
     'page arguments'  => [1],
@@ -326,7 +326,7 @@ function moonmars_update_fix_aliases() {
  */
 function moonmars_update_named_colors() {
   $colors = Color::colorNames();
-  $colors2 = [];
+  $colors2 = array();
   foreach ($colors as $name => $hex) {
     $colors2[strtolower($name)] = strtoupper($hex);
   }

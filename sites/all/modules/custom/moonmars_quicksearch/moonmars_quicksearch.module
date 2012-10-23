@@ -34,7 +34,7 @@ function moonmars_quicksearch_block_info() {
  * Implementation of hook_block_view().
  */
 function moonmars_quicksearch_block_view($delta = '') {
-  $block = [];
+  $block = array();
   switch ($delta) {
     case 'quicksearch-form':
       $block['subject'] = 'Quicksearch';
@@ -50,7 +50,7 @@ function moonmars_quicksearch_block_view($delta = '') {
  * @return array
  */
 function moonmars_quicksearch_form() {
-  $form = [];
+  $form = array();
   $form['quicksearch_text'] = [
     '#type' => 'textfield',
   ];
@@ -224,7 +224,7 @@ function moonmars_quicksearch_ajax_search($text) {
   $GLOBALS['quicksearch_text'] = $text;
 
   // Search 3 actor types: member, topic, group.
-  $matches = [];
+  $matches = array();
 
   // Find matching members:
   $q = db_select('view_member', 'm')

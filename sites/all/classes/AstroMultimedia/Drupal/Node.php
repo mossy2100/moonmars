@@ -35,6 +35,20 @@ class Node extends Entity {
   const NODE_TYPE = NULL;
 
   /**
+   * The node's comments.
+   *
+   * @var array
+   */
+  protected $comments;
+
+  /**
+   * Users who commented on the node.
+   *
+   * @var array
+   */
+  protected $commenters;
+
+  /**
    * Constructor.
    */
   protected function __construct() {
@@ -287,7 +301,7 @@ class Node extends Entity {
   }
 
   /**
-   * Get the node's comments.
+   * Get the node's comments, order by created time.
    *
    * @param bool|null $published
    *   NULL for all comments
@@ -298,20 +312,31 @@ class Node extends Entity {
    * @return array
    */
   public function comments($published = TRUE, $comment_class = 'Comment') {
-    // Get the comments:
-    $q = db_select('comment', 'c')
-      ->fields('c', array('cid'))
-      ->condition('nid', $this->nid());
+    if (!isset($this->comments)) {
+      // Get the comments:
+      $q = db_select('comment', 'c')
+        ->fields('c', array('cid'))
+        ->condition('nid', $this->nid())
+        ->orderBy('created');
 
-    // Set the published condition if specified:
-    if (is_bool($published)) {
-      $q->condition('status', (int) $published);
+      $rs = $q->execute();
+      $this->comments = array();
+      foreach ($rs as $rec) {
+        $this->comments[] = $comment_class::create($rec->cid);
+      }
     }
 
-    $rs = $q->execute();
+    // If we want both published and unpublished comments, return them all:
+    if ($published === NULL) {
+      return $this->comments;
+    }
+
+    // Return just the published or unpublished comments:
     $comments = array();
-    foreach ($rs as $rec) {
-      $comments[] = $comment_class::create($rec->cid);
+    foreach ($this->comments as $comment) {
+      if ($comment->published() == $published) {
+        $comments[] = $comment;
+      }
     }
     return $comments;
   }
@@ -335,6 +360,131 @@ class Node extends Entity {
     }
 
     return $q->execute()->rowCount();
+  }
+
+  /**
+   * Get the users who commented on this item.
+   *
+   * @return array
+   */
+  public function commenters($user_class = 'User') {
+    if (!isset($this->commenters)) {
+      $q = db_select('comment', 'c')
+        ->fields('c', array('uid'))
+        ->distinct()
+        ->condition('nid', $this->nid())
+        ->orderBy('created');
+      $rs = $q->execute();
+      $this->commenters = array();
+      foreach ($rs as $rec) {
+        $this->commenters[$rec->uid] = $user_class::create($rec->uid);
+      }
+    }
+    return $this->commenters;
+  }
+
+  /**
+   * Get the most recently created comment.
+   *
+   * @return ItemComment
+   */
+  public function lastCommentCreated($published = TRUE, $comment_class = 'Comment') {
+    // Always get the answer in the fastest possible way.
+
+    // If we already have the comments, find which was created most recently:
+    if (isset($this->comments)) {
+      $comments = $this->comments($published, $comment_class);
+      if (!$comments) {
+        return NULL;
+      }
+      // $comments are ordered by created time, so just grab the latest:
+      return $this->comments[count($this->comments) - 1];
+    }
+
+    // Look up the most recently created comment:
+    $q = db_select('comment', 'c')
+      ->fields('c', array('cid'))
+      ->condition('nid', $this->nid());
+    if ($published !== NULL) {
+      $q->condition('status', $published);
+    }
+    $cid = $q->orderBy('created', 'DESC')->range(0, 1)->execute()->fetchField();
+    return $cid ? $comment_class::create($cid) : NULL;
+  }
+
+  /**
+   * Get the most recently changed comment.
+   *
+   * @return ItemComment
+   */
+  public function lastCommentChanged($published = TRUE, $comment_class = 'Comment') {
+    // Always get the answer in the fastest possible way.
+
+    // If we already have the comments, find which was changed most recently:
+    if (isset($this->comments)) {
+      $comments = $this->comments($published, $comment_class);
+      if (!$comments) {
+        return NULL;
+      }
+      $latest_comment_changed_time = NULL;
+      $latest_comment = NULL;
+      foreach ($comments as $comment) {
+        $comment_changed_time = $comment->changed();
+        if (!$latest_comment_changed_time || $comment_changed_time > $latest_comment_changed_time) {
+          $latest_comment_changed_time = $comment_changed_time;
+          $latest_comment = $comment;
+        }
+      }
+      return $latest_comment;
+    }
+
+    // Look up the most recently changed comment:
+    $q = db_select('comment', 'c')
+      ->fields('c', array('cid'))
+      ->condition('nid', $this->nid());
+      if ($published !== NULL) {
+        $q->condition('status', $published);
+      }
+    $cid = $q->orderBy('changed', 'DESC')->range(0, 1)->execute()->fetchField();
+    return $cid ? $comment_class::create($cid) : NULL;
+  }
+
+  /**
+   * Get the datetime of the latest comment changed.
+   *
+   * @return DateTime
+   */
+  public function lastCommentChangedTime($published = TRUE) {
+    // Always get the answer in the fastest possible way.
+
+    // If we already have the comments, grab the time from the array:
+    if (isset($this->comments)) {
+      $latest_comment = $this->lastCommentChanged();
+      return $latest_comment ? $latest_comment->changed() : NULL;
+    }
+
+    // If we don't, look it up directly:
+    $q = db_select('comment', 'c')
+      ->fields('c', array('changed'))
+      ->condition('nid', $this->nid());
+    if ($published !== NULL) {
+      $q->condition('status', $published);
+    }
+    $changed = $q->orderBy('changed', 'DESC')->range(0, 1)->execute()->fetchField();
+    $datetime_class = $this->_dateTimeClass();
+    return $changed ? (new $datetime_class($changed)) : NULL;
+  }
+
+  /**
+   * Get the modified datetime.
+   * This is the latest of the changed timestamp of the item, and of the latest comment.
+   *
+   * @return DateTime
+   */
+  public function modified() {
+    $changed = $this->changed();
+    $latest_comment_time = $this->lastCommentChangedTime();
+    return ($latest_comment_time && $latest_comment_time > $changed) ? $latest_comment_time : $changed;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -217,17 +217,8 @@ class Item extends Node {
    *
    * @return array
    */
-  public function commenters() {
-    $q = db_select('comment', 'c')
-      ->fields('c', array('uid'))
-      ->distinct()
-      ->condition('nid', $this->nid());
-    $rs = $q->execute();
-    $members = array();
-    foreach ($rs as $rec) {
-      $members[$rec->uid] = Member::create($rec->uid);
-    }
-    return $members;
+  public function commenters($user_class = '\AstroMultimedia\MoonMars\Member') {
+    return parent::commenters($user_class);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
