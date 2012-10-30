@@ -216,7 +216,7 @@ function moonmars_quicksearch_ajax_search($text) {
   // Only search if 3 characters or more. Actually the callback should never be triggered with fewer than 3 characters.\
   // The JS will make that check.
   if (strlen($text) < MOONMARS_QUICKSEARCH_MIN_LENGTH) {
-    echo json_encode([]);
+    echo json_encode(array());
     return;
   }
 

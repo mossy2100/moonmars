@@ -434,7 +434,7 @@ function moonmars_update_channel_item_relation_changed_times() {
       $html .= "<b>Updating relation $rec->rid changed time to $latest</b>\n";
 
       $q2 = db_update('relation')
-        ->fields(['created' => $latest->timestamp()])
+        ->fields(array('created' => $latest->timestamp()))
         ->condition('rid', $rec->rid);
       $html .= dbg_sql($q2) . "\n";
 //      $q2->execute();

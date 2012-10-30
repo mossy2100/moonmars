@@ -85,14 +85,14 @@ class Style {
    * @return array
    */
   public function borderRadius($radius) {
-    $this->merge([
+    $this->merge(array(
       '-moz-border-radius' => $radius,
       '-webkit-border-radius' => $radius,
       '-o-border-radius' => $radius,
       '-ms-border-radius' => $radius,
       '-khtml-border-radius' => $radius,
       'border-radius' => $radius,
-    ]);
+    ));
   }
 
 }

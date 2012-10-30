@@ -642,14 +642,14 @@ function moonmars_nxn_prefs_form_submit($form, &$form_state) {
   foreach ($nxn_prefs as $nxn_category => $triumph_types) {
     foreach ($triumph_types as $triumph_type => $nxn_pref) {
       $q = db_insert('moonmars_nxn_pref')
-        ->fields([
-          'uid'            => $member->uid(),
-          'nxn_category'   => $nxn_category,
-          'triumph_type'       => $triumph_type,
-          'entity_id'      => $entity_id,
-          'nxn_wants'      => $nxn_pref['wants'],
-          'nxn_conditions' => isset($nxn_pref['conditions']) ? $nxn_pref['conditions'] : NULL,
-        ]);
+        ->fields(array(
+        'uid' => $member->uid(),
+        'nxn_category' => $nxn_category,
+        'triumph_type' => $triumph_type,
+        'entity_id' => $entity_id,
+        'nxn_wants' => $nxn_pref['wants'],
+        'nxn_conditions' => isset($nxn_pref['conditions']) ? $nxn_pref['conditions'] : NULL,
+      ));
       $q->execute();
     }
   }

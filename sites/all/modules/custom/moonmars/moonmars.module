@@ -325,11 +325,11 @@ function moonmars_color_icons2($bg_color_hex) {
  * @return string
  */
 function moonmars_box_inline_style($padding = '5px', $margin = '0', $border_color = '#ccc', $background_color = 'transparent') {
-  $style = new Style([
+  $style = new Style(array(
     'padding' => $padding,
     'border' => "solid 1px $border_color",
     'margin' => $margin,
-  ]);
+  ));
   $style->borderRadius('3px');
   if ($background_color != 'transparent') {
     $style->property('background-color', $background_color);

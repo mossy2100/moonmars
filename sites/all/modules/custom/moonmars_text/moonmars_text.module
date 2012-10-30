@@ -69,7 +69,7 @@ function moonmars_text_trim($text, $maxlen = 40) {
  * @return string
  */
 function moonmars_text_fix_hearts($text) {
-  return str_replace(['<3', '&amp;lt;3'], '&lt;3', $text);
+  return str_replace(array('<3', '&amp;lt;3'), '&lt;3', $text);
 }
 
 /**
@@ -87,7 +87,7 @@ function moonmars_text_html_entities($str) {
   static $utf8_dashes;
   if (!$utf8_dashes) {
     // Get the UTF-8 equivalents of dashes:
-    foreach (['2010', '2011', '2012', '2013', '2014', '2015'] as $dash_utf16) {
+    foreach (array('2010', '2011', '2012', '2013', '2014', '2015') as $dash_utf16) {
       $utf8_dashes[] = mb_convert_encoding("&#x$dash_utf16;", 'UTF-8', 'HTML-ENTITIES');
     }
   }

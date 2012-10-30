@@ -286,14 +286,14 @@ class Nxn {
     $html = $title ? "<h3 style='font-size: 13px; font-weight: bold; font-style: italic; padding: 0; margin: 0 0 5px;'>$title</h3>" : "";
     $html .= "<table style='background: none; padding: 0; border: 0; margin: 0; border-spacing: 0;'>\n";
     $grey3 = '#777';
-    $td_style = new Style([
+    $td_style = new Style(array(
       'padding' => '5px 10px 5px 0',
       'margin' => 0,
       'border' => 0,
       'font-size' => '12px',
       'font-family' => 'Helvetica, Arial, Tahoma, Verdana, sans-serif',
       'vertical-align' => 'top',
-    ]);
+    ));
     $td_style = $td_style->inline();
     foreach ($values as $label => $value) {
       $html .= "<tr>\n";

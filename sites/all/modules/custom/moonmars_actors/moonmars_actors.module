@@ -275,10 +275,10 @@ function moonmars_actors_create_channel(IActor $actor) {
   // Create the new channel. The 'uid' here is the uid of the owner of the actor entity, which becomes the owner of the
   // channel node. It's valid for member, group and topic, and not a bug.
   $channel = Channel::create()
-    ->setProperties([
-      'uid'   => $actor->uid(),
-      'title' => $actor->channelTitle(),
-    ]);
+    ->setProperties(array(
+    'uid' => $actor->uid(),
+    'title' => $actor->channelTitle(),
+  ));
 
   // Save the node for the first time, which will give it a nid, which we need to create the relationship:
   $channel->save();

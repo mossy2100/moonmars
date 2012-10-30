@@ -596,9 +596,9 @@ class Member extends User implements IActor {
    * @return string
    */
   public function commentBorderStyle($highlight = FALSE) {
-    $style = new Style([
+    $style = new Style(array(
       'border-color' => $this->commentBorderColor()->hex(),
-    ]);
+    ));
     return $style->inline();
   }
 
@@ -606,11 +606,11 @@ class Member extends User implements IActor {
    * Get the HTML attribute for the member's post or comment style.
    */
   public function commentStyle($highlight = FALSE) {
-    $style = new Style([
+    $style = new Style(array(
       'padding' => ($highlight ? 4 : 5) . 'px',
       'border' => 'solid ' . ($highlight ? 2 : 1) . 'px ' . $this->commentBorderColor()->hex(),
       'background-color' => ($highlight ? 'white' : $this->commentBackgroundColor()->hex()),
-    ]);
+    ));
     return $style->inline();
   }
 
