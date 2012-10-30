@@ -2,13 +2,14 @@
 namespace AstroMultimedia\MoonMars;
 
 use \stdClass;
+use \AstroMultimedia\Drupal\User;
 use \AstroMultimedia\Star\Color;
 use \AstroMultimedia\Star\Style;
 
 /**
  * Encapsulates a moonmars.com member.
  */
-class Member extends \AstroMultimedia\Drupal\User {
+class Member extends User implements IActor {
 
   /**
    * The tag prefix.
@@ -78,12 +79,94 @@ class Member extends \AstroMultimedia\Drupal\User {
    */
   protected static $genders;
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Magic methods
+
   /**
    * Constructor.
    */
   protected function __construct() {
     return parent::__construct();
   }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // IActor methods
+
+  /**
+   * Get/set the tag.
+   *
+   * @param null|string $tag
+   * @param bool $include_prefix
+   * @return string|Member
+   */
+  public function tag($tag = NULL, $include_prefix = FALSE) {
+    if ($tag === NULL) {
+      // Get the username:
+      return ($include_prefix ? self::TAG_PREFIX : '') . $this->name();
+    }
+    else {
+      // Set the username:
+      return $this->name($tag);
+    }
+  }
+
+  /**
+   * Create a link to the member using the @tag for the link text.
+   *
+   * @return string
+   */
+  public function tagLink() {
+    return $this->link($this->tag(NULL, TRUE));
+  }
+
+  /**
+   * Get/set the label.
+   *
+   * @param null|string $label
+   * @return string|Member
+   */
+  public function label($label = NULL) {
+    return $this->fullName($label);
+  }
+
+  /**
+   * Create a link to the member using the label for the link text.
+   *
+   * @return string
+   */
+  public function labelLink() {
+    return $this->link($this->label());
+  }
+
+  /**
+   * Look for a member with the specified tag.
+   *
+   * @static
+   * @param $tag
+   * @return Member|bool
+   */
+  public static function findByTag($tag) {
+    $q = db_select('users', 'u')
+      ->fields('u', array('uid'))
+      ->condition('name', $tag);
+    $rs = $q->execute();
+    $rec = $rs->fetch();
+    return $rec ? self::create($rec->uid) : FALSE;
+  }
+
+  /**
+   * Update the path alias for the member's profile.
+   *
+   * @return string
+   */
+  public function resetAlias() {
+    $alias = 'member/' . $this->tag();
+    $this->alias($alias);
+    return $alias;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Static methods
 
   /**
    * Get the member object for the current logged-in user.
@@ -96,25 +179,7 @@ class Member extends \AstroMultimedia\Drupal\User {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Get and set methods.
-
-  /**
-   * Get/set the user's name.
-   *
-   * @param null|string $name
-   * @param bool $include_at
-   * @return string|User
-   */
-  public function name($name = NULL, $include_prefix = FALSE) {
-    if ($name === NULL) {
-      // Get the username:
-      return ($include_prefix ? self::TAG_PREFIX : '') . $this->prop('name');
-    }
-    else {
-      // Set the username:
-      return $this->prop('name', $name);
-    }
-  }
+  // Get/set
 
   /**
    * Get a link to the user's profile.
@@ -129,30 +194,24 @@ class Member extends \AstroMultimedia\Drupal\User {
   }
 
   /**
-   * Get the member's tag, i.e. their username with the '@' prefix.
-   *
-   * @return string
+   * Get/set the member's full name.
+   * @todo Create a single field for full name, rather than 2 separate ones.
+   * This will better support things like middle names and initials, people who put the family name first,
+   * honorifics such as "Dr" or "Prof", and suffixes such as "PhD", "III", "Sr", etc.
    */
-  public function tag() {
-    return $this->name(NULL, TRUE);
-  }
-
-  /**
-   * Get a link to the user's profile with their tag as the label.
-   *
-   * @return string
-   */
-  public function tagLink() {
-    return $this->link($this->tag());
-  }
-
-  /**
-   * Get the member's full name.
-   */
-  public function fullName() {
-    $first_name = $this->field('field_first_name');
-    $last_name = $this->field('field_last_name');
-    return trim("$first_name $last_name");
+  public function fullName($full_name = NULL) {
+    if ($full_name === NULL) {
+      // Get the member's full name:
+      // @todo switch to full_name field
+      $first_name = $this->field('field_first_name');
+      $last_name = $this->field('field_last_name');
+      return trim("$first_name $last_name");
+    }
+    else {
+      // Set the member's full name:
+      // @todo finish implementing full_name field
+      $this->field('field_full_name', LANGUAGE_NONE, 0, 'value', $full_name);
+    }
   }
 
   /**
@@ -163,9 +222,7 @@ class Member extends \AstroMultimedia\Drupal\User {
   public function age() {
     // Cache the result of the age calculation in the age property so we don't have to recalculate it again.
     if (!isset($this->age)) {
-
       $date_of_birth = $this->field('field_date_of_birth');
-
       if ($date_of_birth) {
         $date_of_birth = new DateTime($date_of_birth);
         $today = DateTime::today();
@@ -487,18 +544,7 @@ class Member extends \AstroMultimedia\Drupal\User {
   // Alias
 
   /**
-   * Update the path alias for the member's profile.
-   *
-   * @return string
-   */
-  public function resetAlias() {
-    $alias = 'member/' . $this->name();
-    $this->alias($alias);
-    return $alias;
-  }
-
-  /**
-   * Get the path to the entity's email preferences form.
+   * Get the path to the member's email preferences form.
    *
    * @return string
    */
@@ -1032,7 +1078,7 @@ class Member extends \AstroMultimedia\Drupal\User {
    *   site, channel, followee or group
    * @param string $triumph_type
    * @param int $entity_id
-   *   The group_nid or followee_uid
+   *   The group_nid or followee_uid (maybe also topic_tid)
    * @return array
    */
   public function nxnPref($nxn_category, $triumph_type, $entity_id = 0) {
@@ -1147,7 +1193,7 @@ class Member extends \AstroMultimedia\Drupal\User {
    */
   public function nxnPrefConditions($nxn_category, $triumph_type, $entity_id = 0) {
     $nxn_pref = $this->nxnPref($nxn_category, $triumph_type, $entity_id);
-    return isset($nxn_pref['conditions']) ? $nxn_pref['conditions'] : [];
+    return isset($nxn_pref['conditions']) ? $nxn_pref['conditions'] : array();
   }
 
   /**
@@ -1161,7 +1207,7 @@ class Member extends \AstroMultimedia\Drupal\User {
    * @return bool
    */
   public function nxnMayWant($nxn_category, $triumph_type, $entity_id = 0) {
-    return in_array($this->nxnPrefWants($nxn_category, $triumph_type, $entity_id), [MOONMARS_NXN_YES, MOONMARS_NXN_SOME]);
+    return in_array($this->nxnPrefWants($nxn_category, $triumph_type, $entity_id), array(MOONMARS_NXN_YES, MOONMARS_NXN_SOME));
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1174,20 +1220,20 @@ class Member extends \AstroMultimedia\Drupal\User {
    * @return bool
    */
   public function canPostItem(Channel $channel) {
-    // Get the parent entity:
-    $parent_entity = $channel->parentEntity();
+    // Get the actor that owns the channel:
+    $actor = $channel->actor();
 
-    if ($parent_entity instanceof Member) {
+    if ($actor instanceof Member) {
       // @todo Implement permissions so people can specify who can post in their channel.
       // If a post is blocked from a channel by permissions, then the tag appears crossed out.
 
       // The member is the only one who can post in their own channel:
-//      return $parent_entity->equals($this);
+//      return $actor->equals($this);
 
       // Members can post in each others' channels.
       return TRUE;
     }
-    elseif ($parent_entity instanceof Group) {
+    elseif ($actor instanceof Group) {
       // Only administrators can post items in the News channel.
       // @todo This should be controlled by group permission settings.
       if ($channel->nid() == MOONMARS_NEWS_CHANNEL_NID) {
@@ -1195,7 +1241,7 @@ class Member extends \AstroMultimedia\Drupal\User {
       }
 
       // Only members of the group can post in the group's channel:
-      return $parent_entity->hasMember($this);
+      return $actor->hasMember($this);
     }
 
     return FALSE;
@@ -1249,8 +1295,8 @@ class Member extends \AstroMultimedia\Drupal\User {
 
     // A group administrator can delete any item from a group.
     // (This rule will also apply to events and projects when implemented.)
-//    $parent_entity = $channel->parentEntity();
-//    if ($parent_entity instanceof Group && $parent_entity->hasAdmin($this)) {
+//    $actor = $channel->actor();
+//    if ($actor instanceof Group && $actor->hasAdmin($this)) {
 //      return TRUE;
 //    }
 
@@ -1292,14 +1338,14 @@ class Member extends \AstroMultimedia\Drupal\User {
       return FALSE;
     }
 
-    // Get the parent entity of the item's channel:
-    $parent_entity = $channel->parentEntity();
-    if (!$parent_entity) {
+    // Get the actor of the item's channel:
+    $actor = $channel->actor();
+    if (!$actor) {
       return FALSE;
     }
 
     // If item posted in a member channel:
-    if ($parent_entity instanceof Member) {
+    if ($actor instanceof Member) {
       // Members can post comments in each other's channels.
       return TRUE;
 
@@ -1309,17 +1355,17 @@ class Member extends \AstroMultimedia\Drupal\User {
 //      }
 //      else {
 //        // If the item was posted in another member's channel, they can only comment on it if that member follows them:
-//        return $parent_entity->follows($this);
+//        return $actor->follows($this);
 //      }
     }
-    elseif ($parent_entity instanceof Group) {
+    elseif ($actor instanceof Group) {
       // Anyone can post comments in the News channel:
       if ($channel->nid() == MOONMARS_NEWS_CHANNEL_NID) {
         return TRUE;
       }
 
       // If posted in a group channel, the member can post comment in it if they're a member of the group:
-      return $parent_entity->hasMember($this);
+      return $actor->hasMember($this);
     }
 
     return FALSE;
@@ -1444,7 +1490,7 @@ class Member extends \AstroMultimedia\Drupal\User {
     $q = db_select('view_channel_has_item', 'vchi')
       ->fields('vchi', array('nid', 'item_modified'))
       ->condition('item_uid', $this->uid())
-      ->condition('item_modified', [$ts_start, $ts_end], 'BETWEEN');
+      ->condition('item_modified', array($ts_start, $ts_end), 'BETWEEN');
     $rs = $q->execute();
     $items = array();
     foreach ($rs as $rec) {
@@ -1502,7 +1548,7 @@ class Member extends \AstroMultimedia\Drupal\User {
       ->condition(db_or()
         ->condition('item_uid', $item_uids)
         ->condition('channel_nid', $channel_nids))
-      ->condition('item_modified', [$ts_start, $ts_end], 'BETWEEN');
+      ->condition('item_modified', array($ts_start, $ts_end), 'BETWEEN');
     $rs = $q->execute();
     $items = array();
     foreach ($rs as $rec) {
@@ -1729,9 +1775,9 @@ class Member extends \AstroMultimedia\Drupal\User {
 
         $channel = $item->channel();
         if ($channel) {
-          $parent_entity = $channel->parentEntity();
-          if ($parent_entity && ($parent_entity instanceof Group)) {
-            $group = $parent_entity;
+          $actor = $channel->actor();
+          if ($actor && ($actor instanceof Group)) {
+            $group = $actor;
           }
         }
 
@@ -1774,25 +1820,6 @@ class Member extends \AstroMultimedia\Drupal\User {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Search
-
-  /**
-   * Look for a member with the specified name. Avoid doing a full user load.
-   *
-   * @static
-   * @param $name
-   * @return Member|bool
-   */
-  public static function createByName($name) {
-    $q = db_select('users', 'u')
-      ->fields('u', array('uid'))
-      ->condition('name', $name);
-    $rs = $q->execute();
-    $rec = $rs->fetch();
-    return $rec ? self::create($rec->uid) : FALSE;
-  }
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Roles
 
   /**
@@ -1828,7 +1855,7 @@ class Member extends \AstroMultimedia\Drupal\User {
    */
   public function newMemberTriumphCreated() {
     $q = db_select('moonmars_triumph', 't')
-      ->fields('t', ['triumph_id'])
+      ->fields('t', array('triumph_id'))
       ->condition('t.triumph_type', 'new-member')
       ->condition('a.entity_id', $this->uid());
     $q->join('moonmars_triumph_actor', 'a', "t.triumph_id = a.triumph_id");

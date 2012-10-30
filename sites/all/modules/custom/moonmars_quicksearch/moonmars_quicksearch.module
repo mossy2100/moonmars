@@ -10,12 +10,12 @@ const MOONMARS_QUICKSEARCH_MIN_LENGTH = 3;
 
 
 function moonmars_quicksearch_menu() {
-  $items['ajax/quicksearch'] = [
+  $items['ajax/quicksearch'] = array(
     'page callback' => 'moonmars_quicksearch_ajax_search',
     'page arguments' => array(2),
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
-  ];
+  );
   return $items;
 }
 
@@ -23,10 +23,10 @@ function moonmars_quicksearch_menu() {
  * Implementation of hook_block_info().
  */
 function moonmars_quicksearch_block_info() {
-  $blocks['quicksearch-form'] = [
+  $blocks['quicksearch-form'] = array(
     'info' => t('Quicksearch form'),
     'cache' => DRUPAL_CACHE_GLOBAL,
-  ];
+  );
   return $blocks;
 }
 
@@ -51,12 +51,12 @@ function moonmars_quicksearch_block_view($delta = '') {
  */
 function moonmars_quicksearch_form() {
   $form = array();
-  $form['quicksearch_text'] = [
+  $form['quicksearch_text'] = array(
     '#type' => 'textfield',
-  ];
-  $form['quicksearch_results'] = [
+  );
+  $form['quicksearch_results'] = array(
     '#markup' => "<ul id='quicksearch-results'></ul>",
-  ];
+  );
 
   // Set autocomplete off on both the form and the field, to cover all browsers:
   $form['#attributes']['autocomplete'] = 'off';
@@ -228,53 +228,53 @@ function moonmars_quicksearch_ajax_search($text) {
 
   // Find matching members:
   $q = db_select('view_member', 'm')
-    ->fields('m', ['name', 'full_name'])
+    ->fields('m', array('name', 'full_name'))
     ->condition(db_or()
       ->condition('name', "%$text%", 'LIKE')
       ->condition('full_name', "%$text%", 'LIKE')
     );
   $rs = $q->execute();
   foreach ($rs as $rec) {
-    $matches[] = [
+    $matches[] = array(
       'actor_type' => 'member',
       'prefix' => Member::TAG_PREFIX,
       'tag' => $rec->name,
       'name' => $rec->full_name,
-    ];
+    );
   }
 
   // Find matching topics:
   $q = db_select('view_topic', 't')
-    ->fields('t', ['name', 'title'])
+    ->fields('t', array('name', 'title'))
     ->condition(db_or()
       ->condition('name', "%$text%", 'LIKE')
       ->condition('title', "%$text%", 'LIKE')
   );
   $rs = $q->execute();
   foreach ($rs as $rec) {
-    $matches[] = [
+    $matches[] = array(
       'actor_type' => 'topic',
       'prefix' => Topic::TAG_PREFIX,
       'tag' => $rec->name,
       'name' => $rec->title,
-    ];
+    );
   }
 
   // Find matching groups:
   $q = db_select('view_group', 'g')
-    ->fields('g', ['tag', 'title'])
+    ->fields('g', array('tag', 'title'))
     ->condition(db_or()
       ->condition('tag', "%$text%", 'LIKE')
       ->condition('title', "%$text%", 'LIKE')
     );
   $rs = $q->execute();
   foreach ($rs as $rec) {
-    $matches[] = [
+    $matches[] = array(
       'actor_type' => 'group',
       'prefix' => Group::TAG_PREFIX,
       'tag' => $rec->tag,
       'name' => $rec->title,
-    ];
+    );
   }
 
   // Sort the matches:
@@ -290,10 +290,10 @@ function moonmars_quicksearch_ajax_search($text) {
   }
 
   // Send the result:
-  $data = [
+  $data = array(
     'text' => $text,
     'html' => $html,
-  ];
+  );
   echo json_encode($data);
   return;
 }

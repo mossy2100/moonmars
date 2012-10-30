@@ -1,0 +1,4 @@
+name = moonmars.com Objects
+description = Support for objects (Members, Groups, Items, ItemComments, etc.) on moonmars.com.
+core = 7.x
+package = moonmars.com

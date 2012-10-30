@@ -22,7 +22,7 @@ class Style {
    * @param array $properties
    */
   public function __construct(array $properties = NULL) {
-    $this->properties = $properties ?: [];
+    $this->properties = $properties ?: array();
   }
 
   /**

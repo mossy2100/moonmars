@@ -258,7 +258,7 @@ class Triumph {
         ->condition('triumph_id', $this->triumphId);
       $rs = $q->execute();
       foreach ($rs as $rec) {
-        $this->actors[$rec->actor_role] = moonmars_actors_get_actor($rec->entity_type, $rec->entity_id);
+        $this->actors[$rec->actor_role] = moonmars_objects_get_object($rec->entity_type, $rec->entity_id);
       }
     }
     return $this->actors;
@@ -278,10 +278,10 @@ class Triumph {
    * Add an actor to the triumph.
    *
    * @param $actor_role
-   * @param Entity $actor
+   * @param IActor $actor
    * @return Triumph
    */
-  public function addActor($actor_role, $actor) {
+  public function addActor($actor_role, IActor $actor) {
     $this->actors[$actor_role] = $actor;
     return $this;
   }
@@ -315,7 +315,7 @@ class Triumph {
     }
 
     // Get the channel's parent if relevant:
-    $parent_entity = $channel ? $channel->parentEntity() : NULL;
+    $actor = $channel ? $channel->actor() : NULL;
 
     // Initialise recipients array:
     $this->recipients = new EntitySet();
@@ -377,9 +377,9 @@ class Triumph {
 
           case 'channel':
             // The only member to consider is the one whose channel the item or comment is being posted in.
-            // Note that $parent_entity will be NULL unless this is a new-item or new-comment.
-            if ($parent_entity && $parent_entity instanceof Member) {
-              $candidates->add($parent_entity);
+            // Note that $actor will be NULL unless this is a new-item or new-comment.
+            if ($actor && $actor instanceof Member) {
+              $candidates->add($actor);
             }
             break;
 
@@ -440,8 +440,8 @@ class Triumph {
               case 'new-item':
               case 'new-comment':
                 // If a new item or comment is posted in a group channel, the group:
-                if ($parent_entity && $parent_entity instanceof Group) {
-                  $group = $parent_entity;
+                if ($actor && $actor instanceof Group) {
+                  $group = $actor;
                 }
                 break;
 

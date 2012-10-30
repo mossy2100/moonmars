@@ -119,12 +119,12 @@ class Item extends Node {
   }
 
   /**
-   * Checks if the item mentions a member.
+   * Checks if the item mentions a member, group or topic.
    *
-   * @param Member $member
+   * @param IActor $member
    * @return bool
    */
-  public function mentions(Member $member) {
+  public function mentions(IActor $member) {
     return $this->textScan()->mentions($member);
   }
 
@@ -274,7 +274,7 @@ class Item extends Node {
     while (TRUE) {
       // Is this alias in use?
       $q = db_select('url_alias', 'ua')
-        ->fields('ua', ['source'])
+        ->fields('ua', array('source'))
         ->condition('alias', $alias)
         ->condition('source', 'node/' . $this->nid(), '!=');
       $rs = $q->execute();

@@ -4,7 +4,7 @@ namespace AstroMultimedia\MoonMars;
 /**
  * Group class.
  */
-class Group extends Node {
+class Group extends Node implements IActor {
 
   /**
    * The node type.
@@ -44,11 +44,90 @@ class Group extends Node {
    */
   protected $members;
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Magic methods
+
   /**
    * Constructor.
    */
   protected function __construct() {
     return parent::__construct();
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // IActor methods
+
+  /**
+   * Get/set the tag.
+   *
+   * @param null|string $tag
+   * @param bool $include_prefix
+   * @return string|Topic
+   */
+  public function tag($tag = NULL, $include_prefix = FALSE) {
+    if ($tag === NULL) {
+      // Get the username:
+      return ($include_prefix ? self::TAG_PREFIX : '') . $this->field('field_group_tag');
+    }
+    else {
+      // Set the username:
+      return $this->field('field_group_tag', LANGUAGE_NONE, 0, 'value', $tag);
+    }
+  }
+
+  /**
+   * Create a link to the topic using the %tag for the link text.
+   *
+   * @return string
+   */
+  public function tagLink() {
+    return $this->link($this->tag(NULL, TRUE));
+  }
+
+  /**
+   * Get/set the label.
+   *
+   * @param null|string $label
+   * @return string|Group
+   */
+  public function label($label = NULL) {
+    return $this->title($label);
+  }
+
+  /**
+   * Create a link to the group using the label for the link text.
+   *
+   * @return string
+   */
+  public function labelLink() {
+    return $this->link($this->label());
+  }
+
+  /**
+   * Get a group given a group tag.
+   *
+   * @static
+   * @param $tag
+   * @return Group
+   */
+  public static function findByTag($tag) {
+    $rec = db_select('field_data_field_group_tag', 'f')
+      ->fields('f', array('entity_id'))
+      ->condition('field_group_tag_value', $tag)
+      ->execute()
+      ->fetch();
+    return $rec ? self::create($rec->entity_id) : FALSE;
+  }
+
+  /**
+   * Update the path alias for the group's profile.
+   *
+   * @return string
+   */
+  public function resetAlias() {
+    $alias = 'group/' . $this->tag();
+    $this->alias($alias);
+    return $alias;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -98,23 +177,6 @@ class Group extends Node {
   }
 
   /**
-   * Get/set the group tag.
-   *
-   * @param string $tag
-   * @return mixed
-   */
-  public function tag($tag = NULL, $include_prefix = FALSE) {
-    if ($tag === NULL) {
-      // Get the username:
-      return ($include_prefix ? self::TAG_PREFIX : '') . $this->field('field_group_tag');
-    }
-    else {
-      // Set the username:
-      return $this->field('field_group_tag', LANGUAGE_NONE, 0, 'value', $tag);
-    }
-  }
-
-  /**
    * Get a link to the group's profile.
    *
    * @param null|string $label
@@ -126,61 +188,8 @@ class Group extends Node {
     return parent::link($label, $absolute);
   }
 
-  /**
-   * Create a link for the group using the hash tag.
-   *
-   * @return string
-   */
-  public function tagLink() {
-    return $this->link($this->tag(NULL, TRUE));
-  }
-
-  /**
-   * Update the path alias for the group's profile.
-   *
-   * @return string
-   */
-  public function resetAlias() {
-    $alias = 'group/' . $this->tag();
-    $this->alias($alias);
-    return $alias;
-  }
-
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Misc static methods
-
-//  /**
-//   * Get a group given a group title.
-//   *
-//   * @static
-//   * @param $group_title
-//   * @return Channel
-//   */
-//  public static function createByTitle($group_title) {
-//    $rec = db_select('node', 'n')
-//      ->fields('n', array('nid'))
-//      ->condition('type', 'group')
-//      ->condition('title', $group_title)
-//      ->execute()
-//      ->fetch();
-//    return $rec ? self::create($rec->nid) : FALSE;
-//  }
-
-  /**
-   * Get a group given a group tag.
-   *
-   * @static
-   * @param $group_tag
-   * @return Group
-   */
-  public static function createByTag($group_tag) {
-    $rec = db_select('field_data_field_group_tag', 'f')
-      ->fields('f', array('entity_id'))
-      ->condition('field_group_tag_value', $group_tag)
-      ->execute()
-      ->fetch();
-    return $rec ? self::create($rec->entity_id) : FALSE;
-  }
+  // Static methods
 
   /**
    * Find groups by title. Only supports exact match at present.

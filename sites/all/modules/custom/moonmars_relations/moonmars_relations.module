@@ -4,12 +4,12 @@
  * Implements hook_menu().
  */
 function moonmars_relations_menu() {
-  $items['admin/content/relation/cleanup'] = [
-    'page callback'    => 'moonmars_relations_cleanup',
-    'access callback'  => 'user_is_admin',
-    'type'             => MENU_NORMAL_ITEM,
-    'title'            => 'Cleanup',
-  ];
+  $items['admin/content/relation/cleanup'] = array(
+    'page callback' => 'moonmars_relations_cleanup',
+    'access callback' => 'user_is_admin',
+    'type' => MENU_NORMAL_ITEM,
+    'title' => 'Cleanup',
+  );
   return $items;
 }
 
@@ -59,7 +59,7 @@ function moonmars_relations_menu() {
 function moonmars_relations_cleanup() {
   // Get the relation types:
   $rs = db_select('relation_type', 'rt')
-    ->fields('rt', ['relation_type'])
+    ->fields('rt', array('relation_type'))
     ->execute();
   $relation_types = array();
   foreach ($rs as $rec) {
@@ -68,7 +68,7 @@ function moonmars_relations_cleanup() {
 
   // Get all relations:
   $rs2 = db_select('relation', 'r')
-    ->fields('r', ['rid'])
+    ->fields('r', array('rid'))
     ->execute();
   $n = 0;
   foreach ($rs2 as $rec2) {
@@ -99,35 +99,3 @@ function moonmars_relations_cleanup() {
 
   return '';
 }
-
-///**
-// * Common code for inserting or updating relations.
-// *
-// * @param $entity
-// * @param $entity_type
-// */
-//function moonmars_relations_entity_save($entity, $entity_type) {
-//  // Update the relation's alias.
-//  if ($entity_type == 'relation') {
-//
-//    // Get the Relation object:
-//    $relation = moonmars_actors_get_actor($entity_type, $entity);
-//
-//    // Reset the alias:
-//    $relation->resetAlias();
-//  }
-//}
-
-///**
-// * Implements hook_entity_insert().
-// */
-//function moonmars_relations_entity_insert($entity, $entity_type) {
-//  moonmars_relations_entity_save($entity, $entity_type);
-//}
-//
-///**
-// * Implements hook_entity_update().
-// */
-//function moonmars_relations_entity_update($entity, $entity_type) {
-//  moonmars_relations_entity_save($entity, $entity_type);
-//}

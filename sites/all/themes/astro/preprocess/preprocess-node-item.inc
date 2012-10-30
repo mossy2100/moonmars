@@ -49,21 +49,21 @@ function astro_alpha_preprocess_node_item(&$vars) {
   // Get the item's channel:
   $item_channel = $item->channel();
   if ($item_channel) {
-    $item_channel_parent_entity = $item_channel->parentEntity();
+    $item_channel_actor = $item_channel->actor();
     $vars['channel'] = $item_channel;
 
     // Add a note to indicate what channel the item was posted in:
     if ($current_channel && $item_channel->equals($current_channel)) {
       $vars['item_channel_string'] = 'in this channel';
     }
-    elseif ($item_channel_parent_entity->equals($poster)) {
+    elseif ($item_channel_actor->equals($poster)) {
       $vars['item_channel_string'] = 'in their channel';
     }
-    elseif ($item_channel_parent_entity instanceof Member) {
-      $vars['item_channel_string'] = 'in ' . $item_channel_parent_entity->tagLink() . "'s channel";
+    elseif ($item_channel_actor instanceof Member) {
+      $vars['item_channel_string'] = 'in ' . $item_channel_actor->tagLink() . "'s channel";
     }
     else {
-      $vars['item_channel_string'] = 'in ' . $item_channel_parent_entity->tagLink();
+      $vars['item_channel_string'] = 'in ' . $item_channel_actor->tagLink();
     }
     // Wrap it in a span tag:
     $vars['item_channel_string'] = "<span class='item_channel'>{$vars['item_channel_string']}</span>";

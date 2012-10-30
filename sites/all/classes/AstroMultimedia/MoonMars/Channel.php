@@ -19,11 +19,11 @@ class Channel extends Node {
   const PAGE_SIZE = 10;
 
   /**
-   * The parent entity of the channel.
+   * The actor this channel belongs to.
    *
-   * @var array
+   * @var IActor
    */
-  protected $parentEntity;
+  protected $actor;
 
   /**
    * Constructor.
@@ -33,24 +33,7 @@ class Channel extends Node {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Static methods that return Channels.
-
-  /**
-   * Get a channel given a channel title.
-   *
-   * @static
-   * @param $channel_title
-   * @return Channel
-   */
-  public static function createByTitle($channel_title) {
-    $rec = db_select('node', 'n')
-      ->fields('n', array('nid'))
-      ->condition('title', $channel_title)
-      ->condition('type', 'channel')
-      ->execute()
-      ->fetch();
-    return $rec ? new self($rec->nid) : FALSE;
-  }
+  // Static methods
 
   /**
    * Get/set the current channel.
@@ -71,61 +54,59 @@ class Channel extends Node {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Parent entity-related methods.
+  // Actor-related methods.
 
   /**
-   * Get the entity that a channel belongs to.
+   * Get the actor whose channel this is.
    *
-   * @return array
+   * @return IActor
    */
-  public function parentEntity() {
-    // Check if we remembered the result in the parentEntity property:
-    if (!isset($this->parentEntity)) {
+  public function actor() {
+    if (!isset($this->actor)) {
       // Search for the has_channel relationship:
       $rels = Relation::searchBinary('has_channel', NULL, $this);
       if (!empty($rels)) {
-        $this->parentEntity = $rels[0]->endpoint(0);
+        $this->actor = $rels[0]->endpoint(0);
       }
     }
-
-    return $this->parentEntity;
+    return $this->actor;
   }
 
   /**
-   * Get a link to a channel's entity's page.
+   * Get a link to a channel's actor's page.
    *
    * @return string
-   *   Or FALSE if parent entity not found - should never happen.
+   *   Or FALSE if actor not found - should never happen.
    */
-  public function parentEntityLink($brackets = FALSE) {
-    $entity = $this->parentEntity();
-    if (!$entity) {
+  public function actorLink($brackets = FALSE) {
+    $actor = $this->actor();
+    if (!$actor) {
       return FALSE;
     }
 
     $label = $brackets ? ('[' . $this->title() . ']') : $this->title();
-    return l($label, $entity->alias());
+    return l($label, $actor->alias());
   }
 
   /**
-   * Get the parent entity's name or title.
+   * Get the actor's name or title.
    *
    * @return string
-   *   Or FALSE if parent entity not found - should never happen.
+   *   Or FALSE if actor not found - should never happen.
    */
-  public function parentEntityName() {
-    $entity = $this->parentEntity();
-    if (!$entity) {
+  public function actorName() {
+    $actor = $this->actor();
+    if (!$actor) {
       return FALSE;
     }
 
     // Member:
-    if ($entity instanceof Member) {
-      return $entity->name();
+    if ($actor instanceof Member) {
+      return $actor->name();
     }
 
     // Node:
-    return $entity->title();
+    return $actor->title();
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -137,14 +118,14 @@ class Channel extends Node {
    * @return string
    */
   public function resetAlias() {
-    // Get the parent entity:
-    $parent_entity = $this->parentEntity();
-    if (!$parent_entity) {
+    // Get the actor:
+    $actor = $this->actor();
+    if (!$actor) {
       return FALSE;
     }
 
     // Set the alias:
-    $alias = $parent_entity->alias() . '/channel';
+    $alias = $actor->alias() . '/channel';
     $this->alias($alias);
 
     // Make sure pathauto doesn't clobber the new alias:
@@ -154,13 +135,13 @@ class Channel extends Node {
   }
 
   /**
-   * Reset the channel's title. Call this if the parent entity's title or name changes.
+   * Reset the channel's title. Call this if the actor's tag or name changes.
    *
    * @return Channel
    */
   public function resetTitle() {
-    $entity = $this->parentEntity();
-    $title = $entity ? $entity->channelTitle() : FALSE;
+    $actor = $this->actor();
+    $title = $actor ? $actor->channelTitle() : FALSE;
     if ($title) {
       $this->title($title);
     }
@@ -168,7 +149,7 @@ class Channel extends Node {
   }
 
   /**
-   * Reset a channel's alias and title to match the parent entity.
+   * Reset a channel's alias and title to match the actor.
    */
   public function resetAliasAndTitle() {
     $this->load();
@@ -204,17 +185,17 @@ class Channel extends Node {
   /**
    * Get the query to obtain the items linked to a channel.
    * This function is *not* for finding which items to *display* in a channel. Use the itemQuery() method in the
-   * parent entity for that.
+   * actor for that.
    *
    * @return SelectQuery
    */
   public function itemQuery() {
-    // Check if the parent entity has an itemQuery method, in which case override, and get the items display in
+    // Check if the actor has an itemQuery method, in which case override, and get the items display in
     // this channel (not necessarily posted in).
     // This really needs to be refactored or something.
-    $parent_entity = $this->parentEntity();
-    if  ($parent_entity && method_exists($parent_entity, 'itemQuery')) {
-      return $parent_entity->itemQuery();
+    $actor = $this->actor();
+    if  ($actor && method_exists($actor, 'itemQuery')) {
+      return $actor->itemQuery();
     }
 
     // Get all the items posted in this channel:
@@ -305,8 +286,6 @@ class Channel extends Node {
   /**
    * Get all the items posted in this channel that have been modified (created, changed or commented on) within a
    * datetime range.
-   * //Note, this method does NOT return an array of Item objects, but timestamps, because it's designed for
-   * //lightning fast sorting. Item object creation happens later when the page is rendered.
    *
    * @param int $ts_start
    * @param int $ts_end
@@ -316,7 +295,7 @@ class Channel extends Node {
     $q = db_select('view_channel_has_item', 'vchi')
       ->fields('vchi', array('nid', 'item_modified'))
       ->condition('channel_nid', $this->nid())
-      ->condition('item_modified', [$ts_start, $ts_end], 'BETWEEN')
+      ->condition('item_modified', array($ts_start, $ts_end), 'BETWEEN')
       ->orderBy('item_modified');
     $rs = $q->execute();
     $items = array();
@@ -324,6 +303,22 @@ class Channel extends Node {
       $items[$rec->nid] = Item::create($rec->item_modified);
     }
     return $items;
+  }
+
+  /**
+   * Get all the items to display in this channel, i.e. that are tagged with the channel owner's tag.
+   *
+   * @param int $ts_start
+   * @param int $ts_end
+   * @return array
+   */
+  public function itemsToDisplayIn($ts_start, $ts_end) {
+    $owner = $this->owner();
+
+
+
+        
+
   }
 
 //  /**
@@ -388,15 +383,14 @@ class Channel extends Node {
 //
 //  }
 
-
   /**
-   * Return the links for this channel's entity.
+   * Return the links for this channel's actor.
    *
    * @return string
    */
   public function renderLinks() {
     $html = '';
-    $entity = $this->parentEntity();
+    $actor = $this->actor();
 
     // Social links:
     $social_links = '';
@@ -405,17 +399,17 @@ class Channel extends Node {
       $link_field = $info['field'];
       $url = $this->field($link_field, LANGUAGE_NONE, 0, 'url');
       if ($url) {
-        $title = "Visit " . (($entity instanceof Member) ? $entity->name() : $entity->title()) . "'s " . $info['description'];
+        $title = "Visit " . (($actor instanceof Member) ? $actor->name() : $actor->title()) . "'s " . $info['description'];
         $title = htmlspecialchars($title, ENT_QUOTES);
         $social_links .= "<a class='social-link social-link-{$social_site}' href='$url' target='_blank' title='$title'></a>\n";
       }
     }
 
     // Skype link:
-    if ($entity instanceof Member) {
-      $skype_name = $entity->field('field_skype');
+    if ($actor instanceof Member) {
+      $skype_name = $actor->field('field_skype');
       if ($skype_name) {
-        $title = htmlspecialchars("Chat with " . $entity->name() . " on Skype", ENT_QUOTES);
+        $title = htmlspecialchars("Chat with " . $actor->name() . " on Skype", ENT_QUOTES);
         $social_links .= "<a class='social-link social-link-skype' href='skype:$skype_name?chat' title='$title'></a>\n";
       }
     }

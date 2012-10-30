@@ -32,25 +32,11 @@ class TextScan {
   protected $urls;
 
   /**
-   * Mentioned members.
+   * Mentioned actors.
    *
    * @var array
    */
-  protected $members;
-
-  /**
-   * Mentioned groups.
-   *
-   * @var array
-   */
-  protected $groups;
-
-  /**
-   * Mentioned tags.
-   *
-   * @var array
-   */
-  protected $tags;
+  protected $actors;
 
   /**
    * Constructor
@@ -70,6 +56,8 @@ class TextScan {
     $html = $links['html'];
     $urls = $links['urls'];
 
+    $actors = array();
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Member tags
 
@@ -80,15 +68,14 @@ class TextScan {
 
     // Scan for member tags:
     $n_members = preg_match_all("/$rx_tag_begin" . Member::TAG_PREFIX . "$rx_tag$rx_tag_end/i", $html, $matches);
-    $members = array();
     if ($n_members) {
       foreach ($matches[2] as $tag) {
         // Check if we have a member with this tag:
-        $member = Member::createByName($tag);
+        $member = Member::findByTag($tag);
         if ($member) {
           // Remember the member:
-          $members[$member->uid()] = $member;
-          // Replace the member reference with a link:
+          $actors[$member->uid()] = $member;
+          // Replace the member mention with a link:
           $html = preg_replace("/$rx_tag_begin" . Member::TAG_PREFIX . "($tag)$rx_tag_end/i", '$1' . $member->tagLink() . '$3', $html);
         }
       }
@@ -99,15 +86,14 @@ class TextScan {
 
     // Scan for tags:
     $n_groups = preg_match_all("/$rx_tag_begin" . Group::TAG_PREFIX . "$rx_tag$rx_tag_end/i", $html, $matches);
-    $groups = array();
     if ($n_groups) {
       foreach ($matches[2] as $tag) {
         // Check if we have a group with this tag:
-        $group = Group::createByTag($tag);
+        $group = Group::findByTag($tag);
         if ($group) {
           // Remember the group:
-          $groups[$group->nid()] = $group;
-          // Replace the group reference with a link:
+          $actors[$group->nid()] = $group;
+          // Replace the group mention with a link:
           $html = preg_replace("/$rx_tag_begin" . Group::TAG_PREFIX . "($tag)$rx_tag_end/i", '$1' . $group->tagLink() . '$3', $html);
         }
       }
@@ -116,22 +102,20 @@ class TextScan {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Topic tags
 
-// @todo Since this code is a repeat of above, refactor it into a method that can be used for member, group and topic tags.
-//    // Scan for tags:
-//    $n_topics = preg_match_all("/$rx_tag_begin" . Topic::TAG_PREFIX . "$rx_tag$rx_tag_end/i", $html, $matches);
-//    $topics = array();
-//    if ($n_topics) {
-//      foreach ($matches[2] as $tag) {
-//        // Check if we have a topic with this tag:
-//        $topic = Topic::createByTag($tag);
-//        if ($topic) {
-//          // Remember the topic:
-//          $topics[$topic->nid()] = $topic;
-//          // Replace the topic reference with a link:
-//          $html = preg_replace("/$rx_tag_begin" . Topic::TAG_PREFIX . "($tag)$rx_tag_end/i", '$1' . $topic->tagLink() . '$3', $html);
-//        }
-//      }
-//    }
+    // Scan for tags:
+    $n_topics = preg_match_all("/$rx_tag_begin" . Topic::TAG_PREFIX . "$rx_tag$rx_tag_end/i", $html, $matches);
+    if ($n_topics) {
+      foreach ($matches[2] as $tag) {
+        // Check if we have a topic with this tag:
+        $topic = Topic::findByTag($tag);
+        if ($topic) {
+          // Remember the topic:
+          $actors[$topic->nid()] = $topic;
+          // Replace the topic mention with a link:
+          $html = preg_replace("/$rx_tag_begin" . Topic::TAG_PREFIX . "($tag)$rx_tag_end/i", '$1' . $topic->tagLink() . '$3', $html);
+        }
+      }
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Emoticons, symbols, newlines
@@ -147,9 +131,7 @@ class TextScan {
     // Set the properties:
     $this->html = $html;
     $this->urls = $urls;
-    $this->members = $members;
-    $this->groups = $groups;
-    $this->tags = $tags;
+    $this->actors = $actors;
   }
 
   /**
@@ -170,43 +152,43 @@ class TextScan {
     return $this->urls;
   }
 
-  /**
-   * Get the members mentioned in the item text.
-   *
-   * @return array
-   */
-  public function members() {
-    return $this->members;
-  }
+//  /**
+//   * Get the members mentioned in the item text.
+//   *
+//   * @return array
+//   */
+//  public function members() {
+//    return $this->members;
+//  }
+//
+//  /**
+//   * Get the groups mentioned in the item text.
+//   *
+//   * @return array
+//   */
+//  public function groups() {
+//    return $this->groups;
+//  }
+//
+//  /**
+//   * Get the topics mentioned in the item text.
+//   *
+//   * @return array
+//   */
+//  public function topics() {
+//    return $this->topics;
+//  }
 
   /**
-   * Get the groups mentioned in the item text.
+   * Checks if the text mentions an actor.
    *
-   * @return array
-   */
-  public function groups() {
-    return $this->groups;
-  }
-
-  /**
-   * Get the tags mentioned in the item text.
-   *
-   * @return array
-   */
-  public function tags() {
-    return $this->tags;
-  }
-
-  /**
-   * Checks if the text mentions a member.
-   *
-   * @param Member $member
+   * @param IActor $actor
    * @return bool
    */
-  public function mentions(Member $member) {
-    $mentioned_members = $this->members();
-    foreach ($mentioned_members as $mentioned_member) {
-      if ($member->equals($mentioned_member)) {
+  public function mentions(IActor $actor) {
+    $mentioned_actors = $this->actors();
+    foreach ($mentioned_actors as $mentioned_actor) {
+      if ($actor->equals($mentioned_actor)) {
         return TRUE;
       }
     }

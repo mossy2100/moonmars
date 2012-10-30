@@ -388,11 +388,11 @@ class Nxn {
   /**
    * Render an item or comment details as HTML.
    *
-   * @param \AstroMultimedia\Drupal\Entity $actor
-   * @param \AstroMultimedia\Drupal\Entity $highlighted_actor
+   * @param \AstroMultimedia\Drupal\IActor $actor
+   * @param \AstroMultimedia\Drupal\IActor $highlighted_actor
    * @return string
    */
-  public function itemOrCommentDetails(Entity $actor, Entity $highlighted_actor) {
+  public function itemOrCommentDetails(IActor $actor, IActor $highlighted_actor) {
     $poster = $actor->creator();
     $highlight = $actor->equals($highlighted_actor);
     // Comments are indented 10px:
@@ -415,10 +415,11 @@ class Nxn {
   /**
    * Generate some HTML to display an item with comments.
    *
-   * @param Group $group
+   * @param Item $item
+   * @param IActor $highlighted_actor
    * @return string
    */
-  public function itemDetails(Item $item, Entity $highlighted_actor) {
+  public function itemDetails(Item $item, IActor $highlighted_actor) {
     $html = '';
 //    $heading_style = "padding: 0; font-size: 13px; font-weight: bold; color: black; margin: 10px 0 5px;";
 
@@ -434,6 +435,8 @@ class Nxn {
         $html .= self::itemOrCommentDetails($comment, $highlighted_actor);
       }
     }
+
+    $html .= "<p>" . l('Post a comment', $item->alias()) . "</p>";
 //    else {
 //      $html .= "<div>None yet.</div>";
 //    }
@@ -449,21 +452,21 @@ class Nxn {
    * @return string
    */
   public function channelTitle(Channel $channel, Member $poster) {
-    $parent_entity = $channel->parentEntity();
-    if ($parent_entity) {
-      if ($parent_entity instanceof Member) {
-        if ($parent_entity->equals($this->recipient)) {
+    $actor = $channel->actor();
+    if ($actor) {
+      if ($actor instanceof Member) {
+        if ($actor->equals($this->recipient)) {
           $channel_name = 'your channel';
         }
-        elseif ($parent_entity->equals($poster)) {
+        elseif ($actor->equals($poster)) {
           $channel_name = "their channel";
         }
         else {
-          $channel_name = $parent_entity->tag() . "'s channel";
+          $channel_name = $actor->tag() . "'s channel";
         }
       }
-      elseif ($parent_entity instanceof Group) {
-        $channel_name = $parent_entity->title();
+      elseif ($actor instanceof Group) {
+        $channel_name = $actor->title();
       }
     }
     return $channel_name;
@@ -582,18 +585,18 @@ class Nxn {
 
     if ($channel) {
       $channel_name = $this->channelTitle($channel, $poster);
-      $parent_entity = $channel->parentEntity();
+      $actor = $channel->actor();
     }
     else {
       $channel_name = NULL;
-      $parent_entity = NULL;
+      $actor = NULL;
     }
 
     // Subject:
     $subject = $poster->tag() . " posted a new item" . ($channel ? " in $channel_name" : '');
 
     // Summary:
-    $summary = $poster->tagLink() . " posted a new $item_link" . ($parent_entity ? (" in " . $parent_entity->link($channel_name)) : '') . ".";
+    $summary = $poster->tagLink() . " posted a new $item_link" . ($actor ? (" in " . $actor->link($channel_name)) : '') . ".";
     if ($item->mentions($this->recipient)) {
       $summary .= " You were mentioned in the item.";
     }
@@ -622,11 +625,11 @@ class Nxn {
 
     if ($channel) {
       $channel_name = $this->channelTitle($channel, $comment_poster);
-      $parent_entity = $channel->parentEntity();
+      $actor = $channel->actor();
     }
     else {
       $channel_name = NULL;
-      $parent_entity = NULL;
+      $actor = NULL;
     }
 
     // Subject:
@@ -643,8 +646,8 @@ class Nxn {
     else {
       $summary .= " posted by " . $item_poster->tagLink();
     }
-    if ($parent_entity) {
-      $summary .= " in " . $parent_entity->link($channel_name);
+    if ($actor) {
+      $summary .= " in " . $actor->link($channel_name);
     }
     $summary .= ".";
     if ($comment->mentions($this->recipient)) {

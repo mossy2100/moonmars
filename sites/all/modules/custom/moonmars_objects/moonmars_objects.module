@@ -1,0 +1,133 @@
+<?php
+/**
+ * Functions to support finding and creating moonmars objects.
+ *
+ * @file moonmars_objects.module
+ * @author Shaun Moss (shaun@astromultimedia.com, skype:mossy2100)
+ * @since 2012-10-28 09:54
+ */
+
+use \AstroMultimedia\MoonMars\Member;
+use \AstroMultimedia\MoonMars\Relation;
+
+/**
+ * Gets an MoonMars object from a Drupal entity.
+ *
+ * @static
+ * @param string $entity_type
+ * @param object|int $entity
+ * @return Entity|bool
+ *   MoonMars object, e.g. Member, Group, Topic, Item, ItemComment, Relation, etc.
+ *   FALSE on fail.
+ */
+function moonmars_objects_get_object($entity_type, $entity) {
+  switch ($entity_type) {
+    case 'user':
+      return Member::create($entity);
+
+    case 'node':
+      // Get the node type:
+      $node_type = is_uint($entity) ? node_get_type($entity) : $entity->type;
+
+      // Get the node class:
+      $class = '\\AstroMultimedia\\MoonMars\\' . ucfirst($node_type);
+
+      // If the node class exists, instantiate:
+      if (class_exists($class)) {
+        // Note I create the object using $entity instead of reloading the node (which would be another way of getting
+        // the type), to prevent the node we just loaded from clobbering the one we have in memory.
+        // My caching mechanism is better than Drupal's, unfortunately.
+        return $class::create($entity);
+      }
+      break;
+
+    case 'term':
+      // @todo
+      break;
+
+    case 'comment':
+      // Get the cid:
+      $cid = is_uint($entity) ? $entity : $entity->cid;
+
+      // Get the comment's node type.
+      $node_type = comment_get_node_type($cid);
+
+      // Get the comment class:
+      $class = '\\AstroMultimedia\\MoonMars\\' . ucfirst($node_type) . 'Comment';
+
+      // If the comment class exists, instantiate.
+      // This will capture ItemComment and potential other future comment classes such as ArticleComment or BlogPostComment.
+      if (class_exists($class)) {
+        return $class::create($entity);
+      }
+      break;
+
+    case 'relation':
+      // Create the Relation object:
+      return Relation::create($entity);
+  }
+
+  return FALSE;
+}
+
+/**
+ * Get the actor whose page it is from the current URI.
+ *
+ * @static
+ * @return bool
+ */
+function moonmars_objects_get_object_from_url() {
+  static $cache;
+
+  // Look for the entity type and id in the request_uri:
+  $uri = request_path();
+
+  // Shortcut if we already did this one:
+  if (isset($cache[$uri])) {
+    return $cache[$uri];
+  }
+
+  $actor = NULL;
+
+  // For certain paths we know the actor is the logged-in member:
+  if (in_array($uri, array('user', 'profile', 'notifications')) && user_is_logged_in()) {
+    $actor = Member::loggedInMember();
+  }
+
+  if (!$actor) {
+    // Check for a normal user/%uid or node/%nid type of path:
+    $uri_parts = explode('/', $uri);
+    if (moonmars_is_entity_path($uri_parts)) {
+      $actor = moonmars_objects_get_object($uri_parts[0], $uri_parts[1]);
+    }
+  }
+
+  if (!$actor) {
+    // Look for a matching alias:
+    while (count($uri_parts) >= 1) {
+      // Maybe it's an alias. Try converting to normal path.
+      $path = drupal_get_normal_path($uri);
+
+      // Check again:
+      $path_parts = explode('/', $path);
+      if (moonmars_is_entity_path($path_parts)) {
+        $actor = moonmars_objects_get_object($path_parts[0], $path_parts[1]);
+        if ($actor) {
+          break;
+        }
+      }
+
+      // Remove the last URI part and try again.
+      unset($uri_parts[count($uri_parts) - 1]);
+      $uri = implode('/', $uri_parts);
+    }
+  }
+
+  if ($actor) {
+    $cache[$uri] = $actor;
+    return $actor;
+  }
+
+  // Not an actor path:
+  return FALSE;
+}

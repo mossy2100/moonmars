@@ -306,8 +306,8 @@ class Relation extends Entity {
       ),
     );
 
-    // Create the relation entity. Note the account - all relations in MM are owned by the superuser.
-    $rel_entity = relation_create($relationship_type, $endpoints, User::superuser()->user());
+    // Create the relation entity.
+    $rel_entity = relation_create($relationship_type, $endpoints);
 
     // Create the Relation object:
     $relation = $class::create($rel_entity);

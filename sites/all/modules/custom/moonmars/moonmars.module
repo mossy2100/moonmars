@@ -66,7 +66,7 @@ function moonmars_autoload($class_name) {
 function moonmars_alias_redirect() {
   $alias = NULL;
   $parts = request_args();
-  if (in_array($parts[0], ['user', 'node']) && is_uint($parts[1])) {
+  if (count($parts) >= 2 && in_array($parts[0], array('user', 'node')) && is_uint($parts[1])) {
     $path = "{$parts[0]}/{$parts[1]}";
     $alias = drupal_get_path_alias($path);
     if ($alias != $path) {
@@ -111,7 +111,7 @@ function moonmars_menu() {
   );
   $items['admin/phpinfo'] = array(
     'page callback' => 'moonmars_phpinfo',
-    'access arguments' => ['execute php code'],
+    'access arguments' => array('execute php code'),
     'type' => MENU_CALLBACK
   );
   $items['colors'] = array(
@@ -169,6 +169,24 @@ function moonmars_home() {
 function moonmars_get_entity($node) {
   $class = '\\AstroMultimedia\\MoonMars\\' . ucfirst($node->type);
   return $class::create($node);
+}
+
+/**
+ * Check if a provided path (array of URI parts) is a valid entity path.
+ *
+ * @param array $uri_parts
+ * @return bool
+ */
+function moonmars_is_entity_path(array $uri_parts) {
+  $valid_entity_types = array(
+    'user',
+    'node',
+    'comment',
+    'relation'
+  );
+  return
+    (count($uri_parts) >= 2 && in_array($uri_parts[0], $valid_entity_types) && is_uint($uri_parts[1])) ||
+    (count($uri_parts) >= 3 && $uri_parts[0] == 'taxonomy' && $uri_parts[1] == 'term' && is_uint($uri_parts[2]));
 }
 
 /**

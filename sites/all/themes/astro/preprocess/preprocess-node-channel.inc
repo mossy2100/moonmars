@@ -19,13 +19,13 @@ function astro_alpha_preprocess_node_channel(&$vars) {
   // Remember the current channel in the session:
   Channel::currentChannel($channel);
 
-  // Get the parent entity:
-  $parent_entity = $channel->parentEntity();
+  // Get the actor:
+  $actor = $channel->actor();
 
-  // If we're at the channel's page, goto the parent entity's page.
-  $parent_entity_path = $parent_entity->alias();
-  if (request_path() != $parent_entity_path) {
-    drupal_goto($parent_entity_path);
+  // If we're at the channel's page, goto the actor's page.
+  $actor_path = $actor->alias();
+  if (request_path() != $actor_path) {
+    drupal_goto($actor_path);
   }
 
   // JS:
@@ -33,15 +33,8 @@ function astro_alpha_preprocess_node_channel(&$vars) {
   drupal_add_js(drupal_get_path('module', 'moonmars_ratings') . '/js/ratings.js');
   drupal_add_js(drupal_get_path('module', 'moonmars_text') . '/js/autotrim.js');
 
-  // Set the page title:
-  if (arg(0) == 'node' && arg(1) == $channel->nid()) {
-    // Only display the channel title if we're on the channel's node page.
-    // Regular users should never see this. Even admins don't really need to see channel node pages.
-    $vars['title'] = $channel->title();
-  }
-  else {
-    $vars['title'] = '';
-  }
+  // Don't display the channel title:
+  $vars['title'] = '';
 
   // Render the items.
   $vars['items'] = $channel->renderItems();

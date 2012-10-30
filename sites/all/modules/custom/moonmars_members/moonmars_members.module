@@ -35,45 +35,45 @@ function moonmars_members_init() {
  */
 function moonmars_members_menu() {
   $items = array();
-  $items['profile'] = [
+  $items['profile'] = array(
     'page callback' => 'moonmars_members_profile',
     'access callback' => 'user_is_logged_in',
     'type' => MENU_NORMAL_ITEM,
-  ];
-  $items['user/%/follow'] = [
+  );
+  $items['user/%/follow'] = array(
     'page callback' => 'moonmars_members_follow',
-    'page arguments' => [1],
+    'page arguments' => array(1),
     'access callback' => 'user_is_logged_in',
     'type' => MENU_CALLBACK,
-  ];
-  $items['user/%/unfollow'] = [
+  );
+  $items['user/%/unfollow'] = array(
     'page callback' => 'moonmars_members_unfollow',
-    'page arguments' => [1],
+    'page arguments' => array(1),
     'access callback' => 'user_is_logged_in',
     'type' => MENU_CALLBACK,
-  ];
+  );
 
   // Edit forms:
-  $items['user/%/edit/profile'] = [
+  $items['user/%/edit/profile'] = array(
     'title' => 'Edit Profile',
     'page callback' => 'moonmars_members_edit_profile_form',
-    'page arguments' => [1],
+    'page arguments' => array(1),
     'access callback' => 'moonmars_members_access_private',
     'type' => MENU_CALLBACK,
-  ];
-  $items['user/%/edit/links'] = [
+  );
+  $items['user/%/edit/links'] = array(
     'title' => 'Edit Links',
     'page callback' => 'moonmars_members_edit_links_form',
-    'page arguments' => [1],
+    'page arguments' => array(1),
     'access callback' => 'moonmars_members_access_private',
     'type' => MENU_CALLBACK,
-  ];
-  $items['user/%/edit/notifications'] = [
+  );
+  $items['user/%/edit/notifications'] = array(
     'page callback' => 'moonmars_members_edit_nxn_prefs_form',
-    'page arguments' => [1],
+    'page arguments' => array(1),
     'access callback' => 'moonmars_members_access_private',
     'type' => MENU_CALLBACK,
-  ];
+  );
   return $items;
 }
 
@@ -100,7 +100,7 @@ function moonmars_members_menu() {
 function moonmars_members_on_own_page() {
   // Get the logged-in member and the member whose page it is:
   $logged_in_member = Member::loggedInMember();
-  $actor = moonmars_actors_get_actor_from_url();
+  $actor = moonmars_objects_get_object_from_url();
   return $logged_in_member && $actor && $actor->equals($logged_in_member);
 }
 
@@ -110,7 +110,7 @@ function moonmars_members_on_own_page() {
  * @return bool
  */
 function moonmars_members_is_member_page() {
-  $actor = moonmars_actors_get_actor_from_url();
+  $actor = moonmars_objects_get_object_from_url();
   return $actor && ($actor instanceof Member);
 }
 
@@ -136,7 +136,7 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
 //  dbg($form_id);
 
   // Check for relevant form_ids:
-  if (!in_array($form_id, ['user_register_form', 'user_profile_form'])) {
+  if (!in_array($form_id, array('user_register_form', 'user_profile_form'))) {
     return;
   }
 
@@ -176,11 +176,11 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
       unset($form['field_user_location']);
 
       // Site rules:
-      $form['rules'] = [
+      $form['rules'] = array(
         '#type' => 'fieldset',
         '#title' => 'Rules',
-      ];
-      $form['rules']['text'] = [
+      );
+      $form['rules']['text'] = array(
         '#markup' => "
   <div id='site-rules'>
     <p>This is not legal stuff. Please review these and make sure you agree before proceeding.</p>
@@ -199,12 +199,12 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
     </ul>
   </div>
   ",
-      ];
-      $form['rules']['agree'] = [
+      );
+      $form['rules']['agree'] = array(
         '#type' => 'checkbox',
         '#title' => "I agree to the Rules.",
         '#required' => TRUE,
-      ];
+      );
 
       // Add an after_build handler:
       $form['#after_build'][] = 'moonmars_members_user_register_form_after_build';
@@ -237,16 +237,16 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
       $form['account']['#title'] = "Account details";
 
       // Hidden field to contain the uid:
-      $form['uid'] = [
+      $form['uid'] = array(
         '#type' => 'hidden',
         '#value' => $form['#user']->uid,
-        '#attributes' => ['id' => 'uid'],
-      ];
+        '#attributes' => array('id' => 'uid'),
+      );
 
       // Color icons for background color:
-      $form['comments_color'] = [
+      $form['comments_color'] = array(
         '#markup' => moonmars_color_icons2($form['field_background_color'][LANGUAGE_NONE][0]['rgb']['#default_value']),
-      ];
+      );
 
       // Hide the colour fields we aren't using any more:
       unset($form['field_border_color']);
@@ -435,7 +435,7 @@ function moonmars_members_user_profile_form_submit($form, &$form_state) {
  */
 function moonmars_members_edit_profile_form($user) {
   $member = Member::create($user);
-  drupal_set_title(t('<em>@username:</em> Edit profile', ['@username' => $member->name()]), PASS_THROUGH);
+  drupal_set_title(t('<em>@username:</em> Edit profile', array('@username' => $member->name())), PASS_THROUGH);
   require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'user') . '/user.pages.inc';
   return drupal_get_form('user_profile_form', $member->user());
 }
@@ -449,7 +449,7 @@ function moonmars_members_edit_profile_form($user) {
 function moonmars_members_edit_links_form($user) {
   $member = Member::create($user);
   $channel = $member->channel();
-  drupal_set_title(t('<em>@username:</em> Edit links', ['@username' => $member->name()]), PASS_THROUGH);
+  drupal_set_title(t('<em>@username:</em> Edit links', array('@username' => $member->name())), PASS_THROUGH);
   require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'node') . '/node.pages.inc';
   return drupal_get_form('channel_node_form', $channel->node());
 }
@@ -462,7 +462,7 @@ function moonmars_members_edit_links_form($user) {
  */
 function moonmars_members_edit_nxn_prefs_form($user) {
   $member = Member::create($user);
-  drupal_set_title(t('<em>@username:</em> Edit notification preferences', ['@username' => $member->name()]), PASS_THROUGH);
+  drupal_set_title(t('<em>@username:</em> Edit notification preferences', array('@username' => $member->name())), PASS_THROUGH);
   return drupal_get_form('moonmars_nxn_prefs_form');
 }
 
@@ -481,14 +481,14 @@ function moonmars_members_follow($followee_uid) {
     $followee = Member::create($followee_uid);
 
     if ($follower->follows($followee)) {
-      drupal_set_message(t("You are already following %user2_name.", ['%user2_name' => $followee->name()]));
+      drupal_set_message(t("You are already following %user2_name.", array('%user2_name' => $followee->name())));
     }
     else {
       // Follow the member:
       $follower->follow($followee);
 
       // Tell the user:
-      drupal_set_message(t("You are now following %user2_name.", ['%user2_name' => $followee->name()]));
+      drupal_set_message(t("You are now following %user2_name.", array('%user2_name' => $followee->name())));
     }
   }
 
@@ -511,10 +511,10 @@ function moonmars_members_unfollow($followee_uid) {
       $follower->unfollow($followee);
 
       // Tell the user:
-      drupal_set_message(t("You are no longer following %user2_name.", ['%user2_name' => $followee->name()]));
+      drupal_set_message(t("You are no longer following %user2_name.", array('%user2_name' => $followee->name())));
     }
     else {
-      drupal_set_message(t("You weren't following %user2_name.", ['%user2_name' => $followee->name()]));
+      drupal_set_message(t("You weren't following %user2_name.", array('%user2_name' => $followee->name())));
     }
   }
 
@@ -576,26 +576,26 @@ function moonmars_members_render_avatars(array $members, $max_n_display = 12, $v
  * Implementation of hook_block_info().
  */
 function moonmars_members_block_info() {
-  $blocks['member-menu'] = [
+  $blocks['member-menu'] = array(
     'info' => t('Member menu'),
     'cache' => DRUPAL_CACHE_PER_USER,
-  ];
-  $blocks['member-groups'] = [
+  );
+  $blocks['member-groups'] = array(
     'info' => t("Member's groups"),
     'cache' => DRUPAL_CACHE_PER_PAGE,
-  ];
-  $blocks['member-followers'] = [
+  );
+  $blocks['member-followers'] = array(
     'info' => t("Member's followers"),
     'cache' => DRUPAL_CACHE_PER_PAGE,
-  ];
-  $blocks['member-followees'] = [
+  );
+  $blocks['member-followees'] = array(
     'info' => t("Member's followees"),
     'cache' => DRUPAL_CACHE_PER_PAGE,
-  ];
-  $blocks['member-edit-tabs'] = [
+  );
+  $blocks['member-edit-tabs'] = array(
     'info' => t("Member edit tabs"),
     'cache' => DRUPAL_CACHE_PER_USER,
-  ];
+  );
   return $blocks;
 }
 
@@ -642,7 +642,7 @@ function moonmars_members_menu_block() {
   global $user;
 
   // Check we're on a member page:
-  $page_member = moonmars_actors_get_actor_from_url();
+  $page_member = moonmars_objects_get_object_from_url();
   if (!$page_member || !($page_member instanceof Member)) {
     return '';
   }
@@ -706,8 +706,8 @@ function moonmars_members_menu_block() {
  */
 function moonmars_members_groups_block() {
   // Get the member from the URL:
-  $entity = moonmars_actors_get_actor_from_url();
-  $member = ($entity instanceof Member) ? $entity : (($entity instanceof Channel) ? $entity->parentEntity() : FALSE);
+  $entity = moonmars_objects_get_object_from_url();
+  $member = ($entity instanceof Member) ? $entity : (($entity instanceof Channel) ? $entity->actor() : FALSE);
   if (!($member instanceof Member)) {
     return '';
   }
@@ -716,7 +716,7 @@ function moonmars_members_groups_block() {
   $groups = $member->groups();
 
   // Generate HTML:
-  $view_all_link = l('View all', 'groups', ['query' => ['member' => $member->name()]]);
+  $view_all_link = l('View all', 'groups', array('query' => array('member' => $member->name())));
   $html = moonmars_groups_render_block($groups, 4, $view_all_link);
 
   return $html;
@@ -729,8 +729,8 @@ function moonmars_members_groups_block() {
  */
 function moonmars_members_followers_block() {
   // Get the member from the URL:
-  $entity = moonmars_actors_get_actor_from_url();
-  $member = ($entity instanceof Member) ? $entity : (($entity instanceof Channel) ? $entity->parentEntity() : FALSE);
+  $entity = moonmars_objects_get_object_from_url();
+  $member = ($entity instanceof Member) ? $entity : (($entity instanceof Channel) ? $entity->actor() : FALSE);
   if (!($member instanceof Member)) {
     return '';
   }
@@ -748,8 +748,8 @@ function moonmars_members_followers_block() {
  */
 function moonmars_members_followees_block() {
   // Get the member from the URL:
-  $entity = moonmars_actors_get_actor_from_url();
-  $member = ($entity instanceof Member) ? $entity : (($entity instanceof Channel) ? $entity->parentEntity() : FALSE);
+  $entity = moonmars_objects_get_object_from_url();
+  $member = ($entity instanceof Member) ? $entity : (($entity instanceof Channel) ? $entity->actor() : FALSE);
   if (!($member instanceof Member)) {
     return '';
   }
@@ -777,7 +777,7 @@ function moonmars_members_following($uid) {
  * Create the member edit menu.
  */
 function moonmars_members_edit_tabs_block() {
-  $page_member = moonmars_actors_get_actor_from_url();
+  $page_member = moonmars_objects_get_object_from_url();
   if (!$page_member instanceof Member) {
     return FALSE;
   }
@@ -785,11 +785,11 @@ function moonmars_members_edit_tabs_block() {
   $request = request_path();
   $edit_base = $page_member->alias() . '/edit';
 
-  $tabs = [
-    "$edit_base/profile"       => 'Profile',
-    "$edit_base/links"         => 'Links',
+  $tabs = array(
+    "$edit_base/profile" => 'Profile',
+    "$edit_base/links" => 'Links',
     "$edit_base/notifications" => 'Notifications',
-  ];
+  );
 
   $html = "<ul id='actor-edit-tabs'>";
   foreach ($tabs as $url => $label) {

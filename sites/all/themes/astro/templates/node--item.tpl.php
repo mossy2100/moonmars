@@ -95,12 +95,12 @@
     </article>
     <?php
   }
-  elseif (!$logged_in_member && isset($parent_entity) && ($parent_entity instanceof Group) && $parent_entity->mode() == 'open') {
+  elseif (!$logged_in_member && isset($actor) && ($actor instanceof Group) && $actor->mode() == 'open') {
     // Tell the user they can comment if they login or register:
     ?>
     <p class='comment-instruction'>
-      <a href='/user/login?destination=<?php echo $parent_entity->alias(); ?>'>Login</a> or
-      <a href='/register?destination=<?php echo $parent_entity->alias(); ?>'>register</a>
+      <a href='/user/login?destination=<?php echo $actor->alias(); ?>'>Login</a> or
+      <a href='/register?destination=<?php echo $actor->alias(); ?>'>register</a>
       to <!-- rate and --> post comments.
     </p>
     <?php

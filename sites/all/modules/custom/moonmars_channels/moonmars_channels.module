@@ -20,10 +20,10 @@ define('MOONMARS_NEWS_CHANNEL_NID', 467);
 function moonmars_channels_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'channel_node_form') {
     $channel = Channel::create($form['#node']);
-    $parent_entity = $channel->parentEntity();
+    $actor = $channel->actor();
 
     // In case we're at the channel's edit page, goto the actor's edit/links page.
-    if ($parent_entity instanceof Member) {
+    if ($actor instanceof Member) {
       $logged_in_member = Member::loggedInMember();
       $edit_links_path = $logged_in_member->editAlias() . '/links';
       if (request_path() != $edit_links_path) {
@@ -35,7 +35,7 @@ function moonmars_channels_form_alter(&$form, &$form_state, $form_id) {
     unset($form['title']);
 
     // Is the user on their own profile?
-    $own_profile = ($parent_entity instanceof Member) && $parent_entity->equals(Member::loggedInMember());
+    $own_profile = ($actor instanceof Member) && $actor->equals(Member::loggedInMember());
 
     $social_links = moonmars_channels_social_links();
     foreach ($social_links as $social_link => $social_link_info) {
@@ -96,7 +96,7 @@ function moonmars_channels_channel_node_form_validate($form, &$form_state) {
 function moonmars_channels_channel_node_form_submit($form, &$form_state) {
   // Back to the member or group page:
   $channel = Channel::create($form['#node']);
-  $form_state['redirect'] = $channel->parentEntity()->alias();
+  $form_state['redirect'] = $channel->actor()->alias();
 }
 
 /**
@@ -118,68 +118,68 @@ function moonmars_channels_node_types() {
  * @return array
  */
 function moonmars_channels_social_links() {
-  return [
-    'website'     => [
-      'name'        => 'Website',
-      'field'       => 'field_website',
-      'domain'      => '',
+  return array(
+    'website' => array(
+      'name' => 'Website',
+      'field' => 'field_website',
+      'domain' => '',
       'description' => 'official website',
-    ],
-    'facebook'    => [
-      'name'        => 'Facebook',
-      'field'       => 'field_facebook_link',
-      'domain'      => 'facebook.com',
+    ),
+    'facebook' => array(
+      'name' => 'Facebook',
+      'field' => 'field_facebook_link',
+      'domain' => 'facebook.com',
       'description' => 'Facebook profile',
-    ],
-    'linkedin'    => [
-      'name'        => 'LinkedIn',
-      'field'       => 'field_linkedin_link',
-      'domain'      => 'linkedin.com',
+    ),
+    'linkedin' => array(
+      'name' => 'LinkedIn',
+      'field' => 'field_linkedin_link',
+      'domain' => 'linkedin.com',
       'description' => 'LinkedIn profile',
-    ],
-    'twitter'     => [
-      'name'        => 'Twitter',
-      'field'       => 'field_twitter_link',
-      'domain'      => 'twitter.com',
+    ),
+    'twitter' => array(
+      'name' => 'Twitter',
+      'field' => 'field_twitter_link',
+      'domain' => 'twitter.com',
       'description' => 'Twitter profile',
-    ],
-    'google-plus' => [
-      'name'        => 'Google+',
-      'field'       => 'field_google_link',
-      'domain'      => 'plus.google.com',
+    ),
+    'google-plus' => array(
+      'name' => 'Google+',
+      'field' => 'field_google_link',
+      'domain' => 'plus.google.com',
       'description' => 'Google+ profile',
-    ],
-    'youtube'     => [
-      'name'        => 'YouTube',
-      'field'       => 'field_youtube_link',
-      'domain'      => 'youtube.com',
+    ),
+    'youtube' => array(
+      'name' => 'YouTube',
+      'field' => 'field_youtube_link',
+      'domain' => 'youtube.com',
       'description' => 'YouTube channel',
-    ],
-    'wikipedia'   => [
-      'name'        => 'Wikipedia',
-      'field'       => 'field_wikipedia_link',
-      'domain'      => 'wikipedia.org',
+    ),
+    'wikipedia' => array(
+      'name' => 'Wikipedia',
+      'field' => 'field_wikipedia_link',
+      'domain' => 'wikipedia.org',
       'description' => 'Wikipedia entry',
-    ],
-    'flickr'      => [
-      'name'        => 'Flickr',
-      'field'       => 'field_flickr_link',
-      'domain'      => 'flickr.com',
+    ),
+    'flickr' => array(
+      'name' => 'Flickr',
+      'field' => 'field_flickr_link',
+      'domain' => 'flickr.com',
       'description' => 'Flickr profile',
-    ],
-    'meetup'      => [
-      'name'        => 'Meetup',
-      'field'       => 'field_meetup_link',
-      'domain'      => 'meetup.com',
+    ),
+    'meetup' => array(
+      'name' => 'Meetup',
+      'field' => 'field_meetup_link',
+      'domain' => 'meetup.com',
       'description' => 'Meetup profile',
-    ],
-    'academia'   => [
-      'name'        => 'Academia',
-      'field'       => 'field_academia_link',
-      'domain'      => 'academia.edu',
+    ),
+    'academia' => array(
+      'name' => 'Academia',
+      'field' => 'field_academia_link',
+      'domain' => 'academia.edu',
       'description' => 'Academia profile',
-    ],
-  ];
+    ),
+  );
 }
 
 /**

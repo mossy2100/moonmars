@@ -4,11 +4,11 @@ use \AstroMultimedia\Drupal\Entity;
 use \AstroMultimedia\MoonMars\Member;
 
 function moonmars_ratings_menu() {
-  $items['ajax/rate'] = [
-    'page callback'    => 'moonmars_ratings_ajax_rate',
-    'access callback'  => TRUE,
-    'type'             => MENU_CALLBACK,
-  ];
+  $items['ajax/rate'] = array(
+    'page callback' => 'moonmars_ratings_ajax_rate',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
   return $items;
 }
 
@@ -18,13 +18,13 @@ function moonmars_ratings_menu() {
  * @return array
  */
 function moonmars_ratings_names() {
-  return [
+  return array(
     -2 => 'warning',
     -1 => 'dislike',
 //     0 => 'meh',
-     1 => 'like',
-     2 => 'favourite',
-  ];
+    1 => 'like',
+    2 => 'favourite',
+  );
 }
 
 /**
@@ -70,11 +70,11 @@ function moonmars_ratings_ajax_rate() {
   $logged_in_member = Member::loggedInMember();
 
   // Begin the data array:
-  $data = [
+  $data = array(
     'entity_type' => $entity_type,
     'entity_id' => $entity_id,
     'rating' => $rating,
-  ];
+  );
 
   // Check params:
   if (!$entity_type || !$entity_id || is_null($rating) || !array_key_exists($rating, moonmars_ratings_names()) || !$logged_in_member) {
@@ -85,7 +85,7 @@ function moonmars_ratings_ajax_rate() {
   }
 
   // Update the rating:
-  $result = $logged_in_member->rating(moonmars_actors_get_actor($entity_type, $entity_id), $rating);
+  $result = $logged_in_member->rating(moonmars_objects_get_object($entity_type, $entity_id), $rating);
 //  dbg($result);
 
   // Update result:

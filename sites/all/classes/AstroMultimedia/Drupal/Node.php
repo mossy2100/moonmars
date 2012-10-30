@@ -258,13 +258,13 @@ class Node extends Entity {
    * Get/set the node's type.
    *
    * Note as a rule we never say just 'type' because it's far too easy to get node type, entity type, field type,
-   * relation type, etc., mixed up, which is a source of bugs.
+   * relation type, actor type, etc., mixed up, which is a source of bugs.
    *
    * @param null|string
    * @return string|Node
    */
   public function nodeType($type = NULL) {
-    // If getting, we could theoretically just return self::NODE_TYPE here. However, by checking the entity property
+    // If getting, we could theoretically just return self::NODE_TYPE here. However, by checking the property
     // this function can be used to check if the node referenced by the $entity property is the correct type.
     return $this->prop('type', $type);
   }

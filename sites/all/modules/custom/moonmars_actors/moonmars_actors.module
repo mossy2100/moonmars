@@ -1,28 +1,23 @@
 <?php
 
-use \AstroMultimedia\Drupal\Entity;
-use \AstroMultimedia\Drupal\Node;
-use \AstroMultimedia\Drupal\Comment;
 use \AstroMultimedia\MoonMars\Channel;
+use \AstroMultimedia\MoonMars\IActor;
 use \AstroMultimedia\MoonMars\Member;
 use \AstroMultimedia\MoonMars\Group;
 use \AstroMultimedia\MoonMars\Topic;
 use \AstroMultimedia\MoonMars\Triumph;
 use \AstroMultimedia\MoonMars\Relation;
-use \AstroMultimedia\MoonMars\Item;
 
 /**
  * @author Shaun Moss (mossy2100)
  * @since 2012-09-08
  *
- * An actor in moonmars.com is a special kind of entity. These each have a class.
- * This module contains functions that apply to more than one entity type.
- * Current actor classes:
+ * An "actor" in moonmars.com is a entity that has a channel. There are 3 types:
  *   Member (extends User)
  *   Group (extends Node)
- *   Item (extends Node)
- *   ItemComment (extends Comment)
- *   Relation (extends Relation)
+ *   Topic (extends Term)
+ *
+ * This module provides functions to support working with actors.
  */
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -78,7 +73,7 @@ function moonmars_actors_ajax_check_tag() {
   );
 
   // Check for valid parameters:
-  if (!$actor_type || !in_array($actor_type, ['member', 'group']) || !$actor_tag) {
+  if (!$actor_type || !in_array($actor_type, array('member', 'group')) || !$actor_tag) {
     $data['message'] = "Invalid parameters";
     echo json_encode($data);
     return;
@@ -95,7 +90,7 @@ function moonmars_actors_ajax_check_tag() {
   if ($actor_type == 'member') {
     // Check if any other member has the same username:
     $q = db_select('users', 'u')
-      ->fields('u', ['uid'])
+      ->fields('u', array('uid'))
       ->condition('name', $actor_tag);
     // If editing a member, look for a different member with the same username:
     if ($actor_id) {
@@ -105,7 +100,7 @@ function moonmars_actors_ajax_check_tag() {
   elseif ($actor_type == 'group') {
     // Check if any other group has the same tag:
     $q = db_select('node', 'n')
-      ->fields('n', ['nid']);
+      ->fields('n', array('nid'));
     $q->join('field_data_field_group_tag', 'gt', "n.nid = gt.entity_id");
     $q->condition('field_group_tag_value', $actor_tag);
     // If editing a group, look for a different group with the same tag:
@@ -159,44 +154,66 @@ function moonmars_actors_valid_tag($name) {
 /**
  * Common code for resetting aliases when saving members and groups.
  *
- * @param Entity $actor
+ * @param IActor $actor
  */
-function moonmars_actors_reset_aliases($actor) {
+function moonmars_actors_reset_aliases(IActor $actor) {
   // Update the alias for the actor:
   $actor->resetAlias();
 
   // Update the alias and title for the actor's channel.
-  // @todo Remove when channels are made obsolete as entities.
-  if ($actor instanceof Member || $actor instanceof Group) {
-    $channel = $actor->channel();
-    if ($channel) {
-      $channel->resetAliasAndTitle();
-    }
+  $channel = $actor->channel();
+  if ($channel) {
+    $channel->resetAliasAndTitle();
   }
 }
 
 /**
- * Called when updating an entity.
- * Supports members, groups and items.
+ * Implements hook_entity_insert().
+ *
+ * Note, we use this hook instead of hook_node_insert() or hook_user_insert() as it gets called later in the cycle,
+ * after pathauto_node_insert_alias() sets the alias according to the pattern.
+ */
+function moonmars_actors_entity_insert($entity, $entity_type) {
+  moonmars_actors_entity_save($entity, $entity_type, TRUE);
+}
+
+/**
+ * Implements hook_entity_update().
+ *
+ * This hook is invoked after the node or user is saved to the database and immediately after hook_user_update() or
+ * hook_node_update().
+ * Event order:
+ *   1. Save user/node to the database
+ *   2. Invoke user_update/node_update
+ *   3. Invoke entity_update
+ *
+ * We use this hook instead of hook_node_update() as it gets called later in the cycle, after
+ * pathauto_node_update_alias() sets the alias according to the pattern.
+ */
+function moonmars_actors_entity_update($entity, $entity_type) {
+  moonmars_actors_entity_save($entity, $entity_type, FALSE);
+}
+
+/**
+ * Called when updating an actor.
  *
  * @param stdClass $entity
  * @param string $entity_type
- * @param string $op
- *   Must be 'insert' or 'update'.
+ * @param bool $is_new
  */
-function moonmars_actors_entity_save($entity, $entity_type, $op) {
-  // Check if the entity is a member or group:
-  if ($entity_type == 'user' || ($entity_type == 'node' && in_array($entity->type, ['group', 'item']))) {
+function moonmars_actors_entity_save($entity, $entity_type, $is_new) {
+  // Check if the entity is a member, group or (@todo) topic:
+  if ($entity_type == 'user' || ($entity_type == 'node' && $entity->type == 'group')) {
 
-    // Get the actor:
-    $actor = moonmars_actors_get_actor($entity_type, $entity);
+    // Get the actor object:
+    $actor = moonmars_objects_get_object($entity_type, $entity);
 
     // Get the logged-in member:
     $logged_in_member = Member::loggedInMember();
 
     if ($actor instanceof Member) {
       $member = $actor;
-      if ($op == 'update') {
+      if (!$is_new) {
         // Create triumphs:
         if ($actor instanceof Member) {
           // Only create an update-member triumph if the member is updating their own profile
@@ -222,35 +239,19 @@ function moonmars_actors_entity_save($entity, $entity_type, $op) {
     }
     elseif ($actor instanceof Group) {
       $group = $actor;
-      if ($op == 'insert') {
+      if ($is_new) {
         // Create triumph:
         Triumph::newGroup($group);
         // Add the creator as group admin:
         $group->addAdmin(Member::loggedInMember());
       }
-      elseif ($op == 'update') {
+      else {
         // Create triumph:
         Triumph::updateGroup($actor, $logged_in_member);
       }
     }
-    elseif ($actor instanceof Item) {
-      $item = $actor;
-      // If the item is new...
-      if ($op == 'insert') {
-        // Add it to the channel where it was posted:
-        // @todo code this may be removed if we do away with channels.
-        $channel = Channel::currentChannel();
-        if ($channel) {
-          $channel->postItem($item);
-        }
-        // Create a new-item triumph:
-        Triumph::newItem($item);
-      }
-      else {
-        // Bump it to the top of the channel:
-        $item->bump();
-        // We aren't creating triumphs for updating items or comments.
-      }
+    elseif ($actor instanceof Topic) {
+      // @todo
     }
     else {
       trigger_error("moonmars_actors_entity_save() - Actor has unknown class. Check your use statements.", E_USER_WARNING);
@@ -261,197 +262,29 @@ function moonmars_actors_entity_save($entity, $entity_type, $op) {
   }
 }
 
-/**
- * Implements hook_entity_insert().
- *
- * Note, we use this hook instead of hook_node_insert() or hook_user_insert() as it gets called later in the cycle,
- * after pathauto_node_insert_alias() sets the alias according to the pattern.
- */
-function moonmars_actors_entity_insert($entity, $entity_type) {
-  moonmars_actors_entity_save($entity, $entity_type, 'insert');
-}
-
-/**
- * Implements hook_entity_update().
- *
- * This hook is invoked after the node or user is saved to the database and immediately after hook_user_update() or
- * hook_node_update().
- * Event order:
- *   1. Save user/node to the database
- *   2. Invoke user_update/node_update
- *   3. Invoke entity_update
- *
- * We use this hook instead of hook_node_update() as it gets called later in the cycle, after
- * pathauto_node_update_alias() sets the alias according to the pattern.
- */
-function moonmars_actors_entity_update($entity, $entity_type) {
-  moonmars_actors_entity_save($entity, $entity_type, 'update');
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Functions for getting and creating actor entities and channels
 
 /**
- * Gets an Entity-derived object from a Drupal entity.
+ * Creates a new channel for an actor.
  *
- * @static
- * @param string $entity_type
- * @param object|int $entity
- * @return Entity
- *   Entity-derived class, e.g. Member, Group, Item, ItemComment, Relation, etc.
+ * @param IActor $actor
+ * @return Channel
  */
-function moonmars_actors_get_actor($entity_type, $entity) {
-  switch ($entity_type) {
-    case 'user':
-      return Member::create($entity);
-
-    case 'node':
-      // Get the node type:
-      $node_type = is_uint($entity) ? node_get_type($entity) : $entity->type;
-
-      // Get the node class:
-      $class = '\\AstroMultimedia\\MoonMars\\' . ucfirst($node_type);
-
-      // If the node class exists, instantiate:
-      if (class_exists($class)) {
-        // Note I create the object using $entity instead of reloading the node (which would be another way of getting
-        // the type), to prevent the node we just loaded from clobbering the one we have in memory.
-        // My caching mechanism is better than Drupal's, unfortunately.
-        return $class::create($entity);
-      }
-
-      // Fall back to base Node class:
-      return Node::create($entity);
-
-    case 'comment':
-      // Get the cid:
-      $cid = is_uint($entity) ? $entity : $entity->cid;
-
-      // Get the comment's node type.
-      $node_type = comment_get_node_type($cid);
-
-      // Get the comment class:
-      $class = '\\AstroMultimedia\\MoonMars\\' . ucfirst($node_type) . 'Comment';
-
-      // If the comment class exists, instantiate.
-      // This will capture ItemComment and potential other future comment classes such as ArticleComment or BlogPostComment.
-      if (class_exists($class)) {
-        return $class::create($entity);
-      }
-
-      // Fall back to base Comment class:
-      return Comment::create($entity);
-
-    case 'relation':
-      // Create the object:
-      return Relation::create($entity);
-  }
-
-  return FALSE;
-}
-
-function moonmars_actors_looks_like_entity_path(array $uri_parts) {
-  $valid_entity_types = array(
-    'user',
-    'node',
-    'comment',
-    'relation'
-  );
-  return count($uri_parts) >= 2 && in_array($uri_parts[0], $valid_entity_types) && is_uint($uri_parts[1]);
-}
-
-/**
- * Get the actor whose page it is, from the current URL.
- *
- * @static
- * @return bool
- */
-function moonmars_actors_get_actor_from_url() {
-  static $cache;
-
-  // Look for the entity type and id in the request_uri:
-  $uri = request_path();
-
-  // Shortcut if we already did this one:
-  if (isset($cache[$uri])) {
-    return $cache[$uri];
-  }
-
-  $actor = NULL;
-
-  // For certain paths we know the actor is the logged-in member:
-  if (in_array($uri, ['user', 'profile', 'notifications']) && user_is_logged_in()) {
-    $actor = Member::loggedInMember();
-  }
-
-  if (!$actor) {
-    // Check for a normal user/%uid or node/%nid type of path:
-    $uri_parts = explode('/', $uri);
-    if (moonmars_actors_looks_like_entity_path($uri_parts)) {
-      $actor = moonmars_actors_get_actor($uri_parts[0], $uri_parts[1]);
-    }
-  }
-
-  if (!$actor) {
-    // Look for a matching alias:
-    while (count($uri_parts) >= 1) {
-      // Maybe it's an alias. Try converting to normal path.
-      $path = drupal_get_normal_path($uri);
-
-      // Check again:
-      $path_parts = explode('/', $path);
-      if (moonmars_actors_looks_like_entity_path($path_parts)) {
-        $actor = moonmars_actors_get_actor($path_parts[0], $path_parts[1]);
-        if ($actor) {
-          break;
-        }
-      }
-
-      // Remove the last URI part and try again.
-      unset($uri_parts[count($uri_parts) - 1]);
-      $uri = implode('/', $uri_parts);
-    }
-  }
-
-  if ($actor) {
-    $cache[$uri] = $actor;
-    return $actor;
-  }
-
-  // Not an actor path:
-  return FALSE;
-}
-
-/**
- * Get the uid of the member whose page we're on.
- * FALSE if not a member page.
- *
- * @return int|bool
- */
-function moonmars_actors_get_uid_from_url() {
-  $actor = moonmars_actors_get_actor_from_url();
-  return ($actor instanceof Member) ? $actor->uid() : FALSE;
-}
-
-/**
- * Creates a new channel for an entity.
- *
- * @param Entity $entity
- * @return int
- */
-function moonmars_actors_create_channel(Entity $entity) {
-  // Create the new channel:
+function moonmars_actors_create_channel(IActor $actor) {
+  // Create the new channel. The 'uid' here is the uid of the owner of the actor entity, which becomes the owner of the
+  // channel node. It's valid for member, group and topic, and not a bug.
   $channel = Channel::create()
     ->setProperties([
-      'uid'   => $entity->uid(),
-      'title' => $entity->channelTitle(),
+      'uid'   => $actor->uid(),
+      'title' => $actor->channelTitle(),
     ]);
 
   // Save the node for the first time, which will give it a nid, which we need to create the relationship:
   $channel->save();
 
-  // Create the relationship between the entity and the relationship:
-  Relation::createNewBinary('has_channel', $entity, $channel);
+  // Create the relationship between the actor and the channel:
+  Relation::createNewBinary('has_channel', $actor, $channel);
 
   // Reset the channel's alias and title. This needs to be done after creating the relationship.
   $channel->resetAliasAndTitle();
@@ -461,23 +294,23 @@ function moonmars_actors_create_channel(Entity $entity) {
 }
 
 /**
- * Get an entity's channel.
+ * Get an actor's channel.
  *
- * @param Entity $entity
+ * @param IActor $actor
  * @param bool $create
  * @return int
  */
-function moonmars_actors_get_channel(Entity $entity, $create = TRUE) {
-  // Check if the entity already has a channel:
-  $rels = Relation::searchBinary('has_channel', $entity, NULL);
+function moonmars_actors_get_channel(IActor $actor, $create = TRUE) {
+  // Check if the actor already has a channel:
+  $rels = Relation::searchBinary('has_channel', $actor, NULL);
 
   if (!empty($rels)) {
     return $rels[0]->endpoint(1);
   }
 
-  // If the entity has no channel, and $create is TRUE, create the channel now:
+  // If the actor has no channel, and $create is TRUE, create the channel now:
   if ($create) {
-    return moonmars_actors_create_channel($entity);
+    return moonmars_actors_create_channel($actor);
   }
 
   return NULL;
@@ -499,4 +332,15 @@ function moonmars_actors_tag_prefixes() {
     ),
     'type' => 'setting',
   );
+}
+
+/**
+ * Get the uid of the member whose page we're on.
+ * FALSE if not a member page.
+ *
+ * @return int|bool
+ */
+function moonmars_actors_get_uid_from_url() {
+  $actor = moonmars_objects_get_object_from_url();
+  return ($actor instanceof Member) ? $actor->uid() : FALSE;
 }

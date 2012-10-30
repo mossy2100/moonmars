@@ -12,12 +12,12 @@ use \AstroMultimedia\MoonMars\Channel;
  */
 function moonmars_update_menu() {
   $items = array();
-  $items['update/%'] = [
-    'page callback'   => 'moonmars_update_marshall',
-    'page arguments'  => [1],
+  $items['update/%'] = array(
+    'page callback' => 'moonmars_update_marshall',
+    'page arguments' => array(1),
     'access callback' => TRUE,
-    'type'            => MENU_CALLBACK,
-  ];
+    'type' => MENU_CALLBACK,
+  );
   return $items;
 }
 
@@ -55,16 +55,16 @@ function moonmars_update_remove_subscriber_relationships() {
 
     if ($channel) {
       echobr("Channel " . $channel->title() . " has subscriber " . $member->name());
-      $parent_entity = $channel->parentEntity();
-      if ($parent_entity instanceof Member) {
+      $actor = $channel->actor();
+      if ($actor instanceof Member) {
         // Follows:
-        echobr("Creating/updating relationship: Member " . $member->name() . " follows " . $parent_entity->name());
-        $rel2 = Relation::updateBinary('follows', $member, $parent_entity, FALSE);
+        echobr("Creating/updating relationship: Member " . $member->name() . " follows " . $actor->name());
+        $rel2 = Relation::updateBinary('follows', $member, $actor, FALSE);
       }
-      elseif ($parent_entity instanceof Group) {
+      elseif ($actor instanceof Group) {
         // Member of a group:
-        echobr("Creating/updating relationship: Group " . $parent_entity->title() . " has member " . $member->name());
-        $rel2 = Relation::updateBinary('has_member', $parent_entity, $member, FALSE);
+        echobr("Creating/updating relationship: Group " . $actor->title() . " has member " . $member->name());
+        $rel2 = Relation::updateBinary('has_member', $actor, $member, FALSE);
         $rel2->field('field_is_admin', LANGUAGE_NONE, 0, 'value', 0);
       }
 
@@ -87,7 +87,7 @@ function moonmars_update_remove_subscriber_relationships() {
  */
 function moonmars_update_clean_up_relations() {
   $q = db_select('relation', 'r')
-    ->fields('r', ['rid']);
+    ->fields('r', array('rid'));
   $rs = $q->execute();
   foreach ($rs as $rec) {
     $delete = FALSE;
@@ -122,13 +122,13 @@ function moonmars_update_clean_up_relations() {
  */
 function moonmars_update_clean_up_channels() {
   $q = db_select('node', 'n')
-    ->fields('n', ['nid'])
+    ->fields('n', array('nid'))
     ->condition('type', 'channel');
   $rs = $q->execute();
   foreach ($rs as $rec) {
     $channel = Channel::create($rec->nid);
-    $parent_entity = $channel->parentEntity();
-    if (!$parent_entity) {
+    $actor = $channel->actor();
+    if (!$actor) {
       echobr("Channel " . $channel->nid() . " title: " . $channel->title() . " has no parent");
 
       $items = $channel->items();
@@ -148,7 +148,7 @@ function moonmars_update_clean_up_channels() {
  */
 function moonmars_update_set_default_group_tags() {
   $q = db_select('node', 'n')
-    ->fields('n', ['nid'])
+    ->fields('n', array('nid'))
     ->condition('type', 'group');
   $rs = $q->execute();
   foreach ($rs as $rec) {
@@ -164,7 +164,7 @@ function moonmars_update_set_default_group_tags() {
         return strtolower($value);
       }, explode(' ', $title));
       foreach ($words as $key => $word) {
-        if (in_array($word, ['for', 'the', 'and', 'of', 'an', 'a'])) {
+        if (in_array($word, array('for', 'the', 'and', 'of', 'an', 'a'))) {
           unset($words[$key]);
         }
       }
@@ -207,7 +207,7 @@ function moonmars_update_set_default_group_tags() {
 function moonmars_update_fix_aliases() {
   // Members:
   $q = db_select('users', 'u')
-    ->fields('u', ['uid'])
+    ->fields('u', array('uid'))
     ->condition('uid', 0, '>');
   $rs = $q->execute();
   foreach ($rs as $rec) {
@@ -218,7 +218,7 @@ function moonmars_update_fix_aliases() {
 
   // Groups:
   $q = db_select('node', 'n')
-    ->fields('n', ['nid'])
+    ->fields('n', array('nid'))
     ->condition('type', 'group')
     ->orderBy('nid');
   $rs = $q->execute();
@@ -230,7 +230,7 @@ function moonmars_update_fix_aliases() {
 
   // Channels:
   $q = db_select('node', 'n')
-    ->fields('n', ['nid'])
+    ->fields('n', array('nid'))
     ->condition('type', 'channel')
     ->orderBy('nid');
   $rs = $q->execute();
@@ -246,7 +246,7 @@ function moonmars_update_fix_aliases() {
 
   // Items:
   $q = db_select('node', 'n')
-    ->fields('n', ['nid'])
+    ->fields('n', array('nid'))
     ->condition('type', 'item')
     ->orderBy('nid');
   $rs = $q->execute();
@@ -340,7 +340,7 @@ function moonmars_update_named_colors() {
 function moonmars_update_news_items() {
   // Look for relationship records:
   $q = db_select('view_channel_has_item', 'vci')
-    ->fields('vci', ['item_nid', 'created'])
+    ->fields('vci', array('item_nid', 'created'))
     ->condition('channel_nid', MOONMARS_NEWS_CHANNEL_NID)
     ->condition('item_status', 1)
     ->orderBy('created', 'DESC');
@@ -388,7 +388,7 @@ function moonmars_update_news_items() {
 function moonmars_update_channel_item_relation_changed_times() {
   // Look for relationship records:
   $q = db_select('view_channel_has_item', 'vci')
-    ->fields('vci', ['rid', 'item_nid', 'created'])
+    ->fields('vci', array('rid', 'item_nid', 'created'))
     ->condition('channel_nid', MOONMARS_NEWS_CHANNEL_NID)
 //    ->range(0, 5)
 //    ->orderBy('created', 'DESC');

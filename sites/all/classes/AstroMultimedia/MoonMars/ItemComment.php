@@ -110,13 +110,13 @@ class ItemComment extends \AstroMultimedia\Drupal\Comment {
   }
 
   /**
-   * Checks if the comment mentions a member.
+   * Checks if the comment mentions an actor.
    *
-   * @param Member $member
+   * @param IActor $actor
    * @return bool
    */
-  public function mentions(Member $member) {
-    return $this->textScan()->mentions($member);
+  public function mentions(IActor $actor) {
+    return $this->textScan()->mentions($actor);
   }
 
 }
