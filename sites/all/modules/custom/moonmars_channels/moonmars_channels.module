@@ -105,11 +105,11 @@ function moonmars_channels_channel_node_form_submit($form, &$form_state) {
  * @return array
  */
 function moonmars_channels_node_types() {
-  return [
+  return array(
     'group',
     'event',
     'project'
-  ];
+  );
 }
 
 /**

@@ -16,17 +16,17 @@ use \AstroMultimedia\Star\DateTime;
  * @return array
  */
 function moonmars_text_emoticons() {
-  return [
-    'smile'     => ':)',
-    'sad'       => ':(',
-    'meh'       => ':|',
+  return array(
+    'smile' => ':)',
+    'sad' => ':(',
+    'meh' => ':|',
     'big-smile' => ':D',
     'raspberry' => ':p',
-    'surprise'  => ':o',
-    'kiss'      => ':*',
-    'wink'      => ';)',
-    'heart'     => '&lt;3',
-  ];
+    'surprise' => ':o',
+    'kiss' => ':*',
+    'wink' => ';)',
+    'heart' => '<3',
+  );
 }
 
 /**
@@ -239,10 +239,10 @@ function moonmars_text_embed_links($str) {
     }
   }
 
-  return [
+  return array(
     'html' => $html,
     'urls' => $urls,
-  ];
+  );
 }
 
 /**

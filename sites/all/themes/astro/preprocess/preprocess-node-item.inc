@@ -31,13 +31,18 @@ function astro_alpha_preprocess_node_item(&$vars) {
   $vars['item'] = $item;
   $item_nid = $item->nid();
 
+  // Get the current channel:
+  $current_channel = Channel::currentChannel();
+
   // If we're on an item node page, tell the client:
   $item_node_page = (arg(0) == 'node') && (arg(1) == $item_nid);
   if ($item_node_page) {
     drupal_add_js(array('astro' => array('item_node_page' => TRUE)), 'setting');
     $current_channel = NULL;
   }
-  $vars['item_node_page'] = $item_node_page;
+
+  // Highlight the item if we're on an item page and are not highlighting a comment:
+  $vars['highlight'] = $item_node_page && !(isset($_GET['cid']) && $_GET['cid']);
 
   // Get the original poster:
   $poster = $item->creator();
@@ -71,8 +76,7 @@ function astro_alpha_preprocess_node_item(&$vars) {
   else {
     $vars['item_channel_string'] = '';
   }
-
-  $vars['item_channel_string'] .= ' [' . $item->modified()->iso() . ']';
+//  $vars['item_channel_string'] .= ' [' . $item->modified()->iso() . ']';
 
   // Format the post datetime:
   $vars['created_datetime'] = astro_format_about_how_long_ago($node->created);

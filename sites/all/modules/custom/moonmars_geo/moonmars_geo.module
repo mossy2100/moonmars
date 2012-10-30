@@ -74,12 +74,12 @@ function moonmars_geo_lookup_capital($country_code) {
   }
   // Get info about the capital city:
   $result = geonames_query('search',
-    [
-      'name'         => $country->capital,
-      'country'      => $country_code,
+    array(
+      'name' => $country->capital,
+      'country' => $country_code,
       'featureClass' => 'P',
-      'featureCode'  => 'PPLC',
-    ]
+      'featureCode' => 'PPLC',
+    )
   );
   return isset($result->results[0]) ? ((object) $result->results[0]) : FALSE;
 }
