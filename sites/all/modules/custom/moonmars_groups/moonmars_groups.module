@@ -49,8 +49,8 @@ function moonmars_groups_form_alter(&$form, &$form_state, $form_id) {
     // JS:
     $module_path = drupal_get_path('module', 'moonmars_groups');
     $form['#attached']['js'][] = "$module_path/js/group-edit-form.js";
-    $form['#attached']['js'][] = moonmars_actors_tag_prefixes();
-    $form['#attached']['js'][] = drupal_get_path('module', 'moonmars_actors') . "/js/actor-tag-check.js";
+    $form['#attached']['js'][] = moonmars_stars_tag_prefixes();
+    $form['#attached']['js'][] = drupal_get_path('module', 'moonmars_stars') . "/js/star-tag-check.js";
     $form['#attached']['js'][] = "$module_path/js/group-tag-check.js";
 
     // Hide the score:

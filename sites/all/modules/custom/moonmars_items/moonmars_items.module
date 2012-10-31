@@ -165,13 +165,13 @@ function moonmars_items_form_alter(&$form, &$form_state, $form_id) {
  *
  */
 function moonmars_items_form_submit($form, &$form_state) {
-  // Redirect back to the actor page:
+  // Redirect back to the star page:
   // Note, we don't use the item's channel here, but the current channel, as the user may be viewing the item in a
   // different channel.
   $channel = Channel::currentChannel();
-  $actor = $channel->actor();
-  if ($actor) {
-    $form_state['redirect'] = $actor->alias();
+  $star = $channel->star();
+  if ($star) {
+    $form_state['redirect'] = $star->alias();
   }
 }
 

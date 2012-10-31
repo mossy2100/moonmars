@@ -55,7 +55,7 @@ class Triumph {
 
   /**
    * Actors involved in the triumph.
-   * Keys are actor roles. Values are entities such as Member, Group, Channel, Item, ItemComment.
+   * Keys are actor roles. Values are entities such as Member, Group, Channel, Topic, Item, ItemComment, Page, etc.
    *
    * @var array
    */
@@ -267,7 +267,7 @@ class Triumph {
   /**
    * Get an actor involved in the triumph.
    *
-   * @return Entity
+   * @return IActor
    */
   public function actor($actor_role) {
     $this->actors();
@@ -307,15 +307,15 @@ class Triumph {
         break;
 
       case 'new-comment':
-        $channel = $this->actor('comment')->item()->channel();
+        $channel = $this->actor('comment')->channel();
         break;
 
       default:
         $channel = NULL;
     }
 
-    // Get the channel's parent if relevant:
-    $actor = $channel ? $channel->actor() : NULL;
+    // Get the channel's star if relevant:
+    $star = $channel ? $channel->star() : NULL;
 
     // Initialise recipients array:
     $this->recipients = new EntitySet();
@@ -377,9 +377,9 @@ class Triumph {
 
           case 'channel':
             // The only member to consider is the one whose channel the item or comment is being posted in.
-            // Note that $actor will be NULL unless this is a new-item or new-comment.
-            if ($actor && $actor instanceof Member) {
-              $candidates->add($actor);
+            // Note that $star will be NULL unless this is a new-item or new-comment.
+            if ($star && $star instanceof Member) {
+              $candidates->add($star);
             }
             break;
 
@@ -440,8 +440,8 @@ class Triumph {
               case 'new-item':
               case 'new-comment':
                 // If a new item or comment is posted in a group channel, the group:
-                if ($actor && $actor instanceof Group) {
-                  $group = $actor;
+                if ($star && $star instanceof Group) {
+                  $group = $star;
                 }
                 break;
 

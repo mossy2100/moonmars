@@ -143,8 +143,8 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
   // Common JS:
   $module_path = drupal_get_path('module', 'moonmars_members');
   $form['#attached']['js'][] = "$module_path/js/moon-or-mars.js";
-  $form['#attached']['js'][] = moonmars_actors_tag_prefixes();
-  $form['#attached']['js'][] = drupal_get_path('module', 'moonmars_actors') . "/js/actor-tag-check.js";
+  $form['#attached']['js'][] = moonmars_stars_tag_prefixes();
+  $form['#attached']['js'][] = drupal_get_path('module', 'moonmars_stars') . "/js/star-tag-check.js";
   $form['#attached']['js'][] = "$module_path/js/member-name-check.js";
 
   switch ($form_id) {
@@ -331,7 +331,7 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
  * Validation handler for the user registration form.
  */
 function moonmars_members_user_register_form_validate($form, &$form_state) {
-  if (!moonmars_actors_valid_tag($form_state['values']['name'])) {
+  if (!moonmars_stars_valid_tag($form_state['values']['name'])) {
     global $moonmars_username_desc;
     form_set_error('name', $moonmars_username_desc);
   }
@@ -381,7 +381,7 @@ function moonmars_members_user_profile_form_after_build($form) {
  * Validation handler for the user account/profile form.
  */
 function moonmars_members_user_profile_form_validate($form, &$form_state) {
-  if (!moonmars_actors_valid_tag($form_state['values']['name'])) {
+  if (!moonmars_stars_valid_tag($form_state['values']['name'])) {
     global $moonmars_username_desc;
     form_set_error('name', $moonmars_username_desc);
   }
@@ -791,7 +791,7 @@ function moonmars_members_edit_tabs_block() {
     "$edit_base/notifications" => 'Notifications',
   );
 
-  $html = "<ul id='actor-edit-tabs'>";
+  $html = "<ul id='member-edit-tabs'>";
   foreach ($tabs as $url => $label) {
     $html .= "<li><a href='/$url'";
     if ($request == $url) {

@@ -9,7 +9,7 @@ use \AstroMultimedia\Star\Style;
 /**
  * Encapsulates a moonmars.com member.
  */
-class Member extends User implements IActor {
+class Member extends User implements IStar {
 
   /**
    * The tag prefix.
@@ -90,7 +90,7 @@ class Member extends User implements IActor {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // IActor methods
+  // IStar methods
 
   /**
    * Get/set the tag.
@@ -526,7 +526,7 @@ class Member extends User implements IActor {
    */
   public function channel($create = TRUE) {
     if (!isset($this->channel)) {
-      $this->channel = moonmars_actors_get_channel($this, $create);
+      $this->channel = moonmars_stars_get_channel($this, $create);
     }
     return $this->channel;
   }
@@ -1029,45 +1029,6 @@ class Member extends User implements IActor {
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Notifications
 
-//  /**
-//   * Send a notification message to a member.
-//   *
-//   * @param string $summary
-//   * @param Entity $thing
-//   *   The thing (member, group, item or comment) that the notification is about.
-//   * @param Member $actor
-//   * @param Channel $channel
-//   * @param Item $item
-//   * @param ItemComment $comment
-//   */
-//  public function notify($summary, $thing = NULL, Member $actor = NULL) {
-//    $subject = strip_tags($summary);
-//
-//    // Create the notification node:
-//    $notification_summary = "
-//      <p class='notification-summary'>
-//        $summary
-//      </p>
-//      <p class='notification-teaser'>
-//       " . moonmars_text_trim($thing->text(), 100) . "
-//      </p>
-//    ";
-//    $notification = Nxn::create();
-//    $notification->uid($this->uid());
-//    $notification->title($subject);
-//    $notification->field('field_notification_summary', LANGUAGE_NONE, 0, 'value', $notification_summary);
-//    $notification->save();
-//
-//    $text = $thing->html();
-//
-//    $params = array(
-//      'subject' => "[moonmars.com] $subject",
-//      'summary' => "<p style='margin: 0 0 10px; color: #919191;'>$summary</p>",
-//      'text'    => "<p style='margin: 0;'>$text</p>",
-//    );
-//    drupal_mail('moonmars_nxn', 'notification', $this->mail(), language_default(), $params);
-//  }
-
   /**
    * Check what notifications a member wants of a certain type.
    * Returns an array with two keys:
@@ -1220,20 +1181,20 @@ class Member extends User implements IActor {
    * @return bool
    */
   public function canPostItem(Channel $channel) {
-    // Get the actor that owns the channel:
-    $actor = $channel->actor();
+    // Get the star that owns the channel:
+    $star = $channel->star();
 
-    if ($actor instanceof Member) {
+    if ($star instanceof Member) {
       // @todo Implement permissions so people can specify who can post in their channel.
       // If a post is blocked from a channel by permissions, then the tag appears crossed out.
 
       // The member is the only one who can post in their own channel:
-//      return $actor->equals($this);
+//      return $star->equals($this);
 
       // Members can post in each others' channels.
       return TRUE;
     }
-    elseif ($actor instanceof Group) {
+    elseif ($star instanceof Group) {
       // Only administrators can post items in the News channel.
       // @todo This should be controlled by group permission settings.
       if ($channel->nid() == MOONMARS_NEWS_CHANNEL_NID) {
@@ -1241,7 +1202,7 @@ class Member extends User implements IActor {
       }
 
       // Only members of the group can post in the group's channel:
-      return $actor->hasMember($this);
+      return $star->hasMember($this);
     }
 
     return FALSE;
@@ -1295,8 +1256,8 @@ class Member extends User implements IActor {
 
     // A group administrator can delete any item from a group.
     // (This rule will also apply to events and projects when implemented.)
-//    $actor = $channel->actor();
-//    if ($actor instanceof Group && $actor->hasAdmin($this)) {
+//    $star = $channel->star();
+//    if ($star instanceof Group && $star->hasAdmin($this)) {
 //      return TRUE;
 //    }
 
@@ -1338,14 +1299,14 @@ class Member extends User implements IActor {
       return FALSE;
     }
 
-    // Get the actor of the item's channel:
-    $actor = $channel->actor();
-    if (!$actor) {
+    // Get the star that owns the item's channel:
+    $star = $channel->star();
+    if (!$star) {
       return FALSE;
     }
 
     // If item posted in a member channel:
-    if ($actor instanceof Member) {
+    if ($star instanceof Member) {
       // Members can post comments in each other's channels.
       return TRUE;
 
@@ -1355,17 +1316,17 @@ class Member extends User implements IActor {
 //      }
 //      else {
 //        // If the item was posted in another member's channel, they can only comment on it if that member follows them:
-//        return $actor->follows($this);
+//        return $star->follows($this);
 //      }
     }
-    elseif ($actor instanceof Group) {
+    elseif ($star instanceof Group) {
       // Anyone can post comments in the News channel:
       if ($channel->nid() == MOONMARS_NEWS_CHANNEL_NID) {
         return TRUE;
       }
 
       // If posted in a group channel, the member can post comment in it if they're a member of the group:
-      return $actor->hasMember($this);
+      return $star->hasMember($this);
     }
 
     return FALSE;
@@ -1415,7 +1376,7 @@ class Member extends User implements IActor {
     }
 
     // Members can delete comments made on items posted in their channel.
-    if ($this->channel()->equals($comment->item()->channel())) {
+    if ($this->channel()->equals($comment->channel())) {
       return TRUE;
     }
 
@@ -1775,9 +1736,9 @@ class Member extends User implements IActor {
 
         $channel = $item->channel();
         if ($channel) {
-          $actor = $channel->actor();
-          if ($actor && ($actor instanceof Group)) {
-            $group = $actor;
+          $star = $channel->star();
+          if ($star && ($star instanceof Group)) {
+            $group = $star;
           }
         }
 

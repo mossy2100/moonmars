@@ -9,7 +9,7 @@ use \AstroMultimedia\Drupal\Term;
  * @author Shaun Moss (mossy2100)
  * @since 2012-10-07
  */
-class Topic extends Term implements IActor {
+class Topic extends Term implements IStar {
 
   /**
    * The tag prefix.
@@ -17,7 +17,7 @@ class Topic extends Term implements IActor {
   const TAG_PREFIX = '#';
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // IActor methods
+  // IStar methods
 
   /**
    * Get/set the tag.

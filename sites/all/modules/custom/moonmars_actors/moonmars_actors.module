@@ -1,7 +1,7 @@
 <?php
 
 use \AstroMultimedia\MoonMars\Channel;
-use \AstroMultimedia\MoonMars\IActor;
+use \AstroMultimedia\MoonMars\IStar;
 use \AstroMultimedia\MoonMars\Member;
 use \AstroMultimedia\MoonMars\Group;
 use \AstroMultimedia\MoonMars\Topic;
@@ -12,19 +12,19 @@ use \AstroMultimedia\MoonMars\Relation;
  * @author Shaun Moss (mossy2100)
  * @since 2012-09-08
  *
- * An "actor" in moonmars.com is a entity that has a channel. There are 3 types:
+ * A "star" in moonmars.com is an actor that has a channel and a tag. There are 3 types:
  *   Member (extends User)
  *   Group (extends Node)
  *   Topic (extends Term)
  *
- * This module provides functions to support working with actors.
+ * This module provides functions to support working with stars.
  */
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Constants
 
 /**
- * Define the minimum length for an actor tag.
+ * Define the minimum length for an star tag.
  * I'm using 3 here to prevent meaningless tags, but could be changed to 2 or 1. There's not really any reason not to.
  *
  * @var int
@@ -32,8 +32,8 @@ use \AstroMultimedia\MoonMars\Relation;
 const MOONMARS_ACTOR_CODE_MIN_LENGTH = 3;
 
 /**
- * Define the maximum length for an actor tag.
- * Since usernames are actor tags, we'll just use the Drupal default max length which is 60 (USERNAME_MAX_LENGTH).
+ * Define the maximum length for an star tag.
+ * Since usernames are star tags, we'll just use the Drupal default max length which is 60 (USERNAME_MAX_LENGTH).
  *
  * @var int
  */
@@ -45,10 +45,10 @@ const MOONMARS_ACTOR_CODE_MAX_LENGTH = 60;
 /**
  * Implements hook_menu().
  */
-function moonmars_actors_menu() {
+function moonmars_stars_menu() {
   $items = array();
-  $items['ajax/check-actor-tag'] = array(
-    'page callback'   => 'moonmars_actors_ajax_check_tag',
+  $items['ajax/check-star-tag'] = array(
+    'page callback'   => 'moonmars_stars_ajax_check_tag',
     'access callback' => TRUE,
     'type'            => MENU_CALLBACK,
   );
@@ -59,13 +59,13 @@ function moonmars_actors_menu() {
 // Checking member and group tags
 
 /**
- * AJAX callback to check if a actor tag is valid.
+ * AJAX callback to check if a star tag is valid.
  */
-function moonmars_actors_ajax_check_tag() {
+function moonmars_stars_ajax_check_tag() {
   // Get parameters from the query string:
-  $actor_type = isset($_REQUEST['actorType']) ? $_REQUEST['actorType'] : NULL;
-  $actor_tag = isset($_REQUEST['actorCode']) ? $_REQUEST['actorCode'] : NULL;
-  $actor_id = isset($_REQUEST['actorId']) ? $_REQUEST['actorId'] : NULL;
+  $star_type = isset($_REQUEST['starType']) ? $_REQUEST['starType'] : NULL;
+  $star_tag = isset($_REQUEST['starCode']) ? $_REQUEST['starCode'] : NULL;
+  $star_id = isset($_REQUEST['starId']) ? $_REQUEST['starId'] : NULL;
 
   // Default result:
   $data = array(
@@ -73,39 +73,39 @@ function moonmars_actors_ajax_check_tag() {
   );
 
   // Check for valid parameters:
-  if (!$actor_type || !in_array($actor_type, array('member', 'group')) || !$actor_tag) {
+  if (!$star_type || !in_array($star_type, array('member', 'group', 'topic')) || !$star_tag) {
     $data['message'] = "Invalid parameters";
     echo json_encode($data);
     return;
   }
 
   // Check for valid characters and and length:
-  if (!moonmars_actors_valid_tag($actor_tag)) {
+  if (!moonmars_stars_valid_tag($star_tag)) {
     $data['message'] = "Invalid";
     echo json_encode($data);
     return;
   }
 
-  // Check if any other actor of the same type has this tag:
-  if ($actor_type == 'member') {
+  // Check if any other star of the same type has this tag:
+  if ($star_type == 'member') {
     // Check if any other member has the same username:
     $q = db_select('users', 'u')
       ->fields('u', array('uid'))
-      ->condition('name', $actor_tag);
+      ->condition('name', $star_tag);
     // If editing a member, look for a different member with the same username:
-    if ($actor_id) {
-      $q->condition('uid', $actor_id, '!=');
+    if ($star_id) {
+      $q->condition('uid', $star_id, '!=');
     }
   }
-  elseif ($actor_type == 'group') {
+  elseif ($star_type == 'group') {
     // Check if any other group has the same tag:
     $q = db_select('node', 'n')
       ->fields('n', array('nid'));
     $q->join('field_data_field_group_tag', 'gt', "n.nid = gt.entity_id");
-    $q->condition('field_group_tag_value', $actor_tag);
+    $q->condition('field_group_tag_value', $star_tag);
     // If editing a group, look for a different group with the same tag:
-    if ($actor_id) {
-      $q->condition('nid', $actor_id, '!=');
+    if ($star_id) {
+      $q->condition('nid', $star_id, '!=');
     }
   }
 
@@ -144,7 +144,7 @@ function moonmars_actors_ajax_check_tag() {
  * @param $name
  * @return bool
  */
-function moonmars_actors_valid_tag($name) {
+function moonmars_stars_valid_tag($name) {
   return (bool) preg_match("/^[a-z0-9\-\_]{" . MOONMARS_ACTOR_CODE_MIN_LENGTH . "," . MOONMARS_ACTOR_CODE_MAX_LENGTH . "}$/i", $name);
 }
 
@@ -154,14 +154,14 @@ function moonmars_actors_valid_tag($name) {
 /**
  * Common code for resetting aliases when saving members and groups.
  *
- * @param IActor $actor
+ * @param IStar $star
  */
-function moonmars_actors_reset_aliases(IActor $actor) {
-  // Update the alias for the actor:
-  $actor->resetAlias();
+function moonmars_stars_reset_aliases(IStar $star) {
+  // Update the alias for the star:
+  $star->resetAlias();
 
-  // Update the alias and title for the actor's channel.
-  $channel = $actor->channel();
+  // Update the alias and title for the star's channel.
+  $channel = $star->channel();
   if ($channel) {
     $channel->resetAliasAndTitle();
   }
@@ -173,8 +173,8 @@ function moonmars_actors_reset_aliases(IActor $actor) {
  * Note, we use this hook instead of hook_node_insert() or hook_user_insert() as it gets called later in the cycle,
  * after pathauto_node_insert_alias() sets the alias according to the pattern.
  */
-function moonmars_actors_entity_insert($entity, $entity_type) {
-  moonmars_actors_entity_save($entity, $entity_type, TRUE);
+function moonmars_stars_entity_insert($entity, $entity_type) {
+  moonmars_stars_entity_save($entity, $entity_type, TRUE);
 }
 
 /**
@@ -190,55 +190,53 @@ function moonmars_actors_entity_insert($entity, $entity_type) {
  * We use this hook instead of hook_node_update() as it gets called later in the cycle, after
  * pathauto_node_update_alias() sets the alias according to the pattern.
  */
-function moonmars_actors_entity_update($entity, $entity_type) {
-  moonmars_actors_entity_save($entity, $entity_type, FALSE);
+function moonmars_stars_entity_update($entity, $entity_type) {
+  moonmars_stars_entity_save($entity, $entity_type, FALSE);
 }
 
 /**
- * Called when updating an actor.
+ * Called when updating an star.
  *
  * @param stdClass $entity
  * @param string $entity_type
  * @param bool $is_new
  */
-function moonmars_actors_entity_save($entity, $entity_type, $is_new) {
+function moonmars_stars_entity_save($entity, $entity_type, $is_new) {
   // Check if the entity is a member, group or (@todo) topic:
   if ($entity_type == 'user' || ($entity_type == 'node' && $entity->type == 'group')) {
 
-    // Get the actor object:
-    $actor = moonmars_objects_get_object($entity_type, $entity);
+    // Get the star object:
+    $star = moonmars_objects_get_object($entity_type, $entity);
 
     // Get the logged-in member:
     $logged_in_member = Member::loggedInMember();
 
-    if ($actor instanceof Member) {
-      $member = $actor;
+    if ($star instanceof Member) {
       if (!$is_new) {
         // Create triumphs:
-        if ($actor instanceof Member) {
-          // Only create an update-member triumph if the member is updating their own profile
-          // (i.e., not if an admin is updating someone else's profile).
-          // The reason for this is because an administrator probably won't be adding interesting info;
-          // they'll most likely just be updating a password or something.
-          if ($logged_in_member && $member->equals($logged_in_member)) {
-            // The first time a member updates their profile, send a new-member triumph. The reason why we don't do this
-            // when the user account is created, or when they confirm their email address, is because if we send new-member
-            // notifications at those times they won't contain much interesting information. The first time they update
-            // their profile, however (which they will normally do straight after they confirm their email address anyway)
-            // will probably when they enter most of their personal info. Then we send the nxn, then people will know
-            // whether they want to follow the new member or not.
-            if (!$member->newMemberTriumphCreated()) {
-              Triumph::newMember($member);
-            }
-            else {
-              Triumph::updateMember($member);
-            }
+        // Only create an update-member triumph if the member is updating their own profile
+        // (i.e., not if an admin is updating someone else's profile).
+        // The reason for this is because an administrator probably won't be adding interesting info;
+        // they'll most likely just be updating a password or something.
+        $member = $star;
+        if ($logged_in_member && $member->equals($logged_in_member)) {
+          // The first time a member updates their profile, send a new-member triumph. The reason why we don't do this
+          // when the user account is created, or when they confirm their email address, is because if we send new-member
+          // notifications at those times they won't contain much interesting information. The first time they update
+          // their profile, however (which they will normally do straight after they confirm their email address anyway)
+          // will probably when they enter most of their personal info. Then we send the nxn, then people will know
+          // whether they want to follow the new member or not.
+          if (!$member->newMemberTriumphCreated()) {
+            Triumph::newMember($member);
+          }
+          else {
+            Triumph::updateMember($member);
           }
         }
       }
     }
-    elseif ($actor instanceof Group) {
-      $group = $actor;
+    elseif ($star instanceof Group) {
+      $group = $star;
       if ($is_new) {
         // Create triumph:
         Triumph::newGroup($group);
@@ -247,44 +245,44 @@ function moonmars_actors_entity_save($entity, $entity_type, $is_new) {
       }
       else {
         // Create triumph:
-        Triumph::updateGroup($actor, $logged_in_member);
+        Triumph::updateGroup($group, $logged_in_member);
       }
     }
-    elseif ($actor instanceof Topic) {
+    elseif ($star instanceof Topic) {
       // @todo
     }
     else {
-      trigger_error("moonmars_actors_entity_save() - Actor has unknown class. Check your use statements.", E_USER_WARNING);
+      trigger_error("moonmars_stars_entity_save() - Actor has unknown class. Check your use statements.", E_USER_WARNING);
     }
 
-    // Update the actor alias and channel alias and title:
-    moonmars_actors_reset_aliases($actor);
+    // Update the star alias and channel alias and title:
+    moonmars_stars_reset_aliases($star);
   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Functions for getting and creating actor entities and channels
+// Functions for getting and creating star entities and channels
 
 /**
- * Creates a new channel for an actor.
+ * Creates a new channel for an star.
  *
- * @param IActor $actor
+ * @param IStar $star
  * @return Channel
  */
-function moonmars_actors_create_channel(IActor $actor) {
-  // Create the new channel. The 'uid' here is the uid of the owner of the actor entity, which becomes the owner of the
+function moonmars_stars_create_channel(IStar $star) {
+  // Create the new channel. The 'uid' here is the uid of the owner of the star entity, which becomes the owner of the
   // channel node. It's valid for member, group and topic, and not a bug.
   $channel = Channel::create()
     ->setProperties(array(
-    'uid' => $actor->uid(),
-    'title' => $actor->channelTitle(),
+    'uid' => $star->uid(),
+    'title' => $star->channelTitle(),
   ));
 
   // Save the node for the first time, which will give it a nid, which we need to create the relationship:
   $channel->save();
 
-  // Create the relationship between the actor and the channel:
-  Relation::createNewBinary('has_channel', $actor, $channel);
+  // Create the relationship between the star and the channel:
+  Relation::createNewBinary('has_channel', $star, $channel);
 
   // Reset the channel's alias and title. This needs to be done after creating the relationship.
   $channel->resetAliasAndTitle();
@@ -294,23 +292,23 @@ function moonmars_actors_create_channel(IActor $actor) {
 }
 
 /**
- * Get an actor's channel.
+ * Get an star's channel.
  *
- * @param IActor $actor
+ * @param IStar $star
  * @param bool $create
  * @return int
  */
-function moonmars_actors_get_channel(IActor $actor, $create = TRUE) {
-  // Check if the actor already has a channel:
-  $rels = Relation::searchBinary('has_channel', $actor, NULL);
+function moonmars_stars_get_channel(IStar $star, $create = TRUE) {
+  // Check if the star already has a channel:
+  $rels = Relation::searchBinary('has_channel', $star, NULL);
 
   if (!empty($rels)) {
     return $rels[0]->endpoint(1);
   }
 
-  // If the actor has no channel, and $create is TRUE, create the channel now:
+  // If the star has no channel, and $create is TRUE, create the channel now:
   if ($create) {
-    return moonmars_actors_create_channel($actor);
+    return moonmars_stars_create_channel($star);
   }
 
   return NULL;
@@ -321,7 +319,7 @@ function moonmars_actors_get_channel(IActor $actor, $create = TRUE) {
  *
  * @return array
  */
-function moonmars_actors_tag_prefixes() {
+function moonmars_stars_tag_prefixes() {
   return array(
     'data' => array(
       'tagPrefixes' => array(
@@ -335,12 +333,12 @@ function moonmars_actors_tag_prefixes() {
 }
 
 /**
- * Get the uid of the member whose page we're on.
- * FALSE if not a member page.
+ * If we're on a member page, get the member's uid.
+ * If we're not, return FALSE.
  *
  * @return int|bool
  */
-function moonmars_actors_get_uid_from_url() {
-  $actor = moonmars_objects_get_object_from_url();
-  return ($actor instanceof Member) ? $actor->uid() : FALSE;
+function moonmars_stars_get_uid_from_url() {
+  $star = moonmars_objects_get_object_from_url();
+  return ($star instanceof Member) ? $star->uid() : FALSE;
 }

@@ -388,23 +388,23 @@ class Nxn {
   /**
    * Render an item or comment details as HTML.
    *
-   * @param \AstroMultimedia\Drupal\IActor $actor
-   * @param \AstroMultimedia\Drupal\IActor $highlighted_actor
+   * @param IPost $post
+   * @param IPost $highlighted_post
    * @return string
    */
-  public function itemOrCommentDetails(IActor $actor, IActor $highlighted_actor) {
-    $poster = $actor->creator();
-    $highlight = $actor->equals($highlighted_actor);
+  public function itemOrCommentDetails(IPost $post, IPost $highlighted_post) {
+    $poster = $post->creator();
+    $highlight = $post->equals($highlighted_post);
     // Comments are indented 10px:
-    $margin_left = $actor instanceof Item ? 0 : '10px';
+    $margin_left = $post instanceof Item ? 0 : '10px';
     $html = "
       <div style='" . $poster->commentStyle($highlight) . " margin: 0 0 5px $margin_left; border-radius: 3px;'>
         <table style='padding: 0; border: 0; margin: 0; border-spacing: 0;'>
           <tr>
             <td style='padding: 0; border: 0; margin: 0; vertical-align: top;'>" . $poster->avatar() . "</td>
             <td style='padding: 0 0 0 5px; border: 0; margin: 0; vertical-align: top;'>
-              <div style='margin: 0; font-size: 11px;'>" . $poster->tagLink() . " <span style='color: #919191'>about " . $actor->created()->aboutHowLongAgo() . " ago</span></div>
-              <div style='margin: 10px 0 0; font-size: 12px;'>" . $actor->html() . "</div>
+              <div style='margin: 0; font-size: 11px;'>" . $poster->tagLink() . " <span style='color: #919191'>about " . $post->created()->aboutHowLongAgo() . " ago</span></div>
+              <div style='margin: 10px 0 0; font-size: 12px;'>" . $post->html() . "</div>
             </td>
           </tr>
         <table>
@@ -416,23 +416,23 @@ class Nxn {
    * Generate some HTML to display an item with comments.
    *
    * @param Item $item
-   * @param IActor $highlighted_actor
+   * @param IPost $highlighted_post
    * @return string
    */
-  public function itemDetails(Item $item, IActor $highlighted_actor) {
+  public function itemDetails(Item $item, IPost $highlighted_post) {
     $html = '';
 //    $heading_style = "padding: 0; font-size: 13px; font-weight: bold; color: black; margin: 10px 0 5px;";
 
     // Item:
 //    $html .= "<div style='$heading_style'>Item:</div>";
-    $html .= self::itemOrCommentDetails($item, $highlighted_actor);
+    $html .= self::itemOrCommentDetails($item, $highlighted_post);
 
     // Comments:
 //    $html .= "<div style='$heading_style'>Comments:</div>";
     $comments = $item->comments();
     if ($comments) {
       foreach ($comments as $comment) {
-        $html .= self::itemOrCommentDetails($comment, $highlighted_actor);
+        $html .= self::itemOrCommentDetails($comment, $highlighted_post);
       }
     }
 
@@ -452,21 +452,21 @@ class Nxn {
    * @return string
    */
   public function channelTitle(Channel $channel, Member $poster) {
-    $actor = $channel->actor();
-    if ($actor) {
-      if ($actor instanceof Member) {
-        if ($actor->equals($this->recipient)) {
+    $star = $channel->star();
+    if ($star) {
+      if ($star instanceof Member) {
+        if ($star->equals($this->recipient)) {
           $channel_name = 'your channel';
         }
-        elseif ($actor->equals($poster)) {
+        elseif ($star->equals($poster)) {
           $channel_name = "their channel";
         }
         else {
-          $channel_name = $actor->tag() . "'s channel";
+          $channel_name = $star->tag() . "'s channel";
         }
       }
-      elseif ($actor instanceof Group) {
-        $channel_name = $actor->title();
+      elseif ($star instanceof Group) {
+        $channel_name = $star->title();
       }
     }
     return $channel_name;
@@ -585,18 +585,18 @@ class Nxn {
 
     if ($channel) {
       $channel_name = $this->channelTitle($channel, $poster);
-      $actor = $channel->actor();
+      $star = $channel->star();
     }
     else {
       $channel_name = NULL;
-      $actor = NULL;
+      $star = NULL;
     }
 
     // Subject:
     $subject = $poster->tag() . " posted a new item" . ($channel ? " in $channel_name" : '');
 
     // Summary:
-    $summary = $poster->tagLink() . " posted a new $item_link" . ($actor ? (" in " . $actor->link($channel_name)) : '') . ".";
+    $summary = $poster->tagLink() . " posted a new $item_link" . ($star ? (" in " . $star->link($channel_name)) : '') . ".";
     if ($item->mentions($this->recipient)) {
       $summary .= " You were mentioned in the item.";
     }
@@ -625,11 +625,11 @@ class Nxn {
 
     if ($channel) {
       $channel_name = $this->channelTitle($channel, $comment_poster);
-      $actor = $channel->actor();
+      $star = $channel->star();
     }
     else {
       $channel_name = NULL;
-      $actor = NULL;
+      $star = NULL;
     }
 
     // Subject:
@@ -646,8 +646,8 @@ class Nxn {
     else {
       $summary .= " posted by " . $item_poster->tagLink();
     }
-    if ($actor) {
-      $summary .= " in " . $actor->link($channel_name);
+    if ($star) {
+      $summary .= " in " . $star->link($channel_name);
     }
     $summary .= ".";
     if ($comment->mentions($this->recipient)) {

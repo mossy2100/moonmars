@@ -32,11 +32,11 @@ class TextScan {
   protected $urls;
 
   /**
-   * Mentioned actors.
+   * Mentioned stars.
    *
    * @var array
    */
-  protected $actors;
+  protected $stars;
 
   /**
    * Constructor
@@ -56,12 +56,12 @@ class TextScan {
     $html = $links['html'];
     $urls = $links['urls'];
 
-    $actors = array();
+    $stars = array();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Member tags
 
-    // Regex fragments for actor tags:
+    // Regex fragments for star tags:
     $rx_tag_begin = "(^|[^\w-])";
     $rx_tag_end = "($|[^\w-])";
     $rx_tag = "([\w-]+)";
@@ -74,7 +74,7 @@ class TextScan {
         $member = Member::findByTag($tag);
         if ($member) {
           // Remember the member:
-          $actors[$member->uid()] = $member;
+          $stars[$member->uid()] = $member;
           // Replace the member mention with a link:
           $html = preg_replace("/$rx_tag_begin" . Member::TAG_PREFIX . "($tag)$rx_tag_end/i", '$1' . $member->tagLink() . '$3', $html);
         }
@@ -92,7 +92,7 @@ class TextScan {
         $group = Group::findByTag($tag);
         if ($group) {
           // Remember the group:
-          $actors[$group->nid()] = $group;
+          $stars[$group->nid()] = $group;
           // Replace the group mention with a link:
           $html = preg_replace("/$rx_tag_begin" . Group::TAG_PREFIX . "($tag)$rx_tag_end/i", '$1' . $group->tagLink() . '$3', $html);
         }
@@ -110,7 +110,7 @@ class TextScan {
         $topic = Topic::findByTag($tag);
         if ($topic) {
           // Remember the topic:
-          $actors[$topic->nid()] = $topic;
+          $stars[$topic->nid()] = $topic;
           // Replace the topic mention with a link:
           $html = preg_replace("/$rx_tag_begin" . Topic::TAG_PREFIX . "($tag)$rx_tag_end/i", '$1' . $topic->tagLink() . '$3', $html);
         }
@@ -131,7 +131,7 @@ class TextScan {
     // Set the properties:
     $this->html = $html;
     $this->urls = $urls;
-    $this->actors = $actors;
+    $this->stars = $stars;
   }
 
   /**
@@ -180,15 +180,15 @@ class TextScan {
 //  }
 
   /**
-   * Checks if the text mentions an actor.
+   * Checks if the text mentions an star.
    *
-   * @param IActor $actor
+   * @param IStar $star
    * @return bool
    */
-  public function mentions(IActor $actor) {
-    $mentioned_actors = $this->actors();
-    foreach ($mentioned_actors as $mentioned_actor) {
-      if ($actor->equals($mentioned_actor)) {
+  public function mentions(IStar $star) {
+    $mentioned_stars = $this->stars();
+    foreach ($mentioned_stars as $mentioned_star) {
+      if ($star->equals($mentioned_star)) {
         return TRUE;
       }
     }

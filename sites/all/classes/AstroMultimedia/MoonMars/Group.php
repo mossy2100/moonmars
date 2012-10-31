@@ -4,7 +4,7 @@ namespace AstroMultimedia\MoonMars;
 /**
  * Group class.
  */
-class Group extends Node implements IActor {
+class Group extends Node implements IStar {
 
   /**
    * The node type.
@@ -55,7 +55,7 @@ class Group extends Node implements IActor {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // IActor methods
+  // IStar methods
 
   /**
    * Get/set the tag.
@@ -141,7 +141,7 @@ class Group extends Node implements IActor {
    */
   public function channel($create = TRUE) {
     if (!isset($this->channel)) {
-      $this->channel = moonmars_actors_get_channel($this, $create);
+      $this->channel = moonmars_stars_get_channel($this, $create);
     }
     return $this->channel;
   }

@@ -19,11 +19,11 @@ class Channel extends Node {
   const PAGE_SIZE = 10;
 
   /**
-   * The actor this channel belongs to.
+   * The star this channel belongs to.
    *
-   * @var IActor
+   * @var IStar
    */
-  protected $actor;
+  protected $star;
 
   /**
    * Constructor.
@@ -57,56 +57,56 @@ class Channel extends Node {
   // Actor-related methods.
 
   /**
-   * Get the actor whose channel this is.
+   * Get the star whose channel this is.
    *
-   * @return IActor
+   * @return IStar
    */
-  public function actor() {
-    if (!isset($this->actor)) {
+  public function star() {
+    if (!isset($this->star)) {
       // Search for the has_channel relationship:
       $rels = Relation::searchBinary('has_channel', NULL, $this);
       if (!empty($rels)) {
-        $this->actor = $rels[0]->endpoint(0);
+        $this->star = $rels[0]->endpoint(0);
       }
     }
-    return $this->actor;
+    return $this->star;
   }
 
   /**
-   * Get a link to a channel's actor's page.
+   * Get a link to a channel's star's page.
    *
    * @return string
-   *   Or FALSE if actor not found - should never happen.
+   *   Or FALSE if star not found - should never happen.
    */
-  public function actorLink($brackets = FALSE) {
-    $actor = $this->actor();
-    if (!$actor) {
+  public function starLink($brackets = FALSE) {
+    $star = $this->star();
+    if (!$star) {
       return FALSE;
     }
 
     $label = $brackets ? ('[' . $this->title() . ']') : $this->title();
-    return l($label, $actor->alias());
+    return l($label, $star->alias());
   }
 
   /**
-   * Get the actor's name or title.
+   * Get the star's name or title.
    *
    * @return string
-   *   Or FALSE if actor not found - should never happen.
+   *   Or FALSE if star not found - should never happen.
    */
-  public function actorName() {
-    $actor = $this->actor();
-    if (!$actor) {
+  public function starName() {
+    $star = $this->star();
+    if (!$star) {
       return FALSE;
     }
 
     // Member:
-    if ($actor instanceof Member) {
-      return $actor->name();
+    if ($star instanceof Member) {
+      return $star->name();
     }
 
     // Node:
-    return $actor->title();
+    return $star->title();
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -118,14 +118,14 @@ class Channel extends Node {
    * @return string
    */
   public function resetAlias() {
-    // Get the actor:
-    $actor = $this->actor();
-    if (!$actor) {
+    // Get the star:
+    $star = $this->star();
+    if (!$star) {
       return FALSE;
     }
 
     // Set the alias:
-    $alias = $actor->alias() . '/channel';
+    $alias = $star->alias() . '/channel';
     $this->alias($alias);
 
     // Make sure pathauto doesn't clobber the new alias:
@@ -135,13 +135,13 @@ class Channel extends Node {
   }
 
   /**
-   * Reset the channel's title. Call this if the actor's tag or name changes.
+   * Reset the channel's title. Call this if the star's tag or name changes.
    *
    * @return Channel
    */
   public function resetTitle() {
-    $actor = $this->actor();
-    $title = $actor ? $actor->channelTitle() : FALSE;
+    $star = $this->star();
+    $title = $star ? $star->channelTitle() : FALSE;
     if ($title) {
       $this->title($title);
     }
@@ -149,7 +149,7 @@ class Channel extends Node {
   }
 
   /**
-   * Reset a channel's alias and title to match the actor.
+   * Reset a channel's alias and title to match the star.
    */
   public function resetAliasAndTitle() {
     $this->load();
@@ -185,17 +185,17 @@ class Channel extends Node {
   /**
    * Get the query to obtain the items linked to a channel.
    * This function is *not* for finding which items to *display* in a channel. Use the itemQuery() method in the
-   * actor for that.
+   * star class for that.
    *
    * @return SelectQuery
    */
   public function itemQuery() {
-    // Check if the actor has an itemQuery method, in which case override, and get the items display in
+    // Check if the star has an itemQuery method, in which case override, and get the items display in
     // this channel (not necessarily posted in).
     // This really needs to be refactored or something.
-    $actor = $this->actor();
-    if  ($actor && method_exists($actor, 'itemQuery')) {
-      return $actor->itemQuery();
+    $star = $this->star();
+    if  ($star && method_exists($star, 'itemQuery')) {
+      return $star->itemQuery();
     }
 
     // Get all the items posted in this channel:
@@ -384,13 +384,13 @@ class Channel extends Node {
 //  }
 
   /**
-   * Return the links for this channel's actor.
+   * Return the links for this channel's star.
    *
    * @return string
    */
   public function renderLinks() {
     $html = '';
-    $actor = $this->actor();
+    $star = $this->star();
 
     // Social links:
     $social_links = '';
@@ -399,17 +399,17 @@ class Channel extends Node {
       $link_field = $info['field'];
       $url = $this->field($link_field, LANGUAGE_NONE, 0, 'url');
       if ($url) {
-        $title = "Visit " . (($actor instanceof Member) ? $actor->name() : $actor->title()) . "'s " . $info['description'];
+        $title = "Visit " . (($star instanceof Member) ? $star->name() : $star->title()) . "'s " . $info['description'];
         $title = htmlspecialchars($title, ENT_QUOTES);
         $social_links .= "<a class='social-link social-link-{$social_site}' href='$url' target='_blank' title='$title'></a>\n";
       }
     }
 
     // Skype link:
-    if ($actor instanceof Member) {
-      $skype_name = $actor->field('field_skype');
+    if ($star instanceof Member) {
+      $skype_name = $star->field('field_skype');
       if ($skype_name) {
-        $title = htmlspecialchars("Chat with " . $actor->name() . " on Skype", ENT_QUOTES);
+        $title = htmlspecialchars("Chat with " . $star->name() . " on Skype", ENT_QUOTES);
         $social_links .= "<a class='social-link social-link-skype' href='skype:$skype_name?chat' title='$title'></a>\n";
       }
     }

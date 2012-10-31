@@ -4,7 +4,7 @@ namespace AstroMultimedia\MoonMars;
 /**
  * Encapsulates an item node.
  */
-class Item extends Node {
+class Item extends Node implements IPost {
 
   /**
    * The node type.
@@ -27,6 +27,9 @@ class Item extends Node {
    */
   protected $textScan;
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Magic methods
+
   /**
    * Constructor.
    */
@@ -35,49 +38,7 @@ class Item extends Node {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Channel
-
-  /**
-   * Get the channel where this item was posted.
-   *
-   * @return Channel
-   */
-  public function channel() {
-    if (!isset($this->channel)) {
-      $rels = Relation::searchBinary('has_item', NULL, $this);
-
-      if ($rels) {
-        $this->channel = $rels[0]->endpoint(0);
-      }
-    }
-
-    return $this->channel;
-  }
-
-  /**
-   * Update a channel-has-item relation's 'changed' field so that the item appears at the top of the channel.
-   * This should be called whenever an item is edited, and whenever a comment is posted or edited,
-   * so that the changed value in the relation always holds the time of the most recent change to the item.
-   *
-   * @todo Update this later, because we are updating the data model so that an item doesn't have only one
-   * channel, but can appear in multiple channels based on tags. Instead we will simply calculate the latest change
-   * time when creating the channel.
-   *
-   * @return bool
-   *   TRUE if the channel was found and the item was bumped; otherwise FALSE.
-   */
-  public function bump() {
-    $rels = Relation::searchBinary('has_item', NULL, $this);
-    if ($rels) {
-      $rels[0]->load();
-      $rels[0]->save();
-      return TRUE;
-    }
-    return FALSE;
-  }
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Text
+  // IPost methods
 
   /**
    * Get/set the item text.
@@ -121,11 +82,53 @@ class Item extends Node {
   /**
    * Checks if the item mentions a member, group or topic.
    *
-   * @param IActor $member
+   * @param IStar $member
    * @return bool
    */
-  public function mentions(IActor $member) {
+  public function mentions(IStar $member) {
     return $this->textScan()->mentions($member);
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Channel
+
+  /**
+   * Get the channel where this item was posted.
+   *
+   * @return Channel
+   */
+  public function channel() {
+    if (!isset($this->channel)) {
+      $rels = Relation::searchBinary('has_item', NULL, $this);
+
+      if ($rels) {
+        $this->channel = $rels[0]->endpoint(0);
+      }
+    }
+
+    return $this->channel;
+  }
+
+  /**
+   * Update a channel-has-item relation's 'changed' field so that the item appears at the top of the channel.
+   * This should be called whenever an item is edited, and whenever a comment is posted or edited,
+   * so that the changed value in the relation always holds the time of the most recent change to the item.
+   *
+   * @todo Update this later, because we are updating the data model so that an item doesn't have only one
+   * channel, but can appear in multiple channels based on tags. Instead we will simply calculate the latest change
+   * time when creating the channel.
+   *
+   * @return bool
+   *   TRUE if the channel was found and the item was bumped; otherwise FALSE.
+   */
+  public function bump() {
+    $rels = Relation::searchBinary('has_item', NULL, $this);
+    if ($rels) {
+      $rels[0]->load();
+      $rels[0]->save();
+      return TRUE;
+    }
+    return FALSE;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

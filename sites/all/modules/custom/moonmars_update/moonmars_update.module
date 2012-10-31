@@ -55,16 +55,16 @@ function moonmars_update_remove_subscriber_relationships() {
 
     if ($channel) {
       echobr("Channel " . $channel->title() . " has subscriber " . $member->name());
-      $actor = $channel->actor();
-      if ($actor instanceof Member) {
+      $star = $channel->star();
+      if ($star instanceof Member) {
         // Follows:
-        echobr("Creating/updating relationship: Member " . $member->name() . " follows " . $actor->name());
-        $rel2 = Relation::updateBinary('follows', $member, $actor, FALSE);
+        echobr("Creating/updating relationship: Member " . $member->name() . " follows " . $star->name());
+        $rel2 = Relation::updateBinary('follows', $member, $star, FALSE);
       }
-      elseif ($actor instanceof Group) {
+      elseif ($star instanceof Group) {
         // Member of a group:
-        echobr("Creating/updating relationship: Group " . $actor->title() . " has member " . $member->name());
-        $rel2 = Relation::updateBinary('has_member', $actor, $member, FALSE);
+        echobr("Creating/updating relationship: Group " . $star->title() . " has member " . $member->name());
+        $rel2 = Relation::updateBinary('has_member', $star, $member, FALSE);
         $rel2->field('field_is_admin', LANGUAGE_NONE, 0, 'value', 0);
       }
 
@@ -127,8 +127,8 @@ function moonmars_update_clean_up_channels() {
   $rs = $q->execute();
   foreach ($rs as $rec) {
     $channel = Channel::create($rec->nid);
-    $actor = $channel->actor();
-    if (!$actor) {
+    $star = $channel->star();
+    if (!$star) {
       echobr("Channel " . $channel->nid() . " title: " . $channel->title() . " has no parent");
 
       $items = $channel->items();

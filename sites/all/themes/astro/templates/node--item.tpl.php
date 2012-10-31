@@ -95,12 +95,12 @@
     </article>
     <?php
   }
-  elseif (!$logged_in_member && isset($actor) && ($actor instanceof Group) && $actor->mode() == 'open') {
+  elseif (!$logged_in_member && isset($star) && ($star instanceof Group) && $star->mode() == 'open') {
     // Tell the user they can comment if they login or register:
     ?>
     <p class='comment-instruction'>
-      <a href='/user/login?destination=<?php echo $actor->alias(); ?>'>Login</a> or
-      <a href='/register?destination=<?php echo $actor->alias(); ?>'>register</a>
+      <a href='/user/login?destination=<?php echo $star->alias(); ?>'>Login</a> or
+      <a href='/register?destination=<?php echo $star->alias(); ?>'>register</a>
       to <!-- rate and --> post comments.
     </p>
     <?php
