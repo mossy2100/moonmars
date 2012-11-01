@@ -322,8 +322,8 @@ function moonmars_groups_menu_block() {
   }
 
   // Get the group from the URL:
-  $entity = moonmars_objects_get_object_from_url();
-  $group = ($entity instanceof Group) ? $entity : (($entity instanceof Channel) ? $entity->actor() : FALSE);
+  $actor = moonmars_actors_get_actor_from_url();
+  $group = ($actor instanceof Group) ? $actor : (($actor instanceof Channel) ? $actor->star() : FALSE);
   if (!($group instanceof Group)) {
     return '';
   }
@@ -362,8 +362,8 @@ function moonmars_groups_menu_block() {
  */
 function moonmars_groups_members_block() {
   // Get the group from the URL:
-  $entity = moonmars_objects_get_object_from_url();
-  $group = ($entity instanceof Group) ? $entity : (($entity instanceof Channel) ? $entity->actor() : FALSE);
+  $actor = moonmars_actors_get_actor_from_url();
+  $group = ($actor instanceof Group) ? $actor : (($actor instanceof Channel) ? $actor->star() : FALSE);
   if (!($group instanceof Group)) {
     return '';
   }

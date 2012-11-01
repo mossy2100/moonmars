@@ -1,8 +1,6 @@
 <?php
 namespace AstroMultimedia\MoonMars;
 
-use \AstroMultimedia\Drupal\Entity;
-
 /**
  * Channel class - encapsulates a channel node.
  */
@@ -70,43 +68,6 @@ class Channel extends Node {
       }
     }
     return $this->star;
-  }
-
-  /**
-   * Get a link to a channel's star's page.
-   *
-   * @return string
-   *   Or FALSE if star not found - should never happen.
-   */
-  public function starLink($brackets = FALSE) {
-    $star = $this->star();
-    if (!$star) {
-      return FALSE;
-    }
-
-    $label = $brackets ? ('[' . $this->title() . ']') : $this->title();
-    return l($label, $star->alias());
-  }
-
-  /**
-   * Get the star's name or title.
-   *
-   * @return string
-   *   Or FALSE if star not found - should never happen.
-   */
-  public function starName() {
-    $star = $this->star();
-    if (!$star) {
-      return FALSE;
-    }
-
-    // Member:
-    if ($star instanceof Member) {
-      return $star->name();
-    }
-
-    // Node:
-    return $star->title();
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

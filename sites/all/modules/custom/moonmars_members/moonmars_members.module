@@ -25,7 +25,7 @@ function moonmars_members_init() {
 
   // String to explain username constraints:
   global $moonmars_username_desc;
-  $moonmars_username_desc = "Usernames may only contain letters, digits, hyphens and underscores (a-z, A-Z, 0-9, -_), and must be between " . MOONMARS_ACTOR_CODE_MIN_LENGTH . " and " . MOONMARS_ACTOR_CODE_MAX_LENGTH . " characters in length.";
+  $moonmars_username_desc = "Usernames may only contain letters, digits, hyphens and underscores (a-z, A-Z, 0-9, -_), and must be between " . MOONMARS_STAR_CODE_MIN_LENGTH . " and " . MOONMARS_STAR_CODE_MAX_LENGTH . " characters in length.";
 }
 
 /**
@@ -100,7 +100,7 @@ function moonmars_members_menu() {
 function moonmars_members_on_own_page() {
   // Get the logged-in member and the member whose page it is:
   $logged_in_member = Member::loggedInMember();
-  $actor = moonmars_objects_get_object_from_url();
+  $actor = moonmars_actors_get_actor_from_url();
   return $logged_in_member && $actor && $actor->equals($logged_in_member);
 }
 
@@ -110,7 +110,7 @@ function moonmars_members_on_own_page() {
  * @return bool
  */
 function moonmars_members_is_member_page() {
-  $actor = moonmars_objects_get_object_from_url();
+  $actor = moonmars_actors_get_actor_from_url();
   return $actor && ($actor instanceof Member);
 }
 
@@ -642,7 +642,7 @@ function moonmars_members_menu_block() {
   global $user;
 
   // Check we're on a member page:
-  $page_member = moonmars_objects_get_object_from_url();
+  $page_member = moonmars_actors_get_actor_from_url();
   if (!$page_member || !($page_member instanceof Member)) {
     return '';
   }
@@ -706,8 +706,8 @@ function moonmars_members_menu_block() {
  */
 function moonmars_members_groups_block() {
   // Get the member from the URL:
-  $entity = moonmars_objects_get_object_from_url();
-  $member = ($entity instanceof Member) ? $entity : (($entity instanceof Channel) ? $entity->actor() : FALSE);
+  $actor = moonmars_actors_get_actor_from_url();
+  $member = ($actor instanceof Member) ? $actor : (($actor instanceof Channel) ? $actor->star() : FALSE);
   if (!($member instanceof Member)) {
     return '';
   }
@@ -729,8 +729,8 @@ function moonmars_members_groups_block() {
  */
 function moonmars_members_followers_block() {
   // Get the member from the URL:
-  $entity = moonmars_objects_get_object_from_url();
-  $member = ($entity instanceof Member) ? $entity : (($entity instanceof Channel) ? $entity->actor() : FALSE);
+  $actor = moonmars_actors_get_actor_from_url();
+  $member = ($actor instanceof Member) ? $actor : (($actor instanceof Channel) ? $actor->star() : FALSE);
   if (!($member instanceof Member)) {
     return '';
   }
@@ -748,8 +748,8 @@ function moonmars_members_followers_block() {
  */
 function moonmars_members_followees_block() {
   // Get the member from the URL:
-  $entity = moonmars_objects_get_object_from_url();
-  $member = ($entity instanceof Member) ? $entity : (($entity instanceof Channel) ? $entity->actor() : FALSE);
+  $actor = moonmars_actors_get_actor_from_url();
+  $member = ($actor instanceof Member) ? $actor : (($actor instanceof Channel) ? $actor->star() : FALSE);
   if (!($member instanceof Member)) {
     return '';
   }
@@ -777,7 +777,7 @@ function moonmars_members_following($uid) {
  * Create the member edit menu.
  */
 function moonmars_members_edit_tabs_block() {
-  $page_member = moonmars_objects_get_object_from_url();
+  $page_member = moonmars_actors_get_actor_from_url();
   if (!$page_member instanceof Member) {
     return FALSE;
   }

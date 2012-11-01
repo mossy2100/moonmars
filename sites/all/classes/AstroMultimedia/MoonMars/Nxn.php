@@ -2,7 +2,6 @@
 namespace AstroMultimedia\MoonMars;
 
 use \stdClass;
-use \AstroMultimedia\Drupal\Entity;
 use \AstroMultimedia\Star\Style;
 
 /**
@@ -578,7 +577,9 @@ class Nxn {
    * @return array
    */
   public function generateNewItem() {
+    // Get the actors:
     $item = $this->triumph()->actor('item');
+
     $item_link = $item->link("item");
     $poster = $item->creator();
     $channel = $item->channel();
@@ -617,7 +618,9 @@ class Nxn {
    * Generate a new-comment nxn.
    */
   public function generateNewComment() {
+    // Get the actors:
     $comment = $this->triumph()->actor('comment');
+
     $item = $comment->item();
     $item_poster = $item->creator();
     $comment_poster = $comment->creator();
@@ -675,6 +678,7 @@ class Nxn {
    * @return array
    */
   public function generateNewFollower() {
+    // Get the actors:
     $follower = $this->triumph()->actor('follower');
     $followee = $this->triumph()->actor('followee');
 
@@ -715,6 +719,7 @@ class Nxn {
    * Generate a new-page nxn.
    */
   public function generateNewPage() {
+    // Get the actors:
     $page = $this->triumph()->actor('page');
     $creator = $page->creator();
 
@@ -738,6 +743,7 @@ class Nxn {
    * Generate an update-member nxn.
    */
   public function generateUpdateMember() {
+    // Get the actors:
     $member = $this->triumph()->actor('member');
 
     // Subject:

@@ -1,14 +1,14 @@
 <?php
 
-use \AstroMultimedia\Drupal\Entity;
 use \AstroMultimedia\MoonMars\Member;
 use \AstroMultimedia\MoonMars\Group;
 use \AstroMultimedia\MoonMars\Topic;
 
-
 const MOONMARS_QUICKSEARCH_MIN_LENGTH = 3;
 
-
+/**
+ * Implements hook_menu().
+ */
 function moonmars_quicksearch_menu() {
   $items['ajax/quicksearch'] = array(
     'page callback' => 'moonmars_quicksearch_ajax_search',
@@ -20,7 +20,7 @@ function moonmars_quicksearch_menu() {
 }
 
 /**
- * Implementation of hook_block_info().
+ * Implements of hook_block_info().
  */
 function moonmars_quicksearch_block_info() {
   $blocks['quicksearch-form'] = array(
@@ -31,7 +31,7 @@ function moonmars_quicksearch_block_info() {
 }
 
 /**
- * Implementation of hook_block_view().
+ * Implements of hook_block_view().
  */
 function moonmars_quicksearch_block_view($delta = '') {
   $block = array();

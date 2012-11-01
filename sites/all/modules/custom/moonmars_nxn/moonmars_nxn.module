@@ -487,7 +487,7 @@ function moonmars_nxn_list($user) {
  * @return array
  */
 function moonmars_nxn_prefs_form() {
-  $member = moonmars_objects_get_object_from_url();
+  $member = moonmars_actors_get_actor_from_url();
   if (!$member || !($member instanceof Member)) {
     drupal_not_found();
   }

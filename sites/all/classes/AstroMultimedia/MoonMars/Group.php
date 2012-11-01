@@ -156,17 +156,6 @@ class Group extends Node implements IStar {
   }
 
   /**
-   * Get a link to the group using the channel the title.
-   * Note, this produces the same result as Channel::parentEntityLink(), but sometimes you have the group object
-   * rather than the channel object.
-   *
-   * @return string
-   */
-  public function channelTitleLink() {
-    return $this->link($this->channelTitle());
-  }
-
-  /**
    * Get/set the description.
    *
    * @param string $description

@@ -13,8 +13,24 @@ class Topic extends Term implements IStar {
 
   /**
    * The tag prefix.
+   *
+   * @var string
    */
   const TAG_PREFIX = '#';
+
+  /**
+   * The vocabulary machine name, a.k.a. 'term type'. To be overridden by child classes.
+   *
+   * @var string
+   */
+  const VOCABULARY_MACHINE_NAME = 'topic';
+
+  /**
+   * The topic's channel.
+   *
+   * @var string
+   */
+  protected $channel;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // IStar methods

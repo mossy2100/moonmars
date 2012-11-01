@@ -55,7 +55,7 @@ class Triumph {
 
   /**
    * Actors involved in the triumph.
-   * Keys are actor roles. Values are entities such as Member, Group, Channel, Topic, Item, ItemComment, Page, etc.
+   * Keys are actor roles. Values are actor (IActor) objects such as Member, Group, Topic, Item, ItemComment, Page, etc.
    *
    * @var array
    */
@@ -189,10 +189,10 @@ class Triumph {
     // Insert new triumph actor records:
     foreach ($this->actors as $actor_role => $actor) {
       $actor_fields = array(
-        'triumph_id'  => $this->triumphId,
-        'actor_role'  => $actor_role,
+        'triumph_id' => $this->triumphId,
+        'actor_role' => $actor_role,
         'entity_type' => $actor->entityType(),
-        'entity_id'   => $actor->id(),
+        'entity_id' => $actor->id(),
       );
       $q3 = db_insert('moonmars_triumph_actor')
         ->fields($actor_fields);
@@ -258,7 +258,7 @@ class Triumph {
         ->condition('triumph_id', $this->triumphId);
       $rs = $q->execute();
       foreach ($rs as $rec) {
-        $this->actors[$rec->actor_role] = moonmars_objects_get_object($rec->entity_type, $rec->entity_id);
+        $this->actors[$rec->actor_role] = moonmars_actors_get_actor($rec->entity_type, $rec->entity_id);
       }
     }
     return $this->actors;
@@ -277,7 +277,7 @@ class Triumph {
   /**
    * Add an actor to the triumph.
    *
-   * @param $actor_role
+   * @param string $actor_role
    * @param IActor $actor
    * @return Triumph
    */

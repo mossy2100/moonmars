@@ -1,0 +1,4 @@
+name = moonmars.com Stars
+description = Support for "stars" (members, groups and topics) on moonmars.com.
+core = 7.x
+package = moonmars.com

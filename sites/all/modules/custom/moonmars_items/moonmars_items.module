@@ -236,7 +236,7 @@ function moonmars_items_entity_save($entity, $entity_type, $is_new) {
   if ($entity_type == 'node' && $entity->type == 'item') {
 
     // Get the Item object:
-    $item = moonmars_objects_get_object($entity_type, $entity);
+    $item = moonmars_actors_get_actor($entity_type, $entity);
 
     // If the item is new...
     if ($is_new) {

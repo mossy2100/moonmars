@@ -1618,31 +1618,30 @@ class Member extends User implements IStar {
   // Ratings
 
   /**
-   * Get/set this member's rating for an entity.
+   * Get/set this member's rating for an actor.
    *
-   * @param string $entity_type
-   * @param int $entity_id
+   * @param IActor $actor
    * @param int $new_rating
    * @return int|bool
    */
-  public function rating($entity, $new_rating = NULL) {
+  public function rating(IActor $actor, $new_rating = NULL) {
     if ($new_rating === NULL) {
-      // Get this member's rating for the entity.
-      $rels = Relation::searchBinary('rates', $this, $entity);
+      // Get this member's rating for the actor.
+      $rels = Relation::searchBinary('rates', $this, $actor);
 
       if ($rels) {
         return (int) $rels[0]->field('field_rating');
       }
 
-      // The member hasn't rated this entity yet:
+      // The member hasn't rated this actor yet:
       return FALSE;
     }
     else {
-      // Set this member's rating for the entity.
+      // Set this member's rating for the actor.
 
-      // Get the member's current rating for this entity:
-      $old_rating = $this->rating($entity);
-      // $old_rating will be FALSE if the member hasn't rated the entity yet.
+      // Get the member's current rating for this actor:
+      $old_rating = $this->rating($actor);
+      // $old_rating will be FALSE if the member hasn't rated the actor yet.
 
       $rating_names = moonmars_ratings_names();
 
@@ -1651,7 +1650,7 @@ class Member extends User implements IStar {
         'rater' => array(
           'uid' => $this->uid(),
         ),
-        'entity' => array(
+        'actor' => array(
           'old_rating'      => $old_rating,
           'old_rating_name' => $rating_names[$old_rating],
           'new_rating'      => $new_rating,
@@ -1661,30 +1660,30 @@ class Member extends User implements IStar {
 
       /////////////////////////////////////////////////////////
       // Step 1. Update the rating relationship:
-      $rel = Relation::updateBinary('rates', $this, $entity, FALSE);
+      $rel = Relation::updateBinary('rates', $this, $actor, FALSE);
       $rel->field('field_rating', LANGUAGE_NONE, 0, 'value', $new_rating);
       $rel->field('field_multiplier', LANGUAGE_NONE, 0, 'value', 1);
       $rel->save();
 
       /////////////////////////////////////////////////////////
-      // Step 2. Update the entity's score.
+      // Step 2. Update the actor's score.
 
-      // Get the entity's current score:
-      $entity_old_score = (int) $entity->field('field_score');
+      // Get the actor's current score:
+      $old_score = (int) $actor->field('field_score');
 
-      // Update the entity's total score:
-      $entity_new_score = $entity_old_score - $old_rating + $new_rating;
-      $entity->field('field_score', LANGUAGE_NONE, 0, 'value', $entity_new_score);
-      $entity->save();
+      // Update the actor's total score:
+      $new_score = $old_score - $old_rating + $new_rating;
+      $actor->field('field_score', LANGUAGE_NONE, 0, 'value', $new_score);
+      $actor->save();
 
       // Add to result:
-      $result['entity']['old_score'] = $entity_old_score;
-      $result['entity']['new_score'] = $entity_new_score;
+      $result['actor']['old_score'] = $old_score;
+      $result['actor']['new_score'] = $new_score;
 
 //      /////////////////////////////////////////////////////////
 //      // Step 3. Update the rater's score.
 //
-//      // If the rater hasn't rated this entity before, give them a point:
+//      // If the rater hasn't rated this actor before, give them a point:
 //      if ($old_rating === FALSE) {
 //        // Get the rater's current score:
 //        $rater_old_score = (int) $this->field('field_score');
@@ -1702,8 +1701,8 @@ class Member extends User implements IStar {
       /////////////////////////////////////////////////////////
       // Step 4. Update the poster's score.
 
-      // Get the entity's poster:
-      $poster = $entity->creator();
+      // Get the actor's poster:
+      $poster = $actor->creator();
 
       // Get the poster's current score:
       $poster_old_score = (int) $poster->field('field_score');
@@ -1723,11 +1722,11 @@ class Member extends User implements IStar {
 
       $item = NULL;
 
-      if ($entity instanceof ItemComment) {
-        $item = $entity->item();
+      if ($actor instanceof ItemComment) {
+        $item = $actor->item();
       }
-      elseif ($entity instanceof Item) {
-        $item = $entity;
+      elseif ($actor instanceof Item) {
+        $item = $actor;
       }
 
       if ($item) {
