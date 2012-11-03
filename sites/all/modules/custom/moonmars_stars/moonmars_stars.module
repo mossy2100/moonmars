@@ -345,14 +345,3 @@ function moonmars_stars_tag_prefixes() {
     'type' => 'setting',
   );
 }
-
-/**
- * If we're on a member page, get the member's uid.
- * If we're not, return FALSE.
- *
- * @return int|bool
- */
-function moonmars_stars_get_uid_from_url() {
-  $star = moonmars_actors_get_actor_from_url();
-  return ($star instanceof Member) ? $star->uid() : FALSE;
-}

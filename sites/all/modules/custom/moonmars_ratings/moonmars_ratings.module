@@ -1,6 +1,7 @@
 <?php
 
 use \AstroMultimedia\MoonMars\Member;
+use \AstroMultimedia\MoonMars\IActor;
 
 function moonmars_ratings_menu() {
   $items['ajax/rate'] = array(

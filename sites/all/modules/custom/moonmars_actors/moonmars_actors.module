@@ -131,3 +131,16 @@ function moonmars_actors_get_actor_from_url() {
   // Not an actor path:
   return FALSE;
 }
+
+/**
+ * If we're on a member page, get the member's uid.
+ * If we're not, return FALSE.
+ * This perhaps belongs in moonmars_members, but it's referenced from block visibility settings so it's not worth
+ * changing it.
+ *
+ * @return int|bool
+ */
+function moonmars_actors_get_uid_from_url() {
+  $actor = moonmars_actors_get_actor_from_url();
+  return ($actor instanceof Member) ? $actor->uid() : FALSE;
+}
