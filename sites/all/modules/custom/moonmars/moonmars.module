@@ -64,6 +64,7 @@ function moonmars_autoload($class_name) {
  * but as far as I can tell, has not been.
  */
 function moonmars_alias_redirect() {
+  $request = request_path();
   $alias = NULL;
   $parts = request_args();
   if (count($parts) >= 2 && in_array($parts[0], array('user', 'node')) && is_uint($parts[1])) {
@@ -95,6 +96,8 @@ function moonmars_alias_redirect() {
     }
     // Can't use drupal_goto() because if there's a destination parameter then it will screw up the redirect:
     header("Location: /$alias");
+    // Record the redirect:
+    watchdog('moonmars', "Automatic redirect from %request to %alias.", array('%request' => $request, '%alias' => $alias), WATCHDOG_NOTICE);
     exit;
   }
 }
