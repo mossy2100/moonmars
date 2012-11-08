@@ -32,11 +32,25 @@ class TextScan {
   protected $urls;
 
   /**
-   * Mentioned stars.
+   * Mentioned members.
    *
    * @var array
    */
-  protected $stars;
+  protected $members;
+
+  /**
+   * Mentioned groups.
+   *
+   * @var array
+   */
+  protected $groups;
+
+  /**
+   * Mentioned topics.
+   *
+   * @var array
+   */
+  protected $topics;
 
   /**
    * Constructor
@@ -56,8 +70,6 @@ class TextScan {
     $html = $links['html'];
     $urls = $links['urls'];
 
-    $stars = array();
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Member tags
 
@@ -68,13 +80,14 @@ class TextScan {
 
     // Scan for member tags:
     $n_members = preg_match_all("/$rx_tag_begin" . Member::TAG_PREFIX . "$rx_tag$rx_tag_end/i", $html, $matches);
+    $members = array();
     if ($n_members) {
       foreach ($matches[2] as $tag) {
         // Check if we have a member with this tag:
         $member = Member::findByTag($tag);
         if ($member) {
           // Remember the member:
-          $stars[$member->uid()] = $member;
+          $members[$member->uid()] = $member;
           // Replace the member mention with a link:
           $html = preg_replace("/$rx_tag_begin" . Member::TAG_PREFIX . "($tag)$rx_tag_end/i", '$1' . $member->tagLink() . '$3', $html);
         }
@@ -86,13 +99,14 @@ class TextScan {
 
     // Scan for tags:
     $n_groups = preg_match_all("/$rx_tag_begin" . Group::TAG_PREFIX . "$rx_tag$rx_tag_end/i", $html, $matches);
+    $groups = array();
     if ($n_groups) {
       foreach ($matches[2] as $tag) {
         // Check if we have a group with this tag:
         $group = Group::findByTag($tag);
         if ($group) {
           // Remember the group:
-          $stars[$group->nid()] = $group;
+          $groups[$group->nid()] = $group;
           // Replace the group mention with a link:
           $html = preg_replace("/$rx_tag_begin" . Group::TAG_PREFIX . "($tag)$rx_tag_end/i", '$1' . $group->tagLink() . '$3', $html);
         }
@@ -104,13 +118,14 @@ class TextScan {
 
     // Scan for tags:
     $n_topics = preg_match_all("/$rx_tag_begin" . Topic::TAG_PREFIX . "$rx_tag$rx_tag_end/i", $html, $matches);
+    $topics = array();
     if ($n_topics) {
       foreach ($matches[2] as $tag) {
         // Check if we have a topic with this tag:
         $topic = Topic::findByTag($tag);
         if ($topic) {
           // Remember the topic:
-          $stars[$topic->nid()] = $topic;
+          $topics[$topic->tid()] = $topic;
           // Replace the topic mention with a link:
           $html = preg_replace("/$rx_tag_begin" . Topic::TAG_PREFIX . "($tag)$rx_tag_end/i", '$1' . $topic->tagLink() . '$3', $html);
         }
@@ -131,7 +146,9 @@ class TextScan {
     // Set the properties:
     $this->html = $html;
     $this->urls = $urls;
-    $this->stars = $stars;
+    $this->members = $members;
+    $this->groups = $groups;
+    $this->topics = $topics;
   }
 
   /**
@@ -152,43 +169,43 @@ class TextScan {
     return $this->urls;
   }
 
-//  /**
-//   * Get the members mentioned in the item text.
-//   *
-//   * @return array
-//   */
-//  public function members() {
-//    return $this->members;
-//  }
-//
-//  /**
-//   * Get the groups mentioned in the item text.
-//   *
-//   * @return array
-//   */
-//  public function groups() {
-//    return $this->groups;
-//  }
-//
-//  /**
-//   * Get the topics mentioned in the item text.
-//   *
-//   * @return array
-//   */
-//  public function topics() {
-//    return $this->topics;
-//  }
+  /**
+   * Get the members mentioned in the item text.
+   *
+   * @return array
+   */
+  public function members() {
+    return $this->members;
+  }
 
   /**
-   * Checks if the text mentions an star.
+   * Get the groups mentioned in the item text.
    *
-   * @param IStar $star
+   * @return array
+   */
+  public function groups() {
+    return $this->groups;
+  }
+
+  /**
+   * Get the topics mentioned in the item text.
+   *
+   * @return array
+   */
+  public function topics() {
+    return $this->topics;
+  }
+
+  /**
+   * Checks if the text mentions a member.
+   *
+   * @param Member $member
    * @return bool
    */
-  public function mentions(IStar $star) {
-    $mentioned_stars = $this->stars();
-    foreach ($mentioned_stars as $mentioned_star) {
-      if ($star->equals($mentioned_star)) {
+  public function mentionsMember(Member $member) {
+    $mentioned_members = $this->members();
+    foreach ($mentioned_members as $mentioned_member) {
+      if ($member->equals($mentioned_member)) {
         return TRUE;
       }
     }

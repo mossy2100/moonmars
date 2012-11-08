@@ -15,7 +15,7 @@ interface IPost extends IActor {
 
   public function html();
 
-  public function mentions(IStar $member);
+  public function mentionsMember(Member $member);
 
   public function channel();
 }
