@@ -215,7 +215,8 @@ class Channel extends Node {
 
     // Render the pager:
     pager_default_initialize($total_n_items, self::PAGE_SIZE);
-    $pager_html = theme('pager', array('quantity' => $total_n_items));
+    //$pager_html = theme('pager', array('quantity' => $total_n_items));
+    $pager_html = theme('pager');
 
     return "
       <div id='channel'>
