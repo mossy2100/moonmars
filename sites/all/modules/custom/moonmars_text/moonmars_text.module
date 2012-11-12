@@ -25,7 +25,7 @@ function moonmars_text_emoticons() {
     'surprise' => ':o',
     'kiss' => ':*',
     'wink' => ';)',
-    'heart' => '&lt;3', //'heart' => '<3',
+    'heart' => '<3',
   );
 }
 
@@ -40,7 +40,7 @@ function moonmars_text_add_emoticons($text) {
   global $base_url;
   $emoticon_path = $base_url . '/' . drupal_get_path('theme', 'astro') . '/images/emoticons';
 
-  // Seperate the HTML entities near by emotiicon code: 1
+  // Separate the HTML entities near by emoticon code: 1
   preg_match_all('/(\&[a-zA-Z0-9]+?;\))/', $text, $matches);
   $matches_unique = array();
   foreach ($matches as $key => $match) {
@@ -50,8 +50,8 @@ function moonmars_text_add_emoticons($text) {
   }
   $matches_unique = array_unique($matches_unique);
   foreach ($matches_unique as $key => $match) {
-    $match_replace = substr_replace($match ,"",-1) . '@_moon|mars_@' . ')';
-    $text = str_replace("$match", "$match_replace", $text);
+    $match_replace = substr_replace($match , '', -1) . '@_moon|mars_@' . ')';
+    $text = str_replace($match, $match_replace, $text);
   }
 
   // Convert double-encoded HTML entities for hearts:
@@ -62,8 +62,8 @@ function moonmars_text_add_emoticons($text) {
     $text = str_replace($emoticon_code, "<img class='emoticon' src='$emoticon_path/$emoticon_name.png'>", $text);
   }
   
-  // Seperate the HTML entities near by emotiicon code: 2
-  $text = str_replace("@_moon|mars_@", '', $text);
+  // Separate the HTML entities near by emoticon code: 2
+  $text = str_replace('@_moon|mars_@', '', $text);
 
   return $text;
 }

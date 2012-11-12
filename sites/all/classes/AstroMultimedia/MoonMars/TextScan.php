@@ -48,6 +48,13 @@ class TextScan {
     // Remember the provided text:
     $this->text = $text;
 
+    // Substitute emoticons with placeholders that can't be interpreted as HTML:
+    if ($emoticons) {
+      foreach (moonmars_text_emoticons() as $emoticon_name => $emoticon_code) {
+        $text = str_replace($emoticon_code, "[[$emoticon_name]]", $text);
+      }
+    }
+
     // Convert to HTML entities:
     $html = moonmars_text_html_entities($text);
 
@@ -120,9 +127,13 @@ class TextScan {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Emoticons, symbols, newlines
 
-    // Insert emoticons if requested:
+    // Replace emoticon placeholders with images:
     if ($emoticons) {
-      $html = moonmars_text_add_emoticons($html);
+      global $base_url;
+      $emoticon_path = $base_url . '/' . drupal_get_path('theme', 'astro') . '/images/emoticons';
+      foreach (moonmars_text_emoticons() as $emoticon_name => $emoticon_code) {
+        $html = str_replace("[[$emoticon_name]]", "<img class='emoticon' src='$emoticon_path/$emoticon_name.png'>", $html);
+      }
     }
 
     // Convert newlines to break tags:
