@@ -7,7 +7,7 @@
 
     <div class='post-content-wrapper' <?php echo $content_attributes; ?>>
       <div class='post-content'>
-        <a class='post-link' href='/<?php echo $item_comment->alias(); ?>'><img src='/<?php echo $theme_path; ?>/images/link-icon.png'></a>
+        <a class='post-link' href='/<?php echo $item_comment->alias(); ?>'><img src="<?php echo base_path() . $theme_path .'/images/link-icon.png' ;?>" title="<?php print $item_comment->text(); ?>" alt="<?php print $item_comment->text(); ?>"></a>
 
         <div class='who_where_when_posted'>
           <?php

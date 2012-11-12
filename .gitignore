@@ -1,4 +1,4 @@
-# Ignore configuration files managed by Aegir.
+# Ignore configuration files managed by Aegir:
 sites/*/settings.php
 
 # Ignore paths that contain user-generated content.
