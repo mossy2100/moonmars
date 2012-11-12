@@ -718,7 +718,7 @@ function moonmars_nxn_send_outstanding() {
     'body' => $body,
   );
 //  drupal_mail('moonmars_nxn', 'report', Member::create(1)->mail(), LANGUAGE_NONE, $params);
-  watchdog('moonmars_nxn', $subject);
+//  watchdog('moonmars_nxn', $subject);
   echoln($subject);
 
   // Delete lock:

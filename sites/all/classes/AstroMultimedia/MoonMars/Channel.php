@@ -144,14 +144,12 @@ class Channel extends Node {
   }
 
   /**
-   * Get the query to obtain the items linked to a channel.
-   * This function is *not* for finding which items to *display* in a channel. Use the itemQuery() method in the
-   * star class for that.
+   * Get the query to obtain the items to display in a channel.
    *
    * @return SelectQuery
    */
   public function itemQuery() {
-    // Check if the star has an itemQuery method, in which case override, and get the items display in
+    // Check if the star has an itemQuery method, in which case override, and get the items to display in
     // this channel (not necessarily posted in).
     // This really needs to be refactored or something.
     $star = $this->star();
