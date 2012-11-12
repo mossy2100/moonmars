@@ -22,5 +22,5 @@ function astro_alpha_preprocess_user_profile(&$vars) {
   $channel = $page_member->channel();
   $channel->load();
   $vars['channel'] = $channel;
-  $vars['member_name'] = $vars['elements']['#account']->name;
+  $vars['member_tag'] = $page_member->tag(NULL, TRUE);
 }
