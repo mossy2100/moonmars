@@ -1,8 +1,15 @@
 <?php
 
-// This is set in global.inc
-//error_reporting(0);$conf['error_level'] = 32767;ini_set('display_errors', TRUE);ini_set('display_startup_errors', TRUE);
-ini_set('error_reporting', TRUE);
+// Report all errors except for strict and notices:
+error_reporting(E_ALL & ~E_STRICT & ~E_NOTICE);
+
+// Do not display errors on production:
+ini_set('display_errors', FALSE);
+ini_set('display_startup_errors', FALSE);
+
+// DEBUG - temporarily display errors.
+//ini_set('display_errors', TRUE);
+//ini_set('display_startup_errors', TRUE);
 
 // Override the setting in var/aegir/global.inc, for persistent_login:
 ini_set('session.cookie_lifetime', 0);
