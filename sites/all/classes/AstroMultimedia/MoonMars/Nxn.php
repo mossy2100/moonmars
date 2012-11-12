@@ -598,7 +598,7 @@ class Nxn {
 
     // Summary:
     $summary = $poster->tagLink() . " posted a new $item_link" . ($star ? (" in " . $star->link($channel_name)) : '') . ".";
-    if ($item->mentions($this->recipient)) {
+    if ($item->mentionsMember($this->recipient)) {
       $summary .= " You were mentioned in the item.";
     }
     // @todo add a note if the item mentions a #topic they're interested in
@@ -653,10 +653,10 @@ class Nxn {
       $summary .= " in " . $star->link($channel_name);
     }
     $summary .= ".";
-    if ($comment->mentions($this->recipient)) {
+    if ($comment->mentionsMember($this->recipient)) {
       $summary .= " You were mentioned in the comment.";
     }
-    elseif ($item->mentions($this->recipient)) {
+    elseif ($item->mentionsMember($this->recipient)) {
       $summary .= " You were mentioned in the original item.";
     }
     // @todo add a note if the item mentions a #topic they're interested in

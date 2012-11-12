@@ -80,13 +80,13 @@ class Item extends Node implements IPost {
   }
 
   /**
-   * Checks if the item mentions a member, group or topic.
+   * Checks if the item mentions a member.
    *
-   * @param IStar $member
+   * @param Member $member
    * @return bool
    */
-  public function mentions(IStar $member) {
-    return $this->textScan()->mentions($member);
+  public function mentionsMember(Member $member) {
+    return $this->textScan()->mentionsMember($member);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -244,7 +244,7 @@ class Item extends Node implements IPost {
     // Extract words:
     $words = preg_split("/[^\w]+/", $text);
     $words = array_values(array_filter($words));
-    dbg($words);
+//    dbg($words);
 
     if (!$words) {
       $alias = 'untitled';
