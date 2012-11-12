@@ -8,6 +8,7 @@ use \AstroMultimedia\MoonMars\Member;
 function astro_alpha_preprocess_user_profile(&$vars) {
   // Get the profile member:
   $page_member = Member::create($vars['elements']['#account']);
+
   $vars['page_member'] = $page_member;
 
   // Get the current member:
@@ -21,4 +22,5 @@ function astro_alpha_preprocess_user_profile(&$vars) {
   $channel = $page_member->channel();
   $channel->load();
   $vars['channel'] = $channel;
+  $vars['member_name'] = $vars['elements']['#account']->name;
 }
