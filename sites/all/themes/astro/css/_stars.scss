@@ -1,11 +1,11 @@
 
 ////////////////////////////////////////////////////////////////////////
-// Check actor code message.
+// Check star tag message.
 // Forms:
 //   - user register form
 //   - member profile edit form
 //   - group create/edit form
-#actor-tag-wrapper {
+#star-tag-wrapper {
   height: 24px;
 
   input {
@@ -20,31 +20,31 @@
     float: left;
   }
 
-  #actor-tag-prefix {
+  #star-tag-prefix {
     float: left;
     margin-left: 0;
     margin-right: 2px;
   }
 
-  #actor-tag-check {
+  #star-tag-check {
     display: none;
     color: $blue3;
     cursor: pointer;
   }
 
-  #actor-tag-message {
+  #star-tag-message {
     display: none;
 
-    &.actor-tag-valid {
+    &.star-tag-valid {
       color: $green3;
     }
 
-    &.actor-tag-invalid {
+    &.star-tag-invalid {
       color: $red3;
     }
   }
 
-  #actor-tag-waiting {
+  #star-tag-waiting {
     display: none;
     height: 20px;
     width: 16px;

@@ -46,11 +46,11 @@ class TextScan {
   protected $groups;
 
   /**
-   * Mentioned tags.
+   * Mentioned topics.
    *
    * @var array
    */
-  protected $tags;
+  protected $topics;
 
   /**
    * Constructor
@@ -61,6 +61,13 @@ class TextScan {
   public function __construct($text, $emoticons = TRUE) {
     // Remember the provided text:
     $this->text = $text;
+
+    // Substitute emoticons with placeholders that can't be interpreted as HTML:
+    if ($emoticons) {
+      foreach (moonmars_text_emoticons() as $emoticon_name => $emoticon_code) {
+        $text = str_replace($emoticon_code, "[[$emoticon_name]]", $text);
+      }
+    }
 
     // Convert to HTML entities:
     $html = moonmars_text_html_entities($text);
@@ -73,7 +80,7 @@ class TextScan {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Member tags
 
-    // Regex fragments for actor tags:
+    // Regex fragments for star tags:
     $rx_tag_begin = "(^|[^\w-])";
     $rx_tag_end = "($|[^\w-])";
     $rx_tag = "([\w-]+)";
@@ -84,11 +91,11 @@ class TextScan {
     if ($n_members) {
       foreach ($matches[2] as $tag) {
         // Check if we have a member with this tag:
-        $member = Member::createByName($tag);
+        $member = Member::findByTag($tag);
         if ($member) {
           // Remember the member:
           $members[$member->uid()] = $member;
-          // Replace the member reference with a link:
+          // Replace the member mention with a link:
           $html = preg_replace("/$rx_tag_begin" . Member::TAG_PREFIX . "($tag)$rx_tag_end/i", '$1' . $member->tagLink() . '$3', $html);
         }
       }
@@ -103,11 +110,11 @@ class TextScan {
     if ($n_groups) {
       foreach ($matches[2] as $tag) {
         // Check if we have a group with this tag:
-        $group = Group::createByTag($tag);
+        $group = Group::findByTag($tag);
         if ($group) {
           // Remember the group:
           $groups[$group->nid()] = $group;
-          // Replace the group reference with a link:
+          // Replace the group mention with a link:
           $html = preg_replace("/$rx_tag_begin" . Group::TAG_PREFIX . "($tag)$rx_tag_end/i", '$1' . $group->tagLink() . '$3', $html);
         }
       }
@@ -116,29 +123,32 @@ class TextScan {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Topic tags
 
-// @todo Since this code is a repeat of above, refactor it into a method that can be used for member, group and topic tags.
-//    // Scan for tags:
-//    $n_topics = preg_match_all("/$rx_tag_begin" . Topic::TAG_PREFIX . "$rx_tag$rx_tag_end/i", $html, $matches);
-//    $topics = array();
-//    if ($n_topics) {
-//      foreach ($matches[2] as $tag) {
-//        // Check if we have a topic with this tag:
-//        $topic = Topic::createByTag($tag);
-//        if ($topic) {
-//          // Remember the topic:
-//          $topics[$topic->nid()] = $topic;
-//          // Replace the topic reference with a link:
-//          $html = preg_replace("/$rx_tag_begin" . Topic::TAG_PREFIX . "($tag)$rx_tag_end/i", '$1' . $topic->tagLink() . '$3', $html);
-//        }
-//      }
-//    }
+    // Scan for tags:
+    $n_topics = preg_match_all("/$rx_tag_begin" . Topic::TAG_PREFIX . "$rx_tag$rx_tag_end/i", $html, $matches);
+    $topics = array();
+    if ($n_topics) {
+      foreach ($matches[2] as $tag) {
+        // Check if we have a topic with this tag:
+        $topic = Topic::findByTag($tag);
+        if ($topic) {
+          // Remember the topic:
+          $topics[$topic->tid()] = $topic;
+          // Replace the topic mention with a link:
+          $html = preg_replace("/$rx_tag_begin" . Topic::TAG_PREFIX . "($tag)$rx_tag_end/i", '$1' . $topic->tagLink() . '$3', $html);
+        }
+      }
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Emoticons, symbols, newlines
 
-    // Insert emoticons if requested:
+    // Replace emoticon placeholders with images:
     if ($emoticons) {
-      $html = moonmars_text_add_emoticons($html);
+      global $base_url;
+      $emoticon_path = $base_url . '/' . drupal_get_path('theme', 'astro') . '/images/emoticons';
+      foreach (moonmars_text_emoticons() as $emoticon_name => $emoticon_code) {
+        $html = str_replace("[[$emoticon_name]]", "<img class='emoticon' src='$emoticon_path/$emoticon_name.png'>", $html);
+      }
     }
 
     // Convert newlines to break tags:
@@ -149,7 +159,7 @@ class TextScan {
     $this->urls = $urls;
     $this->members = $members;
     $this->groups = $groups;
-    $this->tags = $tags;
+    $this->topics = $topics;
   }
 
   /**
@@ -189,12 +199,12 @@ class TextScan {
   }
 
   /**
-   * Get the tags mentioned in the item text.
+   * Get the topics mentioned in the item text.
    *
    * @return array
    */
-  public function tags() {
-    return $this->tags;
+  public function topics() {
+    return $this->topics;
   }
 
   /**
@@ -203,7 +213,7 @@ class TextScan {
    * @param Member $member
    * @return bool
    */
-  public function mentions(Member $member) {
+  public function mentionsMember(Member $member) {
     $mentioned_members = $this->members();
     foreach ($mentioned_members as $mentioned_member) {
       if ($member->equals($mentioned_member)) {

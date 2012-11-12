@@ -6,12 +6,12 @@ use \AstroMultimedia\MoonMars\Member;
  * Implements hook_menu().
  */
 function moonmars_test_menu() {
-  $items = [];
-  $items['test/wants-nxn'] = [
-    'page callback'    => 'moonmars_test_wants_nxn',
-    'access callback'  => 'user_is_superuser',
-    'type'             => MENU_CALLBACK,
-  ];
+  $items = array();
+  $items['test/wants-nxn'] = array(
+    'page callback' => 'moonmars_test_wants_nxn',
+    'access callback' => 'user_is_superuser',
+    'type' => MENU_CALLBACK,
+  );
   return $items;
 }
 

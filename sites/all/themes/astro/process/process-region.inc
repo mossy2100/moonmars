@@ -13,7 +13,7 @@ function astro_alpha_process_region(&$vars) {
       // Remove 'active' class from all links in the main menu:
       foreach ($vars['main_menu'] as &$item) {
         if (isset($item['attributes']['class'])) {
-          $item['attributes']['class'] = array_diff($item['attributes']['class'], ['active']);
+          $item['attributes']['class'] = array_diff($item['attributes']['class'], array('active'));
           break;
         }
       }

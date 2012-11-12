@@ -26,31 +26,7 @@ from
   left join node n1 on (fde1.endpoints_entity_id = n1.nid)
   left join comment c ON n1.nid = c.nid
 where r.relation_type = 'has_item'
-group by n1.nid
-
-
-CREATE or replace view view_channel_has_subscriber
-AS select
-   r.rid AS rid,
-   r.vid AS vid,
-   r.uid AS uid,
-   r.created AS created,
-   r.changed AS changed,
-   fde0.endpoints_entity_id AS channel_nid,
-   n.title as channel_title,
-   n.status as channel_status,
-   fde1.endpoints_entity_id AS subscriber_uid,
-   u.name as subscriber_name,
-   u.status as subscriber_status,
-   field_email_notification_value as email_notification
-from
-  relation r
-  left join field_data_endpoints fde0 on (r.rid = fde0.entity_id) and (fde0.endpoints_r_index = 0)
-  left join field_data_endpoints fde1 on (r.rid = fde1.entity_id) and (fde1.endpoints_r_index = 1)
-  left join field_data_field_email_notification fen on fen.entity_id = r.rid
-  left join node n on fde0.endpoints_entity_id = n.nid
-  left join users u on fde1.endpoints_entity_id = u.uid
-where r.relation_type = 'has_subscriber';
+group by n1.nid;
 
 
 CREATE or replace view view_entity_has_channel
@@ -70,17 +46,26 @@ from
 where r.relation_type = 'has_channel';
 
 
-CREATE OR REPLACE VIEW view_topic
-AS SELECT
-   t.tid,
-   t.name,
-   ftt.field_topic_title_value as title,
-   t.description
-FROM
-  taxonomy_term_data t
-  LEFT JOIN taxonomy_vocabulary tv ON t.vid = tv.vid
-  LEFT JOIN field_data_field_topic_title ftt ON t.tid = ftt.entity_id
-WHERE tv.name = 'topic'
+CREATE or replace view view_followers
+AS select
+   r.rid AS rid,
+   r.vid AS vid,
+   r.uid AS uid,
+   r.created AS created,
+   r.changed AS changed,
+   fde0.endpoints_entity_id AS follower_uid,
+   u0.name AS follower_name,
+   u0.status AS follower_status,
+   fde1.endpoints_entity_id AS followee_uid,
+   u1.name AS followee_name,
+   u1.status AS followee_status
+from
+  relation r
+  left join field_data_endpoints fde0 on ((r.rid = fde0.entity_id) and (fde0.endpoints_r_index = 0))
+  left join field_data_endpoints fde1 on ((r.rid = fde1.entity_id) and (fde1.endpoints_r_index = 1))
+  left join users u0 on fde0.endpoints_entity_id = u0.uid
+  left join users u1 on fde1.endpoints_entity_id = u1.uid
+where r.relation_type = 'follows';
 
 
 CREATE or replace view view_group
@@ -106,7 +91,7 @@ from
   left join taxonomy_term_data ttd on fs.field_scale_tid = ttd.tid
   left join view_group_has_member vgm on n.nid = vgm.group_nid
 where type = 'group'
-group by n.nid
+group by n.nid;
 
 
 CREATE or replace view view_group_has_member
@@ -131,28 +116,6 @@ from
   left join node n on fde0.endpoints_entity_id = n.nid
   left join users u on fde1.endpoints_entity_id = u.uid
 where r.relation_type = 'has_member';
-
-
-CREATE or replace view view_followers
-AS select
-   r.rid AS rid,
-   r.vid AS vid,
-   r.uid AS uid,
-   r.created AS created,
-   r.changed AS changed,
-   fde0.endpoints_entity_id AS follower_uid,
-   u0.name AS follower_name,
-   u0.status AS follower_status,
-   fde1.endpoints_entity_id AS followee_uid,
-   u1.name AS followee_name,
-   u1.status AS followee_status
-from
-  relation r
-  left join field_data_endpoints fde0 on ((r.rid = fde0.entity_id) and (fde0.endpoints_r_index = 0))
-  left join field_data_endpoints fde1 on ((r.rid = fde1.entity_id) and (fde1.endpoints_r_index = 1))
-  left join users u0 on fde0.endpoints_entity_id = u0.uid
-  left join users u1 on fde1.endpoints_entity_id = u1.uid
-where r.relation_type = 'follows';
 
 
 CREATE or replace view view_member
@@ -211,3 +174,16 @@ from
   relation r
   left join field_data_endpoints fde0 on ((r.rid = fde0.entity_id) and (fde0.endpoints_r_index = 0))
   left join field_data_endpoints fde1 on ((r.rid = fde1.entity_id) and (fde1.endpoints_r_index = 1));
+
+
+CREATE OR REPLACE VIEW view_topic
+AS SELECT
+   t.tid,
+   t.name,
+   ftt.field_topic_title_value as title,
+   t.description
+FROM
+  taxonomy_term_data t
+  LEFT JOIN taxonomy_vocabulary tv ON t.vid = tv.vid
+  LEFT JOIN field_data_field_topic_title ftt ON t.tid = ftt.entity_id
+WHERE tv.name = 'topic';

@@ -31,13 +31,18 @@ function astro_alpha_preprocess_node_item(&$vars) {
   $vars['item'] = $item;
   $item_nid = $item->nid();
 
+  // Get the current channel:
+  $current_channel = Channel::currentChannel();
+
   // If we're on an item node page, tell the client:
   $item_node_page = (arg(0) == 'node') && (arg(1) == $item_nid);
   if ($item_node_page) {
     drupal_add_js(array('astro' => array('item_node_page' => TRUE)), 'setting');
     $current_channel = NULL;
   }
-  $vars['item_node_page'] = $item_node_page;
+
+  // Highlight the item if we're on an item page and are not highlighting a comment:
+  $vars['highlight'] = $item_node_page && !(isset($_GET['cid']) && $_GET['cid']);
 
   // Get the original poster:
   $poster = $item->creator();
@@ -49,28 +54,31 @@ function astro_alpha_preprocess_node_item(&$vars) {
   // Get the item's channel:
   $item_channel = $item->channel();
   if ($item_channel) {
-    $item_channel_parent_entity = $item_channel->parentEntity();
+    $star = $item_channel->star();
     $vars['channel'] = $item_channel;
 
     // Add a note to indicate what channel the item was posted in:
     if ($current_channel && $item_channel->equals($current_channel)) {
       $vars['item_channel_string'] = 'in this channel';
     }
-    elseif ($item_channel_parent_entity->equals($poster)) {
+    elseif ($star->equals($poster)) {
       $vars['item_channel_string'] = 'in their channel';
     }
-    elseif ($item_channel_parent_entity instanceof Member) {
-      $vars['item_channel_string'] = 'in ' . $item_channel_parent_entity->tagLink() . "'s channel";
+    elseif ($star instanceof Member) {
+      $vars['item_channel_string'] = 'in ' . $star->tagLink() . "'s channel";
     }
     else {
-      $vars['item_channel_string'] = 'in ' . $item_channel_parent_entity->tagLink();
+      $vars['item_channel_string'] = 'in ' . $star->tagLink();
     }
     // Wrap it in a span tag:
     $vars['item_channel_string'] = "<span class='item_channel'>{$vars['item_channel_string']}</span>";
   }
   else {
+    $star = NULL;
     $vars['item_channel_string'] = '';
   }
+//  $vars['item_channel_string'] .= ' [' . $item->modified()->iso() . ']';
+  $vars['star'] = $star;
 
   // Format the post datetime:
   $vars['created_datetime'] = astro_format_about_how_long_ago($node->created);

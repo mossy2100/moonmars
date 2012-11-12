@@ -55,7 +55,7 @@ class Triumph {
 
   /**
    * Actors involved in the triumph.
-   * Keys are actor roles. Values are entities such as Member, Group, Channel, Item, ItemComment.
+   * Keys are actor roles. Values are actor (IActor) objects such as Member, Group, Topic, Item, ItemComment, Page, etc.
    *
    * @var array
    */
@@ -189,10 +189,10 @@ class Triumph {
     // Insert new triumph actor records:
     foreach ($this->actors as $actor_role => $actor) {
       $actor_fields = array(
-        'triumph_id'  => $this->triumphId,
-        'actor_role'  => $actor_role,
+        'triumph_id' => $this->triumphId,
+        'actor_role' => $actor_role,
         'entity_type' => $actor->entityType(),
-        'entity_id'   => $actor->id(),
+        'entity_id' => $actor->id(),
       );
       $q3 = db_insert('moonmars_triumph_actor')
         ->fields($actor_fields);
@@ -267,7 +267,7 @@ class Triumph {
   /**
    * Get an actor involved in the triumph.
    *
-   * @return Entity
+   * @return IActor
    */
   public function actor($actor_role) {
     $this->actors();
@@ -277,11 +277,11 @@ class Triumph {
   /**
    * Add an actor to the triumph.
    *
-   * @param $actor_role
-   * @param Entity $actor
+   * @param string $actor_role
+   * @param IActor $actor
    * @return Triumph
    */
-  public function addActor($actor_role, $actor) {
+  public function addActor($actor_role, IActor $actor) {
     $this->actors[$actor_role] = $actor;
     return $this;
   }
@@ -307,15 +307,15 @@ class Triumph {
         break;
 
       case 'new-comment':
-        $channel = $this->actor('comment')->item()->channel();
+        $channel = $this->actor('comment')->channel();
         break;
 
       default:
         $channel = NULL;
     }
 
-    // Get the channel's parent if relevant:
-    $parent_entity = $channel ? $channel->parentEntity() : NULL;
+    // Get the channel's star if relevant:
+    $star = $channel ? $channel->star() : NULL;
 
     // Initialise recipients array:
     $this->recipients = new EntitySet();
@@ -377,9 +377,9 @@ class Triumph {
 
           case 'channel':
             // The only member to consider is the one whose channel the item or comment is being posted in.
-            // Note that $parent_entity will be NULL unless this is a new-item or new-comment.
-            if ($parent_entity && $parent_entity instanceof Member) {
-              $candidates->add($parent_entity);
+            // Note that $star will be NULL unless this is a new-item or new-comment.
+            if ($star && $star instanceof Member) {
+              $candidates->add($star);
             }
             break;
 
@@ -440,8 +440,8 @@ class Triumph {
               case 'new-item':
               case 'new-comment':
                 // If a new item or comment is posted in a group channel, the group:
-                if ($parent_entity && $parent_entity instanceof Group) {
-                  $group = $parent_entity;
+                if ($star && $star instanceof Group) {
+                  $group = $star;
                 }
                 break;
 
@@ -565,14 +565,14 @@ class Triumph {
                     else {
                       $item = $this->actor('comment')->item();
                     }
-                    if ($item->mentions($member)) {
+                    if ($item->mentionsMember($member)) {
                       $this->recipients->add($member);
                     }
                     break;
 
                   case 'comment-mention':
                     // Applies to triumph types: new-comment.
-                    if ($this->actor('comment')->mentions($member)) {
+                    if ($this->actor('comment')->mentionsMember($member)) {
                       $this->recipients->add($member);
                     }
                     break;

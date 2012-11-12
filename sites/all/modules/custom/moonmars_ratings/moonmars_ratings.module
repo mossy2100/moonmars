@@ -1,14 +1,14 @@
 <?php
 
-use \AstroMultimedia\Drupal\Entity;
 use \AstroMultimedia\MoonMars\Member;
+use \AstroMultimedia\MoonMars\IActor;
 
 function moonmars_ratings_menu() {
-  $items['ajax/rate'] = [
-    'page callback'    => 'moonmars_ratings_ajax_rate',
-    'access callback'  => TRUE,
-    'type'             => MENU_CALLBACK,
-  ];
+  $items['ajax/rate'] = array(
+    'page callback' => 'moonmars_ratings_ajax_rate',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
   return $items;
 }
 
@@ -18,26 +18,27 @@ function moonmars_ratings_menu() {
  * @return array
  */
 function moonmars_ratings_names() {
-  return [
+  return array(
     -2 => 'warning',
     -1 => 'dislike',
 //     0 => 'meh',
-     1 => 'like',
-     2 => 'favourite',
-  ];
+    1 => 'like',
+    2 => 'favourite',
+  );
 }
 
 /**
  * Display a set of rating buttons.
  *
- * @param int $selected
+ * @param Member $member
+ * @param IActor $actor
  * @return string
  */
-function moonmars_ratings_buttons(Member $member, Entity $entity) {
-  $current_rating = $member->rating($entity);
+function moonmars_ratings_buttons(Member $member, IActor $actor) {
+  $current_rating = $member->rating($actor);
 
-  $entity_type = $entity->entityType();
-  $entity_id = $entity->id();
+  $entity_type = $actor->entityType();
+  $entity_id = $actor->id();
 
   $html = "<div id='rating-buttons-{$entity_type}-{$entity_id}' class='rating-buttons' data-entity-type='$entity_type' data-entity-id='$entity_id'>\n";
 
@@ -70,11 +71,11 @@ function moonmars_ratings_ajax_rate() {
   $logged_in_member = Member::loggedInMember();
 
   // Begin the data array:
-  $data = [
+  $data = array(
     'entity_type' => $entity_type,
     'entity_id' => $entity_id,
     'rating' => $rating,
-  ];
+  );
 
   // Check params:
   if (!$entity_type || !$entity_id || is_null($rating) || !array_key_exists($rating, moonmars_ratings_names()) || !$logged_in_member) {

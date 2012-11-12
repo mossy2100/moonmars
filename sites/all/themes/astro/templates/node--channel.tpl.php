@@ -42,7 +42,8 @@ require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'node') . '/node.page
 
               <?php
               // New item form:
-              echo render(node_add('item'));
+              $add_item_form = node_add('item');
+              echo render($add_item_form);
               ?>
 
             </div>

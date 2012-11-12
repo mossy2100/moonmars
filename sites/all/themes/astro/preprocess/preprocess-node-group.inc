@@ -26,4 +26,7 @@ function astro_alpha_preprocess_node_group(&$vars) {
 
   // Get the group description:
   $vars['description'] = $group->description();
+
+  // Get the group tag:
+  $vars['group_tag'] = $group->tag(NULL, TRUE);
 }

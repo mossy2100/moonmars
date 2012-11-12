@@ -22,7 +22,7 @@ class Style {
    * @param array $properties
    */
   public function __construct(array $properties = NULL) {
-    $this->properties = $properties ?: [];
+    $this->properties = $properties ?: array();
   }
 
   /**
@@ -32,7 +32,7 @@ class Style {
    * @return string
    */
   function inline() {
-    $pairs = [];
+    $pairs = array();
     foreach ($this->properties as $property => $value) {
       $pairs[] = "$property: $value;";
     }
@@ -85,14 +85,14 @@ class Style {
    * @return array
    */
   public function borderRadius($radius) {
-    $this->merge([
+    $this->merge(array(
       '-moz-border-radius' => $radius,
       '-webkit-border-radius' => $radius,
       '-o-border-radius' => $radius,
       '-ms-border-radius' => $radius,
       '-khtml-border-radius' => $radius,
       'border-radius' => $radius,
-    ]);
+    ));
   }
 
 }

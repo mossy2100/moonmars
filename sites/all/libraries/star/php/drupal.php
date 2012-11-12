@@ -612,7 +612,7 @@ function drupal_form_remove_group($group, &$form, &$form_state = NULL) {
  * @param $new_group
  */
 function drupal_form_move_field(&$form, $field_name, $old_group, $new_group) {
-  $form['#groups'][$old_group]->children = array_diff($form['#groups'][$old_group]->children, [$field_name]);
+  $form['#groups'][$old_group]->children = array_diff($form['#groups'][$old_group]->children, array($field_name));
   $form['#groups'][$new_group]->children[] = 'field_moon_or_mars';
   $form['#group_children'][$field_name] = $new_group;
 }

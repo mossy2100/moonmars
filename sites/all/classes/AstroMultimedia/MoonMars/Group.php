@@ -4,7 +4,7 @@ namespace AstroMultimedia\MoonMars;
 /**
  * Group class.
  */
-class Group extends Node {
+class Group extends Node implements IStar {
 
   /**
    * The node type.
@@ -44,6 +44,9 @@ class Group extends Node {
    */
   protected $members;
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Magic methods
+
   /**
    * Constructor.
    */
@@ -52,56 +55,14 @@ class Group extends Node {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Get/set
+  // IStar methods
 
   /**
-   * Get the group's channel.
+   * Get/set the tag.
    *
-   * @param bool $create
-   * @return int
-   */
-  public function channel($create = TRUE) {
-    if (!isset($this->channel)) {
-      $this->channel = moonmars_actors_get_channel($this, $create);
-    }
-    return $this->channel;
-  }
-
-  /**
-   * Get the title for the group's channel.
-   *
-   * @return string
-   */
-  public function channelTitle() {
-    return 'Group: ' . $this->title();
-  }
-
-  /**
-   * Get a link to the group using the channel the title.
-   * Note, this produces the same result as Channel::parentEntityLink(), but sometimes you have the group object
-   * rather than the channel object.
-   *
-   * @return string
-   */
-  public function channelTitleLink() {
-    return $this->link($this->channelTitle());
-  }
-
-  /**
-   * Get/set the description.
-   *
-   * @param string $description
-   * @return mixed
-   */
-  public function description($description = NULL) {
-    return $this->field('field_description', LANGUAGE_NONE, 0, 'value', $description);
-  }
-
-  /**
-   * Get/set the group tag.
-   *
-   * @param string $tag
-   * @return mixed
+   * @param null|string $tag
+   * @param bool $include_prefix
+   * @return string|Topic
    */
   public function tag($tag = NULL, $include_prefix = FALSE) {
     if ($tag === NULL) {
@@ -115,24 +76,47 @@ class Group extends Node {
   }
 
   /**
-   * Get a link to the group's profile.
-   *
-   * @param null|string $label
-   * @param bool $absolute
-   * @return string
-   */
-  public function link($label = NULL, $absolute = FALSE) {
-    $label = $label ?: $this->tag();
-    return parent::link($label, $absolute);
-  }
-
-  /**
-   * Create a link for the group using the hash tag.
+   * Create a link to the topic using the %tag for the link text.
    *
    * @return string
    */
   public function tagLink() {
     return $this->link($this->tag(NULL, TRUE));
+  }
+
+  /**
+   * Get/set the label.
+   *
+   * @param null|string $label
+   * @return string|Group
+   */
+  public function label($label = NULL) {
+    return $this->title($label);
+  }
+
+  /**
+   * Create a link to the group using the label for the link text.
+   *
+   * @return string
+   */
+  public function labelLink() {
+    return $this->link($this->label());
+  }
+
+  /**
+   * Get a group given a group tag.
+   *
+   * @static
+   * @param $tag
+   * @return Group
+   */
+  public static function findByTag($tag) {
+    $rec = db_select('field_data_field_group_tag', 'f')
+      ->fields('f', array('entity_id'))
+      ->condition('field_group_tag_value', $tag)
+      ->execute()
+      ->fetch();
+    return $rec ? self::create($rec->entity_id) : FALSE;
   }
 
   /**
@@ -147,40 +131,54 @@ class Group extends Node {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Misc static methods
-
-//  /**
-//   * Get a group given a group title.
-//   *
-//   * @static
-//   * @param $group_title
-//   * @return Channel
-//   */
-//  public static function createByTitle($group_title) {
-//    $rec = db_select('node', 'n')
-//      ->fields('n', array('nid'))
-//      ->condition('type', 'group')
-//      ->condition('title', $group_title)
-//      ->execute()
-//      ->fetch();
-//    return $rec ? self::create($rec->nid) : FALSE;
-//  }
+  // Get/set
 
   /**
-   * Get a group given a group tag.
+   * Get the group's channel.
    *
-   * @static
-   * @param $group_tag
-   * @return Group
+   * @param bool $create
+   * @return int
    */
-  public static function createByTag($group_tag) {
-    $rec = db_select('field_data_field_group_tag', 'f')
-      ->fields('f', array('entity_id'))
-      ->condition('field_group_tag_value', $group_tag)
-      ->execute()
-      ->fetch();
-    return $rec ? self::create($rec->entity_id) : FALSE;
+  public function channel($create = TRUE) {
+    if (!isset($this->channel)) {
+      $this->channel = moonmars_stars_get_channel($this, $create);
+    }
+    return $this->channel;
   }
+
+  /**
+   * Get the title for the group's channel.
+   *
+   * @return string
+   */
+  public function channelTitle() {
+    return 'Group: ' . $this->title();
+  }
+
+  /**
+   * Get/set the description.
+   *
+   * @param string $description
+   * @return mixed
+   */
+  public function description($description = NULL) {
+    return $this->field('field_description', LANGUAGE_NONE, 0, 'value', $description);
+  }
+
+  /**
+   * Get a link to the group's profile.
+   *
+   * @param null|string $label
+   * @param bool $absolute
+   * @return string
+   */
+  public function link($label = NULL, $absolute = FALSE) {
+    $label = $label ?: $this->tag();
+    return parent::link($label, $absolute);
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Static methods
 
   /**
    * Find groups by title. Only supports exact match at present.
