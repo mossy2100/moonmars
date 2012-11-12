@@ -1,6 +1,3 @@
-<?php
-drupal_set_title($group_tag);
-?>
 <article class='group'>
   <div class='group-description'>
     <?php
@@ -12,5 +9,6 @@ drupal_set_title($group_tag);
   <?php
   // Group channel:
   echo $channel->render();
+  drupal_set_title($group_tag);
   ?>
 </article>
