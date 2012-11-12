@@ -244,7 +244,7 @@ class Item extends Node implements IPost {
     // Extract words:
     $words = preg_split("/[^\w]+/", $text);
     $words = array_values(array_filter($words));
-    dbg($words);
+//    dbg($words);
 
     if (!$words) {
       $alias = 'untitled';
