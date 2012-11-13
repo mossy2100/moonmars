@@ -92,6 +92,7 @@ function moonmars_ratings_ajax_rate() {
   // Update result:
   $data['result'] = TRUE;
   $data = array_merge($data, $result);
-  echo json_encode($data);
+  //echo json_encode($data);//returns the same, but better to use drupal api.
+  drupal_json_output($data);
   return;
 }
