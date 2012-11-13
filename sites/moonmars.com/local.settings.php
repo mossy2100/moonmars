@@ -14,3 +14,4 @@ ini_set('display_startup_errors', FALSE);
 
 // Get the common settings:
 require_once DRUPAL_ROOT . '/sites/default/common.settings.php';
+
