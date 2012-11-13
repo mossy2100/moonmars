@@ -11,11 +11,14 @@
  * See COPYRIGHT.txt and LICENSE.txt.
  */
 
+// error_reporting(E_ALL & ~E_NOTICE);
+// ini_set('display_errors', TRUE);
+// ini_set('display_startup_errors', TRUE);
+
 /**
  * Root directory of Drupal installation.
  */
 define('DRUPAL_ROOT', getcwd());
-
 require_once DRUPAL_ROOT . '/includes/bootstrap.inc';
 drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
 menu_execute_active_handler();

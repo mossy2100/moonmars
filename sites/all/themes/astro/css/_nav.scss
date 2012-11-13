@@ -56,18 +56,18 @@ nav.navigation {
 }
 
 // Height of the edit tabs:
-$actor-edit-tabs-height = 23px;
+$member-edit-tabs-height = 23px;
 
-#actor-edit-tabs {
+#member-edit-tabs {
   list-style: none;
-  height: $actor-edit-tabs-height - 1;
+  height: $member-edit-tabs-height - 1;
   padding: 0;
   margin: 0 0 20px;
   border: 0;
   border-bottom: solid 1px $grey4;
 
   li {
-    height: $actor-edit-tabs-height;
+    height: $member-edit-tabs-height;
     padding: 0;
     margin: 0;
     border: 0;
@@ -79,8 +79,8 @@ $actor-edit-tabs-height = 23px;
 
     a {
       display: block;
-      height: $actor-edit-tabs-height - 2;
-      line-height: $actor-edit-tabs-height - 2;
+      height: $member-edit-tabs-height - 2;
+      line-height: $member-edit-tabs-height - 2;
       padding: 0 6px;
       margin: 0 2px;
       border: solid 1px $grey4;

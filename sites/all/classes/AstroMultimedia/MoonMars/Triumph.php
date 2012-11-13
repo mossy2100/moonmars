@@ -565,14 +565,14 @@ class Triumph {
                     else {
                       $item = $this->actor('comment')->item();
                     }
-                    if ($item->mentions($member)) {
+                    if ($item->mentionsMember($member)) {
                       $this->recipients->add($member);
                     }
                     break;
 
                   case 'comment-mention':
                     // Applies to triumph types: new-comment.
-                    if ($this->actor('comment')->mentions($member)) {
+                    if ($this->actor('comment')->mentionsMember($member)) {
                       $this->recipients->add($member);
                     }
                     break;

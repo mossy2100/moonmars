@@ -57,13 +57,13 @@ class ItemComment extends Comment implements IPost {
   }
 
   /**
-   * Checks if the comment mentions an star.
+   * Checks if the comment mentions a member.
    *
-   * @param IStar $star
+   * @param Member $member
    * @return bool
    */
-  public function mentions(IStar $star) {
-    return $this->textScan()->mentions($star);
+  public function mentionsMember(Member $member) {
+    return $this->textScan()->mentionsMember($member);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
