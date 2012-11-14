@@ -1229,11 +1229,7 @@ class Member extends User implements IStar {
    * @return bool
    */
   public function canDeleteItem(Item $item) {
-    // Check the item is valid and published:
-    if (!$item->valid() || !$item->published()) {
-      return FALSE;
-    }
-
+    
     // Check core permissions:
 //    if (user_access('administer nodes', $this->user()) || user_access('delete any item content', $this->user())) {
 //      return TRUE;
@@ -1254,6 +1250,12 @@ class Member extends User implements IStar {
       return TRUE;
     }
 
+    // Check the item is valid and published:
+    // Put behind, the valid() function seems a bit complicate
+    if (!$item->valid() || !$item->published()) {
+      return FALSE;
+    }
+    
     // A group administrator can delete any item from a group.
     // (This rule will also apply to events and projects when implemented.)
 //    $star = $channel->star();
@@ -1288,23 +1290,10 @@ class Member extends User implements IStar {
    * @return bool
    */
   public function canPostComment(Item $item) {
-    // Check the item is valid:
-    if (!$item->valid()) {
-      return FALSE;
-    }
-
-    // Get the channel where the item was originally posted:
+    
     $channel = $item->channel();
-    if (!$channel) {
-      return FALSE;
-    }
-
-    // Get the star that owns the item's channel:
     $star = $channel->star();
-    if (!$star) {
-      return FALSE;
-    }
-
+    
     // If item posted in a member channel:
     if ($star instanceof Member) {
       // Members can post comments in each other's channels.
@@ -1327,6 +1316,23 @@ class Member extends User implements IStar {
 
       // If posted in a group channel, the member can post comment in it if they're a member of the group:
       return $star->hasMember($this);
+    }
+    
+    // Check the item is valid:
+    // Put behind to member check, the valid() function seems a bit complicate
+    if (!$item->valid()) {
+      return FALSE;
+    }
+    // Get the channel where the item was originally posted: 
+    // Put behind to member check, items on member doesn't return channel on the items' own page
+    if (!$channel) {
+      return FALSE;
+    }
+    
+    // Get the star that owns the item's channel:
+    // Put behind to member check
+    if (!$star) {
+      return FALSE;
     }
 
     return FALSE;
