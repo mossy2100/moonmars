@@ -205,6 +205,15 @@ article.node-item {
       }
     }
   }
+
+  .unpublished {
+    float: left;
+    font-weight: bold;
+    background-color: $grey3;
+    color: white;
+    padding: 0 3px;
+    @include border-radius(3px);
+  }
 }
 
 .post-form-wrapper {
@@ -307,6 +316,15 @@ article.node-item {
     font-size: 11px;
     color: $grey3;
   }
+
+  &.node-unpublished {
+    background: none;
+
+    .post-article-body {
+      background-color: $grey5 !important;
+      border-color: $grey4 !important;
+    }
+  }
 }
 
 article.comment {
@@ -324,11 +342,6 @@ article.comment {
       border-color: $grey4;
       color: $grey3;
     }
-  }
-
-  .unpublished {
-    float: right;
-    color: $grey2;
   }
 
   //a {

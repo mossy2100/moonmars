@@ -114,9 +114,10 @@ class User extends Entity {
       // Reference the provided entity object:
       $user_obj->entity = $user;
       
-      // Make sure we mark the user as loaded. It may not have been saved yet, and if we load it, any changes to the
-      // user entity would be overwritten.
+      // Make sure we mark the user as loaded and valid. It may not have been saved yet, and if we load it, any
+      // changes to the user entity would be overwritten.
       $user_obj->loaded = TRUE;
+      $user_obj->valid = TRUE;
     }
 
     // If we have a user object, add to cache and return:

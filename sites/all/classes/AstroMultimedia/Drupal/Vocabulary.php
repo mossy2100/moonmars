@@ -63,6 +63,7 @@ class Vocabulary {
       $vocab = NULL;
       $vocab_obj = new Vocabulary();
       $vocab_obj->loaded = TRUE;
+      $vocab_obj->valid = TRUE;
     }
     elseif (is_uint($vocabulary_key)) {
       $vocab = taxonomy_vocabulary_load($vocabulary_key);
@@ -74,6 +75,7 @@ class Vocabulary {
       $vocab_obj = new Vocabulary();
       $vocab_obj->entity = $vocab;
       $vocab_obj->loaded = TRUE;
+      $vocab_obj->valid = TRUE;
     }
     return $vocab_obj;
   }

@@ -1215,6 +1215,11 @@ class Member extends User implements IStar {
    * @return bool
    */
   public function canEditItem(Item $item) {
+    // Check the item is valid and published:
+    if (!$item->valid() || !$item->published()) {
+      return FALSE;
+    }
+
     // For now, no-one can edit items until the UI is sorted out.
     return FALSE;
 
@@ -1229,7 +1234,11 @@ class Member extends User implements IStar {
    * @return bool
    */
   public function canDeleteItem(Item $item) {
-    
+    // Check the item is valid and published:
+    if (!$item->valid() || !$item->published()) {
+      return FALSE;
+    }
+
     // Check core permissions:
 //    if (user_access('administer nodes', $this->user()) || user_access('delete any item content', $this->user())) {
 //      return TRUE;
@@ -1290,7 +1299,11 @@ class Member extends User implements IStar {
    * @return bool
    */
   public function canPostComment(Item $item) {
-    
+    // Check the item is valid and published:
+    if (!$item->valid() || !$item->published()) {
+      return FALSE;
+    }
+
     $channel = $item->channel();
     $star = $channel->star();
     
@@ -1345,7 +1358,7 @@ class Member extends User implements IStar {
    * @return bool
    */
   public function canEditComment(ItemComment $comment) {
-    // Check the comment is valid:
+    // Check the comment is valid and published:
     if (!$comment->valid() || !$comment->published()) {
       return FALSE;
     }
@@ -1366,7 +1379,7 @@ class Member extends User implements IStar {
    * @return bool
    */
   public function canDeleteComment(ItemComment $comment) {
-    // Check the comment is valid:
+    // Check the comment is valid and published:
     if (!$comment->valid() || !$comment->published()) {
       return FALSE;
     }
