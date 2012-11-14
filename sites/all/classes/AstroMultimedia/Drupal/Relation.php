@@ -90,9 +90,10 @@ class Relation extends Entity {
       // Reference the provided entity object:
       $relation_obj->entity = $relation;
 
-      // Make sure we mark the relation as loaded. It may not have been saved yet, and if we load it, any changes to the
-      // relation entity would be overwritten.
+      // Make sure we mark the relation as loaded and valid. It may not have been saved yet, and if we load it, any
+      // changes to the relation entity would be overwritten.
       $relation_obj->loaded = TRUE;
+      $relation_obj->valid = TRUE;
     }
 
     // If we have a relation object, add to cache and return:

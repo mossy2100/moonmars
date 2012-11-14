@@ -41,6 +41,10 @@
 
     <div class='post-controls top-post-controls'>
 
+      <?php if (!$node->status) { ?>
+        <div class='unpublished'>unpublished</div>
+      <?php } ?>
+
       <?php
       echo $rating_buttons;
       ?>

@@ -42,6 +42,10 @@
 
     <div class='post-controls top-post-controls' style='<?php echo $poster->commentBorderStyle($highlight); ?>'>
 
+      <?php if (!$item_comment->published()) { ?>
+      <div class='unpublished'>unpublished</div>
+      <?php } ?>
+
       <?php
       echo $rating_buttons;
       ?>
@@ -49,10 +53,6 @@
       <div class='score-wrapper'>
         Score: <span class='score score-comment-<?php echo $item_comment->cid(); ?>'><?php echo $score; ?></span>
       </div>
-
-      <?php if (!$item_comment->published()) { ?>
-        <div class='unpublished'>unpublished</div>
-      <?php } ?>
 
       <?php
       // Links for edit/delete comment:

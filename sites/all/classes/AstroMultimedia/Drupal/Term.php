@@ -122,9 +122,10 @@ class Term extends Entity {
       // Reference the provided entity object:
       $term_obj->entity = $term;
 
-      // Make sure we mark the term as loaded. It may not have been saved yet, and if we load it, any changes to the
-      // term entity would be overwritten.
+      // Make sure we mark the term as loaded and valid. It may not have been saved yet, and if we load it, any
+      // changes to the term entity would be overwritten.
       $term_obj->loaded = TRUE;
+      $term_obj->valid = TRUE;
     }
 
     // If we have a term object, add to cache and return:

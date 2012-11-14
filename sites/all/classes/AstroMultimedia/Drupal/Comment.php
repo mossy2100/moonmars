@@ -101,9 +101,10 @@ class Comment extends Entity {
       // Reference the provided entity object:
       $comment_obj->entity = $comment;
 
-      // Make sure we mark the comment as loaded. It may not have been saved yet, and if we load it, any changes to the
-      // comment entity would be overwritten.
+      // Make sure we mark the comment as loaded and valid. It may not have been saved yet, and if we load it, any
+      // changes to the comment entity would be overwritten.
       $comment_obj->loaded = TRUE;
+      $comment_obj->valid = TRUE;
     }
 
     // If we have a comment object, add to cache and return:
