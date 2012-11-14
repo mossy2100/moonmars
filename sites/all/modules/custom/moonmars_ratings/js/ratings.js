@@ -32,7 +32,8 @@ function rateEntityReturn(data, textStatus, jqXHR) {
   else {
 
     // Update the entity's score:
-    $('.score-' + data.entity_type + '-' + data.entity_id).text(data.entity.new_score);
+    //$('.score-' + data.entity_type + '-' + data.entity_id).text(data.entity.new_score);
+    $('.score-' + data.entity_type + '-' + data.entity_id).text(data.actor.new_score);
 
 //    // Update the rater's score:
 //    if (data.rater.new_score !== undefined) {

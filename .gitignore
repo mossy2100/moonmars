@@ -7,3 +7,7 @@ sites/*/private
 
 # Ignore PhpStorm files
 .idea
+
+# Ignore files created by security_review
+sites/all/modules/contrib/security-review/IGNOREME.txt
+sites/all/modules/contrib/security-review/file_write_test.*
