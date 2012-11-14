@@ -320,7 +320,7 @@ article.node-item {
   &.node-unpublished {
     background: none;
 
-    .post-article-body {
+    & > .post-article-body {
       background-color: $grey5 !important;
       border-color: $grey4 !important;
     }

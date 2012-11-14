@@ -1,6 +1,8 @@
 <?php
 
 use \AstroMultimedia\MoonMars\Member;
+use \AstroMultimedia\MoonMars\Group;
+use \AstroMultimedia\MoonMars\Topic;
 use \AstroMultimedia\MoonMars\Channel;
 use \AstroMultimedia\MoonMars\Item;
 use \AstroMultimedia\MoonMars\Triumph;
@@ -373,6 +375,27 @@ function moonmars_items_ajax_delete() {
   // Don't actually delete the item, just unpublish it:
   $item->unpublish();
   $item->save();
+
+  // Get the return channel. Default to the item's channel:
+  $channel = $item->channel();
+  // If for some reason the item doesn't have a channel (should never happen), return to the current channel:
+  if (!$channel) {
+    $channel = Channel::currentChannel();
+  }
+  // Last resort, return to the logged-in member's channel:
+  if (!$channel) {
+    $channel = $logged_in_member->channel();
+  }
+
+  // Get the star info:
+  $star = $channel->star();
+  $data['star_path'] = '/' . $star->alias();
+  if ($star instanceof Member) {
+    $data['star_label'] = '<em>' . $star->label() . "</em>'s channel";
+  }
+  else {
+    $data['star_label'] = 'the <em>' . $star->label() . '</em> channel';
+  }
 
   // Complete data array, encode and send:
   $data['result'] = TRUE;
