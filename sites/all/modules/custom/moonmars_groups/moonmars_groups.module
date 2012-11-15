@@ -3,6 +3,7 @@
 use \AstroMultimedia\MoonMars\Member;
 use \AstroMultimedia\MoonMars\Group;
 use \AstroMultimedia\MoonMars\Channel;
+use \AstroMultimedia\MoonMars\Triumph;
 
 /**
  * Number of groups to show per page in a group search.
@@ -64,8 +65,19 @@ function moonmars_groups_form_alter(&$form, &$form_state, $form_id) {
         '#attributes' => array('id' => 'nid'),
       );
     }
+    // Add submit handler to send Triumph Nxn
+    $form['actions']['submit']['#submit'][] = 'moonmars_group_update_nxn_form_submit';
+    //dpm($form);dpm($form_state);
+  }
+}
 
-//    dbg($form);
+function moonmars_group_update_nxn_form_submit($form, &$form_state) {
+  if (isset($form_state['nid'])) {
+    $nid = $form_state['nid'];
+    $node = node_load($nid);
+    $group = Group::create($node);
+    $logged_in_member = Member::loggedInMember();
+    Triumph::updateGroup($group, $logged_in_member);
   }
 }
 

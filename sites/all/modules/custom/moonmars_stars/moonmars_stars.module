@@ -259,7 +259,8 @@ function moonmars_stars_entity_save($entity, $entity_type, $is_new) {
       }
       else {
         // Create triumph:
-        Triumph::updateGroup($group, $logged_in_member);
+        //moved to moonmars_groups.module
+        //Triumph::updateGroup($group, $logged_in_member);
       }
     }
     elseif ($star instanceof Topic) {
