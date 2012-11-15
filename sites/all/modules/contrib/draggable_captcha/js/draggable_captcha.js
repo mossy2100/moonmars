@@ -28,10 +28,11 @@
         });
 
         //On double-click of object
+        $('#captchaWrapper').find('.draggable').unbind('click');
         $('.draggable').bind('click', function(event, ui) {
           $('#edit-captcha-response').val($(this).attr('id'));
           $('#captchaWrapper').find('.draggable').draggable('disable');
-          $('#captchaWrapper').find('.draggable').unbind('click');
+         // $('#captchaWrapper').find('.draggable').unbind('click');
           $('#captchaWrapper').find('.targetWrapper').children('.target').hide();
           $(this).removeClass('draggable');
           $(this).addClass('target');
