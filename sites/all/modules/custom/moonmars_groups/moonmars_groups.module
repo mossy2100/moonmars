@@ -67,7 +67,6 @@ function moonmars_groups_form_alter(&$form, &$form_state, $form_id) {
     }
     // Add submit handler to send Triumph Nxn
     $form['actions']['submit']['#submit'][] = 'moonmars_group_update_nxn_form_submit';
-    //dpm($form);dpm($form_state);
   }
 }
 
