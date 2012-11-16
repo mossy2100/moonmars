@@ -398,11 +398,11 @@ class Nxn {
     $margin_left = $post instanceof Item ? 0 : '10px';
     $html = "
       <div style='" . $poster->commentStyle($highlight) . " margin: 0 0 5px $margin_left; border-radius: 3px;'>
-        <table style='padding: 0; border: 0; margin: 0; border-spacing: 0; width: 100%;'>
+        <div style='margin: 0 0 0 10px; float: right;'><a class='post-link' href='" . $GLOBALS['base_url'] . '/' . $post->alias() . "'><img src='" . $GLOBALS['base_url'] . '/' . path_to_theme() . "/images/link-icon.png' title='" . $post->text() . "'></a></div>
+        <table style='padding: 0; border: 0; margin: 0; border-spacing: 0;'>
           <tr>
             <td style='padding: 0; border: 0; margin: 0; vertical-align: top;'>" . $poster->avatar() . "</td>
             <td style='padding: 0 0 0 5px; border: 0; margin: 0; vertical-align: top;'>
-              <div style='margin: 0 0 0 10px; float: right;'><a class='post-link' href='" . $GLOBALS['base_url'] . '/' . $post->alias() . "'><img src='" . $GLOBALS['base_url'] . '/' . path_to_theme() . "/images/link-icon.png' title='" . $post->text() . "'></a></div>
               <div style='margin: 0; font-size: 11px;'>" . $poster->tagLink() . "
                 <span style='color: #919191'>about " . $post->created()->aboutHowLongAgo() . " ago</span>
               </div>
