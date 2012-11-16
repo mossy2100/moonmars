@@ -292,6 +292,8 @@ class Item extends Node implements IPost {
         break;
       }
     }
+    
+    $alias = 'item/' . $alias;
 
     //echobr($alias);
     $this->alias($alias);
