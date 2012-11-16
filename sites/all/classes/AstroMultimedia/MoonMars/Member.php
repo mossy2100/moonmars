@@ -1220,22 +1220,16 @@ class Member extends User implements IStar {
       return FALSE;
     }
     
-    // An administrator can delete any item:
+    // An administrator can edit any item:
     if ($this->isAdmin()) {
       return TRUE;
     }
     
-    // A member can delete an item if they posted it.
+    // A member can edit an item if they posted it.
     if ($this->equals($item->creator())) {
       return TRUE;
     }
     
-    // A member can delete any item posted in their channel.
-    if ($this->channel()->equals($item->channel())) {
-      return TRUE;
-    }
-
-    // For now, no-one can edit items until the UI is sorted out.
     return FALSE;
 
     // This function will probably change to this code here, but need to think about the UI.

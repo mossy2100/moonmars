@@ -114,7 +114,7 @@ function moonmars_items_form_alter(&$form, &$form_state, $form_id) {
 
       // Submit handler.
       $form['actions']['submit']['#submit'][] = 'moonmars_items_form_submit';
-      // js item form needed
+      // this js contains function needed by item form
       $form['actions']['#attached']['js'][] = array(
         'data' => drupal_get_path('module', 'moonmars_channels') . '/js/moonmars-channels.js',
         'type' => 'file'
