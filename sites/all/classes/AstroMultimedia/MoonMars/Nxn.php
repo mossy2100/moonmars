@@ -403,8 +403,9 @@ class Nxn {
             <td style='padding: 0; border: 0; margin: 0; vertical-align: top;'>" . $poster->avatar() . "</td>
             <td style='padding: 0 0 0 5px; border: 0; margin: 0; vertical-align: top;'>
               <div style='margin: 0; font-size: 11px;'>" . $poster->tagLink() . " 
-                <span style='color: #919191'>about " . $post->created()->aboutHowLongAgo() . " ago</span><span style='margin: 0 0 0 10px;'><a class='post-link' href='" . $GLOBALS['base_url'] . '/' . $post->alias() . "'><img src='" . $GLOBALS['base_url'] . '/' . path_to_theme() . "/images/link-icon.png' title='" . $post->text() . "'></a></span>
+                <span style='color: #919191'>about " . $post->created()->aboutHowLongAgo() . " ago</span>
               </div>
+              <div style='margin: 0 0 0 10px; float: right;'><a class='post-link' href='" . $GLOBALS['base_url'] . '/' . $post->alias() . "'><img src='" . $GLOBALS['base_url'] . '/' . path_to_theme() . "/images/link-icon.png' title='" . $post->text() . "'></a></div>
               <div style='margin: 10px 0 0; font-size: 12px;'>" . $post->html() . "</div>
             </td>
           </tr>
