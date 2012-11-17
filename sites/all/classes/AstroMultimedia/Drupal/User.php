@@ -428,6 +428,11 @@ class User extends Entity {
    * @return bool
    */
   public function isLoggedInUser() {
+    dpm(user_is_logged_in(), 'user_is_logged_in()');
+    dpm($this->uid(), '$this->uid()');
+    dpm($GLOBALS['user']->uid, '$GLOBALS[user]->uid');
+    dpm(user_is_logged_in() && $this->uid() == $GLOBALS['user']->uid, 'isLoggedInUser()');
+
     return user_is_logged_in() && $this->uid() == $GLOBALS['user']->uid;
   }
 
