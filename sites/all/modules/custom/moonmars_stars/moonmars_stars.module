@@ -253,7 +253,7 @@ function moonmars_stars_entity_save($entity, $entity_type, $is_new) {
       }
     }
     elseif ($star instanceof Group) {
-      // Code moved from here to οmoonmars_group_update_nxn_form_submit().
+      // Code moved from here to moonmars_group_update_nxn_form_submit().
       // Nothing else to do here specific to groups, just reset aliases.
     }
     elseif ($star instanceof Topic) {
