@@ -417,6 +417,7 @@ class Triumph {
 
             // Add the member's followers:
             if ($followee) {
+              dpm($followee->followers());
               $candidates->add($followee->followers());
             }
             break;

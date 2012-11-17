@@ -416,7 +416,7 @@ function moonmars_members_user_profile_form_submit($form, &$form_state) {
   }
 
   // Go back to the user's profile:
-//  $form_state['redirect'] = $member->alias();
+  $form_state['redirect'] = $member->alias();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
