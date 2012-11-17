@@ -457,7 +457,6 @@ function moonmars_update_add_everyone_to_site_news() {
   $members = Member::all(TRUE);
   $moonmars_news_group = Group::findByTag('moonmars-news');
   foreach ($members as $member) {
-//    dbg($member);
     echo "Adding " . $member->tag() . " to " . $moonmars_news_group->tag() . "<br>";
     $member->joinGroup($moonmars_news_group, FALSE);
   }
