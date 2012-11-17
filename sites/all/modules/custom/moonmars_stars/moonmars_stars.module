@@ -211,6 +211,9 @@ function moonmars_stars_entity_update($entity, $entity_type) {
 /**
  * Called when updating an star.
  *
+ * The reason why this is done here (called by hook_entity_insert and hook_entity_update) is because setting aliases
+ * here will override behaviour by pathauto.
+ *
  * @param stdClass $entity
  * @param string $entity_type
  * @param bool $is_new
@@ -250,18 +253,8 @@ function moonmars_stars_entity_save($entity, $entity_type, $is_new) {
       }
     }
     elseif ($star instanceof Group) {
-      $group = $star;
-      if ($is_new) {
-        // Create triumph:
-        Triumph::newGroup($group);
-        // Add the creator as group admin:
-        $group->addAdmin(Member::loggedInMember());
-      }
-      else {
-        // Create triumph:
-        //moved to moonmars_groups.module
-        //Triumph::updateGroup($group, $logged_in_member);
-      }
+      // Code moved from here to οmoonmars_group_update_nxn_form_submit().
+      // Nothing else to do here specific to groups, just reset aliases.
     }
     elseif ($star instanceof Topic) {
       // @todo

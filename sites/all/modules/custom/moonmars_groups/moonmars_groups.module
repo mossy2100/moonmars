@@ -74,10 +74,19 @@ function moonmars_groups_form_group_node_form_alter(&$form, &$form_state) {
  * @param array $form_state
  */
 function moonmars_group_update_nxn_form_submit($form, &$form_state) {
-  // Tell everyone that the group profile has been updated:
   $group = Group::create($form_state['node']);
-  $logged_in_member = Member::loggedInMember();
-  Triumph::updateGroup($group, $logged_in_member);
+  $is_new = !isset($form['#node']->nid);
+  if ($is_new) {
+    // Tell everyone about the new group:
+    Triumph::newGroup($group);
+    // Add the creator as group admin:
+    $group->addAdmin(Member::loggedInMember());
+  }
+  else {
+    // Tell everyone that the group profile has been updated:
+    $logged_in_member = Member::loggedInMember();
+    Triumph::updateGroup($group, $logged_in_member);
+  }
 }
 
 /**
@@ -87,9 +96,8 @@ function moonmars_group_update_nxn_form_submit($form, &$form_state) {
  * @return bool
  */
 function moonmars_groups_is_group_page() {
-  if (arg(0) == 'node' && is_uint(arg(1)) && arg(2) != 'edit') {
-    $node = node_load(arg(1));
-    return $node->type == 'group';
+  if (arg(0) == 'node' && is_pint(arg(1)) && arg(2) != 'edit') {
+    return node_get_type(arg(1)) == 'group';
   }
   return FALSE;
 }
