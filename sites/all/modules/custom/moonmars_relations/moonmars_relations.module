@@ -13,46 +13,6 @@ function moonmars_relations_menu() {
   return $items;
 }
 
-///**
-// * Implements hook_form_alter().
-// */
-//function moonmars_relations_form_alter(&$form, &$form_state, $form_id) {
-//  dbg($form_id);
-//
-//
-//  if ($form_id != 'relation_edit_form') {
-//    return;
-//  }
-//
-//  $entity = $form_state['relation'];
-//  $rid = $entity->rid;
-//  $relation_type = $entity->relation_type;
-//
-//  // Alter form for group-has-member relations:
-//  if ($relation_type == 'has_member') {
-//
-//    $group_nid = $entity->endpoints[LANGUAGE_NONE][0]['entity_id'];
-//
-//    // Set the page title:
-//    if ($group_nid == MOONMARS_DEFAULT_GROUP_NID) {
-//      drupal_set_title("Default email preferences for groups");
-//    }
-//    else {
-//      $group = Group::create($group_nid);
-//      drupal_set_title("Email preferences for group " . $group->title());
-//    }
-//
-//    unset($form['endpoints']);
-//
-//    // If the current user is not an administrator, they can't control whether the member whose group settings are
-//    // displayed is an administrator of that group.
-//    if (!user_is_admin()) {
-//      unset($form['field_is_admin']);
-//    }
-//  }
-//
-//}
-
 /**
  * Look through the relations and see if any refer to a relation type that has been deleted.
  */
