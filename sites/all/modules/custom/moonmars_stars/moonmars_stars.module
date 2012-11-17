@@ -212,58 +212,17 @@ function moonmars_stars_entity_update($entity, $entity_type) {
  * Called when updating an star.
  *
  * The reason why this is done here (called by hook_entity_insert and hook_entity_update) is because setting aliases
- * here will override behaviour by pathauto.
+ * at this point in the execution cycle will override behaviour by pathauto.
  *
  * @param stdClass $entity
  * @param string $entity_type
  * @param bool $is_new
  */
 function moonmars_stars_entity_save($entity, $entity_type, $is_new) {
-  // Check if the entity is a member, group or (@todo) topic:
-  if ($entity_type == 'user' || ($entity_type == 'node' && $entity->type == 'group')) {
-
-    // Get the star object:
-    $star = moonmars_actors_get_actor($entity_type, $entity);
-
-    // Get the logged-in member:
-    $logged_in_member = Member::loggedInMember();
-
-    if ($star instanceof Member) {
-      if (!$is_new) {
-        // Create triumphs:
-        // Only create an update-member triumph if the member is updating their own profile
-        // (i.e., not if an admin is updating someone else's profile).
-        // The reason for this is because an administrator probably won't be adding interesting info;
-        // they'll most likely just be updating a password or something.
-        $member = $star;
-        if ($logged_in_member && $member->equals($logged_in_member)) {
-          // The first time a member updates their profile, send a new-member triumph. The reason why we don't do this
-          // when the user account is created, or when they confirm their email address, is because if we send new-member
-          // notifications at those times they won't contain much interesting information. The first time they update
-          // their profile, however (which they will normally do straight after they confirm their email address anyway)
-          // will probably when they enter most of their personal info. Then we send the nxn, then people will know
-          // whether they want to follow the new member or not.
-          if (!$member->newMemberTriumphCreated()) {
-            Triumph::newMember($member);
-          }
-          else {
-            Triumph::updateMember($member);
-          }
-        }
-      }
-    }
-    elseif ($star instanceof Group) {
-      // Code moved from here to moonmars_group_update_nxn_form_submit().
-      // Nothing else to do here specific to groups, just reset aliases.
-    }
-    elseif ($star instanceof Topic) {
-      // @todo
-    }
-    else {
-      trigger_error("moonmars_stars_entity_save() - Actor has unknown class. Check your use statements.", E_USER_WARNING);
-    }
-
-    // Update the star alias and channel alias and title:
+  // Get the actor:
+  $star = moonmars_actors_get_actor($entity_type, $entity);
+  // If a star, update the star alias and its channel alias and title:
+  if ($star && $star instanceof IStar) {
     moonmars_stars_reset_aliases($star);
   }
 }
