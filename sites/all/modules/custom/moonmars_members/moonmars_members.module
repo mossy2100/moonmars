@@ -132,14 +132,12 @@ function moonmars_members_access_private() {
  * Implements hook_form_alter().
  */
 function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
-  global $moonmars_username_desc;
-
-//  dbg($form_id);
-
   // Check for relevant form_ids:
   if (!in_array($form_id, array('user_register_form', 'user_profile_form'))) {
     return;
   }
+
+  global $moonmars_username_desc;
 
   // Common JS:
   $module_path = drupal_get_path('module', 'moonmars_members');
@@ -402,7 +400,9 @@ function moonmars_members_user_profile_form_submit($form, &$form_state) {
   // or not.
   // Note that the person updating the profile does not have to be the profile owner (i.e. could be an admin manually
   // creating a new member account.)
+  dpm(1);
   if (!$member->newMemberTriumphCreated()) {
+    dpm(2);
     Triumph::newMember($member);
 
     // This is a good time to add the new member to %moonmars-news because we only want to add them once.
@@ -412,11 +412,13 @@ function moonmars_members_user_profile_form_submit($form, &$form_state) {
     $member->joinGroup($moonmars_news_group, FALSE);
   }
   elseif ($member->isLoggedInUser()) {
+    dpm(3);
     // Only send an updateMember nxn if the member is updating their own profile, i.e., not if an admin is doing it.
     // This is because an administrator probably won't be adding interesting info - they'll most likely just be
     // updating a password or something.
     Triumph::updateMember($member);
   }
+  dpm(4);
 
   // Go back to the user's profile:
   $form_state['redirect'] = $member->alias();
