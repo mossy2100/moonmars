@@ -167,6 +167,37 @@ class User extends Entity {
     return self::create(1);
   }
 
+  /**
+   * Get all users.
+   *
+   * @static
+   * @param bool $active
+   *   NULL for all
+   *   TRUE for active
+   *   FALSE for blocked
+   * @return array
+   */
+  public static function all($active = NULL) {
+    $q = db_select('users', 'u')
+      ->fields('u', array('uid'))
+      ->orderBy('uid');
+    if ($active !== NULL) {
+      if ($active) {
+        $q->condition('status', 1);
+      }
+      else {
+        $q->condition('status', 0);
+      }
+    }
+    $rs = $q->execute();
+    $class = get_called_class();
+    $users = array();
+    foreach ($rs as $rec) {
+      $users[] = $class::create($rec->uid);
+    }
+    return $users;
+  }
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Load/save/delete
 

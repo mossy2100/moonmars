@@ -412,7 +412,7 @@ class Group extends Node implements IStar {
    * @return Group
    */
   public function addAdmin(Member $member) {
-    $rel = Relation::createNewBinary('has_member', $this, $member, FALSE);
+    $rel = Relation::createBinary('has_member', $this, $member, FALSE);
     $rel->field('field_is_admin', LANGUAGE_NONE, 0, 'value', 1);
     $rel->save();
   }

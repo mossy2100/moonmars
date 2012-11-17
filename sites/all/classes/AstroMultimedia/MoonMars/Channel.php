@@ -140,7 +140,7 @@ class Channel extends Node {
    */
   public function postItem(Item $item) {
     // Create a new relationship:
-    return Relation::createNewBinary('has_item', $this, $item);
+    return Relation::createBinary('has_item', $this, $item);
   }
 
   /**

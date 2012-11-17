@@ -249,7 +249,7 @@ function moonmars_stars_create_channel(IStar $star) {
   $channel->save();
 
   // Create the relationship between the star and the channel:
-  Relation::createNewBinary('has_channel', $star, $channel);
+  Relation::createBinary('has_channel', $star, $channel);
 
   // Reset the channel's alias and title. This needs to be done after creating the relationship.
   $channel->resetAliasAndTitle();

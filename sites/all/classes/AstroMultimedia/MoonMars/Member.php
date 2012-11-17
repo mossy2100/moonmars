@@ -991,11 +991,13 @@ class Member extends User implements IStar {
     // Call updateBinary() instead of createBinary(), just in case they're already a member.
     // Really, this method should never be called if they're already a member of the group.
     // @see moonmars_groups_join().
-    Relation::updateBinary('has_member', $group, $this);
+    if (!$this->inGroup($group)) {
+      Relation::createBinary('has_member', $group, $this);
 
-    // Create the triumph:
-    if ($send_nxn) {
-      Triumph::newMember($this, $group);
+      // Create the triumph:
+      if ($send_nxn) {
+        Triumph::newMember($this, $group);
+      }
     }
   }
 
@@ -1007,6 +1009,17 @@ class Member extends User implements IStar {
   public function leaveGroup(Group $group) {
     // Delete the membership relationship:
     Relation::deleteBinary('has_member', $group, $this);
+  }
+
+  /**
+   * Check if a member is in a group.
+   * Slightly redundant, since we have Group::hasMember(), but who cares - I was looking for this method.
+   *
+   * @param Group $group
+   * @return bool
+   */
+  public function inGroup(Group $group) {
+    return $group->hasMember($this);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
