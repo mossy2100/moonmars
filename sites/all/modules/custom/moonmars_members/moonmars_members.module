@@ -405,7 +405,7 @@ function moonmars_members_user_profile_form_submit($form, &$form_state) {
   if (!$member->newMemberTriumphCreated()) {
     Triumph::newMember($member);
 
-    // This is a good time to add the new member to %moonmars-news becaue we only want to add them once.
+    // This is a good time to add the new member to %moonmars-news because we only want to add them once.
     // This code can't be called every time the member profile is updated, because they might leave the group and will
     // not want to be automatically re-added every time they update their profile.
     $moonmars_news_group = Group::findByTag('moonmars-news');
