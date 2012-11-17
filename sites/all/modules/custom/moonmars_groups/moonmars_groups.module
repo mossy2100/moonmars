@@ -42,45 +42,45 @@ function moonmars_groups_menu() {
 }
 
 /**
- * Implements hook_form_alter().
+ * Implements hook_form_FORM_ID_alter().
  */
-function moonmars_groups_form_alter(&$form, &$form_state, $form_id) {
-  if ($form_id == 'group_node_form') {
+function moonmars_groups_form_group_node_form_alter(&$form, &$form_state) {
+  // JS:
+  $module_path = drupal_get_path('module', 'moonmars_groups');
+  $form['#attached']['js'][] = "$module_path/js/group-edit-form.js";
+  $form['#attached']['js'][] = moonmars_stars_tag_prefixes();
+  $form['#attached']['js'][] = drupal_get_path('module', 'moonmars_stars') . "/js/star-tag-check.js";
+  $form['#attached']['js'][] = "$module_path/js/group-tag-check.js";
 
-    // JS:
-    $module_path = drupal_get_path('module', 'moonmars_groups');
-    $form['#attached']['js'][] = "$module_path/js/group-edit-form.js";
-    $form['#attached']['js'][] = moonmars_stars_tag_prefixes();
-    $form['#attached']['js'][] = drupal_get_path('module', 'moonmars_stars') . "/js/star-tag-check.js";
-    $form['#attached']['js'][] = "$module_path/js/group-tag-check.js";
+  // Hide the score:
+  unset($form['field_score']);
 
-    // Hide the score:
-    unset($form['field_score']);
-
-    // If editing a group, add a hidden field to contain the nid:
-    if (isset($form['#node']->nid)) {
-      $form['nid'] = array(
-        '#type' => 'hidden',
-        '#value' => $form['#node']->nid,
-        '#attributes' => array('id' => 'nid'),
-      );
-    }
-    // Add submit handler to send Triumph Nxn
-    $form['actions']['submit']['#submit'][] = 'moonmars_group_update_nxn_form_submit';
+  // If editing a group, add a hidden field to contain the nid:
+  if (isset($form['#node']->nid)) {
+    $form['nid'] = array(
+      '#type' => 'hidden',
+      '#value' => $form['#node']->nid,
+      '#attributes' => array('id' => 'nid'),
+    );
   }
+  // Add submit handler to send Triumph Nxn:
+  $form['actions']['submit']['#submit'][] = 'moonmars_group_update_nxn_form_submit';
 }
 
+/**
+ * Submit handler.
+ *
+ * @param array $form
+ * @param array $form_state
+ */
 function moonmars_group_update_nxn_form_submit($form, &$form_state) {
-  if (isset($form_state['nid'])) {
-    $nid = $form_state['nid'];
-    $node = node_load($nid);
-    $group = Group::create($node);
-    $logged_in_member = Member::loggedInMember();
-    Triumph::updateGroup($group, $logged_in_member);
-  }
+  // Tell everyone that the group profile has been updated:
+  $group = Group::create($form_state['node']);
+  $logged_in_member = Member::loggedInMember();
+  Triumph::updateGroup($group, $logged_in_member);
 }
 
-  /**
+/**
  * Checks if this is a group page.
  * This function can probably be improved by using native Drupal/context variables.
  *
