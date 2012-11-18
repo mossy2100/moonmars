@@ -182,12 +182,7 @@ class User extends Entity {
       ->fields('u', array('uid'))
       ->orderBy('uid');
     if ($active !== NULL) {
-      if ($active) {
-        $q->condition('status', 1);
-      }
-      else {
-        $q->condition('status', 0);
-      }
+      $q->condition('status', (int) (bool) $active);
     }
     $rs = $q->execute();
     $class = get_called_class();
