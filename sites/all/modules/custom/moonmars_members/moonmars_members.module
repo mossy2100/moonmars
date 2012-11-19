@@ -151,7 +151,7 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
     // Registration form
     case 'user_register_form':
       // JS:
-      $form['#attached']['js'][] = "$module_path/js/register-form.js";
+//      $form['#attached']['js'][] = "$module_path/js/register-form.js";
 
       // Change the title:
       drupal_set_title("Join moonmars.com!");
