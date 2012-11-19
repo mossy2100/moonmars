@@ -234,42 +234,37 @@ class Item extends Node implements IPost {
    */
   public function resetAlias() {
     $text = strtolower($this->text());
-    //echobr("Item " . $this->nid());
-    //echobr($text);
 
     // Close contractions:
     $text = preg_replace("/([a-z]+)'([a-z]+)/", "$1$2", $text);
-    //echobr("Closed contractions: $text");
 
     // Extract words:
     $words = preg_split("/[^\w]+/", $text);
     $words = array_values(array_filter($words));
-//    dbg($words);
 
     if (!$words) {
       $alias = 'untitled';
     }
     else {
-      // Choose the number of words that gives us a alias max length of 50:
+      // Choose the number of words that limits the alias to a max length:
       $optimal_length = 100;
       $smallest_dist = PHP_INT_MAX;
       $smallest_dist_key = NULL;
       foreach ($words as $key => $word) {
         $alias = implode('-', array_slice($words, 0, $key + 1));
         $dist = abs(strlen($alias) - $optimal_length);
-        //echobr("dist for $alias = $dist");
         if ($dist > $smallest_dist) {
-          // we're done:
+          // We're done:
           break;
         }
         else {
-          //echobr("updating key to $key");
           $smallest_dist = $dist;
           $smallest_dist_key = $key;
         }
       }
       $alias = implode('-', array_slice($words, 0, $smallest_dist_key + 1));
     }
+    $alias = "item/$alias";
 
     // Get a unique variation:
     $base = $alias;
@@ -284,7 +279,6 @@ class Item extends Node implements IPost {
       if ($rs->rowCount()) {
         // Yes it is. Go to next variation.
         $source = $rs->fetchField();
-        //echobr("Another node has this alias $alias: $source");
         $n++;
         $alias = "$base-$n";
       }
@@ -293,8 +287,7 @@ class Item extends Node implements IPost {
       }
     }
 
-    //echobr($alias);
     $this->alias($alias);
   }
 
-}
+} // class Item

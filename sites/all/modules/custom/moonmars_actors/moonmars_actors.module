@@ -9,6 +9,7 @@
 
 use \AstroMultimedia\MoonMars\Member;
 use \AstroMultimedia\MoonMars\Relation;
+use \AstroMultimedia\MoonMars\IActor;
 
 /**
  * Gets an MoonMars object from a Drupal entity.
@@ -42,7 +43,7 @@ function moonmars_actors_get_actor($entity_type, $entity) {
       break;
 
     case 'term':
-      // @todo
+      // @todo - add support for topics
       break;
 
     case 'comment':

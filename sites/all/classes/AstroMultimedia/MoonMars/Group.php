@@ -111,6 +111,10 @@ class Group extends Node implements IStar {
    * @return Group
    */
   public static function findByTag($tag) {
+    // Strip the prefix if present:
+    if ($tag[0] == self::TAG_PREFIX) {
+      $tag = substr($tag, 1);
+    }
     $rec = db_select('field_data_field_group_tag', 'f')
       ->fields('f', array('entity_id'))
       ->condition('field_group_tag_value', $tag)
@@ -408,7 +412,7 @@ class Group extends Node implements IStar {
    * @return Group
    */
   public function addAdmin(Member $member) {
-    $rel = Relation::createNewBinary('has_member', $this, $member, FALSE);
+    $rel = Relation::createBinary('has_member', $this, $member, FALSE);
     $rel->field('field_is_admin', LANGUAGE_NONE, 0, 'value', 1);
     $rel->save();
   }

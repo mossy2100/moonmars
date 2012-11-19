@@ -82,6 +82,10 @@ class Topic extends Term implements IStar {
    * @return Topic
    */
   public static function findByTag($tag) {
+    // Strip the prefix if present:
+    if ($tag[0] == self::TAG_PREFIX) {
+      $tag = substr($tag, 1);
+    }
     $q = db_select('taxonomy_term_data', 't')
       ->fields('t', array('tid'))
       ->condition('t.name', $tag)
