@@ -697,7 +697,7 @@ function moonmars_nxn_send_outstanding() {
   // Scan triumphs and create notifications:
   $n_created = Triumph::createOutstandingNxns();
   // Send outstanding notifications:
-  $messages = Nxn::sendOutstanding();dpm($messages);
+  $messages = Nxn::sendOutstanding();
 
   // Some feedback:
   $body = array();
@@ -713,7 +713,6 @@ function moonmars_nxn_send_outstanding() {
     }
   }
   $subject = "[moonmars.com] Creating and sending outstanding nxns. $n_created nxns created, $n_sent sent, $n_unsent unsent.";
-  
   $params = array(
     'subject' => $subject,
     'body' => $body,
