@@ -243,8 +243,12 @@ function moonmars_update_fix_aliases() {
       echobr("Could not updated channel alias for <em>" . $channel->alias() . "</em>", 'warning');
     }
   }
+}
 
-  // Items:
+/**
+ * Fix URL aliases for items.
+ */
+function moonmars_update_fix_item_aliases() {
   $q = db_select('node', 'n')
     ->fields('n', array('nid'))
     ->condition('type', 'item')

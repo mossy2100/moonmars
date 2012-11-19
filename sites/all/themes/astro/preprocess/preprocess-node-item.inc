@@ -130,7 +130,9 @@ function astro_alpha_preprocess_node_item(&$vars) {
 
     // edit link:
     if ($logged_in_member->canEditItem($item)) {
-      $links1 .= "<li class='item-edit'><a href='javascript:editItem($item_nid)'>edit</a></li>";
+      //$links1 .= "<li class='item-edit'><a href='javascript:editItem($item_nid)'>edit</a></li>";
+      // remove ajax to support our complex item form
+      $links1 .= "<li class='item-edit'><a href='/" . $item->alias() . "/edit'>edit</a></li>";
     }
 
 //    // view link:
