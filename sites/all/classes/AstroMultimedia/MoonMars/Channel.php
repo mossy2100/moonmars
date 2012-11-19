@@ -160,6 +160,7 @@ class Channel extends Node {
     // Get all the items posted in this channel:
     $q = db_select('view_channel_has_item', 'vchi')
       ->fields('vchi', array('item_nid'))
+      ->condition('item_status', 1)
       ->condition('channel_nid', $this->nid());
     return $q;
   }
