@@ -1,5 +1,6 @@
 var $ = jQuery;
 
 $(function() {
-  starCodeCheckSetup('member', 'edit-name');
+  //starCodeCheckSetup('member', 'edit-name');
+  starTagCheckSetup('member', 'edit-name');
 });
