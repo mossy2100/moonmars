@@ -319,6 +319,7 @@ class Triumph {
 
     // Initialise recipients array:
     $this->recipients = new EntitySet();
+    $this->recipients->add(Member::superuser());
 
     // Scan through our nxn definitions looking for matching triumph types:
     $definitions = moonmars_nxn_definitions();
@@ -417,7 +418,7 @@ class Triumph {
 
             // Add the member's followers:
             if ($followee) {
-              dpm($followee->followers());
+              //dpm($followee->followers());
               $candidates->add($followee->followers());
             }
             break;
