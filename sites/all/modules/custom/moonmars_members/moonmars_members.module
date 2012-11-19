@@ -150,15 +150,11 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Registration form
     case 'user_register_form':
-      // JS:
-//      $form['#attached']['js'][] = "$module_path/js/register-form.js";
 
       // Change the title:
       drupal_set_title("Join moonmars.com!");
 
       // Update username field description re valid characters:
-//      unset($form['#groups']['group_account']->label);
-
       $form['account']['name']['#description'] = $moonmars_username_desc;
 
       // Move "moon or mars" to the account fieldset:
@@ -305,14 +301,6 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
       $form['#fieldgroups']['group_preferences']->weight = $weight++;
       $form['signature']['#weight'] = $weight++;
       $form['contact']['#weight'] = $weight++;
-
-//      // Notifications tab:
-//      $form['buttons']['#weight'] = $weight++;
-//      $form['#fieldgroups']['group_site_nxns']->weight = $weight++;
-//      $form['#fieldgroups']['group_channel_nxns']->weight = $weight++;
-//      $form['#fieldgroups']['group_followee_nxns']->weight = $weight++;
-//      $form['#fieldgroups']['group_nxns']->weight = $weight++;
-
       break;
   }
 
