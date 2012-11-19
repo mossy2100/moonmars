@@ -37,6 +37,9 @@ class User extends Entity {
    */
   protected $timezone;
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Magic methods
+
   /**
    * Constructor.
    */
@@ -45,11 +48,12 @@ class User extends Entity {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Create/delete
+  // Static methods
 
   /**
    * Create a new User object.
    *
+   * @static
    * @param null|int|string|stdClass $param
    * @return User
    */
@@ -113,7 +117,7 @@ class User extends Entity {
 
       // Reference the provided entity object:
       $user_obj->entity = $user;
-      
+
       // Make sure we mark the user as loaded and valid. It may not have been saved yet, and if we load it, any
       // changes to the user entity would be overwritten.
       $user_obj->loaded = TRUE;
@@ -130,14 +134,67 @@ class User extends Entity {
   }
 
   /**
-   * Delete a user.
+   * Get the user object for the current logged-in user.
+   *
+   * @static
+   * @return User|null
    */
-  public function delete() {
-    user_delete($this->uid());
+  public static function loggedInUser() {
+    if (user_is_logged_in()) {
+      $class = get_called_class();
+      return $class::create($GLOBALS['user']->uid);
+    }
+    return NULL;
+  }
+
+  /**
+   * Get the quick-load properties.
+   *
+   * @static
+   * @return array
+   */
+  protected static function quickLoadProperties() {
+    return array('name', 'mail');
+  }
+
+  /**
+   * Get the superuser.
+   *
+   * @static
+   * @return bool
+   */
+  public static function superuser() {
+    return self::create(1);
+  }
+
+  /**
+   * Get all users.
+   *
+   * @static
+   * @param bool $active
+   *   NULL for all
+   *   TRUE for active
+   *   FALSE for blocked
+   * @return array
+   */
+  public static function all($active = NULL) {
+    $q = db_select('users', 'u')
+      ->fields('u', array('uid'))
+      ->orderBy('uid');
+    if ($active !== NULL) {
+      $q->condition('status', (int) (bool) $active);
+    }
+    $rs = $q->execute();
+    $class = get_called_class();
+    $users = array();
+    foreach ($rs as $rec) {
+      $users[] = $class::create($rec->uid);
+    }
+    return $users;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Load/save
+  // Load/save/delete
 
   /**
    * Load the user object.
@@ -196,18 +253,15 @@ class User extends Entity {
     return $this;
   }
 
+  /**
+   * Delete a user.
+   */
+  public function delete() {
+    user_delete($this->uid());
+  }
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Get/set
-
-  /**
-   * Get the quick-load properties.
-   *
-   * @static
-   * @return array
-   */
-  protected static function quickLoadProperties() {
-    return array('name', 'mail');
-  }
 
   /**
    * Get/set the uid.
@@ -395,12 +449,12 @@ class User extends Entity {
   }
 
   /**
-   * Get the superuser.
+   * Check if the user is the current logged-in user.
    *
    * @return bool
    */
-  public static function superuser() {
-    return self::create(1);
+  public function isLoggedInUser() {
+    return user_is_logged_in() && $this->uid() == $GLOBALS['user']->uid;
   }
 
 }

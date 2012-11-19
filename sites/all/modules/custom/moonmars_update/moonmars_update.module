@@ -450,58 +450,14 @@ function moonmars_update_channel_item_relation_changed_times() {
   return $html;
 }
 
-///**
-// * Fix group references in item and comment text.
-// */
-//function moonmars_update_fix_group_mentions() {
-//  // Update item text:
-//  $q = db_select('node', 'n')
-//    ->fields('n', ['nid']);
-//  $q->join('field_data_field_item_text', 'ft', "n.nid = ft.entity_id");
-//  $q->condition('field_item_text_value', '%[Group: %', 'LIKE');
-//  $rs = $q->execute();
-//  foreach ($rs as $rec) {
-//    $item = Item::create($rec->nid);
-//    $text = $item->text();
-//    dbg($text);
-//
-//    $n = preg_match_all("/\[(Group: )?([^\]]+)\]/", $text, $matches);
-//    dbg($matches);
-//
-//    foreach ($matches[2] as $title) {
-//      $group = Group::searchByTitle($title);
-//      dbg($group);
-//    }
-//
-////    $text = preg_replace("/\[Group: ([^\]]+)\]/", "[$1]", $text);
-////    dbg($text);
-////
-////    $item->text($text);
-////    $item->save();
-//
-//  }
-//
-//  // Now comments:
-//  $q = db_select('comment', 'c')
-//    ->fields('c', ['cid']);
-//  $q->join('field_data_comment_body', 'fcb', "c.cid = fcb.entity_id");
-//  $q->condition('comment_body_value', '%[Group: %', 'LIKE');
-//  $rs = $q->execute();
-//  foreach ($rs as $rec) {
-//    $item_comment = ItemComment::create($rec->cid);
-//    $text = $item_comment->text();
-//    dbg($text);
-//
-//    $n = preg_match_all("/\[(Group: )?([^\]]+)\]/", $text, $matches);
-//    dbg($matches);
-//
-//    $n = preg_match_all("/\[([^\]]+)\]/", $text, $matches);
-//    dbg($matches);
-//
-////    $text = preg_replace("/\[Group: ([^\]]+)\]/", "[$1]", $text);
-////    dbg($text);
-////
-////    $item_comment->text($text);
-////    $item_comment->save();
-//  }
-//}
+/**
+ * Add everyone to the site news group.
+ */
+function moonmars_update_add_everyone_to_site_news() {
+  $members = Member::all(TRUE);
+  $moonmars_news_group = Group::findByTag('moonmars-news');
+  foreach ($members as $member) {
+    echo "Adding " . $member->tag() . " to " . $moonmars_news_group->tag() . "<br>";
+    $member->joinGroup($moonmars_news_group, FALSE);
+  }
+}

@@ -15,49 +15,47 @@ define('MOONMARS_NEWS_CHANNEL_NID', 467);
 //}
 
 /**
- * Implements hook_form_alter().
+ * Implements hook_form_FORM_ID_alter().
  */
-function moonmars_channels_form_alter(&$form, &$form_state, $form_id) {
-  if ($form_id == 'channel_node_form') {
-    $channel = Channel::create($form['#node']);
-    $star = $channel->star();
+function moonmars_channels_form_channel_node_form_alter(&$form, &$form_state) {
+  $channel = Channel::create($form['#node']);
+  $star = $channel->star();
 
-    // In case we're at the channel's edit page, goto the star's edit/links page.
-    if ($star instanceof Member) {
-      $logged_in_member = Member::loggedInMember();
-      $edit_links_path = $logged_in_member->editAlias() . '/links';
-      if (request_path() != $edit_links_path) {
-        drupal_goto($edit_links_path);
-      }
+  // In case we're at the channel's edit page, goto the star's edit/links page.
+  if ($star instanceof Member) {
+    $logged_in_member = Member::loggedInMember();
+    $edit_links_path = $logged_in_member->editAlias() . '/links';
+    if (request_path() != $edit_links_path) {
+      drupal_goto($edit_links_path);
     }
-
-    // Remove the title field from the form:
-    unset($form['title']);
-
-    // Is the user on their own profile?
-    $own_profile = ($star instanceof Member) && $star->equals(Member::loggedInMember());
-
-    $social_links = moonmars_channels_social_links();
-    foreach ($social_links as $social_link => $social_link_info) {
-      // Add the icon to the link fields:
-      $link_field = $social_link_info['field'];
-      $image_path = "/" . drupal_get_path('theme', 'astro') . "/images/social-icons/" . $social_link . "-25x25.png";
-      $form[$link_field][LANGUAGE_NONE][0]['#title'] = "<img class='social-link-icon' src='$image_path'>&nbsp;" . $form[$link_field][LANGUAGE_NONE][0]['#title'];
-
-      // If the user is editing their own profile, make the description a bit more user-friendly:
-      if ($own_profile) {
-        $form[$link_field][LANGUAGE_NONE][0]['#description'] = str_replace('the member/group/etc. has', 'you have', $form[$link_field][LANGUAGE_NONE][0]['#description']);
-      }
-    }
-
-    // Remove buttons we don't want:
-    unset($form['actions']['delete']);
-    unset($form['actions']['preview']);
-
-    // Handler:
-    $form['actions']['submit']['#validate'][] = 'moonmars_channels_channel_node_form_validate';
-    $form['actions']['submit']['#submit'][] = 'moonmars_channels_channel_node_form_submit';
   }
+
+  // Remove the title field from the form:
+  unset($form['title']);
+
+  // Is the user on their own profile?
+  $own_profile = ($star instanceof Member) && $star->equals(Member::loggedInMember());
+
+  $social_links = moonmars_channels_social_links();
+  foreach ($social_links as $social_link => $social_link_info) {
+    // Add the icon to the link fields:
+    $link_field = $social_link_info['field'];
+    $image_path = "/" . drupal_get_path('theme', 'astro') . "/images/social-icons/" . $social_link . "-25x25.png";
+    $form[$link_field][LANGUAGE_NONE][0]['#title'] = "<img class='social-link-icon' src='$image_path'>&nbsp;" . $form[$link_field][LANGUAGE_NONE][0]['#title'];
+
+    // If the user is editing their own profile, make the description a bit more user-friendly:
+    if ($own_profile) {
+      $form[$link_field][LANGUAGE_NONE][0]['#description'] = str_replace('the member/group/etc. has', 'you have', $form[$link_field][LANGUAGE_NONE][0]['#description']);
+    }
+  }
+
+  // Remove buttons we don't want:
+  unset($form['actions']['delete']);
+  unset($form['actions']['preview']);
+
+  // Handler:
+  $form['actions']['submit']['#validate'][] = 'moonmars_channels_channel_node_form_validate';
+  $form['actions']['submit']['#submit'][] = 'moonmars_channels_channel_node_form_submit';
 }
 
 /**

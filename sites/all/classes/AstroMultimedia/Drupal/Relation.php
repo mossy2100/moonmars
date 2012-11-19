@@ -287,7 +287,7 @@ class Relation extends Entity {
    *   Whether or not to save the relationship. Defaults to TRUE.
    * @return Relation
    */
-  public static function createNewBinary($relationship_type, $entity0, $entity1, $save = TRUE) {
+  public static function createBinary($relationship_type, $entity0, $entity1, $save = TRUE) {
     $entity_type0 = $entity0->entityType();
     $entity_id0 = $entity0->id();
     $entity_type1 = $entity1->entityType();
@@ -405,7 +405,7 @@ class Relation extends Entity {
     }
     else {
       // Create a new relationship:
-      $rel = $class::createNewBinary($relationship_type, $entity0, $entity1, $save);
+      $rel = $class::createBinary($relationship_type, $entity0, $entity1, $save);
     }
 
     return $rel;

@@ -5,18 +5,13 @@ use \AstroMultimedia\MoonMars\DateTime;
 /**
  * Implements hook_form_alter().
  */
-function moonmars_events_form_alter(&$form, &$form_state, $form_id) {
-  switch ($form_id) {
-    case 'event_node_form':
-      // Add some jQuery:
-      drupal_add_js(drupal_get_path('module', 'moonmars') . '/js/moonmars_geo_detect.js');
-      drupal_add_js(drupal_get_path('module', 'moonmars_events') . '/js/moonmars_event_form.js');
+function moonmars_events_form_event_node_form_alter(&$form, &$form_state) {
+  // Add some jQuery:
+  drupal_add_js(drupal_get_path('module', 'moonmars') . '/js/moonmars_geo_detect.js');
+  drupal_add_js(drupal_get_path('module', 'moonmars_events') . '/js/moonmars_event_form.js');
 
-      // Set the currency options:
-      $form['field_currency']['und']['#options'] = moonmars_commerce_currency_options();
-      break;
-
-  }
+  // Set the currency options:
+  $form['field_currency']['und']['#options'] = moonmars_commerce_currency_options();
 }
 
 /**

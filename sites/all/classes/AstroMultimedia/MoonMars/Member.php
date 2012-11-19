@@ -146,6 +146,10 @@ class Member extends User implements IStar {
    * @return Member|bool
    */
   public static function findByTag($tag) {
+    // Strip the prefix if present:
+    if ($tag[0] == self::TAG_PREFIX) {
+      $tag = substr($tag, 1);
+    }
     $q = db_select('users', 'u')
       ->fields('u', array('uid'))
       ->condition('name', $tag);
@@ -169,13 +173,13 @@ class Member extends User implements IStar {
   // Static methods
 
   /**
-   * Get the member object for the current logged-in user.
+   * Get the member object for the current logged-in member.
    *
    * @static
    * @return Member|null
    */
   public static function loggedInMember() {
-    return user_is_logged_in() ? self::create($GLOBALS['user']->uid) : NULL;
+    return parent::loggedInUser();
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -982,38 +986,19 @@ class Member extends User implements IStar {
    *
    * @param Member $member
    */
-  public function joinGroup(Group $group) {
+  public function joinGroup(Group $group, $send_nxn = TRUE) {
     // Create or update the membership relationship.
-    // We're calling updateBinary() here instead of createBinary(), just in case, but actually this method should never
-    // be called if they're already a member of the group. See logic in moonmars_groups_join().
-    Relation::updateBinary('has_member', $group, $this);
+    // Call updateBinary() instead of createBinary(), just in case they're already a member.
+    // Really, this method should never be called if they're already a member of the group.
+    // @see moonmars_groups_join().
+    if (!$this->inGroup($group)) {
+      Relation::createBinary('has_member', $group, $this);
 
-    // Create the triumph:
-    Triumph::newMember($this, $group);
-
-//    //////////////////
-//    // Notifications
-//
-//    // Nxn summary:
-//    $summary = "Guess what! " . $this->link() . " joined the group " . $group->link() . ".";
-//
-//    // 1. Notify group members:
-//    $members = $group->members();
-//    foreach ($members as $member) {
-//      // If they want to be notified, notify them:
-//      if ($member->nxnPrefWants('group', 'new-member')) {
-//        $member->notify($summary, $group, $this);
-//      }
-//    }
-//
-//    // 2. Notify the member's followers:
-//    $members = $this->followers();
-//    foreach ($members as $member) {
-//      // If they want to be notified, notify them:
-//      if ($member->nxnPrefWants('followee', 'join-group')) {
-//        $member->notify($summary, $group, $this);
-//      }
-//    }
+      // Create the triumph:
+      if ($send_nxn) {
+        Triumph::newMember($this, $group);
+      }
+    }
   }
 
   /**
@@ -1024,6 +1009,17 @@ class Member extends User implements IStar {
   public function leaveGroup(Group $group) {
     // Delete the membership relationship:
     Relation::deleteBinary('has_member', $group, $this);
+  }
+
+  /**
+   * Check if a member is in a group.
+   * Slightly redundant, since we have Group::hasMember(), but who cares - I was looking for this method.
+   *
+   * @param Group $group
+   * @return bool
+   */
+  public function inGroup(Group $group) {
+    return $group->hasMember($this);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

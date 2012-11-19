@@ -1,7 +1,8 @@
 <?php
-
 use \AstroMultimedia\MoonMars\Member;
 use \AstroMultimedia\MoonMars\Channel;
+use \AstroMultimedia\MoonMars\Group;
+use \AstroMultimedia\MoonMars\Triumph;
 
 /**
  * Implements hook_init().
@@ -131,14 +132,12 @@ function moonmars_members_access_private() {
  * Implements hook_form_alter().
  */
 function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
-  global $moonmars_username_desc;
-
-//  dbg($form_id);
-
   // Check for relevant form_ids:
   if (!in_array($form_id, array('user_register_form', 'user_profile_form'))) {
     return;
   }
+
+  global $moonmars_username_desc;
 
   // Common JS:
   $module_path = drupal_get_path('module', 'moonmars_members');
@@ -314,8 +313,6 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
 //      $form['#fieldgroups']['group_followee_nxns']->weight = $weight++;
 //      $form['#fieldgroups']['group_nxns']->weight = $weight++;
 
-//      dpm($form);
-
       break;
   }
 
@@ -324,7 +321,6 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
 //      dbg("$key weight {$value['#weight']}");
 //    }
 //  }
-
 }
 
 /**
@@ -346,7 +342,6 @@ function moonmars_members_user_register_form_validate($form, &$form_state) {
 function moonmars_members_user_register_form_after_build($form) {
   // Make some changes to the location fields that we can't do in hook_form_alter().
   $form['account']['field_user_location'][LANGUAGE_NONE][0]['country']['#description'] = "Select your country";
-
   return $form;
 }
 
@@ -392,21 +387,33 @@ function moonmars_members_user_profile_form_validate($form, &$form_state) {
  */
 function moonmars_members_user_profile_form_submit($form, &$form_state) {
   // Get the member whose profile is being updated:
-  $member = Member::create($form['#user']);
+  $member = Member::create($form_state['user']);
 
-//  // Update the channel's links:
-//  $channel = $member->channel();
-//
-//  // We have to inspect $_POST instead of $form_state['values'], because Drupal removes the submitted values for the
-//  // links, presumably because they came from another form.
-//  $link_fields = moonmars_channels_social_links();
-//  foreach ($link_fields as $info) {
-//    $link_field = $info['field'];
-//    $channel->field($link_field, LANGUAGE_NONE, 0, 'url', $_POST[$link_field][LANGUAGE_NONE][0]['url']);
-//  }
-//
-//  // Save the channel:
-//  $channel->save();
+  // The first time a member's profile is updated, send a new-member triumph.
+  // The reason why we don't do this if the user account is created via the user_register form,
+  // or when they confirm their email address,
+  // is because if we send new-member notifications at those times they won't contain much interesting info.
+  // The first time they update their profile, however (which should be straight after they confirm their email address)
+  // will probably when they enter most of their personal info.
+  // Then we send the nxn with the interesting info, so people will know whether they want to follow the new member
+  // or not.
+  // Note that the person updating the profile does not have to be the profile owner (i.e. could be an admin manually
+  // creating a new member account.)
+  if (!$member->newMemberTriumphCreated()) {
+    Triumph::newMember($member);
+
+    // This is a good time to add the new member to %moonmars-news because we only want to add them once.
+    // This code can't be called every time the member profile is updated, because they might leave the group and will
+    // not want to be automatically re-added every time they update their profile.
+    $moonmars_news_group = Group::findByTag('moonmars-news');
+    $member->joinGroup($moonmars_news_group, FALSE);
+  }
+  elseif ($member->isLoggedInUser()) {
+    // Only send an updateMember nxn if the member is updating their own profile, i.e., not if an admin is doing it.
+    // This is because an administrator probably won't be adding interesting info - they'll most likely just be
+    // updating a password or something.
+    Triumph::updateMember($member);
+  }
 
   // Go back to the user's profile:
   $form_state['redirect'] = $member->alias();
@@ -435,7 +442,7 @@ function moonmars_members_user_profile_form_submit($form, &$form_state) {
  */
 function moonmars_members_edit_profile_form($user) {
   $member = Member::create($user);
-  drupal_set_title(t('<em>@username:</em> Edit profile', array('@username' => $member->name())), PASS_THROUGH);
+  drupal_set_title(t('Edit @username', array('@username' => $member->tag(NULL, TRUE))), PASS_THROUGH);
   require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'user') . '/user.pages.inc';
   return drupal_get_form('user_profile_form', $member->user());
 }

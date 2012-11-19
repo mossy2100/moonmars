@@ -315,3 +315,17 @@ section.block-moonmars-quicksearch {
     }
   }
 }
+
+fieldset.captcha {
+  #draggable-captcha {
+    margin: 10px 0;
+
+    #captchaWrapper {
+      margin: 10px 0;
+    }
+  }
+
+  .form-item-captcha-response {
+    margin: 0;
+  }
+}

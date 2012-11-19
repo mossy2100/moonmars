@@ -28,19 +28,6 @@ function moonmars_comments_menu() {
   return $items;
 }
 
-/**
- * Implementation of hook_form_alter().
- */
-function moonmars_comments_form_alter(&$form, &$form_state, $form_id) {
-//dbg($form_id);
-  if ($form_id == 'comment_node_item_form') {
-//    unset($form['author']);
-//    unset($form['field_score']);
-//    dbg($form['comment_body']);
-//    dbg($form['comment_body']);
-  }
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // AJAX comment actions/callbacks.
 
