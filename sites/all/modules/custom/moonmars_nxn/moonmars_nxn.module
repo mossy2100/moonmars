@@ -697,14 +697,14 @@ function moonmars_nxn_send_outstanding() {
   // Scan triumphs and create notifications:
   $n_created = Triumph::createOutstandingNxns();
   // Send outstanding notifications:
-  $messages = Nxn::sendOutstanding();
+  $messages = Nxn::sendOutstanding();dpm($messages);
 
   // Some feedback:
   $body = array();
   $n_sent = 0;
   $n_unsent = 0;
   foreach ($messages as $message) {
-    $body[] = ($message['result'] ? 'SENT' : 'UNSENT') . ' to ' . trim($message['to'], " \r\n\t\"") . ': ' . $message['subject'];
+    $body[] = ($message['result'] ? 'SENT' : 'UNSENT') . ' to ' . trim($message['to'], " \r\n\t\"") . ': ' . $message['subject'] . '<br />';
     if ($message['result']) {
       $n_sent++;
     }
@@ -713,11 +713,14 @@ function moonmars_nxn_send_outstanding() {
     }
   }
   $subject = "[moonmars.com] Creating and sending outstanding nxns. $n_created nxns created, $n_sent sent, $n_unsent unsent.";
+  
   $params = array(
     'subject' => $subject,
     'body' => $body,
   );
-//  drupal_mail('moonmars_nxn', 'report', Member::create(1)->mail(), LANGUAGE_NONE, $params);
+  if ($messages) {
+    drupal_mail('moonmars_nxn', 'report', Member::create(1)->mail(), LANGUAGE_NONE, $params);
+  }
 //  watchdog('moonmars_nxn', $subject);
   echoln($subject);
 
