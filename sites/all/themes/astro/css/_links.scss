@@ -3,7 +3,8 @@ a:link,
 a:visited,
 .calendar-calendar td .inner div.day a,
 .calendar-calendar .month-view .full .week a,
-.calendar-calendar .week-view .full .week a {
+.calendar-calendar .week-view .full .week a,
+input.button-link {
 	color: $blue3;
 	text-decoration: none;
 }
@@ -13,10 +14,21 @@ a:active,
 a:focus,
 .calendar-calendar td .inner div.day a:hover,
 .calendar-calendar .month-view .full .week a:hover,
-.calendar-calendar .week-view .full .week a:hover {
+.calendar-calendar .week-view .full .week a:hover,
+input.button-link:hover {
 	color: $red3;
 }
 
 a:hover {
 	text-decoration: none;
+}
+
+input.button-link {
+  padding: 0;
+  font-weight: normal;
+  background: none;
+}
+
+input.button-link:hover {
+  background: none;
 }

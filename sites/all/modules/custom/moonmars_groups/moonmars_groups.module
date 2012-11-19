@@ -638,6 +638,7 @@ function moonmars_groups_search_form() {
     '#title' => "Find groups that",
     '#autocomplete_path' => 'user/autocomplete',
     '#default_value' => isset($_SESSION['group_search']['params']['member']) ? $_SESSION['group_search']['params']['member'] : '',
+    '#suffix' => "<input class='button-link' type='button' value='me' onclick='setMemberToMe()'><br>",
   );
   $form['search']['is_in'] = array(
     '#type' => 'radios',
@@ -649,11 +650,13 @@ function moonmars_groups_search_form() {
     '#suffix' => "</div>",
   );
   $form['search']['clear'] = array(
+    '#prefix' => "<div id='search-buttons'>",
     '#markup' => "<input type='button' class='form-button clear-button' value='Clear' onclick='clearGroupSearchForm()'>",
   );
   $form['search']['submit'] = array(
     '#type'  => 'submit',
     '#value' => "Search",
+    '#suffix' => "</div>",
   );
 
   // If we have a current member, show checkboxes for the groups so they bulk join/leave:
