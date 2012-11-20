@@ -730,6 +730,6 @@ function moonmars_nxn_send_outstanding() {
   if (!$is_cron) {
     echoln("</pre>");
   }
-return '';
+
   return NULL;
 }
