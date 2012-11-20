@@ -4,7 +4,7 @@ use \AstroMultimedia\MoonMars\Member;
 use \AstroMultimedia\MoonMars\Channel;
 
 define('MOONMARS_CHANNEL_DEFAULT_PAGE_SIZE', 10);
-define('MOONMARS_NEWS_CHANNEL_NID', 467);
+//define('MOONMARS_NEWS_CHANNEL_NID', 467);
 
 ///**
 // * Implements hook_menu().

@@ -234,7 +234,7 @@ class Channel extends Node {
     $page = isset($_GET['page']) ? ((int) $_GET['page']) : 0;
 
     // Get the items from this channel:
-    $order_by_field = ($this->nid() == MOONMARS_NEWS_CHANNEL_NID) ? 'item_created' : 'item_modified';
+    $order_by_field = $this->isNewsChannel() ? 'item_created' : 'item_modified';
     $items = $this->items($page * self::PAGE_SIZE, self::PAGE_SIZE, $order_by_field);
 
     // Get the total item count:
@@ -391,7 +391,8 @@ class Channel extends Node {
    * @return bool
    */
   public function isNewsChannel() {
-    return $this->nid() == MOONMARS_NEWS_CHANNEL_NID;
+    $star = $this->star();
+    return $star && $star instanceof Group && $star->tag() == 'moonmars-news';
   }
 
 }

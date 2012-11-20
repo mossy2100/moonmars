@@ -417,6 +417,16 @@ class Group extends Node implements IStar {
     $rel->save();
   }
 
+  /**
+   * Check if a user is an admin of the group.
+   *
+   * @param Member $member
+   * @return bool
+   */
+  public function hasAdmin(Member $member) {
+    return $member->isGroupAdmin($this);
+  }
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Select sets of groups
 

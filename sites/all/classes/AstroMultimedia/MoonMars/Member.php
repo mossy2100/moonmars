@@ -1177,8 +1177,21 @@ class Member extends User implements IStar {
    * @return bool
    */
   public function canPostItem(Channel $channel) {
+    // Check the channel is valid and published:
+    if (!$channel->valid() || !$channel->published()) {
+      return FALSE;
+    }
+
+    // A site admin can post items in any channel:
+    if ($this->isSiteAdmin()) {
+      return TRUE;
+    }
+
     // Get the star that owns the channel:
     $star = $channel->star();
+    if (!$star) {
+      return FALSE;
+    }
 
     if ($star instanceof Member) {
       // @todo Implement permissions so people can specify who can post in their channel.
@@ -1187,18 +1200,16 @@ class Member extends User implements IStar {
       // The member is the only one who can post in their own channel:
 //      return $star->equals($this);
 
-      // Members can post in each others' channels.
+      // For now, all members can post in each others' channels.
       return TRUE;
     }
     elseif ($star instanceof Group) {
-      // Only administrators can post items in the News channel.
-      // @todo This should be controlled by group permission settings.
-      if ($channel->nid() == MOONMARS_NEWS_CHANNEL_NID) {
-        return $this->hasRole('administrator') || $this->hasRole('site administrator');
+      // Only administrators can post items in the moonmars.com News channel.
+      // @todo This needs to be controlled by group permission settings.
+      if ($star->tag() == 'moonmars-news') {
+        // Only members of the group can post in the group's channel:
+        return $star->hasMember($this);
       }
-
-      // Only members of the group can post in the group's channel:
-      return $star->hasMember($this);
     }
 
     return FALSE;
@@ -1211,25 +1222,27 @@ class Member extends User implements IStar {
    * @return bool
    */
   public function canEditItem(Item $item) {
-    // Check the item is valid and published:
-    if (!$item->valid() || !$item->published()) {
+    // Check the item is valid:
+    if (!$item->valid()) {
+      return FALSE;
+    }
+
+    // A site admin can edit any item:
+    if ($this->isSiteAdmin()) {
+      return TRUE;
+    }
+
+    // Check the item is published:
+    if (!$item->published()) {
       return FALSE;
     }
     
-    // An administrator can edit any item:
-    if ($this->isAdmin()) {
-      return TRUE;
-    }
-    
-    // A member can edit an item if they posted it.
+    // A member can edit an item they posted.
     if ($this->equals($item->creator())) {
       return TRUE;
     }
     
     return FALSE;
-
-    // This function will probably change to this code here, but need to think about the UI.
-//    return self::equals($this, $item->creator());
   }
 
   /**
@@ -1244,32 +1257,24 @@ class Member extends User implements IStar {
       return FALSE;
     }
 
-    // Check core permissions:
-//    if (user_access('administer nodes', $this->user()) || user_access('delete any item content', $this->user())) {
-//      return TRUE;
-//    }
-
-    // An administrator can delete any item:
-    if ($this->isAdmin()) {
+    // A site admin can delete any item:
+    if ($this->isSiteAdmin()) {
       return TRUE;
     }
 
-    // A member can delete an item if they posted it.
+    // A member can delete an item they posted.
     if ($this->equals($item->creator())) {
       return TRUE;
     }
 
-    // A member can delete any item posted in their channel.
-    if ($this->channel()->equals($item->channel())) {
-      return TRUE;
-    }
-
     // A group administrator can delete any item from a group.
-    // (This rule will also apply to events and projects when implemented.)
-//    $star = $channel->star();
-//    if ($star instanceof Group && $star->hasAdmin($this)) {
-//      return TRUE;
-//    }
+    $channel = $item->channel();
+    if ($channel) {
+      $star = $channel->star();
+      if ($star && $star instanceof Group && $this->isGroupAdmin($star)) {
+        return TRUE;
+      }
+    }
 
     return FALSE;
   }
@@ -1298,42 +1303,44 @@ class Member extends User implements IStar {
    * @return bool
    */
   public function canPostComment(Item $item) {
-    // Check the item is valid and published:
-    if (!$item->valid() || !$item->published()) {
+    // Check the item is valid:
+    if (!$item->valid()) {
       return FALSE;
     }
 
+    // A site admin can post a comment on any item:
+    if ($this->isSiteAdmin()) {
+      return TRUE;
+    }
+
+    // Check the item is published:
+    if (!$item->published()) {
+      return FALSE;
+    }
+
+    // Get the channel:
     $channel = $item->channel();
     if (!$channel) {
       return FALSE;
     }
 
+    // Get the star:
     $star = $channel->star();
     if (!$star) {
       return FALSE;
     }
 
-    // If item posted in a member channel:
     if ($star instanceof Member) {
-      // Members can post comments in each other's channels.
+      // Members can post comments in each others' channels.
       return TRUE;
-
-//      // If the item was posted in the member's own channel, they can comment on it:
-//      if (Channel::equals($original_channel, $this->channel())) {
-//        return TRUE;
-//      }
-//      else {
-//        // If the item was posted in another member's channel, they can only comment on it if that member follows them:
-//        return $star->follows($this);
-//      }
     }
     elseif ($star instanceof Group) {
       // Anyone can post comments in the News channel:
-      if ($channel->nid() == MOONMARS_NEWS_CHANNEL_NID) {
+      if ($star->tag() == 'moonmars-news') {
         return TRUE;
       }
 
-      // If posted in a group channel, the member can post comment in it if they're a member of the group:
+      // A member can post a comment in a group channel if they're a member of the group:
       return $star->hasMember($this);
     }
     
@@ -1347,14 +1354,19 @@ class Member extends User implements IStar {
    * @return bool
    */
   public function canEditComment(ItemComment $comment) {
-    // Check the comment is valid and published:
-    if (!$comment->valid() || !$comment->published()) {
+    // Check the comment is valid:
+    if (!$comment->valid()) {
       return FALSE;
     }
 
-    // Users with 'administer comments' (i.e. admins) can edit any comment.
-    if (user_access('administer comments', $this->user())) {
+    // A site admin can edit any comment:
+    if ($this->isSiteAdmin()) {
       return TRUE;
+    }
+
+    // Check the comment is published:
+    if (!$comment->published()) {
+      return FALSE;
     }
 
     // Members can edit their own comments:
@@ -1373,8 +1385,8 @@ class Member extends User implements IStar {
       return FALSE;
     }
 
-    // Users with 'administer comments' (i.e. admins) can delete any comment.
-    if (user_access('administer comments', $this->user())) {
+    // A site admin can delete any comment:
+    if ($this->isSiteAdmin()) {
       return TRUE;
     }
 
@@ -1383,10 +1395,14 @@ class Member extends User implements IStar {
       return TRUE;
     }
 
-    // Members can delete comments made on items posted in their channel.
-    if ($this->channel()->equals($comment->channel())) {
-      return TRUE;
-    }
+    // #todo revisit this - I don't think they should be able to delete other people's comments.
+    // But they should be able to *remove* or *hide* items from their channel.
+    // If posted in their channel, it's hidden. If cross-posted to their channel, then the cross-post channel tag is
+    // removed. Simplify to just "hidden".
+//    // Members can delete comments made in their channel.
+//    if ($this->channel()->equals($comment->channel())) {
+//      return TRUE;
+//    }
 
     return FALSE;
   }
@@ -1398,18 +1414,19 @@ class Member extends User implements IStar {
    * @return bool
    */
   public function canJoinGroup(Group $group) {
-    // For now, any member can join any group:
+    // For now, any member can join any group.
+    // @todo update with group permissions
     return TRUE;
   }
 
   /**
-   * Check if the member can administer a group.
+   * Check if the member can administer a given group.
    *
    * @param Group $group
    * @return bool
    */
-  public function canAdministerGroup(Group $group) {
-    return $this->isSuperuser() || $this->isAdmin() || $this->isGroupAdmin($group);
+  public function canAdminGroup(Group $group) {
+    return $this->isSiteAdmin() || $this->isGroupAdmin($group);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1789,6 +1806,15 @@ class Member extends User implements IStar {
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Roles
+
+  /**
+   * Check if the member is a site administrator.
+   *
+   * @return bool
+   */
+  public function isSiteAdmin() {
+    return $this->hasRole('site administrator');
+  }
 
   /**
    * Check if the member is a group administrator.

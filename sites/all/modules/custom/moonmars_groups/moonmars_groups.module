@@ -360,7 +360,7 @@ function moonmars_groups_menu_block() {
   }
 
   // Editing links:
-  if ($logged_in_member->canAdministerGroup($group)) {
+  if ($logged_in_member->canAdminGroup($group)) {
     $html .= "<li>" . l('Edit profile', $group->editAlias()) . "</li>";
     $html .= "<li>" . l('Edit links', $group->channel()->editAlias()) . "</li>";
   }

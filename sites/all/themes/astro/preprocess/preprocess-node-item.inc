@@ -123,22 +123,17 @@ function astro_alpha_preprocess_node_item(&$vars) {
       $links1 .= "<li class='item-delete'><a href='javascript:deleteItem($item_nid)'>delete</a></li>";
     }
 
-//    // remove link:
+//    // remove link: @todo change to "hide"
 //    if ($current_channel && $logged_in_member->canRemoveItem($item, $current_channel)) {
 //      $links1 .= "<li class='item-remove'><a href='javascript:removeItem($item_nid)'>remove</a></li>";
 //    }
 
     // edit link:
     if ($logged_in_member->canEditItem($item)) {
-      //$links1 .= "<li class='item-edit'><a href='javascript:editItem($item_nid)'>edit</a></li>";
-      // remove ajax to support our complex item form
+      // We won't use AJAX for now, because our item form is somewhat complex plus it will change anyway
+      // when we upgrade to messages.
       $links1 .= "<li class='item-edit'><a href='/" . $item->alias() . "/edit'>edit</a></li>";
     }
-
-//    // view link:
-//    if (!$item_node_page) {
-//      $links1 .= "<li class='item-view'><a href='/" . $item->alias() . "'>view</a></li>";
-//    }
 
     // comment link - show at top and bottom:
     if ($logged_in_member->canPostComment($item)) {
