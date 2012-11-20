@@ -701,10 +701,11 @@ function moonmars_nxn_send_outstanding() {
 
   // Some feedback:
   $body = array();
+  $body[] = '<h2>Mail summary of notifications</h2>';
   $n_sent = 0;
   $n_unsent = 0;
   foreach ($messages as $message) {
-    $body[] = ($message['result'] ? 'SENT' : 'UNSENT') . ' to ' . trim($message['to'], " \r\n\t\"") . ': ' . $message['subject'] . '<br />';
+    $body[] = ($message['result'] ? 'SENT' : 'UNSENT') . ' to ' . trim($message['to'], " \r\n\t\"") . ': ' . $message['params']['summary'] . '<br />';
     if ($message['result']) {
       $n_sent++;
     }
@@ -729,6 +730,6 @@ function moonmars_nxn_send_outstanding() {
   if (!$is_cron) {
     echoln("</pre>");
   }
-
+return '';
   return NULL;
 }
