@@ -30,3 +30,10 @@ function clearGroupSearchForm() {
   $('#edit-is-in input:radio').uncheck();
   $('#edit-is-in-1').check();
 }
+
+/**
+ * Set the member to the logged-in member.
+ */
+function setMemberToMe() {
+  $('#edit-member').val(Drupal.settings.moonmars_members.username);
+}

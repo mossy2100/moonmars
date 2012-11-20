@@ -123,7 +123,7 @@ form#moonmars-groups-search-form {
     }
 
     .group-search-member {
-      margin: 15px 0;
+      margin: 15px 0 25px;
       @include clearfix;
 
       label.group-search-member-title {
@@ -156,10 +156,11 @@ form#moonmars-groups-search-form {
       }
     }
 
-    .clear-button {
-      margin-right: 5px;
+    #search-buttons {
+      .clear-button {
+        margin-right: 5px;
+      }
     }
-
   }
 
   table {
