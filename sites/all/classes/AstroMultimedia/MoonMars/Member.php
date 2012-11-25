@@ -1592,6 +1592,7 @@ class Member extends User implements IStar {
     // Construct the main query.
     $q = db_select('view_channel_has_item', 'vchi')
       ->fields('vchi', array('item_nid'))
+      ->condition('item_status', 1)
       ->condition(db_or()
         ->condition('item_uid', $item_uids)
         ->condition('channel_nid', $channel_nids));

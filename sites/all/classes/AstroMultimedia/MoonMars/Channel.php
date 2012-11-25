@@ -266,24 +266,8 @@ class Channel extends Node {
     return $items;
   }
 
-  /**
-   * Get all the items to display in this channel, i.e. that are tagged with the channel owner's tag.
-   *
-   * @param int $ts_start
-   * @param int $ts_end
-   * @return array
-   */
-  public function itemsToDisplayIn($ts_start, $ts_end) {
-    $owner = $this->owner();
-
-
-
-        
-
-  }
-
 //  /**
-//   * Get the min and max modified timestamp of items in this group.
+//   * Get the min and max modified timestamp of items in this channel.
 //   *
 //   * @todo Check for restricted/closed groups. Need Member::canSeeItem() method.
 //   */
