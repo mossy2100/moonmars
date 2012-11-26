@@ -111,9 +111,6 @@ function moonmars_items_form_item_node_form_alter(&$form, &$form_state) {
     // Validation handler.
   //    $form['actions']['submit']['#validate'][] = 'moonmars_items_form_validate';
 
-    // Submit handler.
-    $form['actions']['submit']['#submit'][] = 'moonmars_items_form_submit';
-
     // This js contains function needed by item form
     $form['actions']['#attached']['js'][] = array(
       'data' => drupal_get_path('module', 'moonmars_channels') . '/js/moonmars-channels.js',
@@ -163,6 +160,9 @@ function moonmars_items_form_item_node_form_alter(&$form, &$form_state) {
     // Channel page - creating new item:
     $form['#redirect'] = request_path();
   }
+
+  // Submit handler.
+  $form['actions']['submit']['#submit'][] = 'moonmars_items_form_submit';
 }
 
 ///**
@@ -214,9 +214,6 @@ function moonmars_items_form_item_node_form_alter(&$form, &$form_state) {
  */
 function moonmars_items_form_submit($form, &$form_state) {
   // Go back to where we were:
-//  dbg($form['#destination']);
-//  dbg(drupal_get_path_alias($form['#destination']));
-//  exit;
   $form_state['redirect'] = drupal_get_path_alias($form['#redirect']);
 }
 
