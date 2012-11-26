@@ -237,7 +237,7 @@ article.node-item {
 }
 
 article.node-channel form,
-article.node-item form {
+#item-node-form {
   padding: 0;
   margin: 0;
   border: 0;
@@ -252,6 +252,11 @@ article.group {
 }
 
 form.node-item-form {
+  input.form-text,
+  textarea {
+    width: 100%;
+  }
+
   #edit-field-item-type {
     margin-top: 10px;
 
@@ -283,10 +288,6 @@ form.node-item-form {
   #field-item-link-add-more-wrapper {
     .form-type-textfield {
       margin: 0;
-
-      input {
-        width: 100%;
-      }
     }
   }
 
@@ -297,10 +298,6 @@ form.node-item-form {
   #field-item-text-add-more-wrapper {
     .form-item {
       margin-bottom: 0;
-
-      .description {
-        float: left;
-      }
     }
   }
 

@@ -98,19 +98,6 @@ function moonmars_channels_channel_node_form_submit($form, &$form_state) {
 }
 
 /**
- * Return array of node types that have channels.
- *
- * @return array
- */
-function moonmars_channels_node_types() {
-  return array(
-    'group',
-    'event',
-    'project'
-  );
-}
-
-/**
  * Get the social link fields.
  *
  * @return array
@@ -178,25 +165,4 @@ function moonmars_channels_social_links() {
       'description' => 'Academia profile',
     ),
   );
-}
-
-/**
- * Checks if we're on a node page with an embedded channel.
- *
- * @return bool
- */
-function moonmars_channels_is_embedded_channel_page() {
-  $n_args = arg_count();
-
-  if ($n_args == 2 && is_uint(arg(1))) {
-    if (arg(0) == 'user') {
-      return TRUE;
-    }
-    elseif (arg(0) == 'node') {
-      $node = node_load(arg(1));
-      return in_array($node->type, moonmars_channels_node_types());
-    }
-  }
-
-  return FALSE;
 }

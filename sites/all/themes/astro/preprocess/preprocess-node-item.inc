@@ -132,7 +132,7 @@ function astro_alpha_preprocess_node_item(&$vars) {
     if ($logged_in_member->canEditItem($item)) {
       // We won't use AJAX for now, because our item form is somewhat complex plus it will change anyway
       // when we upgrade to messages.
-      $links1 .= "<li class='item-edit'><a href='/" . $item->alias() . "/edit'>edit</a></li>";
+      $links1 .= "<li class='item-edit'>" . l('edit', $item->alias() . '/edit', array('query' => array('redirect' => request_path()))) . "</li>";
     }
 
     // comment link - show at top and bottom:
