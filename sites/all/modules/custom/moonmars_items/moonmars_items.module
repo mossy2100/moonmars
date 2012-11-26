@@ -120,16 +120,6 @@ function moonmars_items_form_item_node_form_alter(&$form, &$form_state) {
       'type' => 'file'
     );
 
-    // Remember the redirect parameter so we can go back there:
-    if ($_GET['redirect']) {
-      // Editing item:
-      $form['#redirect'] = drupal_get_normal_path($_GET['redirect']);
-    }
-    else {
-      // Channel page - creating new item:
-      $form['#redirect'] = request_path();
-    }
-
     // If on the item edit form, wrap the form in some sexy HTML to match the channel page.
     // @todo this HTML should not be in two places. We need a theming function for the form, and remove the HTML
     // from here and from node--channel.tpl.php
@@ -162,6 +152,16 @@ function moonmars_items_form_item_node_form_alter(&$form, &$form_state) {
         ),
       );
     }
+  }
+
+  // Remember the redirect parameter so we can go back there:
+  if ($_GET['redirect']) {
+    // Editing item:
+    $form['#redirect'] = drupal_get_normal_path($_GET['redirect']);
+  }
+  else {
+    // Channel page - creating new item:
+    $form['#redirect'] = request_path();
   }
 }
 
