@@ -1208,7 +1208,9 @@ class Member extends User implements IStar {
       // @todo This needs to be controlled by group permission settings.
       if ($star->tag() == 'moonmars-news') {
         // Only members of the group can post in the group's channel:
-        return $star->hasMember($this);
+        //return $star->hasMember($this);
+        // Don't allow normal users to post items in this group
+        return FALSE;
       }
     }
 
