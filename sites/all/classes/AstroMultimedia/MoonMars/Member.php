@@ -1205,13 +1205,15 @@ class Member extends User implements IStar {
     }
     elseif ($star instanceof Group) {
       // Only administrators can post items in the moonmars.com News channel.
+      // This is handled by the earlier role check. Administrators can post in any group.
       // @todo This needs to be controlled by group permission settings.
       if ($star->tag() == 'moonmars-news') {
-        // Only members of the group can post in the group's channel:
-        //return $star->hasMember($this);
-        // Don't allow normal users to post items in this group
+        // Don't allow normal users to post items in this group:
         return FALSE;
       }
+
+      // Only members of the group can post in the group's channel:
+      return $star->hasMember($this);
     }
 
     return FALSE;

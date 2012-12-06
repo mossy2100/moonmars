@@ -77,20 +77,6 @@ function dbg_all() {
   }
 }
 
-/**
- * Exit with a debug message.
- *
- * @global bool $_dbg_mode
- * @param string $str
- */
-function dbg_exit($str = '') {
-  global $_dbg_mode;
-  if ($_dbg_mode) {
-    exit($str);
-  }
-}
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // Main debugging functions.
 
@@ -113,7 +99,6 @@ function dbg($value, $func_name = '') {
     dbg_end_print();
   }
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Query debugging functions.
