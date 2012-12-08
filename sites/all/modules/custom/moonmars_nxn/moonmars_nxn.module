@@ -721,7 +721,7 @@ function moonmars_nxn_send_outstanding() {
     'body' => $body,
   );
   if ($messages) {
-    drupal_mail('moonmars_nxn', 'report', Member::create(1)->mail(), LANGUAGE_NONE, $params);
+    drupal_mail('moonmars_nxn', 'report', Member::superuser()->mail(), LANGUAGE_NONE, $params);
   }
 //  watchdog('moonmars_nxn', $subject);
   echoln($subject);
