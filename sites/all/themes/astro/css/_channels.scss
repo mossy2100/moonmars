@@ -237,7 +237,8 @@ article.node-item {
 }
 
 article.node-channel form,
-#item-node-form {
+#item-node-form,
+article form.edit-comment-form {
   padding: 0;
   margin: 0;
   border: 0;
