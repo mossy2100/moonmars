@@ -320,13 +320,14 @@ class Triumph {
     // Initialise recipients array:
     $this->recipients = new EntitySet();
 
+    // I want to receive every notification, so I can check it looks right:
+    $this->recipients->add(Member::superuser());
+
     // Scan through our nxn definitions looking for matching triumph types:
     $definitions = moonmars_nxn_definitions();
 
     // Go through each nxn category:
     foreach ($definitions as $nxn_category => $nxn_category_info) {
-//      echoln('<hr>');
-//      dbg($nxn_category, 'nxn category');
 
       // Go through each triumph type, acting on matches:
       foreach ($nxn_category_info['triumph types'] as $triumph_type => $triumph_type_info) {
@@ -335,8 +336,6 @@ class Triumph {
         if ($this->triumphType != $triumph_type) {
           continue;
         }
-
-//        dbg($triumph_type, 'matching triumph type');
 
         // Initialise set of recipient candidates:
         $candidates = new EntitySet();
@@ -417,7 +416,6 @@ class Triumph {
 
             // Add the member's followers:
             if ($followee) {
-              dpm($followee->followers());
               $candidates->add($followee->followers());
             }
             break;
@@ -460,8 +458,6 @@ class Triumph {
             }
             break;
         } // switch nxn_category
-
-//        dbg($candidates->entityPaths(), 'candidates at end of Step 1');
 
         // If we didn't find any recipient candidates, continue:
         if (!$candidates->count()) {
@@ -508,8 +504,6 @@ class Triumph {
             break;
         }
 
-//        dbg($candidates->entityPaths(), 'candidates at end of Step 2');
-
         // If there aren't any candidates left, continue:
         if (!$candidates->count()) {
           continue;
@@ -522,7 +516,6 @@ class Triumph {
 
           // Get the member's preferences for this type of triumph in this nxn category.
           $nxn_prefs = $member->nxnPref($nxn_category, $this->triumphType);
-//          dbg($nxn_prefs, "prefs for " . $member->uid());
 
           switch ($nxn_prefs['wants']) {
             case MOONMARS_NXN_NO:
@@ -612,14 +605,8 @@ class Triumph {
 
           } // switch wants
         } // foreach members
-
-//        dbg($this->recipients->entityPaths(), 'recipients at end of Step 3');
-
       } // for each triumph type
     } // for each nxn category
-
-//    echoln("<hr>");
-//    dbg($this->recipients->entityPaths(), 'recipients at end of outer loop');
 
     return $this->recipients;
   } // findRecipients
@@ -665,8 +652,6 @@ class Triumph {
     // Create the nxns:
     $n = 0;
     foreach ($rs as $rec) {
-//      echoln("<hr><h1>Triumph</h1>");
-//      dbg($rec);
       $triumph = new Triumph($rec);
       // The call to createNxns() followed by save() will update the nxns_created field:
       $n += $triumph->createNxns();
