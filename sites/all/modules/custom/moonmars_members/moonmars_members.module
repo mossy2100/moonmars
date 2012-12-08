@@ -82,20 +82,20 @@ function moonmars_members_menu() {
   return $items;
 }
 
-///**
-// * Get the level roles, with the level number (which equals the multiplier) as keys.
-// *
-// * @return array
-// */
-//function moonmars_members_levels() {
-//  return array(
-//    1 => 'iron',
-//    2 => 'copper',
-//    3 => 'silver',
-//    4 => 'gold',
-//    5 => 'platinum'
-//  );
-//}
+/**
+ * Get the level roles, with the level number (which equals the rating multiplier) as keys.
+ *
+ * @return array
+ */
+function moonmars_members_levels() {
+  return array(
+    1 => 'asteroid',
+    2 => 'dwarf planet',
+    3 => 'terrestrial planet',
+    4 => 'gas giant',
+    5 => 'star'
+  );
+}
 
 /**
  * Checks if the logged-in user is on one of their own pages.

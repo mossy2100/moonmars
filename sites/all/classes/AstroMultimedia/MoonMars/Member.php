@@ -475,13 +475,13 @@ class Member extends User implements IStar {
         }
       }
 
-      // If no user level found, default to iron:
+      // If no user level found, default to asteroid:
       if (!$user_level) {
-        $user_level = 'iron';
+        $user_level = 'asteroid';
 
         // Add the role:
-        $role = user_role_load_by_name('iron');
-        $this->entity->roles[$role->rid] = 'iron';
+        $role = user_role_load_by_name('asteroid');
+        $this->entity->roles[$role->rid] = 'asteroid';
         $save_user = TRUE;
       }
 
@@ -1182,8 +1182,8 @@ class Member extends User implements IStar {
       return FALSE;
     }
 
-    // A site admin can post items in any channel:
-    if ($this->isSiteAdmin()) {
+    // Check for superpowers:
+    if ($this->canAdminSite()) {
       return TRUE;
     }
 
@@ -1226,21 +1226,16 @@ class Member extends User implements IStar {
    * @return bool
    */
   public function canEditItem(Item $item) {
-    // Check the item is valid:
-    if (!$item->valid()) {
+    // Check the item is valid and published:
+    if (!$item->valid() || !$item->published()) {
       return FALSE;
     }
 
-    // A site admin can edit any item:
-    if ($this->isSiteAdmin()) {
+    // Check for superpowers:
+    if ($this->canAdminSite()) {
       return TRUE;
     }
 
-    // Check the item is published:
-    if (!$item->published()) {
-      return FALSE;
-    }
-    
     // A member can edit an item they posted.
     if ($this->equals($item->creator())) {
       return TRUE;
@@ -1261,8 +1256,8 @@ class Member extends User implements IStar {
       return FALSE;
     }
 
-    // A site admin can delete any item:
-    if ($this->isSiteAdmin()) {
+    // Check for superpowers:
+    if ($this->canAdminSite()) {
       return TRUE;
     }
 
@@ -1307,19 +1302,14 @@ class Member extends User implements IStar {
    * @return bool
    */
   public function canPostComment(Item $item) {
-    // Check the item is valid:
-    if (!$item->valid()) {
+    // Check the item is valid and published:
+    if (!$item->valid() || !$item->published()) {
       return FALSE;
     }
 
-    // A site admin can post a comment on any item:
-    if ($this->isSiteAdmin()) {
+    // Check for superpowers:
+    if ($this->canAdminSite()) {
       return TRUE;
-    }
-
-    // Check the item is published:
-    if (!$item->published()) {
-      return FALSE;
     }
 
     // Get the channel:
@@ -1358,19 +1348,14 @@ class Member extends User implements IStar {
    * @return bool
    */
   public function canEditComment(ItemComment $comment) {
-    // Check the comment is valid:
-    if (!$comment->valid()) {
+    // Check the comment is valid and published:
+    if (!$comment->valid() || !$comment->published()) {
       return FALSE;
     }
 
-    // A site admin can edit any comment:
-    if ($this->isSiteAdmin()) {
+    // Check for superpowers:
+    if ($this->canAdminSite()) {
       return TRUE;
-    }
-
-    // Check the comment is published:
-    if (!$comment->published()) {
-      return FALSE;
     }
 
     // Members can edit their own comments:
@@ -1389,8 +1374,8 @@ class Member extends User implements IStar {
       return FALSE;
     }
 
-    // A site admin can delete any comment:
-    if ($this->isSiteAdmin()) {
+    // Check for superpowers:
+    if ($this->canAdminSite()) {
       return TRUE;
     }
 
@@ -1424,13 +1409,22 @@ class Member extends User implements IStar {
   }
 
   /**
+   * Check if the member can administer the site.
+   *
+   * @return bool
+   */
+  public function canAdminSite() {
+    return $this->isAdmin() || $this->isSiteAdmin();
+  }
+
+  /**
    * Check if the member can administer a given group.
    *
    * @param Group $group
    * @return bool
    */
   public function canAdminGroup(Group $group) {
-    return $this->isSiteAdmin() || $this->isGroupAdmin($group);
+    return $this->isAdmin() || $this->isSiteAdmin() || $this->isGroupAdmin($group);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
