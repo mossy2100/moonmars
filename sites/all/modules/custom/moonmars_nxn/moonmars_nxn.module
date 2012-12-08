@@ -701,11 +701,11 @@ function moonmars_nxn_send_outstanding() {
 
   // Some feedback:
   $body = array();
-  $body[] = '<h2>Mail summary of notifications</h2>';
+  $body[] = '<h2>Notifications</h2>';
   $n_sent = 0;
   $n_unsent = 0;
   foreach ($messages as $message) {
-    $body[] = ($message['result'] ? 'SENT' : 'UNSENT') . ' to ' . trim($message['to'], " \r\n\t\"") . ': ' . $message['params']['summary'] . '<br />';
+    $body[] = ($message['result'] ? 'SENT' : 'UNSENT') . ' to ' . trim($message['to'], " \r\n\t\"") . ': ' . $message['params']['summary'] . '<br>';
     if ($message['result']) {
       $n_sent++;
     }
@@ -713,7 +713,9 @@ function moonmars_nxn_send_outstanding() {
       $n_unsent++;
     }
   }
-  $subject = "[moonmars.com] Creating and sending outstanding nxns. $n_created nxns created, $n_sent sent, $n_unsent unsent.";
+  $body[] = '<br><h2>Summary</h2>';
+  $body[] = "<p>$n_created nxns created<br>$n_sent sent<br>$n_unsent unsent</p>";
+  $subject = '[moonmars.com] Notifications sent';
   $params = array(
     'subject' => $subject,
     'body' => $body,
