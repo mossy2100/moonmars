@@ -290,13 +290,14 @@ function moonmars_items_entity_save($entity, $entity_type, $is_new) {
       // Create a new-item triumph:
       Triumph::newItem($item);
       
-      // Update the item alias:
+      // Set the item alias:
       $item->resetAlias();
     }
     else {
       // Bump it to the top of the channel:
       $item->bump();
       // We aren't creating triumphs for updating items or comments.
+      // Also, we don't update the alias if the item is edited, because this breaks existing links to the item.
     }
   }
 }
