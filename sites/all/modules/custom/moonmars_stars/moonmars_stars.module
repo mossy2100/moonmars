@@ -9,6 +9,11 @@ use \AstroMultimedia\MoonMars\Triumph;
 use \AstroMultimedia\MoonMars\Relation;
 
 /**
+ * Number of stars to show per page in a star search.
+ */
+const MOONMARS_STAR_SEARCH_PAGE_SIZE = 20;
+
+/**
  * @author Shaun Moss (mossy2100)
  * @since 2012-09-08
  *
