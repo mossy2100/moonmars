@@ -205,6 +205,15 @@ article.node-item {
       }
     }
   }
+
+  .unpublished {
+    float: left;
+    font-weight: bold;
+    background-color: $grey3;
+    color: white;
+    padding: 0 3px;
+    @include border-radius(3px);
+  }
 }
 
 .post-form-wrapper {
@@ -228,7 +237,8 @@ article.node-item {
 }
 
 article.node-channel form,
-article.node-item form {
+#item-node-form,
+article form.edit-comment-form {
   padding: 0;
   margin: 0;
   border: 0;
@@ -238,11 +248,15 @@ article.node-item form {
 article.group {
   .group-description {
     @include channel-page-section;
-    padding-bottom: 10px;
   }
 }
 
 form.node-item-form {
+  input.form-text,
+  textarea {
+    width: 100%;
+  }
+
   #edit-field-item-type {
     margin-top: 10px;
 
@@ -274,10 +288,6 @@ form.node-item-form {
   #field-item-link-add-more-wrapper {
     .form-type-textfield {
       margin: 0;
-
-      input {
-        width: 100%;
-      }
     }
   }
 
@@ -288,10 +298,6 @@ form.node-item-form {
   #field-item-text-add-more-wrapper {
     .form-item {
       margin-bottom: 0;
-
-      .description {
-        float: left;
-      }
     }
   }
 
@@ -306,6 +312,15 @@ article.node-item {
     margin: 0;
     font-size: 11px;
     color: $grey3;
+  }
+
+  &.node-unpublished {
+    background: none;
+
+    & > .post-article-body {
+      background-color: $grey5 !important;
+      border-color: $grey4 !important;
+    }
   }
 }
 
@@ -324,11 +339,6 @@ article.comment {
       border-color: $grey4;
       color: $grey3;
     }
-  }
-
-  .unpublished {
-    float: right;
-    color: $grey2;
   }
 
   //a {

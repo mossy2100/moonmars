@@ -1,7 +1,7 @@
 <?php
 
-use \AstroMultimedia\Drupal\Entity;
 use \AstroMultimedia\MoonMars\Member;
+use \AstroMultimedia\MoonMars\IActor;
 
 function moonmars_ratings_menu() {
   $items['ajax/rate'] = array(
@@ -30,14 +30,15 @@ function moonmars_ratings_names() {
 /**
  * Display a set of rating buttons.
  *
- * @param int $selected
+ * @param Member $member
+ * @param IActor $actor
  * @return string
  */
-function moonmars_ratings_buttons(Member $member, Entity $entity) {
-  $current_rating = $member->rating($entity);
+function moonmars_ratings_buttons(Member $member, IActor $actor) {
+  $current_rating = $member->rating($actor);
 
-  $entity_type = $entity->entityType();
-  $entity_id = $entity->id();
+  $entity_type = $actor->entityType();
+  $entity_id = $actor->id();
 
   $html = "<div id='rating-buttons-{$entity_type}-{$entity_id}' class='rating-buttons' data-entity-type='$entity_type' data-entity-id='$entity_id'>\n";
 
@@ -85,12 +86,13 @@ function moonmars_ratings_ajax_rate() {
   }
 
   // Update the rating:
-  $result = $logged_in_member->rating(moonmars_objects_get_object($entity_type, $entity_id), $rating);
+  $result = $logged_in_member->rating(moonmars_actors_get_actor($entity_type, $entity_id), $rating);
 //  dbg($result);
 
   // Update result:
   $data['result'] = TRUE;
   $data = array_merge($data, $result);
-  echo json_encode($data);
+  //echo json_encode($data);//returns the same, but better to use drupal api.
+  drupal_json_output($data);
   return;
 }

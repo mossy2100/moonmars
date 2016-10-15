@@ -30,28 +30,6 @@ function moonmars_text_emoticons() {
 }
 
 /**
- * Replace emoticon codes in some text with emoticon images.
- *
- * @param string $text
- * @return string
- */
-function moonmars_text_add_emoticons($text) {
-  // Note we use an absolute path, so that the URLs work in emails:
-  global $base_url;
-  $emoticon_path = $base_url . '/' . drupal_get_path('theme', 'astro') . '/images/emoticons';
-
-  // Convert double-encoded HTML entities for hearts:
-  $text = moonmars_text_fix_hearts($text);
-
-  // Replace emoticon codes with images:
-  foreach (moonmars_text_emoticons() as $emoticon_name => $emoticon_code) {
-    $text = str_replace($emoticon_code, "<img class='emoticon' src='$emoticon_path/$emoticon_name.png'>", $text);
-  }
-
-  return $text;
-}
-
-/**
  * Trims a bit of text to a maximum length, using ellipsis to indicate the trim.
  *
  * @param string $text

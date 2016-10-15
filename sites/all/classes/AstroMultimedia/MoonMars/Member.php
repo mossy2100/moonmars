@@ -9,7 +9,7 @@ use \AstroMultimedia\Star\Style;
 /**
  * Encapsulates a moonmars.com member.
  */
-class Member extends User implements IActor {
+class Member extends User implements IStar {
 
   /**
    * The tag prefix.
@@ -90,7 +90,7 @@ class Member extends User implements IActor {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // IActor methods
+  // IStar methods
 
   /**
    * Get/set the tag.
@@ -146,6 +146,10 @@ class Member extends User implements IActor {
    * @return Member|bool
    */
   public static function findByTag($tag) {
+    // Strip the prefix if present:
+    if ($tag[0] == self::TAG_PREFIX) {
+      $tag = substr($tag, 1);
+    }
     $q = db_select('users', 'u')
       ->fields('u', array('uid'))
       ->condition('name', $tag);
@@ -169,13 +173,13 @@ class Member extends User implements IActor {
   // Static methods
 
   /**
-   * Get the member object for the current logged-in user.
+   * Get the member object for the current logged-in member.
    *
    * @static
    * @return Member|null
    */
   public static function loggedInMember() {
-    return user_is_logged_in() ? self::create($GLOBALS['user']->uid) : NULL;
+    return parent::loggedInUser();
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -471,13 +475,13 @@ class Member extends User implements IActor {
         }
       }
 
-      // If no user level found, default to iron:
+      // If no user level found, default to asteroid:
       if (!$user_level) {
-        $user_level = 'iron';
+        $user_level = 'asteroid';
 
         // Add the role:
-        $role = user_role_load_by_name('iron');
-        $this->entity->roles[$role->rid] = 'iron';
+        $role = user_role_load_by_name('asteroid');
+        $this->entity->roles[$role->rid] = 'asteroid';
         $save_user = TRUE;
       }
 
@@ -526,7 +530,7 @@ class Member extends User implements IActor {
    */
   public function channel($create = TRUE) {
     if (!isset($this->channel)) {
-      $this->channel = moonmars_actors_get_channel($this, $create);
+      $this->channel = moonmars_stars_get_channel($this, $create);
     }
     return $this->channel;
   }
@@ -982,38 +986,19 @@ class Member extends User implements IActor {
    *
    * @param Member $member
    */
-  public function joinGroup(Group $group) {
+  public function joinGroup(Group $group, $send_nxn = TRUE) {
     // Create or update the membership relationship.
-    // We're calling updateBinary() here instead of createBinary(), just in case, but actually this method should never
-    // be called if they're already a member of the group. See logic in moonmars_groups_join().
-    Relation::updateBinary('has_member', $group, $this);
+    // Call updateBinary() instead of createBinary(), just in case they're already a member.
+    // Really, this method should never be called if they're already a member of the group.
+    // @see moonmars_groups_join().
+    if (!$this->inGroup($group)) {
+      Relation::createBinary('has_member', $group, $this);
 
-    // Create the triumph:
-    Triumph::newMember($this, $group);
-
-//    //////////////////
-//    // Notifications
-//
-//    // Nxn summary:
-//    $summary = "Guess what! " . $this->link() . " joined the group " . $group->link() . ".";
-//
-//    // 1. Notify group members:
-//    $members = $group->members();
-//    foreach ($members as $member) {
-//      // If they want to be notified, notify them:
-//      if ($member->nxnPrefWants('group', 'new-member')) {
-//        $member->notify($summary, $group, $this);
-//      }
-//    }
-//
-//    // 2. Notify the member's followers:
-//    $members = $this->followers();
-//    foreach ($members as $member) {
-//      // If they want to be notified, notify them:
-//      if ($member->nxnPrefWants('followee', 'join-group')) {
-//        $member->notify($summary, $group, $this);
-//      }
-//    }
+      // Create the triumph:
+      if ($send_nxn) {
+        Triumph::newMember($this, $group);
+      }
+    }
   }
 
   /**
@@ -1026,47 +1011,19 @@ class Member extends User implements IActor {
     Relation::deleteBinary('has_member', $group, $this);
   }
 
+  /**
+   * Check if a member is in a group.
+   * Slightly redundant, since we have Group::hasMember(), but who cares - I was looking for this method.
+   *
+   * @param Group $group
+   * @return bool
+   */
+  public function inGroup(Group $group) {
+    return $group->hasMember($this);
+  }
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Notifications
-
-//  /**
-//   * Send a notification message to a member.
-//   *
-//   * @param string $summary
-//   * @param Entity $thing
-//   *   The thing (member, group, item or comment) that the notification is about.
-//   * @param Member $actor
-//   * @param Channel $channel
-//   * @param Item $item
-//   * @param ItemComment $comment
-//   */
-//  public function notify($summary, $thing = NULL, Member $actor = NULL) {
-//    $subject = strip_tags($summary);
-//
-//    // Create the notification node:
-//    $notification_summary = "
-//      <p class='notification-summary'>
-//        $summary
-//      </p>
-//      <p class='notification-teaser'>
-//       " . moonmars_text_trim($thing->text(), 100) . "
-//      </p>
-//    ";
-//    $notification = Nxn::create();
-//    $notification->uid($this->uid());
-//    $notification->title($subject);
-//    $notification->field('field_notification_summary', LANGUAGE_NONE, 0, 'value', $notification_summary);
-//    $notification->save();
-//
-//    $text = $thing->html();
-//
-//    $params = array(
-//      'subject' => "[moonmars.com] $subject",
-//      'summary' => "<p style='margin: 0 0 10px; color: #919191;'>$summary</p>",
-//      'text'    => "<p style='margin: 0;'>$text</p>",
-//    );
-//    drupal_mail('moonmars_nxn', 'notification', $this->mail(), language_default(), $params);
-//  }
 
   /**
    * Check what notifications a member wants of a certain type.
@@ -1220,28 +1177,43 @@ class Member extends User implements IActor {
    * @return bool
    */
   public function canPostItem(Channel $channel) {
-    // Get the actor that owns the channel:
-    $actor = $channel->actor();
+    // Check the channel is valid and published:
+    if (!$channel->valid() || !$channel->published()) {
+      return FALSE;
+    }
 
-    if ($actor instanceof Member) {
+    // Check for superpowers:
+    if ($this->canAdminSite()) {
+      return TRUE;
+    }
+
+    // Get the star that owns the channel:
+    $star = $channel->star();
+    if (!$star) {
+      return FALSE;
+    }
+
+    if ($star instanceof Member) {
       // @todo Implement permissions so people can specify who can post in their channel.
       // If a post is blocked from a channel by permissions, then the tag appears crossed out.
 
       // The member is the only one who can post in their own channel:
-//      return $actor->equals($this);
+//      return $star->equals($this);
 
-      // Members can post in each others' channels.
+      // For now, all members can post in each others' channels.
       return TRUE;
     }
-    elseif ($actor instanceof Group) {
-      // Only administrators can post items in the News channel.
-      // @todo This should be controlled by group permission settings.
-      if ($channel->nid() == MOONMARS_NEWS_CHANNEL_NID) {
-        return $this->hasRole('administrator') || $this->hasRole('site administrator');
+    elseif ($star instanceof Group) {
+      // Only administrators can post items in the moonmars.com News channel.
+      // This is handled by the earlier role check. Administrators can post in any group.
+      // @todo This needs to be controlled by group permission settings.
+      if ($star->tag() == 'moonmars-news') {
+        // Don't allow normal users to post items in this group:
+        return FALSE;
       }
 
       // Only members of the group can post in the group's channel:
-      return $actor->hasMember($this);
+      return $star->hasMember($this);
     }
 
     return FALSE;
@@ -1254,11 +1226,22 @@ class Member extends User implements IActor {
    * @return bool
    */
   public function canEditItem(Item $item) {
-    // For now, no-one can edit items until the UI is sorted out.
-    return FALSE;
+    // Check the item is valid and published:
+    if (!$item->valid() || !$item->published()) {
+      return FALSE;
+    }
 
-    // This function will probably change to this code here, but need to think about the UI.
-//    return self::equals($this, $item->creator());
+    // Check for superpowers:
+    if ($this->canAdminSite()) {
+      return TRUE;
+    }
+
+    // A member can edit an item they posted.
+    if ($this->equals($item->creator())) {
+      return TRUE;
+    }
+    
+    return FALSE;
   }
 
   /**
@@ -1273,32 +1256,24 @@ class Member extends User implements IActor {
       return FALSE;
     }
 
-    // Check core permissions:
-//    if (user_access('administer nodes', $this->user()) || user_access('delete any item content', $this->user())) {
-//      return TRUE;
-//    }
-
-    // An administrator can delete any item:
-    if ($this->isAdmin()) {
+    // Check for superpowers:
+    if ($this->canAdminSite()) {
       return TRUE;
     }
 
-    // A member can delete an item if they posted it.
+    // A member can delete an item they posted.
     if ($this->equals($item->creator())) {
       return TRUE;
     }
 
-    // A member can delete any item posted in their channel.
-    if ($this->channel()->equals($item->channel())) {
-      return TRUE;
-    }
-
     // A group administrator can delete any item from a group.
-    // (This rule will also apply to events and projects when implemented.)
-//    $actor = $channel->actor();
-//    if ($actor instanceof Group && $actor->hasAdmin($this)) {
-//      return TRUE;
-//    }
+    $channel = $item->channel();
+    if ($channel) {
+      $star = $channel->star();
+      if ($star && $star instanceof Group && $this->isGroupAdmin($star)) {
+        return TRUE;
+      }
+    }
 
     return FALSE;
   }
@@ -1327,47 +1302,42 @@ class Member extends User implements IActor {
    * @return bool
    */
   public function canPostComment(Item $item) {
-    // Check the item is valid:
-    if (!$item->valid()) {
+    // Check the item is valid and published:
+    if (!$item->valid() || !$item->published()) {
       return FALSE;
     }
 
-    // Get the channel where the item was originally posted:
+    // Check for superpowers:
+    if ($this->canAdminSite()) {
+      return TRUE;
+    }
+
+    // Get the channel:
     $channel = $item->channel();
     if (!$channel) {
       return FALSE;
     }
 
-    // Get the actor of the item's channel:
-    $actor = $channel->actor();
-    if (!$actor) {
+    // Get the star:
+    $star = $channel->star();
+    if (!$star) {
       return FALSE;
     }
 
-    // If item posted in a member channel:
-    if ($actor instanceof Member) {
-      // Members can post comments in each other's channels.
+    if ($star instanceof Member) {
+      // Members can post comments in each others' channels.
       return TRUE;
-
-//      // If the item was posted in the member's own channel, they can comment on it:
-//      if (Channel::equals($original_channel, $this->channel())) {
-//        return TRUE;
-//      }
-//      else {
-//        // If the item was posted in another member's channel, they can only comment on it if that member follows them:
-//        return $actor->follows($this);
-//      }
     }
-    elseif ($actor instanceof Group) {
+    elseif ($star instanceof Group) {
       // Anyone can post comments in the News channel:
-      if ($channel->nid() == MOONMARS_NEWS_CHANNEL_NID) {
+      if ($star->tag() == 'moonmars-news') {
         return TRUE;
       }
 
-      // If posted in a group channel, the member can post comment in it if they're a member of the group:
-      return $actor->hasMember($this);
+      // A member can post a comment in a group channel if they're a member of the group:
+      return $star->hasMember($this);
     }
-
+    
     return FALSE;
   }
 
@@ -1378,13 +1348,13 @@ class Member extends User implements IActor {
    * @return bool
    */
   public function canEditComment(ItemComment $comment) {
-    // Check the comment is valid:
+    // Check the comment is valid and published:
     if (!$comment->valid() || !$comment->published()) {
       return FALSE;
     }
 
-    // Users with 'administer comments' (i.e. admins) can edit any comment.
-    if (user_access('administer comments', $this->user())) {
+    // Check for superpowers:
+    if ($this->canAdminSite()) {
       return TRUE;
     }
 
@@ -1399,13 +1369,13 @@ class Member extends User implements IActor {
    * @return bool
    */
   public function canDeleteComment(ItemComment $comment) {
-    // Check the comment is valid:
+    // Check the comment is valid and published:
     if (!$comment->valid() || !$comment->published()) {
       return FALSE;
     }
 
-    // Users with 'administer comments' (i.e. admins) can delete any comment.
-    if (user_access('administer comments', $this->user())) {
+    // Check for superpowers:
+    if ($this->canAdminSite()) {
       return TRUE;
     }
 
@@ -1414,10 +1384,14 @@ class Member extends User implements IActor {
       return TRUE;
     }
 
-    // Members can delete comments made on items posted in their channel.
-    if ($this->channel()->equals($comment->item()->channel())) {
-      return TRUE;
-    }
+    // #todo revisit this - I don't think they should be able to delete other people's comments.
+    // But they should be able to *remove* or *hide* items from their channel.
+    // If posted in their channel, it's hidden. If cross-posted to their channel, then the cross-post channel tag is
+    // removed. Simplify to just "hidden".
+//    // Members can delete comments made in their channel.
+//    if ($this->channel()->equals($comment->channel())) {
+//      return TRUE;
+//    }
 
     return FALSE;
   }
@@ -1429,18 +1403,28 @@ class Member extends User implements IActor {
    * @return bool
    */
   public function canJoinGroup(Group $group) {
-    // For now, any member can join any group:
+    // For now, any member can join any group.
+    // @todo update with group permissions
     return TRUE;
   }
 
   /**
-   * Check if the member can administer a group.
+   * Check if the member can administer the site.
+   *
+   * @return bool
+   */
+  public function canAdminSite() {
+    return $this->isAdmin() || $this->isSiteAdmin();
+  }
+
+  /**
+   * Check if the member can administer a given group.
    *
    * @param Group $group
    * @return bool
    */
-  public function canAdministerGroup(Group $group) {
-    return $this->isSuperuser() || $this->isAdmin() || $this->isGroupAdmin($group);
+  public function canAdminGroup(Group $group) {
+    return $this->isAdmin() || $this->isSiteAdmin() || $this->isGroupAdmin($group);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1606,6 +1590,7 @@ class Member extends User implements IActor {
     // Construct the main query.
     $q = db_select('view_channel_has_item', 'vchi')
       ->fields('vchi', array('item_nid'))
+      ->condition('item_status', 1)
       ->condition(db_or()
         ->condition('item_uid', $item_uids)
         ->condition('channel_nid', $channel_nids));
@@ -1657,31 +1642,30 @@ class Member extends User implements IActor {
   // Ratings
 
   /**
-   * Get/set this member's rating for an entity.
+   * Get/set this member's rating for an actor.
    *
-   * @param string $entity_type
-   * @param int $entity_id
+   * @param IActor $actor
    * @param int $new_rating
    * @return int|bool
    */
-  public function rating($entity, $new_rating = NULL) {
+  public function rating(IActor $actor, $new_rating = NULL) {
     if ($new_rating === NULL) {
-      // Get this member's rating for the entity.
-      $rels = Relation::searchBinary('rates', $this, $entity);
+      // Get this member's rating for the actor.
+      $rels = Relation::searchBinary('rates', $this, $actor);
 
       if ($rels) {
         return (int) $rels[0]->field('field_rating');
       }
 
-      // The member hasn't rated this entity yet:
+      // The member hasn't rated this actor yet:
       return FALSE;
     }
     else {
-      // Set this member's rating for the entity.
+      // Set this member's rating for the actor.
 
-      // Get the member's current rating for this entity:
-      $old_rating = $this->rating($entity);
-      // $old_rating will be FALSE if the member hasn't rated the entity yet.
+      // Get the member's current rating for this actor:
+      $old_rating = $this->rating($actor);
+      // $old_rating will be FALSE if the member hasn't rated the actor yet.
 
       $rating_names = moonmars_ratings_names();
 
@@ -1690,7 +1674,7 @@ class Member extends User implements IActor {
         'rater' => array(
           'uid' => $this->uid(),
         ),
-        'entity' => array(
+        'actor' => array(
           'old_rating'      => $old_rating,
           'old_rating_name' => $rating_names[$old_rating],
           'new_rating'      => $new_rating,
@@ -1700,30 +1684,30 @@ class Member extends User implements IActor {
 
       /////////////////////////////////////////////////////////
       // Step 1. Update the rating relationship:
-      $rel = Relation::updateBinary('rates', $this, $entity, FALSE);
+      $rel = Relation::updateBinary('rates', $this, $actor, FALSE);
       $rel->field('field_rating', LANGUAGE_NONE, 0, 'value', $new_rating);
       $rel->field('field_multiplier', LANGUAGE_NONE, 0, 'value', 1);
       $rel->save();
 
       /////////////////////////////////////////////////////////
-      // Step 2. Update the entity's score.
+      // Step 2. Update the actor's score.
 
-      // Get the entity's current score:
-      $entity_old_score = (int) $entity->field('field_score');
+      // Get the actor's current score:
+      $old_score = (int) $actor->field('field_score');
 
-      // Update the entity's total score:
-      $entity_new_score = $entity_old_score - $old_rating + $new_rating;
-      $entity->field('field_score', LANGUAGE_NONE, 0, 'value', $entity_new_score);
-      $entity->save();
+      // Update the actor's total score:
+      $new_score = $old_score - $old_rating + $new_rating;
+      $actor->field('field_score', LANGUAGE_NONE, 0, 'value', $new_score);
+      $actor->save();
 
       // Add to result:
-      $result['entity']['old_score'] = $entity_old_score;
-      $result['entity']['new_score'] = $entity_new_score;
+      $result['actor']['old_score'] = $old_score;
+      $result['actor']['new_score'] = $new_score;
 
 //      /////////////////////////////////////////////////////////
 //      // Step 3. Update the rater's score.
 //
-//      // If the rater hasn't rated this entity before, give them a point:
+//      // If the rater hasn't rated this actor before, give them a point:
 //      if ($old_rating === FALSE) {
 //        // Get the rater's current score:
 //        $rater_old_score = (int) $this->field('field_score');
@@ -1741,8 +1725,8 @@ class Member extends User implements IActor {
       /////////////////////////////////////////////////////////
       // Step 4. Update the poster's score.
 
-      // Get the entity's poster:
-      $poster = $entity->creator();
+      // Get the actor's poster:
+      $poster = $actor->creator();
 
       // Get the poster's current score:
       $poster_old_score = (int) $poster->field('field_score');
@@ -1762,11 +1746,11 @@ class Member extends User implements IActor {
 
       $item = NULL;
 
-      if ($entity instanceof ItemComment) {
-        $item = $entity->item();
+      if ($actor instanceof ItemComment) {
+        $item = $actor->item();
       }
-      elseif ($entity instanceof Item) {
-        $item = $entity;
+      elseif ($actor instanceof Item) {
+        $item = $actor;
       }
 
       if ($item) {
@@ -1775,9 +1759,9 @@ class Member extends User implements IActor {
 
         $channel = $item->channel();
         if ($channel) {
-          $actor = $channel->actor();
-          if ($actor && ($actor instanceof Group)) {
-            $group = $actor;
+          $star = $channel->star();
+          if ($star && ($star instanceof Group)) {
+            $group = $star;
           }
         }
 
@@ -1821,6 +1805,15 @@ class Member extends User implements IActor {
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Roles
+
+  /**
+   * Check if the member is a site administrator.
+   *
+   * @return bool
+   */
+  public function isSiteAdmin() {
+    return $this->hasRole('site administrator');
+  }
 
   /**
    * Check if the member is a group administrator.

@@ -4,7 +4,7 @@ use \AstroMultimedia\MoonMars\Member;
 use \AstroMultimedia\MoonMars\Channel;
 
 define('MOONMARS_CHANNEL_DEFAULT_PAGE_SIZE', 10);
-define('MOONMARS_NEWS_CHANNEL_NID', 467);
+//define('MOONMARS_NEWS_CHANNEL_NID', 467);
 
 ///**
 // * Implements hook_menu().
@@ -15,49 +15,47 @@ define('MOONMARS_NEWS_CHANNEL_NID', 467);
 //}
 
 /**
- * Implements hook_form_alter().
+ * Implements hook_form_FORM_ID_alter().
  */
-function moonmars_channels_form_alter(&$form, &$form_state, $form_id) {
-  if ($form_id == 'channel_node_form') {
-    $channel = Channel::create($form['#node']);
-    $actor = $channel->actor();
+function moonmars_channels_form_channel_node_form_alter(&$form, &$form_state) {
+  $channel = Channel::create($form['#node']);
+  $star = $channel->star();
 
-    // In case we're at the channel's edit page, goto the actor's edit/links page.
-    if ($actor instanceof Member) {
-      $logged_in_member = Member::loggedInMember();
-      $edit_links_path = $logged_in_member->editAlias() . '/links';
-      if (request_path() != $edit_links_path) {
-        drupal_goto($edit_links_path);
-      }
+  // In case we're at the channel's edit page, goto the star's edit/links page.
+  if ($star instanceof Member) {
+    $logged_in_member = Member::loggedInMember();
+    $edit_links_path = $logged_in_member->editAlias() . '/links';
+    if (request_path() != $edit_links_path) {
+      drupal_goto($edit_links_path);
     }
-
-    // Remove the title field from the form:
-    unset($form['title']);
-
-    // Is the user on their own profile?
-    $own_profile = ($actor instanceof Member) && $actor->equals(Member::loggedInMember());
-
-    $social_links = moonmars_channels_social_links();
-    foreach ($social_links as $social_link => $social_link_info) {
-      // Add the icon to the link fields:
-      $link_field = $social_link_info['field'];
-      $image_path = "/" . drupal_get_path('theme', 'astro') . "/images/social-icons/" . $social_link . "-25x25.png";
-      $form[$link_field][LANGUAGE_NONE][0]['#title'] = "<img class='social-link-icon' src='$image_path'>&nbsp;" . $form[$link_field][LANGUAGE_NONE][0]['#title'];
-
-      // If the user is editing their own profile, make the description a bit more user-friendly:
-      if ($own_profile) {
-        $form[$link_field][LANGUAGE_NONE][0]['#description'] = str_replace('the member/group/etc. has', 'you have', $form[$link_field][LANGUAGE_NONE][0]['#description']);
-      }
-    }
-
-    // Remove buttons we don't want:
-    unset($form['actions']['delete']);
-    unset($form['actions']['preview']);
-
-    // Handler:
-    $form['actions']['submit']['#validate'][] = 'moonmars_channels_channel_node_form_validate';
-    $form['actions']['submit']['#submit'][] = 'moonmars_channels_channel_node_form_submit';
   }
+
+  // Remove the title field from the form:
+  unset($form['title']);
+
+  // Is the user on their own profile?
+  $own_profile = ($star instanceof Member) && $star->equals(Member::loggedInMember());
+
+  $social_links = moonmars_channels_social_links();
+  foreach ($social_links as $social_link => $social_link_info) {
+    // Add the icon to the link fields:
+    $link_field = $social_link_info['field'];
+    $image_path = "/" . drupal_get_path('theme', 'astro') . "/images/social-icons/" . $social_link . "-25x25.png";
+    $form[$link_field][LANGUAGE_NONE][0]['#title'] = "<img class='social-link-icon' src='$image_path'>&nbsp;" . $form[$link_field][LANGUAGE_NONE][0]['#title'];
+
+    // If the user is editing their own profile, make the description a bit more user-friendly:
+    if ($own_profile) {
+      $form[$link_field][LANGUAGE_NONE][0]['#description'] = str_replace('the member/group/etc. has', 'you have', $form[$link_field][LANGUAGE_NONE][0]['#description']);
+    }
+  }
+
+  // Remove buttons we don't want:
+  unset($form['actions']['delete']);
+  unset($form['actions']['preview']);
+
+  // Handler:
+  $form['actions']['submit']['#validate'][] = 'moonmars_channels_channel_node_form_validate';
+  $form['actions']['submit']['#submit'][] = 'moonmars_channels_channel_node_form_submit';
 }
 
 /**
@@ -96,20 +94,7 @@ function moonmars_channels_channel_node_form_validate($form, &$form_state) {
 function moonmars_channels_channel_node_form_submit($form, &$form_state) {
   // Back to the member or group page:
   $channel = Channel::create($form['#node']);
-  $form_state['redirect'] = $channel->actor()->alias();
-}
-
-/**
- * Return array of node types that have channels.
- *
- * @return array
- */
-function moonmars_channels_node_types() {
-  return array(
-    'group',
-    'event',
-    'project'
-  );
+  $form_state['redirect'] = $channel->star()->alias();
 }
 
 /**
@@ -180,25 +165,4 @@ function moonmars_channels_social_links() {
       'description' => 'Academia profile',
     ),
   );
-}
-
-/**
- * Checks if we're on a node page with an embedded channel.
- *
- * @return bool
- */
-function moonmars_channels_is_embedded_channel_page() {
-  $n_args = arg_count();
-
-  if ($n_args == 2 && is_uint(arg(1))) {
-    if (arg(0) == 'user') {
-      return TRUE;
-    }
-    elseif (arg(0) == 'node') {
-      $node = node_load(arg(1));
-      return in_array($node->type, moonmars_channels_node_types());
-    }
-  }
-
-  return FALSE;
 }

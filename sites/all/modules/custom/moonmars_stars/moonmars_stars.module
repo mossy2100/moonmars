@@ -1,0 +1,305 @@
+<?php
+
+use \AstroMultimedia\MoonMars\Channel;
+use \AstroMultimedia\MoonMars\IStar;
+use \AstroMultimedia\MoonMars\Member;
+use \AstroMultimedia\MoonMars\Group;
+use \AstroMultimedia\MoonMars\Topic;
+use \AstroMultimedia\MoonMars\Triumph;
+use \AstroMultimedia\MoonMars\Relation;
+
+/**
+ * Number of stars to show per page in a star search.
+ */
+const MOONMARS_STAR_SEARCH_PAGE_SIZE = 20;
+
+/**
+ * @author Shaun Moss (mossy2100)
+ * @since 2012-09-08
+ *
+ * A "star" in moonmars.com is an actor that has a channel and a tag. There are 3 types:
+ *   Member (extends User)
+ *   Group (extends Node)
+ *   Topic (extends Term)
+ *
+ * This module provides functions to support working with stars.
+ */
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Constants
+
+/**
+ * Define the minimum length for an star tag.
+ * I'm using 3 here to prevent meaningless tags, but could be changed to 2 or 1. There's not really any reason not to.
+ *
+ * @var int
+ */
+const MOONMARS_STAR_CODE_MIN_LENGTH = 3;
+
+/**
+ * Define the maximum length for an star tag.
+ * Since usernames are star tags, we'll just use the Drupal default max length which is 60 (USERNAME_MAX_LENGTH).
+ *
+ * @var int
+ */
+const MOONMARS_STAR_CODE_MAX_LENGTH = 60;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Core hooks
+
+/**
+ * Implements hook_menu().
+ */
+function moonmars_stars_menu() {
+  $items = array();
+  $items['ajax/check-star-tag'] = array(
+    'page callback'   => 'moonmars_stars_ajax_check_tag',
+    'access callback' => TRUE,
+    'type'            => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Checking member and group tags
+
+/**
+ * AJAX callback to check if a star tag is valid.
+ */
+function moonmars_stars_ajax_check_tag() {
+  // Get parameters from the query string:
+  $star_tag = isset($_REQUEST['starTag']) ? $_REQUEST['starTag'] : NULL;
+  $star_type = isset($_REQUEST['starType']) ? $_REQUEST['starType'] : NULL;
+  $star_id = isset($_REQUEST['starId']) ? $_REQUEST['starId'] : NULL;
+
+  // Default result:
+  $data = array(
+    'result' => FALSE,
+  );
+
+  // Check for valid parameters:
+  if (!$star_type || !in_array($star_type, array('member', 'group', 'topic')) || !$star_tag) {
+    $data['message'] = "Invalid parameters";
+    echo json_encode($data);
+    return;
+  }
+
+  // Check for valid characters and and length:
+  if (!moonmars_stars_valid_tag($star_tag)) {
+    $data['message'] = "Invalid";
+    echo json_encode($data);
+    return;
+  }
+
+  // Check if any other star of the same type has this tag:
+  switch ($star_type) {
+    case 'member':
+      // Check if any other member has the same username:
+      $q = db_select('users', 'u')
+        ->fields('u', array('uid'))
+        ->condition('name', $star_tag);
+      // If editing a member, look for a different member with the same tag:
+      if ($star_id) {
+        $q->condition('uid', $star_id, '!=');
+      }
+      break;
+
+    case 'group':
+      // Check if any other group has the same tag:
+      $q = db_select('node', 'n')
+        ->fields('n', array('nid'));
+      $q->join('field_data_field_group_tag', 'gt', "n.nid = gt.entity_id");
+      $q->condition('field_group_tag_value', $star_tag);
+      // If editing a group, look for a different group with the same tag:
+      if ($star_id) {
+        $q->condition('nid', $star_id, '!=');
+      }
+      break;
+
+    case 'topic':
+      // Check if any other topic has the same tag:
+      $q = db_select('taxonomy_term_data', 't')
+        ->fields('t', array('tid'))
+        ->condition('name', $star_tag);
+      // If editing a topic, look for a different topic with the same tag:
+      if ($star_id) {
+        $q->condition('tid', $star_id, '!=');
+      }
+      break;
+  }
+
+  // Check if a match was found:
+  if ($q->execute()->rowCount()) {
+    $data['message'] = "Taken";
+    echo json_encode($data);
+    return;
+  }
+
+  // It's ok:
+  $data = array(
+    'result' => TRUE,
+    'message' => "OK",
+  );
+  echo json_encode($data);
+  return;
+}
+
+/**
+ * Check if a member name or group tag is valid.
+ *
+ * This means:
+ *   - Between 3 and 60 (USERNAME_MAX_LENGTH) characters.
+ *   - Letters, digits, hyphens and underscores only.
+ *
+ * This set of rules permits:
+ *   - Drupal will allow it. @see user.module/user_validate_name()
+ *   - Apache will allow it. If a username starts with a period then Apache will show a Forbidden message if their
+ *       profile path is requested.
+ *   - Uses only unreserved characters.
+ *       @see http://www.456bereastreet.com/archive/201006/be_careful_with_non-ascii_characters_in_urls/
+ *   - Member profile alias will match the username exactly, i.e. /member/$username
+ *   - Group profile alias will match the group tag exactly, i.e. /group/$group_tag
+ *
+ * @param $name
+ * @return bool
+ */
+function moonmars_stars_valid_tag($name) {
+  return (bool) preg_match("/^[a-z0-9\-\_]{" . MOONMARS_STAR_CODE_MIN_LENGTH . "," . MOONMARS_STAR_CODE_MAX_LENGTH . "}$/i", $name);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Functions and hooks for saving members and groups
+
+/**
+ * Common code for resetting aliases when saving members and groups.
+ *
+ * @param IStar $star
+ */
+function moonmars_stars_reset_aliases(IStar $star) {
+  // Update the alias for the star:
+  $star->resetAlias();
+
+  // Update the alias and title for the star's channel.
+  $channel = $star->channel();
+  if ($channel) {
+    $channel->resetAliasAndTitle();
+  }
+}
+
+/**
+ * Implements hook_entity_insert().
+ *
+ * Note, we use this hook instead of hook_node_insert() or hook_user_insert() as it gets called later in the cycle,
+ * after pathauto_node_insert_alias() sets the alias according to the pattern.
+ */
+function moonmars_stars_entity_insert($entity, $entity_type) {
+  moonmars_stars_entity_save($entity, $entity_type, TRUE);
+}
+
+/**
+ * Implements hook_entity_update().
+ *
+ * This hook is invoked after the node or user is saved to the database and immediately after hook_user_update() or
+ * hook_node_update().
+ * Event order:
+ *   1. Save user/node to the database
+ *   2. Invoke user_update/node_update
+ *   3. Invoke entity_update
+ *
+ * We use this hook instead of hook_node_update() as it gets called later in the cycle, after
+ * pathauto_node_update_alias() sets the alias according to the pattern.
+ */
+function moonmars_stars_entity_update($entity, $entity_type) {
+  moonmars_stars_entity_save($entity, $entity_type, FALSE);
+}
+
+/**
+ * Called when updating an star.
+ *
+ * The reason why this is done here (called by hook_entity_insert and hook_entity_update) is because setting aliases
+ * at this point in the execution cycle will override behaviour by pathauto.
+ *
+ * @param stdClass $entity
+ * @param string $entity_type
+ * @param bool $is_new
+ */
+function moonmars_stars_entity_save($entity, $entity_type, $is_new) {
+  // Get the actor:
+  $star = moonmars_actors_get_actor($entity_type, $entity);
+  // If a star, update the star alias and its channel alias and title:
+  if ($star && $star instanceof IStar) {
+    moonmars_stars_reset_aliases($star);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Functions for getting and creating star entities and channels
+
+/**
+ * Creates a new channel for an star.
+ *
+ * @param IStar $star
+ * @return Channel
+ */
+function moonmars_stars_create_channel(IStar $star) {
+  // Create the new channel. The 'uid' here is the uid of the owner of the star entity, which becomes the owner of the
+  // channel node. It's valid for member, group and topic, and not a bug.
+  $channel = Channel::create()
+    ->setProperties(array(
+    'uid' => $star->uid(),
+    'title' => $star->channelTitle(),
+  ));
+
+  // Save the node for the first time, which will give it a nid, which we need to create the relationship:
+  $channel->save();
+
+  // Create the relationship between the star and the channel:
+  Relation::createBinary('has_channel', $star, $channel);
+
+  // Reset the channel's alias and title. This needs to be done after creating the relationship.
+  $channel->resetAliasAndTitle();
+
+  // Return the Channel:
+  return $channel;
+}
+
+/**
+ * Get an star's channel.
+ *
+ * @param IStar $star
+ * @param bool $create
+ * @return int
+ */
+function moonmars_stars_get_channel(IStar $star, $create = TRUE) {
+  // Check if the star already has a channel:
+  $rels = Relation::searchBinary('has_channel', $star, NULL);
+
+  if (!empty($rels)) {
+    return $rels[0]->endpoint(1);
+  }
+
+  // If the star has no channel, and $create is TRUE, create the channel now:
+  if ($create) {
+    return moonmars_stars_create_channel($star);
+  }
+
+  return NULL;
+}
+
+/**
+ * Get the settings array for tag prefixes for when we need this on the client in JS.
+ *
+ * @return array
+ */
+function moonmars_stars_tag_prefixes() {
+  return array(
+    'data' => array(
+      'tagPrefixes' => array(
+        'member' => Member::TAG_PREFIX,
+        'group' => Group::TAG_PREFIX,
+        'topic' => Topic::TAG_PREFIX,
+      ),
+    ),
+    'type' => 'setting',
+  );
+}

@@ -137,6 +137,20 @@ form {
         margin-right: 10px;
       }
     }
+
+    #autocomplete {
+      border: solid 1px $blue4;
+      @include border-radius(3px);
+      @include box-shadow2(1px, 1px, 2px, 1px, $grey4);
+
+      ul {
+        margin: 0;
+
+        li {
+          padding: 2px;
+        }
+      }
+    }
   }
 
   & > div > .form-item:first-child {
@@ -267,7 +281,6 @@ form {
   color: #fff;
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Quicksearch form
 
@@ -313,5 +326,19 @@ section.block-moonmars-quicksearch {
         }
       }
     }
+  }
+}
+
+fieldset.captcha {
+  #draggable-captcha {
+    margin: 10px 0;
+
+    #captchaWrapper {
+      margin: 10px 0;
+    }
+  }
+
+  .form-item-captcha-response {
+    margin: 0;
   }
 }

@@ -1,7 +1,8 @@
 <?php
-
 use \AstroMultimedia\MoonMars\Member;
 use \AstroMultimedia\MoonMars\Channel;
+use \AstroMultimedia\MoonMars\Group;
+use \AstroMultimedia\MoonMars\Triumph;
 
 /**
  * Implements hook_init().
@@ -19,13 +20,17 @@ function moonmars_members_init() {
 
   if (user_is_logged_in()) {
     global $user;
-    drupal_add_js(array('moonmars_members' => array('username' => $user->name)), 'setting');
+    drupal_add_js(array(
+      'moonmars_members' => array(
+        'username' => $user->name
+      )
+    ), 'setting');
     drupal_add_js("$module_path/js/set-username-menu.js");
   }
 
   // String to explain username constraints:
   global $moonmars_username_desc;
-  $moonmars_username_desc = "Usernames may only contain letters, digits, hyphens and underscores (a-z, A-Z, 0-9, -_), and must be between " . MOONMARS_ACTOR_CODE_MIN_LENGTH . " and " . MOONMARS_ACTOR_CODE_MAX_LENGTH . " characters in length.";
+  $moonmars_username_desc = "Usernames may only contain letters, digits, hyphens and underscores (a-z, A-Z, 0-9, -_), and must be between " . MOONMARS_STAR_CODE_MIN_LENGTH . " and " . MOONMARS_STAR_CODE_MAX_LENGTH . " characters in length.";
 }
 
 /**
@@ -74,23 +79,31 @@ function moonmars_members_menu() {
     'access callback' => 'moonmars_members_access_private',
     'type' => MENU_CALLBACK,
   );
+  
+  // Search members form:
+  $items['members'] = array(
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('moonmars_members_search_form'),
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
   return $items;
 }
 
-///**
-// * Get the level roles, with the level number (which equals the multiplier) as keys.
-// *
-// * @return array
-// */
-//function moonmars_members_levels() {
-//  return array(
-//    1 => 'iron',
-//    2 => 'copper',
-//    3 => 'silver',
-//    4 => 'gold',
-//    5 => 'platinum'
-//  );
-//}
+/**
+ * Get the level roles, with the level number (which equals the rating multiplier) as keys.
+ *
+ * @return array
+ */
+function moonmars_members_levels() {
+  return array(
+    1 => 'asteroid',
+    2 => 'dwarf planet',
+    3 => 'terrestrial planet',
+    4 => 'gas giant',
+    5 => 'star'
+  );
+}
 
 /**
  * Checks if the logged-in user is on one of their own pages.
@@ -100,7 +113,7 @@ function moonmars_members_menu() {
 function moonmars_members_on_own_page() {
   // Get the logged-in member and the member whose page it is:
   $logged_in_member = Member::loggedInMember();
-  $actor = moonmars_objects_get_object_from_url();
+  $actor = moonmars_actors_get_actor_from_url();
   return $logged_in_member && $actor && $actor->equals($logged_in_member);
 }
 
@@ -110,7 +123,7 @@ function moonmars_members_on_own_page() {
  * @return bool
  */
 function moonmars_members_is_member_page() {
-  $actor = moonmars_objects_get_object_from_url();
+  $actor = moonmars_actors_get_actor_from_url();
   return $actor && ($actor instanceof Member);
 }
 
@@ -131,35 +144,29 @@ function moonmars_members_access_private() {
  * Implements hook_form_alter().
  */
 function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
-  global $moonmars_username_desc;
-
-//  dbg($form_id);
-
   // Check for relevant form_ids:
   if (!in_array($form_id, array('user_register_form', 'user_profile_form'))) {
     return;
   }
 
+  global $moonmars_username_desc;
+
   // Common JS:
   $module_path = drupal_get_path('module', 'moonmars_members');
   $form['#attached']['js'][] = "$module_path/js/moon-or-mars.js";
-  $form['#attached']['js'][] = moonmars_actors_tag_prefixes();
-  $form['#attached']['js'][] = drupal_get_path('module', 'moonmars_actors') . "/js/actor-tag-check.js";
+  $form['#attached']['js'][] = moonmars_stars_tag_prefixes();
+  $form['#attached']['js'][] = drupal_get_path('module', 'moonmars_stars') . "/js/star-tag-check.js";
   $form['#attached']['js'][] = "$module_path/js/member-name-check.js";
 
   switch ($form_id) {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Registration form
     case 'user_register_form':
-      // JS:
-      $form['#attached']['js'][] = "$module_path/js/register-form.js";
 
       // Change the title:
       drupal_set_title("Join moonmars.com!");
 
       // Update username field description re valid characters:
-//      unset($form['#groups']['group_account']->label);
-
       $form['account']['name']['#description'] = $moonmars_username_desc;
 
       // Move "moon or mars" to the account fieldset:
@@ -222,7 +229,6 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
       $form['rules']['#weight'] = $weight++;
       $form['rules']['text']['#weight'] = $weight++;
       $form['rules']['agree']['#weight'] = $weight++;
-//      dbg($form);
       break;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -306,32 +312,15 @@ function moonmars_members_form_alter(&$form, &$form_state, $form_id) {
       $form['#fieldgroups']['group_preferences']->weight = $weight++;
       $form['signature']['#weight'] = $weight++;
       $form['contact']['#weight'] = $weight++;
-
-//      // Notifications tab:
-//      $form['buttons']['#weight'] = $weight++;
-//      $form['#fieldgroups']['group_site_nxns']->weight = $weight++;
-//      $form['#fieldgroups']['group_channel_nxns']->weight = $weight++;
-//      $form['#fieldgroups']['group_followee_nxns']->weight = $weight++;
-//      $form['#fieldgroups']['group_nxns']->weight = $weight++;
-
-//      dpm($form);
-
       break;
   }
-
-//  foreach ($form as $key => $value) {
-//    if (is_array($value) && isset($value['#weight'])) {
-//      dbg("$key weight {$value['#weight']}");
-//    }
-//  }
-
 }
 
 /**
  * Validation handler for the user registration form.
  */
 function moonmars_members_user_register_form_validate($form, &$form_state) {
-  if (!moonmars_actors_valid_tag($form_state['values']['name'])) {
+  if (!moonmars_stars_valid_tag($form_state['values']['name'])) {
     global $moonmars_username_desc;
     form_set_error('name', $moonmars_username_desc);
   }
@@ -346,7 +335,6 @@ function moonmars_members_user_register_form_validate($form, &$form_state) {
 function moonmars_members_user_register_form_after_build($form) {
   // Make some changes to the location fields that we can't do in hook_form_alter().
   $form['account']['field_user_location'][LANGUAGE_NONE][0]['country']['#description'] = "Select your country";
-
   return $form;
 }
 
@@ -381,7 +369,7 @@ function moonmars_members_user_profile_form_after_build($form) {
  * Validation handler for the user account/profile form.
  */
 function moonmars_members_user_profile_form_validate($form, &$form_state) {
-  if (!moonmars_actors_valid_tag($form_state['values']['name'])) {
+  if (!moonmars_stars_valid_tag($form_state['values']['name'])) {
     global $moonmars_username_desc;
     form_set_error('name', $moonmars_username_desc);
   }
@@ -392,21 +380,33 @@ function moonmars_members_user_profile_form_validate($form, &$form_state) {
  */
 function moonmars_members_user_profile_form_submit($form, &$form_state) {
   // Get the member whose profile is being updated:
-  $member = Member::create($form['#user']);
+  $member = Member::create($form_state['user']);
 
-//  // Update the channel's links:
-//  $channel = $member->channel();
-//
-//  // We have to inspect $_POST instead of $form_state['values'], because Drupal removes the submitted values for the
-//  // links, presumably because they came from another form.
-//  $link_fields = moonmars_channels_social_links();
-//  foreach ($link_fields as $info) {
-//    $link_field = $info['field'];
-//    $channel->field($link_field, LANGUAGE_NONE, 0, 'url', $_POST[$link_field][LANGUAGE_NONE][0]['url']);
-//  }
-//
-//  // Save the channel:
-//  $channel->save();
+  // The first time a member's profile is updated, send a new-member triumph.
+  // The reason why we don't do this if the user account is created via the user_register form,
+  // or when they confirm their email address,
+  // is because if we send new-member notifications at those times they won't contain much interesting info.
+  // The first time they update their profile, however (which should be straight after they confirm their email address)
+  // will probably when they enter most of their personal info.
+  // Then we send the nxn with the interesting info, so people will know whether they want to follow the new member
+  // or not.
+  // Note that the person updating the profile does not have to be the profile owner (i.e. could be an admin manually
+  // creating a new member account.)
+  if (!$member->newMemberTriumphCreated()) {
+    Triumph::newMember($member);
+
+    // This is a good time to add the new member to %moonmars-news because we only want to add them once.
+    // This code can't be called every time the member profile is updated, because they might leave the group and will
+    // not want to be automatically re-added every time they update their profile.
+    $moonmars_news_group = Group::findByTag('moonmars-news');
+    $member->joinGroup($moonmars_news_group, FALSE);
+  }
+  elseif ($member->isLoggedInUser()) {
+    // Only send an updateMember nxn if the member is updating their own profile, i.e., not if an admin is doing it.
+    // This is because an administrator probably won't be adding interesting info - they'll most likely just be
+    // updating a password or something.
+    Triumph::updateMember($member);
+  }
 
   // Go back to the user's profile:
   $form_state['redirect'] = $member->alias();
@@ -414,18 +414,6 @@ function moonmars_members_user_profile_form_submit($form, &$form_state) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Member edit forms
-//
-//function moonmars_members_edit_redirect($user) {
-//  if ($_GET) {
-//    $options = ['query' => $_GET];
-//  }
-//  else {
-//    $options = array();
-//  }
-//
-//  dpm('moonmars_members_edit_redirect - redirecting to ' . "user/$uid/edit/profile");
-//  drupal_goto("user/$uid/edit/profile", $options);
-//}
 
 /**
  * Display form for editing profile.
@@ -435,7 +423,7 @@ function moonmars_members_user_profile_form_submit($form, &$form_state) {
  */
 function moonmars_members_edit_profile_form($user) {
   $member = Member::create($user);
-  drupal_set_title(t('<em>@username:</em> Edit profile', array('@username' => $member->name())), PASS_THROUGH);
+  drupal_set_title(t('Edit @username', array('@username' => $member->tag(NULL, TRUE))), PASS_THROUGH);
   require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'user') . '/user.pages.inc';
   return drupal_get_form('user_profile_form', $member->user());
 }
@@ -642,7 +630,7 @@ function moonmars_members_menu_block() {
   global $user;
 
   // Check we're on a member page:
-  $page_member = moonmars_objects_get_object_from_url();
+  $page_member = moonmars_actors_get_actor_from_url();
   if (!$page_member || !($page_member instanceof Member)) {
     return '';
   }
@@ -706,8 +694,8 @@ function moonmars_members_menu_block() {
  */
 function moonmars_members_groups_block() {
   // Get the member from the URL:
-  $entity = moonmars_objects_get_object_from_url();
-  $member = ($entity instanceof Member) ? $entity : (($entity instanceof Channel) ? $entity->actor() : FALSE);
+  $actor = moonmars_actors_get_actor_from_url();
+  $member = ($actor instanceof Member) ? $actor : (($actor instanceof Channel) ? $actor->star() : FALSE);
   if (!($member instanceof Member)) {
     return '';
   }
@@ -729,8 +717,8 @@ function moonmars_members_groups_block() {
  */
 function moonmars_members_followers_block() {
   // Get the member from the URL:
-  $entity = moonmars_objects_get_object_from_url();
-  $member = ($entity instanceof Member) ? $entity : (($entity instanceof Channel) ? $entity->actor() : FALSE);
+  $actor = moonmars_actors_get_actor_from_url();
+  $member = ($actor instanceof Member) ? $actor : (($actor instanceof Channel) ? $actor->star() : FALSE);
   if (!($member instanceof Member)) {
     return '';
   }
@@ -748,8 +736,8 @@ function moonmars_members_followers_block() {
  */
 function moonmars_members_followees_block() {
   // Get the member from the URL:
-  $entity = moonmars_objects_get_object_from_url();
-  $member = ($entity instanceof Member) ? $entity : (($entity instanceof Channel) ? $entity->actor() : FALSE);
+  $actor = moonmars_actors_get_actor_from_url();
+  $member = ($actor instanceof Member) ? $actor : (($actor instanceof Channel) ? $actor->star() : FALSE);
   if (!($member instanceof Member)) {
     return '';
   }
@@ -777,7 +765,7 @@ function moonmars_members_following($uid) {
  * Create the member edit menu.
  */
 function moonmars_members_edit_tabs_block() {
-  $page_member = moonmars_objects_get_object_from_url();
+  $page_member = moonmars_actors_get_actor_from_url();
   if (!$page_member instanceof Member) {
     return FALSE;
   }
@@ -791,7 +779,7 @@ function moonmars_members_edit_tabs_block() {
     "$edit_base/notifications" => 'Notifications',
   );
 
-  $html = "<ul id='actor-edit-tabs'>";
+  $html = "<ul id='member-edit-tabs'>";
   foreach ($tabs as $url => $label) {
     $html .= "<li><a href='/$url'";
     if ($request == $url) {
@@ -835,4 +823,419 @@ function moonmars_members_notifications($uid) {
 
   drupal_set_title('Your Notifications');
   return views_embed_view('notifications', 'page', $uid);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Search
+
+/**
+ * Search members.
+ *
+ * @param array $params
+ * @return array
+ */
+function moonmars_members_search($params = array()) {
+  // Reset the search params:
+  $_SESSION['member_search']['params'] = array();
+
+  // Create the search query:
+  $q = db_select('view_member', 'vm')
+    ->fields('vm', array('uid'))
+    ->condition('uid', 0, '!=');
+
+  // Text:
+  if (isset($params['text'])) {
+    $text = trim($params['text']);
+    if ($text) {
+      $words = explode(' ' , $text);
+      $or = db_or();
+      foreach ($words as $word) {
+        $word = trim($word);
+        if ($word) {
+          $or = $or
+            ->condition('name', "%$word%", 'LIKE')
+            ->condition('full_name', "%$word%", 'LIKE')
+            ->condition('bio', "%$word%", 'LIKE');
+        }
+      }
+      $q->condition($or);
+      $_SESSION['member_search']['params']['text'] = $text;
+    }
+  }
+
+  // Followee:
+  if (isset($params['followee'])) {
+    $followee = trim($params['followee']);
+    if ($followee) {
+      // Create the subquery:
+      $subquery = db_select('view_followers', 'vf')
+        ->fields('vf', array('follower_uid'))
+        ->condition('followee_name', $followee);
+
+      // Add the condition:
+      $follows = isset($params['follows']) ? ((bool) $params['follows']) : TRUE;
+      $q->condition('uid', $subquery, $follows ? 'IN' : 'NOT IN');
+
+      // Add the cleaned parameters to the session array:
+      $_SESSION['member_search']['params']['follows'] = $follows;
+      $_SESSION['member_search']['params']['followee'] = $followee;
+    }
+  }
+
+  // Follower:
+  if (isset($params['follower'])) {
+    $follower = trim($params['follower']);
+    if ($follower) {
+      // Create the subquery:
+      $subquery = db_select('view_followers', 'vf2')
+        ->fields('vf2', array('followee_uid'))
+        ->condition('follower_name', $follower);
+
+      // Add the condition:
+      $is_followed_by = isset($params['is_followed_by']) ? ((bool) $params['is_followed_by']) : TRUE;
+      $q->condition('uid', $subquery, $is_followed_by ? 'IN' : 'NOT IN');
+
+      // Add the cleaned parameters to the session array:
+      $_SESSION['member_search']['params']['is_followed_by'] = $is_followed_by;
+      $_SESSION['member_search']['params']['follower'] = $follower;
+    }
+  }
+
+  // Group membership:
+  if (isset($params['group'])) {
+    $group = trim($params['group']);
+    if ($group) {
+      // Create the subquery:
+      $subquery = db_select('view_group_has_member', 'vm')
+        ->fields('vm', array('member_uid'))
+        ->condition('group_tag', $group);
+
+      // Add the condition:
+      $is_member = isset($params['is_member']) ? ((bool) $params['is_member']) : TRUE;
+      $q->condition('uid', $subquery, $is_member ? 'IN' : 'NOT IN');
+
+      // Add the cleaned parameters to the session array:
+      $_SESSION['member_search']['params']['is_member'] = $is_member;
+      $_SESSION['member_search']['params']['group'] = $group;
+    }
+  }
+
+  // Order by title:
+  $q->orderBy('name');
+
+  // Get the results:
+  $rs = $q->execute();
+  $results = array();
+  foreach ($rs as $rec) {
+    $results[] = $rec->uid;
+  }
+
+  return $results;
+}
+
+/**
+ * Create the member search form, including the search results.
+ *
+ * @return array
+ */
+function moonmars_members_search_form() {
+  // Search using parameters from either the POST or GET array, if either is provided.
+  $params = NULL;
+
+  if (isset($_SESSION['member_search']['redo_search']) && $_SESSION['member_search']['redo_search']) {
+    $params = $_SESSION['member_search']['params'];
+    unset($_SESSION['member_search']['redo_search']);
+  }
+  elseif ($_POST && isset($_POST['op']) && $_POST['op'] == 'Search') {
+    $params = $_POST;
+  }
+  else {
+    $params = $_GET;
+    unset($params['q']);
+    unset($params['page']);
+  }
+
+  // If we have search params then do a new search, otherwise we'll just display results from the previous search.
+  if ($params) {
+    $_SESSION['member_search']['results'] = moonmars_members_search($params);
+  }
+
+  // Get the page number:
+  $_SESSION['member_search']['page'] = isset($_GET['page']) ? ((int) $_GET['page']) : 0;
+
+  // Clamp the page number:
+  $n_pages = isset($_SESSION['member_search']['results']) ? (ceil(count($_SESSION['member_search']['results']) / MOONMARS_STAR_SEARCH_PAGE_SIZE)) : 0;
+  if ($_SESSION['member_search']['page'] < 0) {
+    $_SESSION['member_search']['page'] = 0;
+  }
+  elseif ($n_pages && $_SESSION['member_search']['page'] >= $n_pages) {
+    $_SESSION['member_search']['page'] = $n_pages - 1;
+  }
+
+  // Get the current member:
+  $logged_in_member = Member::loggedInMember();
+
+  // Create the form:
+  $form = array();
+  $form['title'] = array(
+    '#value' => "<h2>Search members</h2>",
+  );
+  $form['search'] = array(
+    '#type' => 'fieldset',
+  );
+  $form['search']['text'] = array(
+    '#type' => 'textfield',
+    '#title' => "Name/bio",
+    '#description' => "Enter part of the username, full name or bio of the member.",
+    '#default_value' => isset($_SESSION['member_search']['params']['text']) ? $_SESSION['member_search']['params']['text'] : '',
+  );
+  $form['search']['follows'] = array(
+    '#prefix' => "<div class='member-search-follower'><label class='member-search'>Followers</label>",
+    '#title' => "Find members that",
+    '#type' => 'radios',
+    '#options' => array(
+      1 => "follow",
+      0 => "do not follow",
+    ),
+    '#default_value' => isset($_SESSION['member_search']['params']['follows']) ? ((int) $_SESSION['member_search']['params']['follows']) : 1,
+  );
+  $form['search']['followee'] = array(
+    '#type' => 'textfield',
+    '#autocomplete_path' => 'user/autocomplete',
+    '#default_value' => isset($_SESSION['member_search']['params']['followee']) ? $_SESSION['member_search']['params']['followee'] : '',
+    '#suffix' => "<input class='button-link' type='button' value='me' onclick='setFolloweeToMe()'></div>",
+  );
+  $form['search']['is_followed_by'] = array(
+    '#prefix' => "<div class='member-search-followee'><label class='member-search'>Followees</label>",
+    '#title' => "Find members that",
+    '#type' => 'radios',
+    '#options' => array(
+      1 => "are",
+      0 => "are not followed by",
+    ),
+    '#default_value' => isset($_SESSION['member_search']['params']['is_followed_by']) ? ((int) $_SESSION['member_search']['params']['is_followed_by']) : 1,
+  );
+  $form['search']['follower'] = array(
+    '#type' => 'textfield',
+    '#autocomplete_path' => 'user/autocomplete',
+    '#default_value' => isset($_SESSION['member_search']['params']['follower']) ? $_SESSION['member_search']['params']['follower'] : '',
+    '#suffix' => "<input class='button-link' type='button' value='me' onclick='setFollowerToMe()'></div>",
+  );
+  $form['search']['is_member'] = array(
+    '#prefix' => "<div class='member-search-group'><label class='member-search'>Group</label>",
+    '#title' => "Find members that",
+    '#type' => 'radios',
+    '#options' => array(
+      1 => "are",
+      0 => "are not members of",
+    ),
+    '#default_value' => isset($_SESSION['member_search']['params']['is_member']) ? ((int) $_SESSION['member_search']['params']['is_member']) : 1,
+  );
+  $form['search']['group'] = array(
+    '#type' => 'textfield',
+    '#autocomplete_path' => 'groups/autocomplete',
+    '#default_value' => isset($_SESSION['member_search']['params']['group']) ? $_SESSION['member_search']['params']['group'] : '',
+    '#suffix' => "</div>",
+  );
+  $form['search']['clear'] = array(
+    '#prefix' => "<div id='search-buttons'>",
+    '#markup' => "<input type='button' class='form-button clear-button' value='Clear' onclick='clearMemberSearchForm()'>",
+  );
+  $form['search']['submit'] = array(
+    '#type'  => 'submit',
+    '#value' => "Search",
+    '#suffix' => "</div>",
+  );
+
+  // If we have a current member, show checkboxes for the members so they bulk join/leave:
+  if ($logged_in_member) {
+    $c = 0;
+    for ($i = 0; $i < MOONMARS_STAR_SEARCH_PAGE_SIZE; $i++) {
+      $n = $_SESSION['member_search']['page'] * MOONMARS_STAR_SEARCH_PAGE_SIZE + $i;
+
+      // In case an overly high page number is passed as a query string param:
+      if (!isset($_SESSION['member_search']['results'][$n])) {
+        break;
+      }
+
+      $member_uid = $_SESSION['member_search']['results'][$n];
+      $member = Member::create($member_uid);
+
+      // Follow/unfollow checkbox:
+      if ($member_uid != $logged_in_member->uid()) {
+        $form['member']["follower-of-member-$member_uid"] = array(
+          '#type' => 'checkbox',
+          '#default_value' => $logged_in_member->follows($member),
+        );
+        $c++;
+      }
+    }
+
+    if ($c) {
+      $form['update'] = array(
+        '#type' => 'submit',
+        '#value' => "Update followees",
+        '#submit' => array('moonmars_members_search_form_update'),
+      );
+    }
+  }
+
+  $form['#attached']['js'][] = drupal_get_path('module', 'moonmars_members') . "/js/member-search.js";
+  $form['#theme'] = 'moonmars_members_search_form';
+
+  return $form;
+}
+
+/**
+ * Submit handler for members search form.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function moonmars_members_search_form_update($form, &$form_state) {
+  $logged_in_member = Member::loggedInMember();
+
+  // Look for "follower-of-member" checkboxes:
+  foreach ($form_state['values'] as $key => $value) {
+    if (beginsWith($key, 'follower-of-member')) {
+      $member_uid = (int) substr($key, strlen('follower-of-member-'));
+      $member = Member::create($member_uid);
+
+      if ($value && !$logged_in_member->follows($member)) {
+        // If they're not following the member but want to be, create follow relationship:
+        $logged_in_member->follow($member);
+        drupal_set_message(t("You are now following %user2_name.", array('%user2_name' => $member->name())));
+      }
+      elseif (!$value && $logged_in_member->follows($member)) {
+        // If they're following a member but don't want to be, remove the follow relationship:
+        $logged_in_member->unfollow($member);
+        drupal_set_message(t("You are no longer following %user2_name.", array('%user2_name' => $member->name())));
+      }
+
+    }
+  }
+
+  drupal_set_message("Your followees have been updated.");
+
+  // Set the flag to redo the search:
+  $_SESSION['member_search']['redo_search'] = TRUE;
+
+  $form_state['redirect'] = array(
+    'members',
+    array(
+      'query' => array(
+        'page' => $_SESSION['member_search']['page'],
+      ),
+    ),
+  );
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Theming
+
+/**
+ * Implements hook_theme().
+ *
+ * @return array
+ */
+function moonmars_members_theme() {
+  return array(
+    'moonmars_members_search_form' => array(
+      'render element' => 'form',
+    ),
+  );
+}
+
+/**
+ * Theme the member search form.
+ *
+ * @param $vars
+ * @return string
+ */
+function theme_moonmars_members_search_form($vars) {
+  $form = $vars['form'];
+  $html = '';
+  $html .= render($form['search']);
+  $html .= "<h3>Search Results</h3>";
+
+  // Create a table of results:
+  $header = array(
+    array(
+      'data' => 'Member',
+      'class' => array('search-col-star'),
+    ),
+    array(
+      'data' => 'Bio',
+      'class' => array('search-col-desc'),
+    ),
+  );
+
+  // If the user is logged in, add the member column:
+  $logged_in_member = Member::loggedInMember();
+  if ($logged_in_member) {
+    $header[] =
+      array(
+        'data'  => "<input type='checkbox' id='members-select-all'> Following?",
+        'class' => array('search-col-follower'),
+      );
+  }
+
+  $n_members = isset($_SESSION['member_search']['results']) ? count($_SESSION['member_search']['results']) : 0;
+  $html .= "<p>" . format_plural($n_members, "1 member matches", "@count members match") . " your search.</p>";
+
+  if (isset($_SESSION['member_search']['results']) && $_SESSION['member_search']['results']) {
+
+    // Search results:
+    $rows = array();
+
+    for ($i = 0; $i < MOONMARS_STAR_SEARCH_PAGE_SIZE; $i++) {
+      $n = $_SESSION['member_search']['page'] * MOONMARS_STAR_SEARCH_PAGE_SIZE + $i;
+
+      // In case an overly high page number is passed as a querystring param:
+      if (!isset($_SESSION['member_search']['results'][$n])) {
+        break;
+      }
+
+      $member_uid = $_SESSION['member_search']['results'][$n];
+      $member = Member::create($member_uid);
+
+      $bio = "<div class='star-desc'>" . $member->bio() . "</span>";
+
+      // Create the row:
+      $row = array(
+        array(
+          'data'  => "<div class='star-link'>" . l($member->avatar() . '<br>' . $member->name(), $member->alias(), array('html' => TRUE)) . "</div>",
+          'class' => array('search-col-star'),
+        ),
+        array(
+          'data'  => $bio,
+          'class' => array('search-col-desc'),
+        ),
+      );
+
+      // If the user is logged in, add the member column:
+      if ($logged_in_member) {
+        $row[] = array(
+          'data' => $form['member']["follower-of-member-$member_uid"] ? render($form['member']["follower-of-member-$member_uid"]) : 'N/A',
+          'class' => array('search-col-star'),
+        );
+      }
+
+      // Add the row to the table:
+      $rows[] = $row;
+    }
+
+    // Render the table of members:
+    $html .= theme('table', array('header' => $header, 'rows' => $rows));
+
+    // Update button:
+    $html .= drupal_render_children($form);
+
+    // Pager:
+    $total_n_members = count($_SESSION['member_search']['results']);
+    pager_default_initialize($total_n_members, MOONMARS_STAR_SEARCH_PAGE_SIZE);
+    $html .= theme('pager', array('quantity' => $total_n_members));
+  }
+
+  return $html;
 }

@@ -90,9 +90,10 @@ class Relation extends Entity {
       // Reference the provided entity object:
       $relation_obj->entity = $relation;
 
-      // Make sure we mark the relation as loaded. It may not have been saved yet, and if we load it, any changes to the
-      // relation entity would be overwritten.
+      // Make sure we mark the relation as loaded and valid. It may not have been saved yet, and if we load it, any
+      // changes to the relation entity would be overwritten.
       $relation_obj->loaded = TRUE;
+      $relation_obj->valid = TRUE;
     }
 
     // If we have a relation object, add to cache and return:
@@ -286,7 +287,7 @@ class Relation extends Entity {
    *   Whether or not to save the relationship. Defaults to TRUE.
    * @return Relation
    */
-  public static function createNewBinary($relationship_type, $entity0, $entity1, $save = TRUE) {
+  public static function createBinary($relationship_type, $entity0, $entity1, $save = TRUE) {
     $entity_type0 = $entity0->entityType();
     $entity_id0 = $entity0->id();
     $entity_type1 = $entity1->entityType();
@@ -404,7 +405,7 @@ class Relation extends Entity {
     }
     else {
       // Create a new relationship:
-      $rel = $class::createNewBinary($relationship_type, $entity0, $entity1, $save);
+      $rel = $class::createBinary($relationship_type, $entity0, $entity1, $save);
     }
 
     return $rel;

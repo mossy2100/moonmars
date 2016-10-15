@@ -735,9 +735,22 @@ function drupal_settings_initialize() {
   global $databases, $cookie_domain, $conf, $installed_profile, $update_free_access, $db_url, $db_prefix, $drupal_hash_salt, $is_https, $base_secure_url, $base_insecure_url;
   $conf = array();
 
+//  echo conf_path() . "<br>";
+//  echo DRUPAL_ROOT . '/' . conf_path() . '/settings.php<br>';
+//  $ex = file_exists(DRUPAL_ROOT . '/' . conf_path() . '/settings.php');
+//  var_dump($ex);
+//  echo "<br>";
+
   if (file_exists(DRUPAL_ROOT . '/' . conf_path() . '/settings.php')) {
-    include_once DRUPAL_ROOT . '/' . conf_path() . '/settings.php';
+//    echo "about to include " . DRUPAL_ROOT . '/' . conf_path() . '/settings.php...<br>';
+    include DRUPAL_ROOT . '/' . conf_path() . '/settings.php';
   }
+
+//  var_dump($GLOBALS['databases']);
+//  echo "<br>";
+//  var_dump($databases);
+//  echo "<br>";
+
   $is_https = isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) == 'on';
 
   if (isset($base_url)) {
@@ -2347,6 +2360,13 @@ function _drupal_bootstrap_database() {
   // Redirect the user to the installation script if Drupal has not been
   // installed yet (i.e., if no $databases array has been defined in the
   // settings.php file) and we are not already installing.
+
+//  echo "<pre>";
+//  var_dump($GLOBALS['databases']);
+//  var_dump(drupal_installation_attempted());
+//  echo "</pre>";
+//  exit;
+
   if (empty($GLOBALS['databases']) && !drupal_installation_attempted()) {
     include_once DRUPAL_ROOT . '/includes/install.inc';
     install_goto('install.php');
@@ -3068,9 +3088,9 @@ function _registry_check_code($type, $name = NULL) {
   // there is no reason we'd ever want to not use the default database for
   // this query.
   $file = Database::getConnection('default', 'default')->query("SELECT filename FROM {registry} WHERE name = :name AND type = :type", array(
-      ':name' => $name,
-      ':type' => $type,
-    ))
+                                                                                                                                           ':name' => $name,
+                                                                                                                                           ':type' => $type,
+                                                                                                                                      ))
     ->fetchField();
 
   // Flag that we've run a lookup query and need to update the cache.

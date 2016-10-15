@@ -55,7 +55,7 @@ class Triumph {
 
   /**
    * Actors involved in the triumph.
-   * Keys are actor roles. Values are entities such as Member, Group, Channel, Item, ItemComment.
+   * Keys are actor roles. Values are actor (IActor) objects such as Member, Group, Topic, Item, ItemComment, Page, etc.
    *
    * @var array
    */
@@ -189,10 +189,10 @@ class Triumph {
     // Insert new triumph actor records:
     foreach ($this->actors as $actor_role => $actor) {
       $actor_fields = array(
-        'triumph_id'  => $this->triumphId,
-        'actor_role'  => $actor_role,
+        'triumph_id' => $this->triumphId,
+        'actor_role' => $actor_role,
         'entity_type' => $actor->entityType(),
-        'entity_id'   => $actor->id(),
+        'entity_id' => $actor->id(),
       );
       $q3 = db_insert('moonmars_triumph_actor')
         ->fields($actor_fields);
@@ -258,7 +258,7 @@ class Triumph {
         ->condition('triumph_id', $this->triumphId);
       $rs = $q->execute();
       foreach ($rs as $rec) {
-        $this->actors[$rec->actor_role] = moonmars_objects_get_object($rec->entity_type, $rec->entity_id);
+        $this->actors[$rec->actor_role] = moonmars_actors_get_actor($rec->entity_type, $rec->entity_id);
       }
     }
     return $this->actors;
@@ -267,7 +267,7 @@ class Triumph {
   /**
    * Get an actor involved in the triumph.
    *
-   * @return Entity
+   * @return IActor
    */
   public function actor($actor_role) {
     $this->actors();
@@ -277,7 +277,7 @@ class Triumph {
   /**
    * Add an actor to the triumph.
    *
-   * @param $actor_role
+   * @param string $actor_role
    * @param IActor $actor
    * @return Triumph
    */
@@ -307,26 +307,27 @@ class Triumph {
         break;
 
       case 'new-comment':
-        $channel = $this->actor('comment')->item()->channel();
+        $channel = $this->actor('comment')->channel();
         break;
 
       default:
         $channel = NULL;
     }
 
-    // Get the channel's parent if relevant:
-    $actor = $channel ? $channel->actor() : NULL;
+    // Get the channel's star if relevant:
+    $star = $channel ? $channel->star() : NULL;
 
     // Initialise recipients array:
     $this->recipients = new EntitySet();
+
+    // I want to receive every notification, so I can check it looks right:
+    $this->recipients->add(Member::superuser());
 
     // Scan through our nxn definitions looking for matching triumph types:
     $definitions = moonmars_nxn_definitions();
 
     // Go through each nxn category:
     foreach ($definitions as $nxn_category => $nxn_category_info) {
-//      echoln('<hr>');
-//      dbg($nxn_category, 'nxn category');
 
       // Go through each triumph type, acting on matches:
       foreach ($nxn_category_info['triumph types'] as $triumph_type => $triumph_type_info) {
@@ -335,8 +336,6 @@ class Triumph {
         if ($this->triumphType != $triumph_type) {
           continue;
         }
-
-//        dbg($triumph_type, 'matching triumph type');
 
         // Initialise set of recipient candidates:
         $candidates = new EntitySet();
@@ -377,9 +376,9 @@ class Triumph {
 
           case 'channel':
             // The only member to consider is the one whose channel the item or comment is being posted in.
-            // Note that $actor will be NULL unless this is a new-item or new-comment.
-            if ($actor && $actor instanceof Member) {
-              $candidates->add($actor);
+            // Note that $star will be NULL unless this is a new-item or new-comment.
+            if ($star && $star instanceof Member) {
+              $candidates->add($star);
             }
             break;
 
@@ -440,8 +439,8 @@ class Triumph {
               case 'new-item':
               case 'new-comment':
                 // If a new item or comment is posted in a group channel, the group:
-                if ($actor && $actor instanceof Group) {
-                  $group = $actor;
+                if ($star && $star instanceof Group) {
+                  $group = $star;
                 }
                 break;
 
@@ -459,8 +458,6 @@ class Triumph {
             }
             break;
         } // switch nxn_category
-
-//        dbg($candidates->entityPaths(), 'candidates at end of Step 1');
 
         // If we didn't find any recipient candidates, continue:
         if (!$candidates->count()) {
@@ -507,8 +504,6 @@ class Triumph {
             break;
         }
 
-//        dbg($candidates->entityPaths(), 'candidates at end of Step 2');
-
         // If there aren't any candidates left, continue:
         if (!$candidates->count()) {
           continue;
@@ -521,7 +516,6 @@ class Triumph {
 
           // Get the member's preferences for this type of triumph in this nxn category.
           $nxn_prefs = $member->nxnPref($nxn_category, $this->triumphType);
-//          dbg($nxn_prefs, "prefs for " . $member->uid());
 
           switch ($nxn_prefs['wants']) {
             case MOONMARS_NXN_NO:
@@ -565,14 +559,14 @@ class Triumph {
                     else {
                       $item = $this->actor('comment')->item();
                     }
-                    if ($item->mentions($member)) {
+                    if ($item->mentionsMember($member)) {
                       $this->recipients->add($member);
                     }
                     break;
 
                   case 'comment-mention':
                     // Applies to triumph types: new-comment.
-                    if ($this->actor('comment')->mentions($member)) {
+                    if ($this->actor('comment')->mentionsMember($member)) {
                       $this->recipients->add($member);
                     }
                     break;
@@ -611,14 +605,8 @@ class Triumph {
 
           } // switch wants
         } // foreach members
-
-//        dbg($this->recipients->entityPaths(), 'recipients at end of Step 3');
-
       } // for each triumph type
     } // for each nxn category
-
-//    echoln("<hr>");
-//    dbg($this->recipients->entityPaths(), 'recipients at end of outer loop');
 
     return $this->recipients;
   } // findRecipients
@@ -664,8 +652,6 @@ class Triumph {
     // Create the nxns:
     $n = 0;
     foreach ($rs as $rec) {
-//      echoln("<hr><h1>Triumph</h1>");
-//      dbg($rec);
       $triumph = new Triumph($rec);
       // The call to createNxns() followed by save() will update the nxns_created field:
       $n += $triumph->createNxns();

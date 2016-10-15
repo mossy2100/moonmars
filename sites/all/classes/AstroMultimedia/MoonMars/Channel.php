@@ -1,8 +1,6 @@
 <?php
 namespace AstroMultimedia\MoonMars;
 
-use \AstroMultimedia\Drupal\Entity;
-
 /**
  * Channel class - encapsulates a channel node.
  */
@@ -19,11 +17,11 @@ class Channel extends Node {
   const PAGE_SIZE = 10;
 
   /**
-   * The actor this channel belongs to.
+   * The star this channel belongs to.
    *
-   * @var IActor
+   * @var IStar
    */
-  protected $actor;
+  protected $star;
 
   /**
    * Constructor.
@@ -57,56 +55,19 @@ class Channel extends Node {
   // Actor-related methods.
 
   /**
-   * Get the actor whose channel this is.
+   * Get the star whose channel this is.
    *
-   * @return IActor
+   * @return IStar
    */
-  public function actor() {
-    if (!isset($this->actor)) {
+  public function star() {
+    if (!isset($this->star)) {
       // Search for the has_channel relationship:
       $rels = Relation::searchBinary('has_channel', NULL, $this);
       if (!empty($rels)) {
-        $this->actor = $rels[0]->endpoint(0);
+        $this->star = $rels[0]->endpoint(0);
       }
     }
-    return $this->actor;
-  }
-
-  /**
-   * Get a link to a channel's actor's page.
-   *
-   * @return string
-   *   Or FALSE if actor not found - should never happen.
-   */
-  public function actorLink($brackets = FALSE) {
-    $actor = $this->actor();
-    if (!$actor) {
-      return FALSE;
-    }
-
-    $label = $brackets ? ('[' . $this->title() . ']') : $this->title();
-    return l($label, $actor->alias());
-  }
-
-  /**
-   * Get the actor's name or title.
-   *
-   * @return string
-   *   Or FALSE if actor not found - should never happen.
-   */
-  public function actorName() {
-    $actor = $this->actor();
-    if (!$actor) {
-      return FALSE;
-    }
-
-    // Member:
-    if ($actor instanceof Member) {
-      return $actor->name();
-    }
-
-    // Node:
-    return $actor->title();
+    return $this->star;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -118,14 +79,14 @@ class Channel extends Node {
    * @return string
    */
   public function resetAlias() {
-    // Get the actor:
-    $actor = $this->actor();
-    if (!$actor) {
+    // Get the star:
+    $star = $this->star();
+    if (!$star) {
       return FALSE;
     }
 
     // Set the alias:
-    $alias = $actor->alias() . '/channel';
+    $alias = $star->alias() . '/channel';
     $this->alias($alias);
 
     // Make sure pathauto doesn't clobber the new alias:
@@ -135,13 +96,13 @@ class Channel extends Node {
   }
 
   /**
-   * Reset the channel's title. Call this if the actor's tag or name changes.
+   * Reset the channel's title. Call this if the star's tag or name changes.
    *
    * @return Channel
    */
   public function resetTitle() {
-    $actor = $this->actor();
-    $title = $actor ? $actor->channelTitle() : FALSE;
+    $star = $this->star();
+    $title = $star ? $star->channelTitle() : FALSE;
     if ($title) {
       $this->title($title);
     }
@@ -149,7 +110,7 @@ class Channel extends Node {
   }
 
   /**
-   * Reset a channel's alias and title to match the actor.
+   * Reset a channel's alias and title to match the star.
    */
   public function resetAliasAndTitle() {
     $this->load();
@@ -179,28 +140,27 @@ class Channel extends Node {
    */
   public function postItem(Item $item) {
     // Create a new relationship:
-    return Relation::createNewBinary('has_item', $this, $item);
+    return Relation::createBinary('has_item', $this, $item);
   }
 
   /**
-   * Get the query to obtain the items linked to a channel.
-   * This function is *not* for finding which items to *display* in a channel. Use the itemQuery() method in the
-   * actor for that.
+   * Get the query to obtain the items to display in a channel.
    *
    * @return SelectQuery
    */
   public function itemQuery() {
-    // Check if the actor has an itemQuery method, in which case override, and get the items display in
+    // Check if the star has an itemQuery method, in which case override, and get the items to display in
     // this channel (not necessarily posted in).
     // This really needs to be refactored or something.
-    $actor = $this->actor();
-    if  ($actor && method_exists($actor, 'itemQuery')) {
-      return $actor->itemQuery();
+    $star = $this->star();
+    if  ($star && method_exists($star, 'itemQuery')) {
+      return $star->itemQuery();
     }
 
     // Get all the items posted in this channel:
     $q = db_select('view_channel_has_item', 'vchi')
       ->fields('vchi', array('item_nid'))
+      ->condition('item_status', 1)
       ->condition('channel_nid', $this->nid());
     return $q;
   }
@@ -254,7 +214,8 @@ class Channel extends Node {
 
     // Render the pager:
     pager_default_initialize($total_n_items, self::PAGE_SIZE);
-    $pager_html = theme('pager', array('quantity' => $total_n_items));
+    //$pager_html = theme('pager', array('quantity' => $total_n_items));
+    $pager_html = theme('pager');
 
     return "
       <div id='channel'>
@@ -273,7 +234,7 @@ class Channel extends Node {
     $page = isset($_GET['page']) ? ((int) $_GET['page']) : 0;
 
     // Get the items from this channel:
-    $order_by_field = ($this->nid() == MOONMARS_NEWS_CHANNEL_NID) ? 'item_created' : 'item_modified';
+    $order_by_field = $this->isNewsChannel() ? 'item_created' : 'item_modified';
     $items = $this->items($page * self::PAGE_SIZE, self::PAGE_SIZE, $order_by_field);
 
     // Get the total item count:
@@ -305,24 +266,8 @@ class Channel extends Node {
     return $items;
   }
 
-  /**
-   * Get all the items to display in this channel, i.e. that are tagged with the channel owner's tag.
-   *
-   * @param int $ts_start
-   * @param int $ts_end
-   * @return array
-   */
-  public function itemsToDisplayIn($ts_start, $ts_end) {
-    $owner = $this->owner();
-
-
-
-        
-
-  }
-
 //  /**
-//   * Get the min and max modified timestamp of items in this group.
+//   * Get the min and max modified timestamp of items in this channel.
 //   *
 //   * @todo Check for restricted/closed groups. Need Member::canSeeItem() method.
 //   */
@@ -384,13 +329,13 @@ class Channel extends Node {
 //  }
 
   /**
-   * Return the links for this channel's actor.
+   * Return the links for this channel's star.
    *
    * @return string
    */
   public function renderLinks() {
     $html = '';
-    $actor = $this->actor();
+    $star = $this->star();
 
     // Social links:
     $social_links = '';
@@ -399,17 +344,17 @@ class Channel extends Node {
       $link_field = $info['field'];
       $url = $this->field($link_field, LANGUAGE_NONE, 0, 'url');
       if ($url) {
-        $title = "Visit " . (($actor instanceof Member) ? $actor->name() : $actor->title()) . "'s " . $info['description'];
+        $title = "Visit " . (($star instanceof Member) ? $star->name() : $star->title()) . "'s " . $info['description'];
         $title = htmlspecialchars($title, ENT_QUOTES);
         $social_links .= "<a class='social-link social-link-{$social_site}' href='$url' target='_blank' title='$title'></a>\n";
       }
     }
 
     // Skype link:
-    if ($actor instanceof Member) {
-      $skype_name = $actor->field('field_skype');
+    if ($star instanceof Member) {
+      $skype_name = $star->field('field_skype');
       if ($skype_name) {
-        $title = htmlspecialchars("Chat with " . $actor->name() . " on Skype", ENT_QUOTES);
+        $title = htmlspecialchars("Chat with " . $star->name() . " on Skype", ENT_QUOTES);
         $social_links .= "<a class='social-link social-link-skype' href='skype:$skype_name?chat' title='$title'></a>\n";
       }
     }
@@ -430,7 +375,8 @@ class Channel extends Node {
    * @return bool
    */
   public function isNewsChannel() {
-    return $this->nid() == MOONMARS_NEWS_CHANNEL_NID;
+    $star = $this->star();
+    return $star && $star instanceof Group && $star->tag() == 'moonmars-news';
   }
 
 }

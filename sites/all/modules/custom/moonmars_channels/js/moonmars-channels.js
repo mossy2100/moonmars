@@ -238,9 +238,8 @@ function deleteItemReturn(data, textStatus, jqXHR) {
 
     // If we're on an item's node page, go back to the channel where we came from:
     if (item_node_page) {
-      var return_href = $('#return_link a').attr('href');
-      $('#region-content .block-main .content').html("Please wait while you are redirected...");
-      location.href = return_href;
+      $('#region-content .block-main .content').html("Please wait while you are redirected back to " + data.star_label + "...");
+      location.href = data.star_path;
     }
   }
 }

@@ -66,14 +66,14 @@ class Node extends Entity {
   /**
    * Create a new Node object.
    *
-   * @param null|int|stdClass $node_param
+   * @param null|int|stdClass $param
    * @return Node
    */
-  public static function create($node_param = NULL) {
+  public static function create($param = NULL) {
     // Get the class of the object we want to create:
     $class = get_called_class();
 
-    if (is_null($node_param)) {
+    if (is_null($param)) {
       // Create new node:
       $node_obj = new $class;
 
@@ -92,9 +92,9 @@ class Node extends Entity {
       // The node is valid without a nid:
       $node_obj->valid = TRUE;
     }
-    elseif (is_uint($node_param)) {
+    elseif (is_uint($param)) {
       // nid provided:
-      $nid = $node_param;
+      $nid = $param;
 
       // Only create the new node if not already in the cache:
       if (self::inCache($nid)) {
@@ -108,9 +108,9 @@ class Node extends Entity {
         $node_obj->entity->nid = $nid;
       }
     }
-    elseif ($node_param instanceof stdClass) {
+    elseif ($param instanceof stdClass) {
       // Drupal node object provided:
-      $node = $node_param;
+      $node = $param;
 
       // Get the object from the cache if possible:
       if (isset($node->nid) && $node->nid && self::inCache($node->nid)) {
@@ -123,9 +123,10 @@ class Node extends Entity {
       // Reference the provided entity object:
       $node_obj->entity = $node;
 
-      // Make sure we mark the node as loaded. It may not have been saved yet, and if we load it, any changes to the
-      // node entity would be overwritten.
+      // Make sure we mark the node as loaded and valid. It may not have been saved yet, and if we load it, any
+      // changes to the node entity would be overwritten.
       $node_obj->loaded = TRUE;
+      $node_obj->valid = TRUE;
     }
 
     // If we have a node object, add to cache and return:
@@ -153,6 +154,7 @@ class Node extends Entity {
    * @return Node
    */
   public function load() {
+
     // Avoid reloading:
     if ($this->loaded) {
       return $this;

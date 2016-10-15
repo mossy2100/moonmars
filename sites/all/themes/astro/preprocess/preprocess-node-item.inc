@@ -54,29 +54,31 @@ function astro_alpha_preprocess_node_item(&$vars) {
   // Get the item's channel:
   $item_channel = $item->channel();
   if ($item_channel) {
-    $item_channel_actor = $item_channel->actor();
+    $star = $item_channel->star();
     $vars['channel'] = $item_channel;
 
     // Add a note to indicate what channel the item was posted in:
     if ($current_channel && $item_channel->equals($current_channel)) {
       $vars['item_channel_string'] = 'in this channel';
     }
-    elseif ($item_channel_actor->equals($poster)) {
+    elseif ($star->equals($poster)) {
       $vars['item_channel_string'] = 'in their channel';
     }
-    elseif ($item_channel_actor instanceof Member) {
-      $vars['item_channel_string'] = 'in ' . $item_channel_actor->tagLink() . "'s channel";
+    elseif ($star instanceof Member) {
+      $vars['item_channel_string'] = 'in ' . $star->tagLink() . "'s channel";
     }
     else {
-      $vars['item_channel_string'] = 'in ' . $item_channel_actor->tagLink();
+      $vars['item_channel_string'] = 'in ' . $star->tagLink();
     }
     // Wrap it in a span tag:
     $vars['item_channel_string'] = "<span class='item_channel'>{$vars['item_channel_string']}</span>";
   }
   else {
+    $star = NULL;
     $vars['item_channel_string'] = '';
   }
 //  $vars['item_channel_string'] .= ' [' . $item->modified()->iso() . ']';
+  $vars['star'] = $star;
 
   // Format the post datetime:
   $vars['created_datetime'] = astro_format_about_how_long_ago($node->created);
@@ -121,20 +123,17 @@ function astro_alpha_preprocess_node_item(&$vars) {
       $links1 .= "<li class='item-delete'><a href='javascript:deleteItem($item_nid)'>delete</a></li>";
     }
 
-//    // remove link:
+//    // remove link: @todo change to "hide"
 //    if ($current_channel && $logged_in_member->canRemoveItem($item, $current_channel)) {
 //      $links1 .= "<li class='item-remove'><a href='javascript:removeItem($item_nid)'>remove</a></li>";
 //    }
 
     // edit link:
     if ($logged_in_member->canEditItem($item)) {
-      $links1 .= "<li class='item-edit'><a href='javascript:editItem($item_nid)'>edit</a></li>";
+      // We won't use AJAX for now, because our item form is somewhat complex plus it will change anyway
+      // when we upgrade to messages.
+      $links1 .= "<li class='item-edit'>" . l('edit', $item->alias() . '/edit', array('query' => array('redirect' => request_path()))) . "</li>";
     }
-
-//    // view link:
-//    if (!$item_node_page) {
-//      $links1 .= "<li class='item-view'><a href='/" . $item->alias() . "'>view</a></li>";
-//    }
 
     // comment link - show at top and bottom:
     if ($logged_in_member->canPostComment($item)) {

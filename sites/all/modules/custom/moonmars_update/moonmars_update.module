@@ -55,16 +55,16 @@ function moonmars_update_remove_subscriber_relationships() {
 
     if ($channel) {
       echobr("Channel " . $channel->title() . " has subscriber " . $member->name());
-      $actor = $channel->actor();
-      if ($actor instanceof Member) {
+      $star = $channel->star();
+      if ($star instanceof Member) {
         // Follows:
-        echobr("Creating/updating relationship: Member " . $member->name() . " follows " . $actor->name());
-        $rel2 = Relation::updateBinary('follows', $member, $actor, FALSE);
+        echobr("Creating/updating relationship: Member " . $member->name() . " follows " . $star->name());
+        $rel2 = Relation::updateBinary('follows', $member, $star, FALSE);
       }
-      elseif ($actor instanceof Group) {
+      elseif ($star instanceof Group) {
         // Member of a group:
-        echobr("Creating/updating relationship: Group " . $actor->title() . " has member " . $member->name());
-        $rel2 = Relation::updateBinary('has_member', $actor, $member, FALSE);
+        echobr("Creating/updating relationship: Group " . $star->title() . " has member " . $member->name());
+        $rel2 = Relation::updateBinary('has_member', $star, $member, FALSE);
         $rel2->field('field_is_admin', LANGUAGE_NONE, 0, 'value', 0);
       }
 
@@ -127,8 +127,8 @@ function moonmars_update_clean_up_channels() {
   $rs = $q->execute();
   foreach ($rs as $rec) {
     $channel = Channel::create($rec->nid);
-    $actor = $channel->actor();
-    if (!$actor) {
+    $star = $channel->star();
+    if (!$star) {
       echobr("Channel " . $channel->nid() . " title: " . $channel->title() . " has no parent");
 
       $items = $channel->items();
@@ -243,8 +243,12 @@ function moonmars_update_fix_aliases() {
       echobr("Could not updated channel alias for <em>" . $channel->alias() . "</em>", 'warning');
     }
   }
+}
 
-  // Items:
+/**
+ * Fix URL aliases for items.
+ */
+function moonmars_update_fix_item_aliases() {
   $q = db_select('node', 'n')
     ->fields('n', array('nid'))
     ->condition('type', 'item')
@@ -446,58 +450,14 @@ function moonmars_update_channel_item_relation_changed_times() {
   return $html;
 }
 
-///**
-// * Fix group references in item and comment text.
-// */
-//function moonmars_update_fix_group_mentions() {
-//  // Update item text:
-//  $q = db_select('node', 'n')
-//    ->fields('n', ['nid']);
-//  $q->join('field_data_field_item_text', 'ft', "n.nid = ft.entity_id");
-//  $q->condition('field_item_text_value', '%[Group: %', 'LIKE');
-//  $rs = $q->execute();
-//  foreach ($rs as $rec) {
-//    $item = Item::create($rec->nid);
-//    $text = $item->text();
-//    dbg($text);
-//
-//    $n = preg_match_all("/\[(Group: )?([^\]]+)\]/", $text, $matches);
-//    dbg($matches);
-//
-//    foreach ($matches[2] as $title) {
-//      $group = Group::searchByTitle($title);
-//      dbg($group);
-//    }
-//
-////    $text = preg_replace("/\[Group: ([^\]]+)\]/", "[$1]", $text);
-////    dbg($text);
-////
-////    $item->text($text);
-////    $item->save();
-//
-//  }
-//
-//  // Now comments:
-//  $q = db_select('comment', 'c')
-//    ->fields('c', ['cid']);
-//  $q->join('field_data_comment_body', 'fcb', "c.cid = fcb.entity_id");
-//  $q->condition('comment_body_value', '%[Group: %', 'LIKE');
-//  $rs = $q->execute();
-//  foreach ($rs as $rec) {
-//    $item_comment = ItemComment::create($rec->cid);
-//    $text = $item_comment->text();
-//    dbg($text);
-//
-//    $n = preg_match_all("/\[(Group: )?([^\]]+)\]/", $text, $matches);
-//    dbg($matches);
-//
-//    $n = preg_match_all("/\[([^\]]+)\]/", $text, $matches);
-//    dbg($matches);
-//
-////    $text = preg_replace("/\[Group: ([^\]]+)\]/", "[$1]", $text);
-////    dbg($text);
-////
-////    $item_comment->text($text);
-////    $item_comment->save();
-//  }
-//}
+/**
+ * Add everyone to the site news group.
+ */
+function moonmars_update_add_everyone_to_site_news() {
+  $members = Member::all(TRUE);
+  $moonmars_news_group = Group::findByTag('moonmars-news');
+  foreach ($members as $member) {
+    echo "Adding " . $member->tag() . " to " . $moonmars_news_group->tag() . "<br>";
+    $member->joinGroup($moonmars_news_group, FALSE);
+  }
+}

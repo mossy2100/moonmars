@@ -4,7 +4,7 @@ namespace AstroMultimedia\MoonMars;
 /**
  * Encapsulates an item node.
  */
-class Item extends Node {
+class Item extends Node implements IPost {
 
   /**
    * The node type.
@@ -27,11 +27,66 @@ class Item extends Node {
    */
   protected $textScan;
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Magic methods
+
   /**
    * Constructor.
    */
   protected function __construct() {
     return parent::__construct();
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // IPost methods
+
+  /**
+   * Get/set the item text.
+   *
+   * @param null|string $text
+   * @return string
+   */
+  public function text($text = NULL) {
+    if ($text) {
+      // Set the text.
+      // Convert hearts to HTML entities:
+      $text = moonmars_text_fix_hearts($text);
+    }
+    // Get/set the field:
+    return $this->field('field_item_text', LANGUAGE_NONE, 0, 'value', $text);
+  }
+
+  /**
+   * Get the results of the text scan.
+   *
+   * @param array
+   * @return TextScan
+   */
+  public function textScan() {
+    // If we haven't scanned the text yet, do it now.
+    if (!isset($this->textScan)) {
+      $this->textScan = new TextScan($this->text());
+    }
+    return $this->textScan;
+  }
+
+  /**
+   * Get the item HTML.
+   *
+   * @return string
+   */
+  public function html() {
+    return $this->textScan()->html();
+  }
+
+  /**
+   * Checks if the item mentions a member.
+   *
+   * @param Member $member
+   * @return bool
+   */
+  public function mentionsMember(Member $member) {
+    return $this->textScan()->mentionsMember($member);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -74,58 +129,6 @@ class Item extends Node {
       return TRUE;
     }
     return FALSE;
-  }
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Text
-
-  /**
-   * Get/set the item text.
-   *
-   * @param null|string $text
-   * @return string
-   */
-  public function text($text = NULL) {
-    if ($text) {
-      // Set the text.
-      // Convert hearts to HTML entities:
-      $text = moonmars_text_fix_hearts($text);
-    }
-    // Get/set the field:
-    return $this->field('field_item_text', LANGUAGE_NONE, 0, 'value', $text);
-  }
-
-  /**
-   * Get the results of the text scan.
-   *
-   * @param array
-   * @return TextScan
-   */
-  public function textScan() {
-    // If we haven't scanned the text yet, do it now.
-    if (!isset($this->textScan)) {
-      $this->textScan = new TextScan($this->text());
-    }
-    return $this->textScan;
-  }
-
-  /**
-   * Get the item HTML.
-   *
-   * @return string
-   */
-  public function html() {
-    return $this->textScan()->html();
-  }
-
-  /**
-   * Checks if the item mentions a member, group or topic.
-   *
-   * @param IActor $member
-   * @return bool
-   */
-  public function mentions(IActor $member) {
-    return $this->textScan()->mentions($member);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -231,42 +234,37 @@ class Item extends Node {
    */
   public function resetAlias() {
     $text = strtolower($this->text());
-    echobr("Item " . $this->nid());
-    echobr($text);
 
     // Close contractions:
     $text = preg_replace("/([a-z]+)'([a-z]+)/", "$1$2", $text);
-    echobr("Closed contractions: $text");
 
     // Extract words:
     $words = preg_split("/[^\w]+/", $text);
     $words = array_values(array_filter($words));
-    dbg($words);
 
     if (!$words) {
       $alias = 'untitled';
     }
     else {
-      // Choose the number of words that gives us a alias max length of 50:
+      // Choose the number of words that limits the alias to a max length:
       $optimal_length = 100;
       $smallest_dist = PHP_INT_MAX;
       $smallest_dist_key = NULL;
       foreach ($words as $key => $word) {
         $alias = implode('-', array_slice($words, 0, $key + 1));
         $dist = abs(strlen($alias) - $optimal_length);
-        echobr("dist for $alias = $dist");
         if ($dist > $smallest_dist) {
-          // we're done:
+          // We're done:
           break;
         }
         else {
-          echobr("updating key to $key");
           $smallest_dist = $dist;
           $smallest_dist_key = $key;
         }
       }
       $alias = implode('-', array_slice($words, 0, $smallest_dist_key + 1));
     }
+    $alias = "item/$alias";
 
     // Get a unique variation:
     $base = $alias;
@@ -281,7 +279,6 @@ class Item extends Node {
       if ($rs->rowCount()) {
         // Yes it is. Go to next variation.
         $source = $rs->fetchField();
-        echobr("Another node has this alias $alias: $source");
         $n++;
         $alias = "$base-$n";
       }
@@ -290,8 +287,7 @@ class Item extends Node {
       }
     }
 
-    echobr($alias);
     $this->alias($alias);
   }
 
-}
+} // class Item

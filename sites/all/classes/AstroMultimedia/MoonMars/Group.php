@@ -4,7 +4,7 @@ namespace AstroMultimedia\MoonMars;
 /**
  * Group class.
  */
-class Group extends Node implements IActor {
+class Group extends Node implements IStar {
 
   /**
    * The node type.
@@ -55,7 +55,7 @@ class Group extends Node implements IActor {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // IActor methods
+  // IStar methods
 
   /**
    * Get/set the tag.
@@ -111,6 +111,10 @@ class Group extends Node implements IActor {
    * @return Group
    */
   public static function findByTag($tag) {
+    // Strip the prefix if present:
+    if ($tag[0] == self::TAG_PREFIX) {
+      $tag = substr($tag, 1);
+    }
     $rec = db_select('field_data_field_group_tag', 'f')
       ->fields('f', array('entity_id'))
       ->condition('field_group_tag_value', $tag)
@@ -141,7 +145,7 @@ class Group extends Node implements IActor {
    */
   public function channel($create = TRUE) {
     if (!isset($this->channel)) {
-      $this->channel = moonmars_actors_get_channel($this, $create);
+      $this->channel = moonmars_stars_get_channel($this, $create);
     }
     return $this->channel;
   }
@@ -153,17 +157,6 @@ class Group extends Node implements IActor {
    */
   public function channelTitle() {
     return 'Group: ' . $this->title();
-  }
-
-  /**
-   * Get a link to the group using the channel the title.
-   * Note, this produces the same result as Channel::parentEntityLink(), but sometimes you have the group object
-   * rather than the channel object.
-   *
-   * @return string
-   */
-  public function channelTitleLink() {
-    return $this->link($this->channelTitle());
   }
 
   /**
@@ -419,9 +412,19 @@ class Group extends Node implements IActor {
    * @return Group
    */
   public function addAdmin(Member $member) {
-    $rel = Relation::createNewBinary('has_member', $this, $member, FALSE);
+    $rel = Relation::createBinary('has_member', $this, $member, FALSE);
     $rel->field('field_is_admin', LANGUAGE_NONE, 0, 'value', 1);
     $rel->save();
+  }
+
+  /**
+   * Check if a user is an admin of the group.
+   *
+   * @param Member $member
+   * @return bool
+   */
+  public function hasAdmin(Member $member) {
+    return $member->isGroupAdmin($this);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

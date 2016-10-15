@@ -25,32 +25,27 @@ require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'node') . '/node.page
         <h2>Share something</h2>
 
         <div class='post-article-body' style='<?php echo $logged_in_member->commentStyle(); ?>'>
-
           <div class='user-picture'>
             <?php echo $logged_in_member->avatarTooltip(); ?>
           </div>
-
           <div class='post-content-wrapper' <?php print $content_attributes; ?>>
             <div class='post-content'>
-
               <div class='who_where_when_posted'>
                 <?php
                 // Current member's username with link and tooltip:
                 echo $logged_in_member->tooltipLink();
                 ?>
               </div>
-
               <?php
               // New item form:
               $add_item_form = node_add('item');
               echo render($add_item_form);
               ?>
+            </div> <!-- post-content -->
+          </div> <!-- post-content-wrapper -->
+        </div> <!-- post-article-body -->
 
-            </div>
-          </div>
-
-        </div>
-      </div>
+      </div> <!-- post-form-wrapper -->
       <?php
     } ?>
 

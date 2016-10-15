@@ -30,7 +30,7 @@ abstract class Entity {
    *
    * @var bool
    */
-  protected $loaded;
+  protected $loaded = FALSE;
 
   /**
    * If the id is valid.
@@ -45,9 +45,6 @@ abstract class Entity {
   protected function __construct() {
     // Create an entity object:
     $this->entity = new stdClass;
-
-    // Initially the entity is not loaded:
-    $this->loaded = FALSE;
   }
 
   /**

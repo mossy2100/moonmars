@@ -9,15 +9,31 @@ use \AstroMultimedia\Drupal\Term;
  * @author Shaun Moss (mossy2100)
  * @since 2012-10-07
  */
-class Topic extends Term implements IActor {
+class Topic extends Term implements IStar {
 
   /**
    * The tag prefix.
+   *
+   * @var string
    */
   const TAG_PREFIX = '#';
 
+  /**
+   * The vocabulary machine name, a.k.a. 'term type'. To be overridden by child classes.
+   *
+   * @var string
+   */
+  const VOCABULARY_MACHINE_NAME = 'topic';
+
+  /**
+   * The topic's channel.
+   *
+   * @var string
+   */
+  protected $channel;
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // IActor methods
+  // IStar methods
 
   /**
    * Get/set the tag.
@@ -66,6 +82,10 @@ class Topic extends Term implements IActor {
    * @return Topic
    */
   public static function findByTag($tag) {
+    // Strip the prefix if present:
+    if ($tag[0] == self::TAG_PREFIX) {
+      $tag = substr($tag, 1);
+    }
     $q = db_select('taxonomy_term_data', 't')
       ->fields('t', array('tid'))
       ->condition('t.name', $tag)

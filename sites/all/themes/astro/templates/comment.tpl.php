@@ -7,7 +7,7 @@
 
     <div class='post-content-wrapper' <?php echo $content_attributes; ?>>
       <div class='post-content'>
-        <a class='post-link' href='/<?php echo $item_comment->alias(); ?>'><img src='/<?php echo $theme_path; ?>/images/link-icon.png'></a>
+        <a class='post-link' href='/<?php echo $item_comment->alias(); ?>'><img src="<?php echo base_path() . $theme_path .'/images/link-icon.png' ;?>" title="<?php print $item_comment->text(); ?>" alt="<?php print $item_comment->text(); ?>"></a>
 
         <div class='who_where_when_posted'>
           <?php
@@ -42,6 +42,10 @@
 
     <div class='post-controls top-post-controls' style='<?php echo $poster->commentBorderStyle($highlight); ?>'>
 
+      <?php if (!$item_comment->published()) { ?>
+      <div class='unpublished'>unpublished</div>
+      <?php } ?>
+
       <?php
       echo $rating_buttons;
       ?>
@@ -49,10 +53,6 @@
       <div class='score-wrapper'>
         Score: <span class='score score-comment-<?php echo $item_comment->cid(); ?>'><?php echo $score; ?></span>
       </div>
-
-      <?php if (!$item_comment->published()) { ?>
-        <div class='unpublished'>unpublished</div>
-      <?php } ?>
 
       <?php
       // Links for edit/delete comment:

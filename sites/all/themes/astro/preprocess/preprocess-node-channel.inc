@@ -19,13 +19,13 @@ function astro_alpha_preprocess_node_channel(&$vars) {
   // Remember the current channel in the session:
   Channel::currentChannel($channel);
 
-  // Get the actor:
-  $actor = $channel->actor();
+  // Get the star:
+  $star = $channel->star();
 
-  // If we're at the channel's page, goto the actor's page.
-  $actor_path = $actor->alias();
-  if (request_path() != $actor_path) {
-    drupal_goto($actor_path);
+  // If we're at the channel's page, goto the star's page.
+  $star_path = $star->alias();
+  if (request_path() != $star_path) {
+    drupal_goto($star_path);
   }
 
   // JS:

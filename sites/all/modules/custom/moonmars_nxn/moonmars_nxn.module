@@ -487,7 +487,7 @@ function moonmars_nxn_list($user) {
  * @return array
  */
 function moonmars_nxn_prefs_form() {
-  $member = moonmars_objects_get_object_from_url();
+  $member = moonmars_actors_get_actor_from_url();
   if (!$member || !($member instanceof Member)) {
     drupal_not_found();
   }
@@ -701,10 +701,11 @@ function moonmars_nxn_send_outstanding() {
 
   // Some feedback:
   $body = array();
+  $body[] = '<h2>Notifications</h2>';
   $n_sent = 0;
   $n_unsent = 0;
   foreach ($messages as $message) {
-    $body[] = ($message['result'] ? 'SENT' : 'UNSENT') . ' to ' . trim($message['to'], " \r\n\t\"") . ': ' . $message['subject'];
+    $body[] = ($message['result'] ? 'SENT' : 'UNSENT') . ' to ' . trim($message['to'], " \r\n\t\"") . ': ' . $message['params']['summary'] . '<br>';
     if ($message['result']) {
       $n_sent++;
     }
@@ -712,13 +713,17 @@ function moonmars_nxn_send_outstanding() {
       $n_unsent++;
     }
   }
-  $subject = "[moonmars.com] Creating and sending outstanding nxns. $n_created nxns created, $n_sent sent, $n_unsent unsent.";
+  $body[] = '<br><h2>Summary</h2>';
+  $body[] = "<p>$n_created nxns created<br>$n_sent sent<br>$n_unsent unsent</p>";
+  $subject = '[moonmars.com] Notifications sent';
   $params = array(
     'subject' => $subject,
     'body' => $body,
   );
-//  drupal_mail('moonmars_nxn', 'report', Member::create(1)->mail(), LANGUAGE_NONE, $params);
-  watchdog('moonmars_nxn', $subject);
+  if ($messages) {
+    drupal_mail('moonmars_nxn', 'report', Member::superuser()->mail(), LANGUAGE_NONE, $params);
+  }
+//  watchdog('moonmars_nxn', $subject);
   echoln($subject);
 
   // Delete lock:

@@ -8,7 +8,7 @@
 
     <div class='post-content-wrapper' <?php echo $content_attributes; ?>>
       <div class='post-content'>
-        <a class='post-link' href='/<?php echo $item->alias(); ?>'><img src='/<?php echo $theme_path; ?>/images/link-icon.png'></a>
+        <a class='post-link' href='/<?php echo $item->alias(); ?>'><img src="<?php echo base_path() . $theme_path .'/images/link-icon.png' ;?>" title="<?php print $item->text(); ?>" alt="<?php print $item->text(); ?>"></a>
 
         <div class='who_where_when_posted'>
           <?php
@@ -40,6 +40,10 @@
     ?>
 
     <div class='post-controls top-post-controls'>
+
+      <?php if (!$node->status) { ?>
+        <div class='unpublished'>unpublished</div>
+      <?php } ?>
 
       <?php
       echo $rating_buttons;
@@ -95,12 +99,12 @@
     </article>
     <?php
   }
-  elseif (!$logged_in_member && isset($actor) && ($actor instanceof Group) && $actor->mode() == 'open') {
+  elseif (!$logged_in_member && isset($star) && ($star instanceof Group) && $star->mode() == 'open') {
     // Tell the user they can comment if they login or register:
     ?>
     <p class='comment-instruction'>
-      <a href='/user/login?destination=<?php echo $actor->alias(); ?>'>Login</a> or
-      <a href='/register?destination=<?php echo $actor->alias(); ?>'>register</a>
+      <a href='/user/login?destination=<?php echo $star->alias(); ?>'>Login</a> or
+      <a href='/register?destination=<?php echo $star->alias(); ?>'>register</a>
       to <!-- rate and --> post comments.
     </p>
     <?php

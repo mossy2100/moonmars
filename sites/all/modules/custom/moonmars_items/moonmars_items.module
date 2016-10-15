@@ -1,6 +1,8 @@
 <?php
 
 use \AstroMultimedia\MoonMars\Member;
+use \AstroMultimedia\MoonMars\Group;
+use \AstroMultimedia\MoonMars\Topic;
 use \AstroMultimedia\MoonMars\Channel;
 use \AstroMultimedia\MoonMars\Item;
 use \AstroMultimedia\MoonMars\Triumph;
@@ -72,48 +74,95 @@ function moonmars_items_menu() {
 // Forms stuff
 
 /**
- * Implements hook_form_alter().
+ * Implements hook_form_FORM_ID_alter().
  */
-function moonmars_items_form_alter(&$form, &$form_state, $form_id) {
-  if ($form_id == 'item_node_form') {
+function moonmars_items_form_item_node_form_alter(&$form, &$form_state) {
+  global $theme;
+  // If we're on the front-end theme, modify the form:
+  if ($theme == 'astro') {
+    // Hide stuff we don't want to see:
+    unset($form['title']);
+    unset($form['field_score']);
+    unset($form['field_item_system']);
+    unset($form['additional_settings']);
+    unset($form['revision_information']);
+    unset($form['author']);
+    unset($form['comment_settings']);
+    unset($form['options']);
+    unset($form['book']);
+    unset($form['field_item_type'][LANGUAGE_NONE]['#title']);
+    unset($form['field_item_text'][LANGUAGE_NONE][0]['value']['#title']);
+    unset($form['field_item_link'][LANGUAGE_NONE][0]['#title']);
+    unset($form['field_item_image'][LANGUAGE_NONE][0]['#title']);
+    unset($form['field_item_video'][LANGUAGE_NONE][0]['fid']['#title']);
+    unset($form['field_item_document'][LANGUAGE_NONE][0]['#title']);
 
-    // If we're on a channel page:
-    $channel = Channel::currentChannel();
-    if ($channel) {
+    // Remove Preview and Delete buttons:
+    unset($form['actions']['preview']);
+    unset($form['actions']['delete']);
 
-      // Hide stuff we don't want to see:
-      unset($form['title']);
-      unset($form['field_score']);
-      unset($form['field_item_system']);
-      unset($form['additional_settings']);
-      unset($form['revision_information']);
-      unset($form['author']);
-      unset($form['comment_settings']);
-      unset($form['options']);
-      unset($form['book']);
-      unset($form['field_item_type'][LANGUAGE_NONE]['#title']);
-      unset($form['field_item_text'][LANGUAGE_NONE][0]['value']['#title']);
-      unset($form['field_item_link'][LANGUAGE_NONE][0]['#title']);
-      unset($form['field_item_image'][LANGUAGE_NONE][0]['#title']);
-      unset($form['field_item_video'][LANGUAGE_NONE][0]['fid']['#title']);
-      unset($form['field_item_document'][LANGUAGE_NONE][0]['#title']);
+    // Change the Save button label to Post:
+    $form['actions']['submit']['#value'] = t('Post');
 
-      // Change the button label:
-      $form['actions']['submit']['#value'] = t('Post');
+    // Make the textarea non-resizable and only 1 row high. We will use the autoresize() plugin on the client.
+    $form['field_item_text']['#wysiwyg'] = FALSE;
+    $form['field_item_text'][LANGUAGE_NONE][0]['value']['#rows'] = 1;
 
-      // Make the textarea non-resizable and only 1 row high. We will use the autoresize() plugin on the client.
-      $form['field_item_text']['#wysiwyg'] = FALSE;
-      $form['field_item_text'][LANGUAGE_NONE][0]['value']['#rows'] = 1;
-
-  //    dbg($form);
-
-      // Validation handler.
+    // Validation handler.
   //    $form['actions']['submit']['#validate'][] = 'moonmars_items_form_validate';
 
-      // Submit handler.
-      $form['actions']['submit']['#submit'][] = 'moonmars_items_form_submit';
+    // This js contains function needed by item form
+    $form['actions']['#attached']['js'][] = array(
+      'data' => drupal_get_path('module', 'moonmars_channels') . '/js/moonmars-channels.js',
+      'type' => 'file'
+    );
+
+    // If on the item edit form, wrap the form in some sexy HTML to match the channel page.
+    // @todo this HTML should not be in two places. We need a theming function for the form, and remove the HTML
+    // from here and from node--channel.tpl.php
+    if (arg(0) == 'node' && arg(1) == $form['#node']->nid && arg(2) == 'edit') {
+      $item = Item::create($form['#node']);
+      $item_creator = $item->creator();
+      $form['#prefix'] = "
+        <div class='post-article-body' style='" . $item_creator->commentStyle() . "'>
+          <div class='user-picture'>
+            " . $item_creator->avatarTooltip() . "
+          </div>
+          <div class='post-content-wrapper'  class='content clearfix'>
+            <div class='post-content'>
+              <div class='who_where_when_posted'>
+                " . $item_creator->tooltipLink() . "
+              </div>";
+      $form['#suffix'] = "
+            </div>
+          </div>
+        </div>";
+
+      // Add a Cancel button:
+      $form['actions']['cancel'] = array(
+        '#type' => 'submit',
+        '#access' => TRUE,
+        '#value' => 'Cancel',
+        '#weight' => 6,
+        '#submit' => array(
+          0 => 'moonmars_items_form_submit',
+        ),
+      );
     }
   }
+
+  // Remember the redirect parameter so we can go back there:
+  if ($_GET['redirect']) {
+    // Editing item:
+    $form['#redirect'] = drupal_get_normal_path($_GET['redirect']);
+  }
+  else {
+    // Channel page - creating new item:
+    $form['#redirect'] = request_path();
+  }
+
+  // Submit handler.
+  $form['actions']['submit']['#submit'][] = 'moonmars_items_form_submit';
 }
 
 ///**
@@ -161,18 +210,11 @@ function moonmars_items_form_alter(&$form, &$form_state, $form_id) {
 //}
 
 /**
- * Submit handler for add new item form.
- *
+ * Submit handler for item node form.
  */
 function moonmars_items_form_submit($form, &$form_state) {
-  // Redirect back to the actor page:
-  // Note, we don't use the item's channel here, but the current channel, as the user may be viewing the item in a
-  // different channel.
-  $channel = Channel::currentChannel();
-  $actor = $channel->actor();
-  if ($actor) {
-    $form_state['redirect'] = $actor->alias();
-  }
+  // Go back to where we were:
+  $form_state['redirect'] = drupal_get_path_alias($form['#redirect']);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -236,7 +278,7 @@ function moonmars_items_entity_save($entity, $entity_type, $is_new) {
   if ($entity_type == 'node' && $entity->type == 'item') {
 
     // Get the Item object:
-    $item = moonmars_objects_get_object($entity_type, $entity);
+    $item = moonmars_actors_get_actor($entity_type, $entity);
 
     // If the item is new...
     if ($is_new) {
@@ -247,15 +289,16 @@ function moonmars_items_entity_save($entity, $entity_type, $is_new) {
       }
       // Create a new-item triumph:
       Triumph::newItem($item);
+      
+      // Set the item alias:
+      $item->resetAlias();
     }
     else {
       // Bump it to the top of the channel:
       $item->bump();
       // We aren't creating triumphs for updating items or comments.
+      // Also, we don't update the alias if the item is edited, because this breaks existing links to the item.
     }
-
-    // Update the item alias:
-    $item->resetAlias();
   }
 }
 
@@ -373,6 +416,27 @@ function moonmars_items_ajax_delete() {
   // Don't actually delete the item, just unpublish it:
   $item->unpublish();
   $item->save();
+
+  // Get the return channel. Default to the item's channel:
+  $channel = $item->channel();
+  // If for some reason the item doesn't have a channel (should never happen), return to the current channel:
+  if (!$channel) {
+    $channel = Channel::currentChannel();
+  }
+  // Last resort, return to the logged-in member's channel:
+  if (!$channel) {
+    $channel = $logged_in_member->channel();
+  }
+
+  // Get the star info:
+  $star = $channel->star();
+  $data['star_path'] = '/' . $star->alias();
+  if ($star instanceof Member) {
+    $data['star_label'] = '<em>' . $star->label() . "</em>'s channel";
+  }
+  else {
+    $data['star_label'] = 'the <em>' . $star->label() . '</em> channel';
+  }
 
   // Complete data array, encode and send:
   $data['result'] = TRUE;

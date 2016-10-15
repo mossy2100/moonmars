@@ -41,20 +41,6 @@
   }
 }
 
-@mixin group-link {
-  @include border-radius(3px);
-  display: block;
-  width: 100%;
-  padding: 5px 0;
-  background-color: $grey5;
-  text-align: center;
-
-  &:hover {
-    background-color: $red3;
-    color: white;
-  }
-}
-
 .groups-block {
   .view-all-groups-link {
     text-align: right;
@@ -68,7 +54,7 @@
       margin-bottom: 3px;
 
       a {
-        @include group-link;
+        @include star-link;
       }
     }
   }
@@ -123,7 +109,7 @@ form#moonmars-groups-search-form {
     }
 
     .group-search-member {
-      margin: 15px 0;
+      margin: 15px 0 25px;
       @include clearfix;
 
       label.group-search-member-title {
@@ -156,10 +142,11 @@ form#moonmars-groups-search-form {
       }
     }
 
-    .clear-button {
-      margin-right: 5px;
+    #search-buttons {
+      .clear-button {
+        margin-right: 5px;
+      }
     }
-
   }
 
   table {
@@ -167,9 +154,9 @@ form#moonmars-groups-search-form {
       text-align: center;
       width: 100px;
 
-      .group-link {
+      .star-link {
         a {
-          @include group-link;
+          @include star-link;
           width: 100px;
           margin: 0px;
         }
