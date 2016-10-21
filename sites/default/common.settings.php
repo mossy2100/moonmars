@@ -25,7 +25,7 @@ mb_internal_encoding('UTF-8');
  */
 function psr0_autoload($class_name) {
   $class_name = ltrim($class_name, '\\');
-  $path  = DRUPAL_ROOT . '/sites/all/classes';
+  $path = DRUPAL_ROOT . '/sites/all/classes';
   if ($last_namespace_pos = strripos($class_name, '\\')) {
     $namespace = substr($class_name, 0, $last_namespace_pos);
     $class_name = substr($class_name, $last_namespace_pos + 1);
